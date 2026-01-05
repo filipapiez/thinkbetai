@@ -7,11 +7,12 @@ import { InjuryCard } from '@/components/InjuryCard';
 import { RecentFormCard } from '@/components/RecentFormCard';
 import { RiskMeter } from '@/components/RiskMeter';
 import { AIExplanationCard } from '@/components/AIExplanationCard';
+import { AIQueryBar } from '@/components/AIQueryBar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getGameFacts } from '@/lib/mockData';
-import { ArrowLeft, Calendar, MapPin, Clock, Bed, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Clock, Bed, Zap, Sparkles } from 'lucide-react';
 
 const GameDetail = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -177,6 +178,22 @@ const GameDetail = () => {
                 awayTeam={game.awayTeam.name}
               />
             </div>
+          </div>
+
+          {/* AI Query Bar - Full Width */}
+          <div className="mt-6">
+            <Card variant="glass">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <span>Ask AI</span>
+                  <span className="text-xs font-normal text-muted-foreground ml-auto">Get insights about this matchup</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AIQueryBar gameId={game.id} />
+              </CardContent>
+            </Card>
           </div>
 
           {/* AI Explanation - Full Width */}
