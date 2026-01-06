@@ -9,15 +9,21 @@ import { Badge } from '@/components/ui/badge';
 import { mockGames, getGameFacts } from '@/lib/mockData';
 import { Search, Calendar, Filter, X, TrendingUp, Info } from 'lucide-react';
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
+import { getSportsByPriority, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
 
 const Games = () => {
-  // Games page component
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
 
-  const sports = ['NBA', 'NFL', 'Tennis', 'Table Tennis', 'Soccer', 'MLB', 'NHL'];
+  // Get sports from config, sorted by priority
+  const sportConfigs = useMemo(() => getSportsByPriority(), []);
+  const sports = useMemo(() => {
+    // Only include sports that have games
+    const gameSports = new Set(mockGames.map(g => g.sport));
+    return sportConfigs.filter(s => gameSports.has(s.id)).map(s => s.id);
+  }, [sportConfigs]);
   
   const dates = useMemo(() => {
     const uniqueDates = [...new Set(mockGames.map(g => {
@@ -73,7 +79,18 @@ const Games = () => {
     });
 
     // Sort by bet signal priority (GOOD first, then BORDERLINE, then PASS/NEUTRAL)
-    return sortGamesBySignal(filtered, getQualification);
+    // Then by sport priority
+    const sorted = sortGamesBySignal(filtered, getQualification);
+    return sorted.sort((a, b) => {
+      const qualA = getQualification(a);
+      const qualB = getQualification(b);
+      // First sort by signal priority
+      const signalOrder = { 'GOOD': 0, 'BORDERLINE': 1, 'PASS': 2, 'NEUTRAL': 3 };
+      const signalDiff = signalOrder[qualA.signal] - signalOrder[qualB.signal];
+      if (signalDiff !== 0) return signalDiff;
+      // Then by sport priority
+      return getSportPriority(a.sport) - getSportPriority(b.sport);
+    });
   }, [searchQuery, selectedSport, selectedDate, selectedSignal, getQualification]);
 
   // Calculate stats for qualified picks
@@ -183,17 +200,21 @@ const Games = () => {
                 <span>Filter:</span>
               </div>
 
-              {/* Sport Filter */}
-              {sports.map(sport => (
-                <Badge
-                  key={sport}
-                  variant={selectedSport === sport ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
-                  onClick={() => setSelectedSport(selectedSport === sport ? null : sport)}
-                >
-                  {sport}
-                </Badge>
-              ))}
+              {/* Sport Filter - sorted by priority */}
+              {sports.map(sport => {
+                const config = getSportConfig(sport);
+                return (
+                  <Badge
+                    key={sport}
+                    variant={selectedSport === sport ? 'default' : 'outline'}
+                    className="cursor-pointer hover:bg-primary/20 transition-colors"
+                    onClick={() => setSelectedSport(selectedSport === sport ? null : sport)}
+                    title={config ? `${config.coverage.description} • ${formatSurfacedRange(config)}` : sport}
+                  >
+                    {sport}
+                  </Badge>
+                );
+              })}
 
               <span className="text-border">|</span>
 
