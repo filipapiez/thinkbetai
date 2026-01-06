@@ -55,44 +55,35 @@ export interface LiveBetQualification {
   edge?: number;
 }
 
-// Calculate bet qualification for live games (simplified - no mock dependencies)
+// Calculate bet qualification for live games based on odds value
 export function calculateLiveBetQualification(game: LiveGame): LiveBetQualification {
-  const homeStats = game.homeTeam.stats;
-  const awayStats = game.awayTeam.stats;
-  
   let confidenceScore = 50;
   let riskScore = 30;
   const reasons: string[] = [];
   
-  // 1. Win percentage edge (major factor)
-  if (homeStats && awayStats) {
-    const winPctDiff = homeStats.winPct - awayStats.winPct;
-    
-    if (Math.abs(winPctDiff) >= 0.20) {
-      confidenceScore += 20;
-      reasons.push(`${winPctDiff > 0 ? 'Home' : 'Away'} team has strong win rate edge`);
-    } else if (Math.abs(winPctDiff) >= 0.10) {
-      confidenceScore += 12;
-      reasons.push('Moderate win rate advantage');
-    } else if (Math.abs(winPctDiff) >= 0.05) {
-      confidenceScore += 5;
-    } else {
-      reasons.push('Evenly matched teams');
-      riskScore += 10;
-    }
-  } else {
-    riskScore += 15;
-    reasons.push('Limited team stats');
+  const homeML = game.odds.moneyline.home;
+  const awayML = game.odds.moneyline.away;
+  const spread = game.odds.spread.home;
+  const total = game.odds.total.over;
+  
+  // Check if we have meaningful odds data
+  const hasMoneyline = homeML !== 0 && awayML !== 0;
+  const hasSpread = spread !== 0;
+  const hasTotal = total !== 0;
+  
+  if (!game.hasOdds || (!hasMoneyline && !hasSpread && !hasTotal)) {
+    return {
+      signal: 'PASS',
+      confidenceScore: 30,
+      riskScore: 60,
+      volatility: 'High',
+      reason: 'No odds available',
+      pick: 'home',
+    };
   }
   
-  // 2. Home advantage
-  confidenceScore += 5;
-  
-  // 3. Odds-based edge detection
-  if (game.hasOdds && game.odds.moneyline.home !== 0 && game.odds.moneyline.away !== 0) {
-    const homeML = game.odds.moneyline.home;
-    const awayML = game.odds.moneyline.away;
-    
+  // Analyze moneyline for value
+  if (hasMoneyline) {
     // Convert to implied probability
     const homeImplied = homeML > 0 
       ? 100 / (homeML + 100) 
@@ -101,65 +92,90 @@ export function calculateLiveBetQualification(game: LiveGame): LiveBetQualificat
       ? 100 / (awayML + 100) 
       : Math.abs(awayML) / (Math.abs(awayML) + 100);
     
-    // If we have stats, compare to implied odds for value
-    if (homeStats && awayStats) {
-      const homeModelProb = homeStats.winPct;
-      const awayModelProb = awayStats.winPct;
-      
-      const homeEdge = homeModelProb - homeImplied;
-      const awayEdge = awayModelProb - awayImplied;
-      
-      if (homeEdge > 0.08 || awayEdge > 0.08) {
-        confidenceScore += 15;
-        reasons.push('Value edge detected vs odds');
-      } else if (homeEdge > 0.03 || awayEdge > 0.03) {
-        confidenceScore += 8;
-      }
+    // Check for value based on odds differential
+    const impliedDiff = Math.abs(homeImplied - awayImplied);
+    
+    if (impliedDiff >= 0.25) {
+      // Clear favorite - look for underdog value
+      confidenceScore += 15;
+      reasons.push('Clear favorite identified');
+    } else if (impliedDiff >= 0.10) {
+      confidenceScore += 10;
+      reasons.push('Moderate edge available');
+    } else {
+      // Close matchup - more risk
+      riskScore += 10;
+      reasons.push('Close matchup');
     }
     
-    // Very lopsided odds = less value
-    if (Math.abs(homeML) > 300 || Math.abs(awayML) > 300) {
-      confidenceScore -= 5;
-      riskScore += 5;
+    // Heavy favorites are risky for value
+    if (homeML < -300 || awayML < -300) {
+      riskScore += 15;
+      confidenceScore -= 10;
+      reasons.push('Heavy favorite risk');
     }
-  } else {
+    
+    // Good underdog value
+    if ((homeML >= 150 && homeML <= 250) || (awayML >= 150 && awayML <= 250)) {
+      confidenceScore += 12;
+      reasons.push('Underdog value spot');
+    }
+  }
+  
+  // Spread analysis
+  if (hasSpread) {
+    const absSpread = Math.abs(spread);
+    if (absSpread <= 3) {
+      confidenceScore += 8;
+      reasons.push('Close spread');
+    } else if (absSpread >= 10) {
+      riskScore += 8;
+      reasons.push('Large spread');
+    }
+  }
+  
+  // Total analysis  
+  if (hasTotal) {
+    confidenceScore += 5;
+  }
+  
+  // Sport-based variance
+  const highVarianceSports = ['mma', 'boxing', 'tennis'];
+  const sportLower = game.sport.toLowerCase();
+  if (highVarianceSports.includes(sportLower)) {
     riskScore += 10;
   }
   
-  // 4. Sport-based variance
-  const highVarianceSports = ['tennis', 'mma', 'boxing', 'table-tennis'];
-  if (highVarianceSports.includes(game.sport.toLowerCase())) {
-    riskScore += 12;
+  // Live games have more uncertainty
+  if (game.status === 'live') {
+    riskScore += 15;
+    reasons.push('Live game volatility');
   }
   
   // Clamp values
   confidenceScore = Math.min(100, Math.max(0, confidenceScore));
   riskScore = Math.min(100, Math.max(0, riskScore));
   
-  // Determine signal
+  // Determine signal based on confidence and risk thresholds
   let signal: 'GOOD' | 'BORDERLINE' | 'PASS';
   let reason: string;
   
-  if (confidenceScore >= 72 && riskScore <= 40) {
+  if (confidenceScore >= 70 && riskScore <= 45) {
     signal = 'GOOD';
-    reason = reasons[0] || `High confidence (${confidenceScore}%)`;
-  } else if (riskScore > 55) {
+    reason = reasons[0] || 'Strong value identified';
+  } else if (riskScore > 55 || confidenceScore < 45) {
     signal = 'PASS';
-    reason = `Risk too high (${riskScore}%)`;
-  } else if (confidenceScore < 55) {
-    signal = 'PASS';
-    reason = reasons[0] || `Low confidence (${confidenceScore}%)`;
+    reason = reasons.find(r => r.includes('risk') || r.includes('volatility')) || 'Insufficient edge';
   } else {
     signal = 'BORDERLINE';
-    reason = reasons[0] || `Moderate confidence (${confidenceScore}%)`;
+    reason = reasons[0] || 'Moderate opportunity';
   }
   
-  // Determine pick
-  const pick: 'home' | 'away' = 
-    (homeStats?.winPct || 0) >= (awayStats?.winPct || 0) ? 'home' : 'away';
+  // Determine pick based on odds
+  const pick: 'home' | 'away' = homeML < awayML ? 'home' : 'away';
   
   const volatility: 'Low' | 'Medium' | 'High' = 
-    riskScore <= 30 ? 'Low' : riskScore <= 55 ? 'Medium' : 'High';
+    riskScore <= 35 ? 'Low' : riskScore <= 55 ? 'Medium' : 'High';
   
   return {
     signal,

@@ -42,6 +42,7 @@ serve(async (req) => {
     console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
 
     // Fetch events with odds from SportsGameOdds API v2
+    // Use oddsAvailable=true to only get events with active odds
     const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${leagueId}&oddsAvailable=true&limit=50`;
     
     const response = await fetch(apiUrl, {
@@ -75,95 +76,118 @@ serve(async (req) => {
     const data = await response.json();
     const events = data?.data || data?.events || data?.items || [];
 
-    console.log(`Received ${events.length} events from SportsGameOdds`);
+    console.log(`Received ${events.length} events from SportsGameOdds for ${leagueId}`);
 
-    // Helper functions for odds parsing
-    const getPrice = (o: any) =>
-      o?.closeFairOdds ?? o?.closeOdds ?? o?.fairOdds ?? o?.odds ?? 0;
-
-    const getLine = (o: any) =>
-      o?.line ?? o?.point ?? o?.closeFairSpread ?? o?.fairSpread ?? 
-      o?.closeFairOverUnder ?? o?.fairOverUnder ?? 0;
-
-    // Transform events to our format
+    // Transform events to our format using correct v2 API structure
     const transformedGames = events.map((event: any) => {
-      const homeTeamName = event.teams?.home?.name || event.homeTeam || 'Home';
-      const awayTeamName = event.teams?.away?.name || event.awayTeam || 'Away';
+      // v2 API structure: teams.home.names.long/short, teams.away.names.long/short
+      const homeTeamName = event.teams?.home?.names?.long || 
+                           event.teams?.home?.names?.medium || 
+                           event.teams?.home?.name || 
+                           event.homeTeam || 
+                           'Home Team';
+      const awayTeamName = event.teams?.away?.names?.long || 
+                           event.teams?.away?.names?.medium || 
+                           event.teams?.away?.name || 
+                           event.awayTeam || 
+                           'Away Team';
       
-      // Extract team records if available
-      const homeRecord = event.teams?.home?.record || 
-                         event.homeRecord || 
-                         event.teams?.home?.seasonRecord || null;
-      const awayRecord = event.teams?.away?.record || 
-                         event.awayRecord || 
-                         event.teams?.away?.seasonRecord || null;
+      // Get abbreviations
+      const homeAbbr = event.teams?.home?.names?.short || homeTeamName.substring(0, 3).toUpperCase();
+      const awayAbbr = event.teams?.away?.names?.short || awayTeamName.substring(0, 3).toUpperCase();
       
-      // Parse odds
-      const odds = (event as any).odds ?? {};
+      // Get start time from status.startsAt (v2 format)
+      const startTime = event.status?.startsAt || event.startTime || event.startDate || new Date().toISOString();
+      
+      // Get status
+      const isLive = event.status?.live === true;
+      const isStarted = event.status?.started === true;
+      const isEnded = event.status?.ended === true;
+      
+      // Parse odds from v2 format (oddID keys like "points-home-game-ml-home")
+      const odds = event.odds || {};
       let moneylineHome = 0, moneylineAway = 0;
       let spreadHome = 0, spreadHomeOdds = -110;
       let spreadAway = 0, spreadAwayOdds = -110;
       let totalOver = 0, totalOverOdds = -110;
       let totalUnder = 0, totalUnderOdds = -110;
 
-      const oddsEntries = odds && typeof odds === 'object' ? Object.entries(odds) : [];
+      // Helper to parse American odds string to number
+      const parseOdds = (oddsStr: any): number => {
+        if (typeof oddsStr === 'number') return oddsStr;
+        if (typeof oddsStr === 'string') {
+          const cleaned = oddsStr.replace(/[^0-9+-]/g, '');
+          return parseInt(cleaned) || 0;
+        }
+        return 0;
+      };
 
-      for (const [oddId, oddData] of oddsEntries) {
+      // v2 uses oddID format: {statID}-{statEntityID}-{periodID}-{betTypeID}-{sideID}
+      for (const [oddId, oddData] of Object.entries(odds)) {
         const odd = oddData as any;
-
-        if (oddId.includes('moneyline') || oddId.includes('h2h')) {
-          if (oddId.includes('home')) {
-            moneylineHome = getPrice(odd);
-          } else if (oddId.includes('away')) {
-            moneylineAway = getPrice(odd);
-          }
+        const fairOdds = parseOdds(odd?.fairOdds || odd?.bookOdds || odd?.odds || 0);
+        
+        // Moneyline: points-home-game-ml-home, points-away-game-ml-away
+        if (oddId === 'points-home-game-ml-home' || oddId.includes('-ml-home')) {
+          moneylineHome = fairOdds;
         }
-
-        if (oddId.includes('spread') || oddId.includes('handicap')) {
-          if (oddId.includes('home')) {
-            spreadHome = getLine(odd);
-            spreadHomeOdds = getPrice(odd) || -110;
-          } else if (oddId.includes('away')) {
-            spreadAway = getLine(odd);
-            spreadAwayOdds = getPrice(odd) || -110;
-          }
+        if (oddId === 'points-away-game-ml-away' || oddId.includes('-ml-away')) {
+          moneylineAway = fairOdds;
         }
-
-        if (oddId.includes('total') || oddId.includes('over') || oddId.includes('under')) {
-          if (oddId.includes('over')) {
-            totalOver = getLine(odd);
-            totalOverOdds = getPrice(odd) || -110;
-          } else if (oddId.includes('under')) {
-            totalUnder = getLine(odd);
-            totalUnderOdds = getPrice(odd) || -110;
-          }
+        
+        // Spread: points-home-game-sp-home, points-away-game-sp-away
+        if (oddId === 'points-home-game-sp-home' || oddId.includes('-sp-home')) {
+          spreadHome = parseFloat(odd?.fairSpread || odd?.bookSpread || odd?.spread || odd?.line || 0);
+          spreadHomeOdds = fairOdds || -110;
+        }
+        if (oddId === 'points-away-game-sp-away' || oddId.includes('-sp-away')) {
+          spreadAway = parseFloat(odd?.fairSpread || odd?.bookSpread || odd?.spread || odd?.line || 0);
+          spreadAwayOdds = fairOdds || -110;
+        }
+        
+        // Over/Under: points-all-game-ou-over, points-all-game-ou-under
+        if (oddId === 'points-all-game-ou-over' || oddId.includes('-ou-over')) {
+          totalOver = parseFloat(odd?.fairOverUnder || odd?.bookOverUnder || odd?.overUnder || odd?.line || 0);
+          totalOverOdds = fairOdds || -110;
+        }
+        if (oddId === 'points-all-game-ou-under' || oddId.includes('-ou-under')) {
+          totalUnder = parseFloat(odd?.fairOverUnder || odd?.bookOverUnder || odd?.overUnder || odd?.line || 0);
+          totalUnderOdds = fairOdds || -110;
         }
       }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || spreadHome !== 0 || totalOver !== 0;
 
       return {
         id: event.eventID || event.id,
         sportKey: leagueId.toLowerCase(),
-        sportTitle: event.league || leagueId,
-        commenceTime: event.startTime || event.startDate || new Date().toISOString(),
+        sportTitle: event.leagueID || leagueId,
+        commenceTime: startTime,
         homeTeam: homeTeamName,
         awayTeam: awayTeamName,
-        homeRecord,
-        awayRecord,
+        homeAbbr,
+        awayAbbr,
+        status: isEnded ? 'final' : isLive ? 'live' : 'scheduled',
         bookmaker: 'Consensus',
         odds: {
           moneyline: { home: moneylineHome, away: moneylineAway },
           spread: { home: spreadHome, homeOdds: spreadHomeOdds, away: spreadAway, awayOdds: spreadAwayOdds },
           total: { over: totalOver, overOdds: totalOverOdds, under: totalUnder, underOdds: totalUnderOdds },
         },
-        hasOdds: Object.keys(odds).length > 0,
+        hasOdds: hasValidOdds,
       };
     });
 
-    console.log(`Returning ${transformedGames.length} games with odds`);
+    // Filter out games without team names
+    const validGames = transformedGames.filter((g: any) => 
+      g.homeTeam !== 'Home Team' && g.awayTeam !== 'Away Team'
+    );
+
+    console.log(`Returning ${validGames.length} valid games with odds for ${leagueId}`);
 
     return new Response(
       JSON.stringify({ 
-        games: transformedGames,
+        games: validGames,
         remainingRequests: null,
         lastUpdated: new Date().toISOString(),
       }),
