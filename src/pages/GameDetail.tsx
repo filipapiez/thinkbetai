@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { MockDataBanner, DataTimestamp } from '@/components/MockDataBanner';
@@ -10,10 +11,12 @@ import { AIExplanationCard } from '@/components/AIExplanationCard';
 import { AIQueryBar } from '@/components/AIQueryBar';
 import { PerformanceChart } from '@/components/PerformanceChart';
 import { TeamInfoCard } from '@/components/TeamInfoCard';
+import { BettingChatBot } from '@/components/BettingChatBot';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getGameFacts } from '@/lib/mockData';
+import { calculateBetQualification } from '@/lib/betQualification';
 import { ArrowLeft, Calendar, MapPin, Clock, Bed, Zap, Sparkles } from 'lucide-react';
 
 const GameDetail = () => {
@@ -39,6 +42,18 @@ const GameDetail = () => {
   }
 
   const { game, odds, injuries, recentForm, headToHead, context, risk, lastUpdated, performanceHistory } = facts;
+
+  // Calculate bet qualification for chatbot context
+  const betSignal = useMemo(() => {
+    return calculateBetQualification({
+      game: facts.game,
+      odds: facts.odds ?? undefined,
+      injuries: facts.injuries,
+      risk: facts.risk,
+      homeLast5: facts.recentForm.homeLast5,
+      awayLast5: facts.recentForm.awayLast5,
+    });
+  }, [facts]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -225,6 +240,9 @@ const GameDetail = () => {
       </main>
 
       <Footer />
+      
+      {/* AI Betting Chatbot */}
+      <BettingChatBot game={game} odds={odds} betSignal={betSignal} />
     </div>
   );
 };
