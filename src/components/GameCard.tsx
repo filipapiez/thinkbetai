@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Game, getGameFacts } from '@/lib/mockData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
 import { calculateBetQualification, BetSignal, BetQualification } from '@/lib/betQualification';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -12,7 +12,7 @@ interface GameCardProps {
 }
 
 const BetSignalBadge = ({ qualification }: { qualification: BetQualification }) => {
-  const { signal, reason, confidence } = qualification;
+  const { signal, reason, confidenceScore } = qualification;
   
   const variants: Record<BetSignal, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
     'GOOD': { 
@@ -32,12 +32,6 @@ const BetSignalBadge = ({ qualification }: { qualification: BetQualification }) 
       text: 'text-red-400', 
       label: 'PASS',
       icon: <TrendingDown className="h-3 w-3" />
-    },
-    'NEUTRAL': { 
-      bg: 'bg-muted border-border', 
-      text: 'text-muted-foreground', 
-      label: 'NO EDGE',
-      icon: <Minus className="h-3 w-3" />
     },
   };
   
@@ -60,11 +54,9 @@ const BetSignalBadge = ({ qualification }: { qualification: BetQualification }) 
         <span className="text-muted-foreground truncate max-w-[120px]" title={reason}>
           {reason}
         </span>
-        {signal !== 'NEUTRAL' && (
-          <span className={cn("font-mono font-medium", variant.text)}>
-            {confidence}%
-          </span>
-        )}
+        <span className={cn("font-mono font-medium", variant.text)}>
+          {confidenceScore}%
+        </span>
       </div>
     </div>
   );
@@ -75,11 +67,9 @@ export const GameCard = ({ game }: GameCardProps) => {
     const facts = getGameFacts(game.id);
     if (!facts) {
       return {
-        signal: 'NEUTRAL' as BetSignal,
-        edge: 0,
-        confidence: 0,
-        modelProbability: 50,
-        impliedProbability: 50,
+        signal: 'PASS' as BetSignal,
+        confidenceScore: 0,
+        riskScore: 50,
         volatility: 'Medium' as const,
         injuryUncertainty: 'Low' as const,
         reason: 'Data unavailable',
@@ -88,7 +78,6 @@ export const GameCard = ({ game }: GameCardProps) => {
     
     return calculateBetQualification({
       game: facts.game,
-      odds: facts.odds,
       injuries: facts.injuries,
       risk: facts.risk,
       homeLast5: facts.recentForm.homeLast5,
@@ -114,6 +103,8 @@ export const GameCard = ({ game }: GameCardProps) => {
     });
   };
 
+  const isLive = game.status === 'live';
+
   return (
     <Link to={`/games/${game.id}`}>
       <Card variant="elevated" className="group hover:border-primary/30 cursor-pointer">
@@ -121,7 +112,15 @@ export const GameCard = ({ game }: GameCardProps) => {
           {/* Header with sport badge and bet signal */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex flex-col gap-1">
-              <Badge variant="info">{game.sport}</Badge>
+              <div className="flex items-center gap-1.5">
+                <Badge variant="info">{game.sport}</Badge>
+                {isLive && (
+                  <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/40 animate-pulse">
+                    <Zap className="h-3 w-3 mr-1" />
+                    LIVE
+                  </Badge>
+                )}
+              </div>
               <Badge variant="outline" className="font-normal text-xs">
                 <Calendar className="h-3 w-3 mr-1" />
                 {formatDate(game.startTime)}

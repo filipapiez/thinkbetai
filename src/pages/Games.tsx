@@ -62,11 +62,9 @@ const Games = () => {
       const facts = getGameFacts(game.id);
       if (!facts) {
         return {
-          signal: 'NEUTRAL' as BetSignal,
-          edge: 0,
-          confidence: 0,
-          modelProbability: 50,
-          impliedProbability: 50,
+          signal: 'PASS' as BetSignal,
+          confidenceScore: 0,
+          riskScore: 50,
           volatility: 'Medium' as const,
           injuryUncertainty: 'Low' as const,
           reason: 'Data unavailable',
@@ -74,7 +72,6 @@ const Games = () => {
       }
       return calculateBetQualification({
         game: facts.game,
-        odds: facts.odds ?? undefined, // Pass undefined if null for proper NEUTRAL handling
         injuries: facts.injuries,
         risk: facts.risk,
         homeLast5: facts.recentForm.homeLast5,
@@ -111,7 +108,7 @@ const Games = () => {
     const qualifications = gamesForStats.map(g => getQualification(g));
     const good = qualifications.filter(q => q.signal === 'GOOD').length;
     const borderline = qualifications.filter(q => q.signal === 'BORDERLINE').length;
-    const pass = qualifications.filter(q => q.signal === 'PASS' || q.signal === 'NEUTRAL').length;
+    const pass = qualifications.filter(q => q.signal === 'PASS').length;
     
     return { good, borderline, pass, total: gamesForStats.length };
   }, [gamesInDateRange, selectedSport, getQualification]);

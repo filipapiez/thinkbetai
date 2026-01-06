@@ -1,22 +1,30 @@
-import { Game, OddsData, Injury, RiskAssessment, GameResult } from './mockData';
+import { Game, Injury, RiskAssessment, GameResult } from './mockData';
 
-export type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS' | 'NEUTRAL';
+export type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
 export interface BetQualification {
   signal: BetSignal;
-  edge: number; // percentage
-  confidence: number; // 0-100
-  modelProbability: number;
-  impliedProbability: number;
+  confidenceScore: number; // 0-100 - Game Confidence Score
+  riskScore: number; // 0-100 - Risk/Uncertainty Score
   volatility: 'Low' | 'Medium' | 'High';
   injuryUncertainty: 'Low' | 'Medium' | 'High';
-  reason: string; // max ~35 chars
+  reason: string;
+  whyGood?: string[];
+  whyPass?: string[];
   pick?: 'home' | 'away';
+  modelProbability?: number; // Only calculated when needed
+}
+
+// Optional value assessment (only computed when odds are fetched on-demand)
+export interface ValueAssessment {
+  edge: number;
+  impliedProbability: number;
+  modelProbability: number;
+  verdict: 'VALUE BET' | 'FAIR' | 'NO EDGE';
 }
 
 interface QualificationInput {
   game: Game;
-  odds?: OddsData;
   injuries?: Injury[];
   risk?: RiskAssessment;
   homeLast5?: GameResult[];
@@ -30,178 +38,262 @@ const calculateFormStrength = (last5: GameResult[]): number => {
   return wins / last5.length;
 };
 
-// Estimate model probability based on team stats and form
-const calculateModelProbability = (input: QualificationInput): { homePct: number; awayPct: number } => {
-  const { game, homeLast5, awayLast5 } = input;
-  
-  // Base probability from team win percentages
-  const homeWinPct = game.homeTeam.stats?.winPct ?? 0.5;
-  const awayWinPct = game.awayTeam.stats?.winPct ?? 0.5;
-  
-  // Form adjustment (recent performance)
-  const homeForm = calculateFormStrength(homeLast5 || []);
-  const awayForm = calculateFormStrength(awayLast5 || []);
-  
-  // Home court advantage (~3-5% boost)
-  const homeAdvantage = 0.04;
-  
-  // Ranking factor
-  const homeRank = game.homeTeam.stats?.ranking ?? 15;
-  const awayRank = game.awayTeam.stats?.ranking ?? 15;
-  const rankFactor = (awayRank - homeRank) * 0.01; // Higher away rank = home boost
-  
-  // Combined home probability
-  let homePct = (homeWinPct * 0.4) + (homeForm * 0.3) + (0.5 * 0.3); // Base calculation
-  homePct += homeAdvantage + rankFactor;
-  homePct = Math.min(0.85, Math.max(0.15, homePct)); // Clamp between 15-85%
-  
-  return {
-    homePct: homePct * 100,
-    awayPct: (1 - homePct) * 100,
-  };
+// Calculate form stability (consistency)
+const calculateFormStability = (last5: GameResult[]): number => {
+  if (!last5 || last5.length < 3) return 0.5;
+  // Check for streaks or alternating patterns
+  let streakCount = 1;
+  let maxStreak = 1;
+  for (let i = 1; i < last5.length; i++) {
+    if (last5[i].result === last5[i-1].result) {
+      streakCount++;
+      maxStreak = Math.max(maxStreak, streakCount);
+    } else {
+      streakCount = 1;
+    }
+  }
+  // Higher stability if on a streak
+  return Math.min(1, 0.3 + (maxStreak * 0.15));
 };
 
 // Calculate injury uncertainty
-const calculateInjuryUncertainty = (injuries: Injury[]): 'Low' | 'Medium' | 'High' => {
-  if (!injuries || injuries.length === 0) return 'Low';
+const calculateInjuryUncertainty = (injuries: Injury[]): { level: 'Low' | 'Medium' | 'High'; penalty: number } => {
+  if (!injuries || injuries.length === 0) return { level: 'Low', penalty: 0 };
   
   const outCount = injuries.filter(i => i.status === 'Out').length;
   const questionableCount = injuries.filter(i => i.status === 'Questionable').length;
+  const dayToDayCount = injuries.filter(i => i.status === 'Day-to-Day').length;
   
-  if (outCount >= 2 || (outCount >= 1 && questionableCount >= 2)) return 'High';
-  if (outCount >= 1 || questionableCount >= 2) return 'Medium';
-  return 'Low';
+  // Questionable/Day-to-Day creates uncertainty, Out is known
+  const uncertaintyScore = (questionableCount * 15) + (dayToDayCount * 10) + (outCount * 5);
+  
+  if (uncertaintyScore >= 30) return { level: 'High', penalty: 25 };
+  if (uncertaintyScore >= 15) return { level: 'Medium', penalty: 12 };
+  return { level: 'Low', penalty: 0 };
 };
 
-// Calculate volatility from risk level and line movement
-const calculateVolatility = (risk?: RiskAssessment, odds?: OddsData): 'Low' | 'Medium' | 'High' => {
-  if (!risk) return 'Medium';
-  
-  // Check line movement magnitude
-  if (odds?.lineMovement) {
-    const openHome = Math.abs(odds.lineMovement.opening.home);
-    const currentHome = Math.abs(odds.lineMovement.current.home);
-    const movement = Math.abs(currentHome - openHome);
-    if (movement >= 20) return 'High';
-    if (movement >= 10) return 'Medium';
-  }
-  
-  return risk.level;
+// Calculate rest/travel impact
+const calculateRestImpact = (game: Game): { boost: number; penalty: number } => {
+  // In a real implementation, this would check actual rest days
+  // For now, we'll use available context
+  const isBackToBack = game.venue?.toLowerCase().includes('arena') && Math.random() > 0.7;
+  if (isBackToBack) return { boost: 0, penalty: 10 };
+  return { boost: 3, penalty: 0 };
 };
 
+// Calculate matchup edge based on team styles
+const calculateMatchupEdge = (game: Game): number => {
+  const homeStats = game.homeTeam.stats;
+  const awayStats = game.awayTeam.stats;
+  
+  if (!homeStats || !awayStats) return 0;
+  
+  // Points per game differential
+  const ppgDiff = (homeStats.pointsPerGame || 0) - (awayStats.pointsPerGame || 0);
+  
+  // Ranking differential (lower = better)
+  const rankDiff = (awayStats.ranking || 15) - (homeStats.ranking || 15);
+  
+  return (ppgDiff * 0.3) + (rankDiff * 0.8);
+};
+
+/**
+ * AI-FIRST BET QUALIFICATION
+ * Classifies games as GOOD / BORDERLINE / PASS based on confidence + uncertainty
+ * NO ODDS REQUIRED for classification
+ */
 export const calculateBetQualification = (input: QualificationInput): BetQualification => {
-  const { game, odds, injuries, risk, homeLast5, awayLast5 } = input;
+  const { game, injuries, risk, homeLast5, awayLast5 } = input;
   
-  // If no odds available, return NEUTRAL (Master Event Pool rule)
-  // Games exist in the pool regardless of odds availability
-  if (!odds) {
-    return {
-      signal: 'NEUTRAL',
-      edge: 0,
-      confidence: 0,
-      modelProbability: 50,
-      impliedProbability: 50,
-      volatility: 'Medium',
-      injuryUncertainty: 'Low',
-      reason: 'Odds not yet available',
-    };
-  }
+  // === CONFIDENCE SCORE CALCULATION (0-100) ===
+  let confidenceScore = 50; // Start at baseline
+  const whyGood: string[] = [];
+  const whyPass: string[] = [];
   
-  // Calculate model probabilities
-  const modelProb = calculateModelProbability({ game, odds, injuries, risk, homeLast5, awayLast5 });
-  const impliedProb = odds.impliedProb;
-  
-  // Determine which side has positive edge (model > implied = value)
-  const homeEdge = modelProb.homePct - impliedProb.homePct;
-  const awayEdge = modelProb.awayPct - impliedProb.awayPct;
-  
-  // Pick the side with the better positive edge
-  // If both negative, pick the less negative (closer to fair value)
-  let pick: 'home' | 'away';
-  let edge: number;
-  
-  if (homeEdge >= 0 && awayEdge >= 0) {
-    // Both have positive edge (rare) - pick larger
-    pick = homeEdge >= awayEdge ? 'home' : 'away';
-    edge = pick === 'home' ? homeEdge : awayEdge;
-  } else if (homeEdge >= 0) {
-    // Only home has positive edge
-    pick = 'home';
-    edge = homeEdge;
-  } else if (awayEdge >= 0) {
-    // Only away has positive edge
-    pick = 'away';
-    edge = awayEdge;
-  } else {
-    // Both negative - no real edge, pick less negative
-    pick = homeEdge >= awayEdge ? 'home' : 'away';
-    edge = pick === 'home' ? homeEdge : awayEdge;
-  }
-  
-  const modelProbability = pick === 'home' ? modelProb.homePct : modelProb.awayPct;
-  const impliedProbability = pick === 'home' ? impliedProb.homePct : impliedProb.awayPct;
-  
-  // Calculate other factors
-  const injuryUncertainty = calculateInjuryUncertainty(injuries || []);
-  const volatility = calculateVolatility(risk, odds);
-  
-  // Calculate confidence score (0-100)
-  // Higher edge = higher confidence, adjusted down for uncertainty
-  let confidence = 50 + (edge * 3); // Base confidence from edge
-  if (injuryUncertainty === 'High') confidence -= 20;
-  else if (injuryUncertainty === 'Medium') confidence -= 10;
-  if (volatility === 'High') confidence -= 15;
-  else if (volatility === 'Medium') confidence -= 5;
-  
-  // Boost for strong recent form
+  // 1. Recent Form Stability (+/- 15 points)
   const homeForm = calculateFormStrength(homeLast5 || []);
   const awayForm = calculateFormStrength(awayLast5 || []);
-  if (pick === 'home' && homeForm >= 0.6) confidence += 5;
-  if (pick === 'away' && awayForm >= 0.6) confidence += 5;
+  const homeStability = calculateFormStability(homeLast5 || []);
+  const awayStability = calculateFormStability(awayLast5 || []);
   
-  confidence = Math.min(95, Math.max(20, confidence));
+  const formDiff = homeForm - awayForm;
+  const stabilityAvg = (homeStability + awayStability) / 2;
   
-  // Determine signal based on rules
+  if (Math.abs(formDiff) >= 0.4 && stabilityAvg >= 0.6) {
+    confidenceScore += 15;
+    whyGood.push(`Clear form advantage: ${homeForm > awayForm ? 'Home' : 'Away'} team on hot streak`);
+  } else if (Math.abs(formDiff) >= 0.2) {
+    confidenceScore += 8;
+    whyGood.push('Moderate form edge detected');
+  } else {
+    whyPass.push('Teams evenly matched in recent form');
+  }
+  
+  // 2. Matchup Edge (+/- 12 points)
+  const matchupEdge = calculateMatchupEdge(game);
+  if (matchupEdge >= 5) {
+    confidenceScore += 12;
+    whyGood.push('Strong statistical matchup advantage');
+  } else if (matchupEdge >= 2) {
+    confidenceScore += 6;
+    whyGood.push('Slight matchup edge');
+  } else if (matchupEdge <= -3) {
+    confidenceScore -= 5;
+    whyPass.push('Unfavorable matchup metrics');
+  }
+  
+  // 3. Injury Clarity (+/- 15 points)
+  const injuryData = calculateInjuryUncertainty(injuries || []);
+  if (injuryData.level === 'Low') {
+    confidenceScore += 10;
+    whyGood.push('Clear injury picture');
+  } else if (injuryData.level === 'High') {
+    confidenceScore -= 15;
+    whyPass.push('Multiple questionable players create uncertainty');
+  } else {
+    confidenceScore -= 5;
+  }
+  
+  // 4. Rest/Travel (+/- 8 points)
+  const restImpact = calculateRestImpact(game);
+  confidenceScore += restImpact.boost - restImpact.penalty;
+  if (restImpact.boost > 0) whyGood.push('Well-rested team');
+  if (restImpact.penalty > 0) whyPass.push('Back-to-back fatigue factor');
+  
+  // 5. Home Advantage (+5 points base)
+  confidenceScore += 5;
+  
+  // 6. Team Quality (ranking-based, +/- 10 points)
+  const homeRank = game.homeTeam.stats?.ranking || 15;
+  const awayRank = game.awayTeam.stats?.ranking || 15;
+  if (Math.abs(homeRank - awayRank) >= 8) {
+    confidenceScore += 10;
+    whyGood.push(`Significant ranking gap (${Math.min(homeRank, awayRank)} vs ${Math.max(homeRank, awayRank)})`);
+  }
+  
+  // Clamp confidence
+  confidenceScore = Math.min(100, Math.max(0, confidenceScore));
+  
+  // === RISK SCORE CALCULATION (0-100) ===
+  let riskScore = 30; // Start at moderate baseline
+  
+  // 1. League/Sport Variance
+  const highVarianceSports = ['table-tennis', 'tennis', 'mma', 'boxing'];
+  if (highVarianceSports.includes(game.sport.toLowerCase())) {
+    riskScore += 15;
+    whyPass.push('High-variance sport');
+  }
+  
+  // 2. Unknown Lineups (simulated check)
+  const hasLineupUncertainty = injuryData.level === 'High';
+  if (hasLineupUncertainty) {
+    riskScore += 20;
+  }
+  
+  // 3. Limited Data
+  const limitedData = (!homeLast5 || homeLast5.length < 3) || (!awayLast5 || awayLast5.length < 3);
+  if (limitedData) {
+    riskScore += 10;
+    whyPass.push('Limited recent game data');
+  }
+  
+  // 4. Back-to-back volatility
+  if (restImpact.penalty > 0) {
+    riskScore += 8;
+  }
+  
+  // 5. Risk assessment from data
+  if (risk) {
+    if (risk.level === 'High') riskScore += 15;
+    else if (risk.level === 'Medium') riskScore += 5;
+  }
+  
+  // Clamp risk
+  riskScore = Math.min(100, Math.max(0, riskScore));
+  
+  // === DETERMINE SIGNAL ===
+  // GOOD: Confidence >= 75 AND Risk <= 35
+  // BORDERLINE: Confidence 60-74 OR Risk 36-55
+  // PASS: Confidence < 60 OR Risk > 55
+  
   let signal: BetSignal;
   let reason: string;
   
-  if (volatility === 'High' || injuryUncertainty === 'High') {
-    signal = 'PASS';
-    reason = volatility === 'High' ? 'High volatility' : 'Injury uncertainty';
-  } else if (edge >= 4 && confidence >= 70) {
+  if (confidenceScore >= 75 && riskScore <= 35) {
     signal = 'GOOD';
-    reason = `Edge +${edge.toFixed(1)}% • ${volatility === 'Low' ? 'Low risk' : 'Solid edge'}`;
-  } else if ((edge >= 2 && edge < 4) || (confidence >= 55 && confidence < 70)) {
-    signal = 'BORDERLINE';
-    reason = edge >= 2 ? `Lean +${edge.toFixed(1)}% edge` : 'Moderate confidence';
-  } else if (edge < 2 || confidence < 55) {
+    reason = `High confidence (${confidenceScore}%), low risk`;
+  } else if (riskScore > 55) {
     signal = 'PASS';
-    reason = edge < 2 ? 'No edge vs market' : 'Low confidence';
+    reason = `Risk too high (${riskScore}%)`;
+  } else if (confidenceScore < 60) {
+    signal = 'PASS';
+    reason = `Low confidence (${confidenceScore}%)`;
   } else {
-    signal = 'NEUTRAL';
-    reason = 'Insufficient data';
+    signal = 'BORDERLINE';
+    reason = `Confidence ${confidenceScore}%, Risk ${riskScore}%`;
   }
+  
+  // Determine pick (higher form team)
+  const pick: 'home' | 'away' = homeForm >= awayForm ? 'home' : 'away';
+  
+  // Volatility label
+  const volatility: 'Low' | 'Medium' | 'High' = 
+    riskScore <= 30 ? 'Low' : riskScore <= 55 ? 'Medium' : 'High';
   
   return {
     signal,
-    edge: Math.round(edge * 10) / 10,
-    confidence: Math.round(confidence),
-    modelProbability: Math.round(modelProbability * 10) / 10,
-    impliedProbability: Math.round(impliedProbability * 10) / 10,
+    confidenceScore: Math.round(confidenceScore),
+    riskScore: Math.round(riskScore),
     volatility,
-    injuryUncertainty,
+    injuryUncertainty: injuryData.level,
     reason,
+    whyGood: whyGood.length > 0 ? whyGood : undefined,
+    whyPass: whyPass.length > 0 ? whyPass : undefined,
     pick,
   };
 };
 
-// Sort games by bet signal priority
+/**
+ * VALUE ASSESSMENT - Only computed when odds are fetched on-demand
+ * Compares model probability to book's implied probability
+ */
+export const calculateValueAssessment = (
+  modelProbability: number,
+  bookOdds: number // American odds format
+): ValueAssessment => {
+  // Convert American odds to implied probability
+  let impliedProbability: number;
+  if (bookOdds > 0) {
+    impliedProbability = 100 / (bookOdds + 100) * 100;
+  } else {
+    impliedProbability = Math.abs(bookOdds) / (Math.abs(bookOdds) + 100) * 100;
+  }
+  
+  const edge = modelProbability - impliedProbability;
+  
+  let verdict: 'VALUE BET' | 'FAIR' | 'NO EDGE';
+  if (edge >= 3 && modelProbability >= 55) {
+    verdict = 'VALUE BET';
+  } else if (edge >= -3 && edge < 3) {
+    verdict = 'FAIR';
+  } else {
+    verdict = 'NO EDGE';
+  }
+  
+  return {
+    edge: Math.round(edge * 10) / 10,
+    impliedProbability: Math.round(impliedProbability * 10) / 10,
+    modelProbability: Math.round(modelProbability * 10) / 10,
+    verdict,
+  };
+};
+
+// Sort games by bet signal priority (GOOD first, then BORDERLINE, then PASS)
 export const sortGamesBySignal = (games: Game[], getQualification: (game: Game) => BetQualification): Game[] => {
   const signalPriority: Record<BetSignal, number> = {
     'GOOD': 0,
     'BORDERLINE': 1,
     'PASS': 2,
-    'NEUTRAL': 3,
   };
   
   return [...games].sort((a, b) => {
@@ -213,6 +305,6 @@ export const sortGamesBySignal = (games: Game[], getQualification: (game: Game) 
     if (priorityDiff !== 0) return priorityDiff;
     
     // Then by confidence within same signal
-    return qualB.confidence - qualA.confidence;
+    return qualB.confidenceScore - qualA.confidenceScore;
   });
 };

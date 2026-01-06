@@ -47,7 +47,6 @@ const GameDetail = () => {
   const betSignal = useMemo(() => {
     return calculateBetQualification({
       game: facts.game,
-      odds: facts.odds ?? undefined,
       injuries: facts.injuries,
       risk: facts.risk,
       homeLast5: facts.recentForm.homeLast5,
