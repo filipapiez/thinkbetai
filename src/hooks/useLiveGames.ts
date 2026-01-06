@@ -9,6 +9,9 @@ interface APIGame {
   commenceTime: string;
   homeTeam: string;
   awayTeam: string;
+  homeAbbr?: string;
+  awayAbbr?: string;
+  status?: string;
   bookmaker: string;
   odds: {
     moneyline: { home: number; away: number };
@@ -16,8 +19,6 @@ interface APIGame {
     total: { over: number; overOdds: number; under: number; underOdds: number };
   };
   hasOdds: boolean;
-  homeRecord?: string;
-  awayRecord?: string;
 }
 
 interface APIResponse {
@@ -41,86 +42,26 @@ const sportDisplayNames: Record<string, string> = {
   'boxing': 'Boxing',
 };
 
-// Parse record string like "22-15" to stats
-function parseRecord(record?: string): { wins: number; losses: number; winPct: number } | undefined {
-  if (!record) return undefined;
-  const match = record.match(/(\d+)-(\d+)/);
-  if (!match) return undefined;
-  const wins = parseInt(match[1]);
-  const losses = parseInt(match[2]);
-  const total = wins + losses;
-  return {
-    wins,
-    losses,
-    winPct: total > 0 ? wins / total : 0.5,
-  };
-}
-
-// Generate abbreviation from team name
-function generateAbbreviation(name: string): string {
-  // Common team abbreviations
-  const knownAbbrs: Record<string, string> = {
-    'los angeles lakers': 'LAL',
-    'boston celtics': 'BOS',
-    'golden state warriors': 'GSW',
-    'miami heat': 'MIA',
-    'new york knicks': 'NYK',
-    'chicago bulls': 'CHI',
-    'denver nuggets': 'DEN',
-    'phoenix suns': 'PHX',
-    'milwaukee bucks': 'MIL',
-    'cleveland cavaliers': 'CLE',
-    'oklahoma city thunder': 'OKC',
-    'dallas mavericks': 'DAL',
-    'houston rockets': 'HOU',
-    'memphis grizzlies': 'MEM',
-    'minnesota timberwolves': 'MIN',
-    'new orleans pelicans': 'NOP',
-    'san antonio spurs': 'SAS',
-    'sacramento kings': 'SAC',
-    'portland trail blazers': 'POR',
-    'utah jazz': 'UTA',
-    'orlando magic': 'ORL',
-    'atlanta hawks': 'ATL',
-    'charlotte hornets': 'CHA',
-    'detroit pistons': 'DET',
-    'indiana pacers': 'IND',
-    'toronto raptors': 'TOR',
-    'brooklyn nets': 'BKN',
-    'philadelphia 76ers': 'PHI',
-    'washington wizards': 'WAS',
-    'los angeles clippers': 'LAC',
-  };
-  
-  const lower = name.toLowerCase();
-  if (knownAbbrs[lower]) return knownAbbrs[lower];
-  
-  // Take first 3 letters of last word
-  const words = name.split(' ');
-  const lastWord = words[words.length - 1];
-  return lastWord.substring(0, 3).toUpperCase();
-}
-
 function transformGame(apiGame: APIGame): LiveGame {
-  const homeStats = parseRecord(apiGame.homeRecord);
-  const awayStats = parseRecord(apiGame.awayRecord);
-  
   const homeTeam: LiveTeam = {
     id: apiGame.homeTeam.toLowerCase().replace(/\s+/g, '-'),
     name: apiGame.homeTeam,
-    abbreviation: generateAbbreviation(apiGame.homeTeam),
-    stats: homeStats,
+    abbreviation: apiGame.homeAbbr || apiGame.homeTeam.substring(0, 3).toUpperCase(),
+    stats: undefined, // Stats would need separate API call
   };
   
   const awayTeam: LiveTeam = {
     id: apiGame.awayTeam.toLowerCase().replace(/\s+/g, '-'),
     name: apiGame.awayTeam,
-    abbreviation: generateAbbreviation(apiGame.awayTeam),
-    stats: awayStats,
+    abbreviation: apiGame.awayAbbr || apiGame.awayTeam.substring(0, 3).toUpperCase(),
+    stats: undefined,
   };
   
   const sportKey = apiGame.sportKey.toLowerCase();
   const sport = sportDisplayNames[sportKey] || apiGame.sportTitle || sportKey.toUpperCase();
+  
+  const status = apiGame.status === 'live' ? 'live' : 
+                 apiGame.status === 'final' ? 'final' : 'scheduled';
   
   return {
     id: apiGame.id,
@@ -129,15 +70,22 @@ function transformGame(apiGame: APIGame): LiveGame {
     homeTeam,
     awayTeam,
     startTime: apiGame.commenceTime,
-    venue: `${apiGame.homeTeam} Arena`,
-    status: 'scheduled',
+    venue: `${homeTeam.name} Arena`,
+    status,
     odds: apiGame.odds,
     hasOdds: apiGame.hasOdds,
   };
 }
 
-// Sports to fetch (in priority order)
-const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'mlb', 'ncaab'];
+// All sports to fetch - expanded list
+const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb', 'soccer', 'mma', 'tennis'];
+
+// Store for game lookup by ID
+let gamesCache: Map<string, LiveGame> = new Map();
+
+export function getGameById(gameId: string): LiveGame | undefined {
+  return gamesCache.get(gameId);
+}
 
 export function useLiveGames() {
   const [games, setGames] = useState<LiveGame[]>([]);
@@ -186,11 +134,17 @@ export function useLiveGames() {
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
       );
       
+      // Update cache for game lookup
+      gamesCache = new Map();
+      allGames.forEach(game => gamesCache.set(game.id, game));
+      
       setGames(allGames);
       setLastUpdated(new Date().toISOString());
 
       if (allGames.length === 0) {
         toast.info('No upcoming games found');
+      } else {
+        console.log(`Loaded ${allGames.length} games across ${SPORTS_TO_FETCH.length} sports`);
       }
 
     } catch (err) {
