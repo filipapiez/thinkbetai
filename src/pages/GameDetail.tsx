@@ -190,7 +190,15 @@ const GameDetail = () => {
 
           {/* Performance Chart - Full Width */}
           <div className="mt-6">
-            <PerformanceChart data={performanceHistory} />
+            <PerformanceChart 
+              data={performanceHistory} 
+              sport={game.sport}
+              gameId={game.id}
+              homeTeam={game.homeTeam.name}
+              awayTeam={game.awayTeam.name}
+              homeLast5={recentForm.homeLast5}
+              awayLast5={recentForm.awayLast5}
+            />
           </div>
 
           {/* AI Query Bar - Full Width */}
@@ -199,12 +207,12 @@ const GameDetail = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <span>Ask AI</span>
-                  <span className="text-xs font-normal text-muted-foreground ml-auto">Get insights about this matchup</span>
+                  <span>Ask AI about {game.sport}</span>
+                  <span className="text-xs font-normal text-muted-foreground ml-auto">{game.homeTeam.name} vs {game.awayTeam.name}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <AIQueryBar gameId={game.id} />
+                <AIQueryBar facts={facts} />
               </CardContent>
             </Card>
           </div>

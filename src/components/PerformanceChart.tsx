@@ -1,39 +1,142 @@
+import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts';
-import { TrendingUp, Target, Award } from 'lucide-react';
-import { platformStats, PerformanceData } from '@/lib/mockData';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart, BarChart, Bar, Cell } from 'recharts';
+import { TrendingUp, Target, Award, Activity } from 'lucide-react';
+import { PerformanceData, GameResult } from '@/lib/mockData';
 
 interface PerformanceChartProps {
   data: PerformanceData[];
-  title?: string;
+  sport: string;
+  gameId: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeLast5: GameResult[];
+  awayLast5: GameResult[];
 }
 
-export const PerformanceChart = ({ data, title = "Prediction Performance" }: PerformanceChartProps) => {
-  // Calculate accuracy from data
-  const accurateCount = data.filter(d => Math.abs(d.predicted - d.actual) < 10).length;
-  const accuracy = Math.round((accurateCount / data.length) * 100);
+// Sport-specific chart configurations
+const getChartConfig = (sport: string) => {
+  switch (sport) {
+    case 'Table Tennis':
+    case 'Tennis':
+      return {
+        chartType: 'form',
+        title: 'Recent Form Comparison',
+        description: 'Last 5 matches win/loss record for each player',
+        yAxisLabel: 'Matches',
+      };
+    case 'Soccer':
+      return {
+        chartType: 'goals',
+        title: 'Goals Performance',
+        description: 'Predicted vs actual goal outcomes',
+        yAxisLabel: 'Goals',
+      };
+    case 'NHL':
+      return {
+        chartType: 'goals',
+        title: 'Scoring Trend',
+        description: 'Predicted vs actual goal performance',
+        yAxisLabel: 'Goals',
+      };
+    default:
+      return {
+        chartType: 'probability',
+        title: 'Win Probability Trend',
+        description: 'Predicted vs actual outcomes over time',
+        yAxisLabel: 'Win %',
+      };
+  }
+};
+
+export const PerformanceChart = ({ 
+  data, 
+  sport, 
+  gameId, 
+  homeTeam, 
+  awayTeam,
+  homeLast5,
+  awayLast5 
+}: PerformanceChartProps) => {
+  const config = getChartConfig(sport);
+  
+  // Generate unique chart key for caching
+  const cacheKey = `${sport}_${gameId}`;
+  
+  // Calculate stats from actual game data
+  const stats = useMemo(() => {
+    const homeWins = homeLast5.filter(g => g.result === 'W').length;
+    const awayWins = awayLast5.filter(g => g.result === 'W').length;
+    const accurateCount = data.filter(d => Math.abs(d.predicted - d.actual) < 10).length;
+    const accuracy = data.length > 0 ? Math.round((accurateCount / data.length) * 100) : 0;
+    
+    return {
+      homeWins,
+      awayWins,
+      homeRecord: `${homeWins}-${5 - homeWins}`,
+      awayRecord: `${awayWins}-${5 - awayWins}`,
+      accuracy,
+      totalPredictions: data.length,
+    };
+  }, [data, homeLast5, awayLast5, cacheKey]);
+
+  // Form chart data for Tennis/Table Tennis
+  const formChartData = useMemo(() => {
+    if (config.chartType !== 'form') return [];
+    
+    return [
+      { name: homeTeam, wins: stats.homeWins, losses: 5 - stats.homeWins },
+      { name: awayTeam, wins: stats.awayWins, losses: 5 - stats.awayWins },
+    ];
+  }, [config.chartType, homeTeam, awayTeam, stats, cacheKey]);
+
+  // Match-by-match form data
+  const matchFormData = useMemo(() => {
+    const homeData = homeLast5.map((game, i) => ({
+      match: `M${i + 1}`,
+      [homeTeam]: game.result === 'W' ? 1 : 0,
+      homeScore: game.score,
+      opponent: game.opponent,
+    }));
+    
+    const awayData = awayLast5.map((game, i) => ({
+      match: `M${i + 1}`,
+      [awayTeam]: game.result === 'W' ? 1 : 0,
+      awayScore: game.score,
+      opponent: game.opponent,
+    }));
+    
+    return homeData.map((h, i) => ({
+      ...h,
+      [awayTeam]: awayData[i]?.[awayTeam] || 0,
+    }));
+  }, [homeLast5, awayLast5, homeTeam, awayTeam, cacheKey]);
 
   return (
-    <Card className="glass-card">
+    <Card className="glass-card" data-cache-key={cacheKey}>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              {title}
+              {config.chartType === 'form' ? (
+                <Activity className="h-5 w-5 text-primary" />
+              ) : (
+                <TrendingUp className="h-5 w-5 text-primary" />
+              )}
+              {config.title}
             </CardTitle>
             <CardDescription>
-              Predicted vs actual outcomes over time
+              {config.description} • <span className="text-primary font-medium">{sport}</span>
             </CardDescription>
           </div>
           <div className="flex gap-4">
             <div className="text-right">
-              <p className="text-2xl font-bold text-primary">{platformStats.winRate}%</p>
-              <p className="text-xs text-muted-foreground">Win Rate</p>
+              <p className="text-2xl font-bold text-primary">{stats.homeRecord}</p>
+              <p className="text-xs text-muted-foreground">{homeTeam}</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-emerald-400">{platformStats.streakCurrent}</p>
-              <p className="text-xs text-muted-foreground">Current Streak</p>
+              <p className="text-2xl font-bold text-emerald-400">{stats.awayRecord}</p>
+              <p className="text-xs text-muted-foreground">{awayTeam}</p>
             </div>
           </div>
         </div>
@@ -41,57 +144,86 @@ export const PerformanceChart = ({ data, title = "Prediction Performance" }: Per
       <CardContent>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="predictedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-              <XAxis 
-                dataKey="date" 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              />
-              <YAxis 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                domain={[40, 80]}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name === 'predicted' ? 'Predicted' : 'Actual']}
-              />
-              <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="predicted" 
-                stroke="hsl(var(--primary))" 
-                fill="url(#predictedGradient)"
-                strokeWidth={2}
-                name="Predicted Win %"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="actual" 
-                stroke="#10b981" 
-                fill="url(#actualGradient)"
-                strokeWidth={2}
-                name="Actual Result"
-              />
-            </AreaChart>
+            {config.chartType === 'form' ? (
+              <BarChart data={matchFormData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <XAxis 
+                  dataKey="match" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  domain={[0, 1]}
+                  ticks={[0, 1]}
+                  tickFormatter={(value) => value === 1 ? 'W' : 'L'}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: number, name: string) => [value === 1 ? 'Win' : 'Loss', name]}
+                />
+                <Legend />
+                <Bar dataKey={homeTeam} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey={awayTeam} fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            ) : (
+              <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id={`predictedGradient-${cacheKey}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id={`actualGradient-${cacheKey}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <XAxis 
+                  dataKey="date" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  domain={[40, 80]}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name === 'predicted' ? 'Predicted' : 'Actual']}
+                />
+                <Legend />
+                <Area 
+                  type="monotone" 
+                  dataKey="predicted" 
+                  stroke="hsl(var(--primary))" 
+                  fill={`url(#predictedGradient-${cacheKey})`}
+                  strokeWidth={2}
+                  name="Predicted Win %"
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="actual" 
+                  stroke="#10b981" 
+                  fill={`url(#actualGradient-${cacheKey})`}
+                  strokeWidth={2}
+                  name="Actual Result"
+                />
+              </AreaChart>
+            )}
           </ResponsiveContainer>
         </div>
 
@@ -100,23 +232,23 @@ export const PerformanceChart = ({ data, title = "Prediction Performance" }: Per
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Target className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Total Predictions</span>
+              <span className="text-sm text-muted-foreground">{homeTeam} Form</span>
             </div>
-            <p className="text-xl font-bold">{platformStats.totalPredictions.toLocaleString()}</p>
+            <p className="text-xl font-bold">{stats.homeWins}/5 Wins</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm text-muted-foreground">Correct</span>
+              <span className="text-sm text-muted-foreground">{awayTeam} Form</span>
             </div>
-            <p className="text-xl font-bold text-emerald-400">{platformStats.correctPredictions.toLocaleString()}</p>
+            <p className="text-xl font-bold text-emerald-400">{stats.awayWins}/5 Wins</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Award className="h-4 w-4 text-amber-400" />
-              <span className="text-sm text-muted-foreground">Best Streak</span>
+              <span className="text-sm text-muted-foreground">Prediction Accuracy</span>
             </div>
-            <p className="text-xl font-bold text-amber-400">{platformStats.streakBest}</p>
+            <p className="text-xl font-bold text-amber-400">{stats.accuracy}%</p>
           </div>
         </div>
       </CardContent>
