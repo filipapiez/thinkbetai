@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { MockDataBanner } from '@/components/MockDataBanner';
@@ -7,30 +7,47 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { mockGames, getGameFacts } from '@/lib/mockData';
-import { Search, Calendar, Filter, X, TrendingUp, Info } from 'lucide-react';
+import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock } from 'lucide-react';
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
-import { getSportsByPriority, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
+import { SPORT_CONFIGS, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
+
+type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d';
 
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSport, setSelectedSport] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedSport, setSelectedSport] = useState<string | null>(null); // null = All Sports
+  const [dateRange, setDateRange] = useState<DateRange>('next24h');
   const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Get sports from config, sorted by priority
-  const sportConfigs = useMemo(() => getSportsByPriority(), []);
-  const sports = useMemo(() => {
-    // Only include sports that have games
-    const gameSports = new Set(mockGames.map(g => g.sport));
-    return sportConfigs.filter(s => gameSports.has(s.id)).map(s => s.id);
-  }, [sportConfigs]);
-  
-  const dates = useMemo(() => {
-    const uniqueDates = [...new Set(mockGames.map(g => {
-      const date = new Date(g.startTime);
-      return date.toISOString().split('T')[0];
-    }))];
-    return uniqueDates.sort();
+  // All sports from config, sorted by priority (always show all)
+  const allSports = useMemo(() => {
+    return SPORT_CONFIGS.filter(s => s.active).sort((a, b) => a.priority - b.priority);
+  }, []);
+
+  // Get date range boundaries
+  const getDateBounds = useCallback((range: DateRange) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfterTomorrow = new Date(today);
+    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+    const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const next7d = new Date(today);
+    next7d.setDate(next7d.getDate() + 7);
+
+    switch (range) {
+      case 'today':
+        return { start: today, end: tomorrow };
+      case 'tomorrow':
+        return { start: tomorrow, end: dayAfterTomorrow };
+      case 'next24h':
+        return { start: now, end: next24h };
+      case 'next7d':
+        return { start: today, end: next7d };
+    }
   }, []);
 
   // Helper to get qualification for a game
@@ -60,8 +77,40 @@ const Games = () => {
     };
   }, []);
 
+  // Filter games by date range first
+  const gamesInDateRange = useMemo(() => {
+    const bounds = getDateBounds(dateRange);
+    return mockGames.filter(game => {
+      const gameDate = new Date(game.startTime);
+      return gameDate >= bounds.start && gameDate < bounds.end;
+    });
+  }, [dateRange, getDateBounds]);
+
+  // Count games per sport (within date range)
+  const sportCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allSports.forEach(sport => {
+      counts[sport.id] = gamesInDateRange.filter(g => g.sport === sport.id).length;
+    });
+    return counts;
+  }, [gamesInDateRange, allSports]);
+
+  // Calculate stats based on current filters (sport + date range)
+  const qualifiedStats = useMemo(() => {
+    const gamesForStats = selectedSport 
+      ? gamesInDateRange.filter(g => g.sport === selectedSport)
+      : gamesInDateRange;
+    
+    const qualifications = gamesForStats.map(g => getQualification(g));
+    const good = qualifications.filter(q => q.signal === 'GOOD').length;
+    const borderline = qualifications.filter(q => q.signal === 'BORDERLINE').length;
+    const pass = qualifications.filter(q => q.signal === 'PASS' || q.signal === 'NEUTRAL').length;
+    
+    return { good, borderline, pass, total: gamesForStats.length };
+  }, [gamesInDateRange, selectedSport, getQualification]);
+
   const filteredAndSortedGames = useMemo(() => {
-    const filtered = mockGames.filter(game => {
+    const filtered = gamesInDateRange.filter(game => {
       const matchesSearch = searchQuery === '' || 
         game.homeTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         game.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -69,57 +118,54 @@ const Games = () => {
         game.awayTeam.abbreviation.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSport = !selectedSport || game.sport === selectedSport;
-
-      const matchesDate = !selectedDate || 
-        new Date(game.startTime).toISOString().split('T')[0] === selectedDate;
-
       const matchesSignal = !selectedSignal || getQualification(game).signal === selectedSignal;
 
-      return matchesSearch && matchesSport && matchesDate && matchesSignal;
+      return matchesSearch && matchesSport && matchesSignal;
     });
 
     // Sort by bet signal priority (GOOD first, then BORDERLINE, then PASS/NEUTRAL)
     // Then by sport priority
-    const sorted = sortGamesBySignal(filtered, getQualification);
-    return sorted.sort((a, b) => {
+    return filtered.sort((a, b) => {
       const qualA = getQualification(a);
       const qualB = getQualification(b);
-      // First sort by signal priority
       const signalOrder = { 'GOOD': 0, 'BORDERLINE': 1, 'PASS': 2, 'NEUTRAL': 3 };
       const signalDiff = signalOrder[qualA.signal] - signalOrder[qualB.signal];
       if (signalDiff !== 0) return signalDiff;
-      // Then by sport priority
       return getSportPriority(a.sport) - getSportPriority(b.sport);
     });
-  }, [searchQuery, selectedSport, selectedDate, selectedSignal, getQualification]);
+  }, [gamesInDateRange, searchQuery, selectedSport, selectedSignal, getQualification]);
 
-  // Calculate stats for qualified picks
-  const qualifiedStats = useMemo(() => {
-    const all = mockGames.map(g => getQualification(g));
-    const good = all.filter(q => q.signal === 'GOOD').length;
-    const borderline = all.filter(q => q.signal === 'BORDERLINE').length;
-    const pass = all.filter(q => q.signal === 'PASS').length;
-    return { good, borderline, pass, total: mockGames.length };
-  }, [getQualification]);
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    // Simulate refresh delay
+    setTimeout(() => {
+      setLastUpdated(new Date());
+      setIsRefreshing(false);
+    }, 500);
+  }, []);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedSport(null);
-    setSelectedDate(null);
+    setDateRange('next24h');
     setSelectedSignal(null);
   };
 
-  const hasActiveFilters = searchQuery || selectedSport || selectedDate || selectedSignal;
+  const hasActiveFilters = searchQuery || selectedSport || selectedSignal || dateRange !== 'next24h';
 
-  const formatDateLabel = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateRangeOptions: { value: DateRange; label: string }[] = [
+    { value: 'today', label: 'Today' },
+    { value: 'tomorrow', label: 'Tomorrow' },
+    { value: 'next24h', label: 'Next 24h' },
+    { value: 'next7d', label: 'Next 7 days' },
+  ];
 
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const formatLastUpdated = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
   };
 
   return (
@@ -129,12 +175,29 @@ const Games = () => {
       
       <main className="flex-1 py-8">
         <div className="container">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Upcoming Games</h1>
-            <p className="text-muted-foreground">
-              Search and explore matchups. Games sorted by bet quality — GOOD bets shown first.
-            </p>
+          {/* Page Header with Refresh */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Upcoming Games</h1>
+              <p className="text-muted-foreground">
+                Search and explore matchups. Games sorted by bet quality — GOOD bets shown first.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>Updated at {formatLastUpdated(lastUpdated)}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {/* Qualified Picks Summary */}
@@ -143,7 +206,7 @@ const Games = () => {
               <TrendingUp className="h-5 w-5 text-primary" />
               <h2 className="font-semibold">Bet Signal Summary</h2>
               <span className="text-xs text-muted-foreground ml-auto">
-                Bet less, bet better
+                {selectedSport || 'All Sports'} • {dateRangeOptions.find(d => d.value === dateRange)?.label}
               </span>
             </div>
             <div className="grid grid-cols-4 gap-3 text-center">
@@ -175,7 +238,7 @@ const Games = () => {
             </div>
             <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
               <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-              <span>Only GOOD bets meet confidence & edge thresholds. PASS = insufficient edge or high uncertainty.</span>
+              <span>GOOD + BORDERLINE + PASS = TOTAL. Only GOOD bets meet confidence & edge thresholds.</span>
             </div>
           </div>
 
@@ -193,49 +256,65 @@ const Games = () => {
               />
             </div>
 
-            {/* Filter Pills */}
+            {/* Date Range Chips */}
+            <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2">
+                <Calendar className="h-4 w-4" />
+                <span>Date:</span>
+              </div>
+              {dateRangeOptions.map(option => (
+                <Badge
+                  key={option.value}
+                  variant={dateRange === option.value ? 'default' : 'outline'}
+                  className="cursor-pointer hover:bg-primary/20 transition-colors"
+                  onClick={() => setDateRange(option.value)}
+                >
+                  {option.label}
+                </Badge>
+              ))}
+            </div>
+
+            {/* Sport Filter - ALL sports, sorted by priority */}
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2">
                 <Filter className="h-4 w-4" />
-                <span>Filter:</span>
+                <span>Sport:</span>
               </div>
+              
+              {/* All Sports option */}
+              <Badge
+                variant={selectedSport === null ? 'default' : 'outline'}
+                className="cursor-pointer hover:bg-primary/20 transition-colors"
+                onClick={() => setSelectedSport(null)}
+              >
+                All Sports ({gamesInDateRange.length})
+              </Badge>
 
-              {/* Sport Filter - sorted by priority */}
-              {sports.map(sport => {
-                const config = getSportConfig(sport);
+              {allSports.map(sport => {
+                const count = sportCounts[sport.id] || 0;
+                const isDisabled = count === 0;
                 return (
                   <Badge
-                    key={sport}
-                    variant={selectedSport === sport ? 'default' : 'outline'}
-                    className="cursor-pointer hover:bg-primary/20 transition-colors"
-                    onClick={() => setSelectedSport(selectedSport === sport ? null : sport)}
-                    title={config ? `${config.coverage.description} • ${formatSurfacedRange(config)}` : sport}
+                    key={sport.id}
+                    variant={selectedSport === sport.id ? 'default' : 'outline'}
+                    className={`cursor-pointer transition-colors ${
+                      isDisabled 
+                        ? 'opacity-50 cursor-not-allowed hover:bg-transparent' 
+                        : 'hover:bg-primary/20'
+                    }`}
+                    onClick={() => !isDisabled && setSelectedSport(selectedSport === sport.id ? null : sport.id)}
+                    title={`${sport.coverage.description} • ${formatSurfacedRange(sport)}`}
                   >
-                    {sport}
+                    {sport.shortName} ({count})
                   </Badge>
                 );
               })}
 
-              <span className="text-border">|</span>
-
-              {/* Date Filter */}
-              {dates.map(date => (
-                <Badge
-                  key={date}
-                  variant={selectedDate === date ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
-                  onClick={() => setSelectedDate(selectedDate === date ? null : date)}
-                >
-                  <Calendar className="h-3 w-3 mr-1" />
-                  {formatDateLabel(date)}
-                </Badge>
-              ))}
-
               {/* Clear Filters */}
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2">
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2 ml-2">
                   <X className="h-3 w-3 mr-1" />
-                  Clear
+                  Clear all
                 </Button>
               )}
             </div>
@@ -249,7 +328,7 @@ const Games = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">No games found</h3>
               <p className="text-muted-foreground mb-4">
-                Try adjusting your search or filters.
+                Try adjusting your search or filters, or expand the date range.
               </p>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={clearFilters}>
@@ -270,7 +349,7 @@ const Games = () => {
           {/* Results Count */}
           {filteredAndSortedGames.length > 0 && (
             <p className="text-center text-sm text-muted-foreground mt-8">
-              Showing {filteredAndSortedGames.length} of {mockGames.length} games
+              Showing {filteredAndSortedGames.length} of {qualifiedStats.total} games
               {selectedSignal && ` (filtered by ${selectedSignal})`}
             </p>
           )}
