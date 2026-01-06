@@ -164,10 +164,68 @@ export const mockTeams: Team[] = [...nbaTeams, ...nflTeams, ...tennisPlayers, ..
 
 // IDs of games where odds are NOT yet available (Master Event Pool concept)
 // These games exist in the schedule but betting markets haven't opened
-const gamesWithoutOdds = new Set(['nba-7', 'nba-8', 'nfl-5', 'ten-6', 'ten-7', 'soc-5', 'soc-6', 'mlb-4', 'nhl-4', 'nhl-5']);
+const gamesWithoutOdds = new Set<string>([]);
 
 // IDs of games where odds are suspended (markets temporarily closed)
-const gamesWithSuspendedOdds = new Set(['tt-4', 'soc-4']);
+const gamesWithSuspendedOdds = new Set<string>([]);
+
+// Odds configurations to create varied bet signals (GOOD, BORDERLINE, PASS)
+// We create odds that work WITH team win percentages to generate edges
+type OddsProfile = 'good_home' | 'good_away' | 'borderline_home' | 'borderline_away' | 'pass' | 'pass_volatile';
+const gameOddsProfile: Record<string, OddsProfile> = {
+  // NBA - mix of signals
+  'nba-1': 'good_home',      // Lakers vs Celtics - good bet on Lakers at home
+  'nba-2': 'borderline_away', // Warriors vs Heat
+  'nba-3': 'good_away',      // 76ers vs Nuggets - good bet on Nuggets
+  'nba-4': 'borderline_home', // Celtics vs Lakers
+  'nba-5': 'pass',           // Nuggets vs Warriors
+  'nba-6': 'good_home',      // Heat vs 76ers
+  'nba-7': 'borderline_home',
+  'nba-8': 'good_away',
+  
+  // NFL - strong edges
+  'nfl-1': 'good_home',      // Chiefs vs Bills
+  'nfl-2': 'good_home',      // Lions vs Eagles
+  'nfl-3': 'borderline_away', // Bills vs Lions
+  'nfl-4': 'good_away',      // Eagles vs Chiefs
+  'nfl-5': 'borderline_home',
+  
+  // Tennis - varied
+  'ten-1': 'good_home',      // Djokovic vs Sinner
+  'ten-2': 'good_away',      // Alcaraz vs Medvedev
+  'ten-3': 'borderline_home', // Zverev vs Rublev
+  'ten-4': 'good_home',      // Sinner vs Alcaraz
+  'ten-5': 'borderline_away',
+  'ten-6': 'pass',
+  'ten-7': 'good_home',
+  
+  // Table Tennis
+  'tt-1': 'good_home',       // Wang vs Fan
+  'tt-2': 'borderline_home',  // Ma Long vs Moregard
+  'tt-3': 'good_away',       // Lebrun vs Calderano
+  'tt-4': 'borderline_away',
+  
+  // Soccer
+  'soc-1': 'good_home',      // Real Madrid vs Barcelona
+  'soc-2': 'borderline_home', // Man City vs Liverpool
+  'soc-3': 'good_away',      // Arsenal vs Bayern
+  'soc-4': 'pass_volatile',
+  'soc-5': 'borderline_away',
+  'soc-6': 'good_home',
+  
+  // MLB
+  'mlb-1': 'good_home',      // Dodgers vs Yankees
+  'mlb-2': 'borderline_away', // Braves vs Astros
+  'mlb-3': 'good_away',      // Yankees vs Dodgers
+  'mlb-4': 'borderline_home',
+  
+  // NHL
+  'nhl-1': 'good_home',      // Oilers vs Panthers
+  'nhl-2': 'good_home',      // Jets vs Golden Knights
+  'nhl-3': 'borderline_away', // Panthers vs Jets
+  'nhl-4': 'good_away',
+  'nhl-5': 'borderline_home',
+};
 
 // MASTER EVENT POOL - All scheduled games regardless of odds availability
 // Odds are layered ON TOP of games, they don't determine if a game exists
@@ -278,17 +336,93 @@ export const getGameFacts = (gameId: string): GameFacts | null => {
     ];
   };
 
+  // Get odds profile for this game to generate varied bet signals
+  const profile = gameOddsProfile[gameId] || 'pass';
+  
+  // Generate odds based on profile to create correct bet signals
+  // GOOD needs: edge >= 4% and confidence >= 70% (low implied prob vs model prob)
+  // BORDERLINE needs: edge >= 2% and < 4%
+  // PASS: edge < 2% or high volatility
+  const getOddsForProfile = (p: OddsProfile): OddsData => {
+    switch (p) {
+      case 'good_home':
+        // Home team undervalued by market - creates edge for home
+        return {
+          moneyline: { home: +120, away: -140 }, // Market thinks away favored
+          spread: { home: +2.5, away: -2.5, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 218.5 },
+          impliedProb: { homePct: 45.5, awayPct: 58.3 }, // Low home implied = edge opportunity
+          lineMovement: {
+            opening: { home: +130, away: -150 },
+            current: { home: +120, away: -140 },
+          },
+        };
+      case 'good_away':
+        // Away team undervalued
+        return {
+          moneyline: { home: -200, away: +170 }, // Market overvalues home
+          spread: { home: -5.5, away: +5.5, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 222.5 },
+          impliedProb: { homePct: 66.7, awayPct: 37.0 }, // Low away implied = edge
+          lineMovement: {
+            opening: { home: -180, away: +160 },
+            current: { home: -200, away: +170 },
+          },
+        };
+      case 'borderline_home':
+        // Small edge for home
+        return {
+          moneyline: { home: -105, away: -115 },
+          spread: { home: -1.5, away: +1.5, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 220.5 },
+          impliedProb: { homePct: 51.2, awayPct: 53.5 },
+          lineMovement: {
+            opening: { home: -110, away: -110 },
+            current: { home: -105, away: -115 },
+          },
+        };
+      case 'borderline_away':
+        // Small edge for away
+        return {
+          moneyline: { home: -150, away: +130 },
+          spread: { home: -3.5, away: +3.5, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 3.0 : 226.5 },
+          impliedProb: { homePct: 60.0, awayPct: 43.5 },
+          lineMovement: {
+            opening: { home: -145, away: +125 },
+            current: { home: -150, away: +130 },
+          },
+        };
+      case 'pass_volatile':
+        // High line movement = volatile
+        return {
+          moneyline: { home: -130, away: +110 },
+          spread: { home: -2.5, away: +2.5, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 224.5 },
+          impliedProb: { homePct: 56.5, awayPct: 47.6 },
+          lineMovement: {
+            opening: { home: -180, away: +160 }, // 50 cent move = High volatility
+            current: { home: -130, away: +110 },
+          },
+        };
+      case 'pass':
+      default:
+        // No edge - fair odds
+        return {
+          moneyline: { home: -145, away: +125 },
+          spread: { home: -3.0, away: +3.0, line: -110 },
+          total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 224.5 },
+          impliedProb: { homePct: 59.2, awayPct: 44.4 }, // Close to true probability
+          lineMovement: {
+            opening: { home: -142, away: +122 },
+            current: { home: -145, away: +125 },
+          },
+        };
+    }
+  };
+  
   // Only provide odds if they're available (Master Event Pool concept)
-  const odds: OddsData | null = oddsStatus === 'available' ? {
-    moneyline: { home: -145, away: +125 },
-    spread: { home: -3.5, away: +3.5, line: -110 },
-    total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 224.5 },
-    impliedProb: { homePct: 59.2, awayPct: 44.4 },
-    lineMovement: {
-      opening: { home: -130, away: +110 },
-      current: { home: -145, away: +125 },
-    },
-  } : null;
+  const odds: OddsData | null = oddsStatus === 'available' ? getOddsForProfile(profile) : null;
 
   return {
     game,
