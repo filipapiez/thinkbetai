@@ -11,6 +11,7 @@ import { Search, Calendar, Filter, X, TrendingUp, Info } from 'lucide-react';
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
 
 const Games = () => {
+  // Games page component
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
