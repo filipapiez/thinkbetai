@@ -72,13 +72,13 @@ const parseQuery = (query: string, facts: GameFacts): PropParsing => {
   return parsing;
 };
 
-// Get sport-specific accuracy stats
-const getSportAccuracy = (sport: string): { wins: number; total: number; winRate: number } => {
+// Get sport-specific QUALIFIED accuracy stats (GOOD bets only)
+const getQualifiedAccuracy = (sport: string): { wins: number; total: number; winRate: number } => {
   const sportData = platformStats.sportBreakdown.find(s => s.sport === sport);
   if (sportData) {
-    return { wins: sportData.wins, total: sportData.predictions, winRate: sportData.winRate };
+    return { wins: sportData.wins, total: sportData.qualified, winRate: sportData.winRate };
   }
-  return { wins: platformStats.correctPredictions, total: platformStats.totalPredictions, winRate: platformStats.winRate };
+  return { wins: platformStats.correctQualified, total: platformStats.totalQualified, winRate: platformStats.qualifiedWinRate };
 };
 
 // Generate AI response based on actual game facts following system rules
@@ -112,8 +112,8 @@ const generateAIResponse = (query: string, facts: GameFacts): AIResponse => {
     Math.abs(odds.lineMovement.current.home - odds.lineMovement.opening.home) : 0;
   const significantLineMove = lineMovement >= 10;
   
-  // Get sport-specific accuracy
-  const accuracy = getSportAccuracy(sport);
+  // Get sport-specific qualified accuracy
+  const accuracy = getQualifiedAccuracy(sport);
   
   // Build reasoning based on query type
   const reasoning: string[] = [];

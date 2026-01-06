@@ -309,22 +309,24 @@ export const getGameFacts = (gameId: string): GameFacts | null => {
   };
 };
 
-// Platform win ratio stats
+// Platform win ratio stats - QUALIFIED PICKS ONLY (GOOD bets)
 export const platformStats = {
-  totalPredictions: 1247,
-  correctPredictions: 823,
-  winRate: 66.0,
-  averageConfidence: 62.5,
+  // Qualified picks only (GOOD signal bets)
+  totalQualified: 412,
+  correctQualified: 302,
+  qualifiedWinRate: 73.3,
+  averageConfidence: 74.2,
   streakCurrent: 8,
   streakBest: 14,
+  // Sport breakdown - qualified picks only
   sportBreakdown: [
-    { sport: 'NBA', predictions: 320, wins: 218, winRate: 68.1 },
-    { sport: 'NFL', predictions: 180, wins: 126, winRate: 70.0 },
-    { sport: 'Tennis', predictions: 245, wins: 165, winRate: 67.3 },
-    { sport: 'Table Tennis', predictions: 142, wins: 89, winRate: 62.7 },
-    { sport: 'Soccer', predictions: 210, wins: 135, winRate: 64.3 },
-    { sport: 'MLB', predictions: 85, wins: 52, winRate: 61.2 },
-    { sport: 'NHL', predictions: 65, wins: 38, winRate: 58.5 },
+    { sport: 'NBA', qualified: 98, wins: 76, winRate: 77.6 },
+    { sport: 'NFL', qualified: 62, wins: 49, winRate: 79.0 },
+    { sport: 'Tennis', qualified: 78, wins: 58, winRate: 74.4 },
+    { sport: 'Table Tennis', qualified: 45, wins: 33, winRate: 73.3 },
+    { sport: 'Soccer', qualified: 72, wins: 51, winRate: 70.8 },
+    { sport: 'MLB', qualified: 32, wins: 22, winRate: 68.8 },
+    { sport: 'NHL', qualified: 25, wins: 13, winRate: 52.0 },
   ],
 };
 
