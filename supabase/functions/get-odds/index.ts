@@ -67,6 +67,15 @@ serve(async (req) => {
         );
       }
       
+      // Handle subscription tier limitations gracefully
+      if (response.status === 400 && errorText.includes('unavailable at your current subscription')) {
+        console.log(`League ${leagueId} not available in subscription - returning empty`);
+        return new Response(
+          JSON.stringify({ games: [], remainingRequests: null, lastUpdated: new Date().toISOString() }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: 'Failed to fetch odds data' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -77,8 +77,9 @@ function transformGame(apiGame: APIGame): LiveGame {
   };
 }
 
-// All sports to fetch - expanded list
-const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb', 'soccer', 'mma', 'tennis'];
+// Sports to fetch - limited to what the API subscription supports
+// UFC, ATP, EPL require higher tier subscriptions
+const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb'];
 
 // Store for game lookup by ID
 let gamesCache: Map<string, LiveGame> = new Map();
