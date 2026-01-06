@@ -96,7 +96,7 @@ const Games = () => {
   }, [gamesInDateRange, allSports]);
 
   // Calculate stats based on current filters (sport + date range)
-  // TOTAL = GOOD + BORDERLINE + PASS + NEUTRAL (Master Event Pool rule)
+  // TOTAL = GOOD + BORDERLINE + PASS (no NEUTRAL in UI)
   const qualifiedStats = useMemo(() => {
     const gamesForStats = selectedSport 
       ? gamesInDateRange.filter(g => g.sport === selectedSport)
@@ -105,10 +105,9 @@ const Games = () => {
     const qualifications = gamesForStats.map(g => getQualification(g));
     const good = qualifications.filter(q => q.signal === 'GOOD').length;
     const borderline = qualifications.filter(q => q.signal === 'BORDERLINE').length;
-    const pass = qualifications.filter(q => q.signal === 'PASS').length;
-    const neutral = qualifications.filter(q => q.signal === 'NEUTRAL').length;
+    const pass = qualifications.filter(q => q.signal === 'PASS' || q.signal === 'NEUTRAL').length;
     
-    return { good, borderline, pass, neutral, total: gamesForStats.length };
+    return { good, borderline, pass, total: gamesForStats.length };
   }, [gamesInDateRange, selectedSport, getQualification]);
 
   const filteredAndSortedGames = useMemo(() => {
@@ -211,7 +210,7 @@ const Games = () => {
                 {selectedSport || 'All Sports'} • {dateRangeOptions.find(d => d.value === dateRange)?.label}
               </span>
             </div>
-            <div className="grid grid-cols-5 gap-2 text-center">
+            <div className="grid grid-cols-4 gap-2 text-center">
               <button 
                 onClick={() => setSelectedSignal(selectedSignal === 'GOOD' ? null : 'GOOD')}
                 className={`p-3 rounded-lg transition-colors ${selectedSignal === 'GOOD' ? 'ring-2 ring-emerald-500' : ''} bg-emerald-500/10 hover:bg-emerald-500/20`}
@@ -233,13 +232,6 @@ const Games = () => {
                 <div className="text-2xl font-bold text-red-400">{qualifiedStats.pass}</div>
                 <div className="text-xs text-red-400/80">PASS</div>
               </button>
-              <button 
-                onClick={() => setSelectedSignal(selectedSignal === 'NEUTRAL' ? null : 'NEUTRAL')}
-                className={`p-3 rounded-lg transition-colors ${selectedSignal === 'NEUTRAL' ? 'ring-2 ring-slate-500' : ''} bg-slate-500/10 hover:bg-slate-500/20`}
-              >
-                <div className="text-2xl font-bold text-slate-400">{qualifiedStats.neutral}</div>
-                <div className="text-xs text-slate-400/80">NEUTRAL</div>
-              </button>
               <div className="p-3 rounded-lg bg-muted/30">
                 <div className="text-2xl font-bold text-muted-foreground">{qualifiedStats.total}</div>
                 <div className="text-xs text-muted-foreground">TOTAL</div>
@@ -247,7 +239,7 @@ const Games = () => {
             </div>
             <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
               <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-              <span>GOOD + BORDERLINE + PASS + NEUTRAL = TOTAL. NEUTRAL = odds not available or markets suspended.</span>
+              <span>GOOD + BORDERLINE + PASS = TOTAL. Only GOOD and BORDERLINE are recommended bets.</span>
             </div>
           </div>
 
