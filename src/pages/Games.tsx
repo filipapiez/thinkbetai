@@ -1,16 +1,17 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { MockDataBanner } from '@/components/MockDataBanner';
+import { LiveDataBanner } from '@/components/LiveDataBanner';
 import { GameCard } from '@/components/GameCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockGames, getGameFacts } from '@/lib/mockData';
-import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock } from 'lucide-react';
+import { mockGames, getGameFacts, Game } from '@/lib/mockData';
+import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock, Wifi } from 'lucide-react';
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
 import { SPORT_CONFIGS, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
 import { BettingChatBot } from '@/components/BettingChatBot';
+import { useOddsAPI, LiveGame } from '@/hooks/useOddsAPI';
 
 type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d' | 'nextMonth';
 
@@ -175,13 +176,40 @@ const Games = () => {
     });
   };
 
+  // Fetch live odds data
+  const { 
+    games: liveGames, 
+    isLoading: isLoadingOdds, 
+    error: oddsError, 
+    lastUpdated: oddsLastUpdated,
+    remainingRequests,
+    refetch: refetchOdds 
+  } = useOddsAPI(selectedSport || 'nba');
+
+  const hasLiveData = liveGames.length > 0 && !oddsError;
+
   return (
     <div className="min-h-screen flex flex-col">
-      <MockDataBanner />
+      <LiveDataBanner 
+        isLive={hasLiveData}
+        lastUpdated={oddsLastUpdated}
+        remainingRequests={remainingRequests}
+        isLoading={isLoadingOdds}
+        onRefresh={refetchOdds}
+        error={oddsError}
+      />
       <Header />
       
       <main className="flex-1 py-8">
         <div className="container">
+          {/* Live Data Indicator */}
+          {hasLiveData && (
+            <div className="mb-4 flex items-center gap-2 text-sm text-emerald-400">
+              <Wifi className="h-4 w-4" />
+              <span>Showing {liveGames.length} live games from The Odds API</span>
+            </div>
+          )}
+          
           {/* Page Header with Refresh */}
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>

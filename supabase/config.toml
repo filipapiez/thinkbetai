@@ -2,3 +2,6 @@ project_id = "fmrcmbdgmhoylmxbapdr"
 
 [functions.betting-chat]
 verify_jwt = false
+
+[functions.get-odds]
+verify_jwt = false
