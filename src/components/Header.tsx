@@ -23,8 +23,8 @@ export const Header = () => {
           <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Games
           </Link>
-          <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            How It Works
+          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Pricing
           </Link>
         </nav>
 
@@ -65,6 +65,14 @@ export const Header = () => {
             >
               <Search className="h-4 w-4" />
               Search Games
+            </Link>
+            <Link 
+              to="/pricing" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Pricing
             </Link>
             <Link 
               to="/account" 

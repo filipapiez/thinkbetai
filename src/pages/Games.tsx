@@ -14,7 +14,7 @@ const Games = () => {
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const sports = ['NBA', 'NFL', 'MLB', 'NHL'];
+  const sports = ['NBA', 'NFL', 'Tennis', 'Table Tennis', 'Soccer', 'MLB', 'NHL'];
   
   const dates = useMemo(() => {
     const uniqueDates = [...new Set(mockGames.map(g => {

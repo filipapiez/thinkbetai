@@ -8,6 +8,8 @@ import { RecentFormCard } from '@/components/RecentFormCard';
 import { RiskMeter } from '@/components/RiskMeter';
 import { AIExplanationCard } from '@/components/AIExplanationCard';
 import { AIQueryBar } from '@/components/AIQueryBar';
+import { PerformanceChart } from '@/components/PerformanceChart';
+import { TeamInfoCard } from '@/components/TeamInfoCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +38,7 @@ const GameDetail = () => {
     );
   }
 
-  const { game, odds, injuries, recentForm, headToHead, context, risk, lastUpdated } = facts;
+  const { game, odds, injuries, recentForm, headToHead, context, risk, lastUpdated, performanceHistory } = facts;
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -151,6 +153,12 @@ const GameDetail = () => {
             <DataTimestamp timestamp={lastUpdated} />
           </div>
 
+          {/* Team Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <TeamInfoCard team={game.homeTeam} isHome={true} />
+            <TeamInfoCard team={game.awayTeam} isHome={false} />
+          </div>
+
           {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column */}
@@ -178,6 +186,11 @@ const GameDetail = () => {
                 awayTeam={game.awayTeam.name}
               />
             </div>
+          </div>
+
+          {/* Performance Chart - Full Width */}
+          <div className="mt-6">
+            <PerformanceChart data={performanceHistory} />
           </div>
 
           {/* AI Query Bar - Full Width */}
