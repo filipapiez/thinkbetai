@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.get-odds]
 verify_jwt = false
+
+[functions.get-events]
+verify_jwt = false
+
+[functions.get-game-odds]
+verify_jwt = false
