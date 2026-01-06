@@ -2,31 +2,28 @@ import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LiveDataBanner } from '@/components/LiveDataBanner';
-import { GameCard } from '@/components/GameCard';
+import { LiveGameCard } from '@/components/LiveGameCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockGames, getGameFacts, Game } from '@/lib/mockData';
-import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock, Wifi } from 'lucide-react';
-import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
-import { SPORT_CONFIGS, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
+import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Wifi, Loader2 } from 'lucide-react';
+import { useLiveGames } from '@/hooks/useLiveGames';
+import { LiveGame, calculateLiveBetQualification } from '@/lib/liveTypes';
 import { BettingChatBot } from '@/components/BettingChatBot';
-import { useOddsAPI, LiveGame } from '@/hooks/useOddsAPI';
 
 type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d' | 'nextMonth';
+type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSport, setSelectedSport] = useState<string | null>(null); // null = All Sports
-  const [dateRange, setDateRange] = useState<DateRange>('next24h');
+  const [selectedSport, setSelectedSport] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>('next7d');
   const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // All sports from config, sorted by priority (always show all)
-  const allSports = useMemo(() => {
-    return SPORT_CONFIGS.filter(s => s.active).sort((a, b) => a.priority - b.priority);
-  }, []);
+  // Fetch live games from API
+  const { games, isLoading, error, lastUpdated, remainingRequests, refetch } = useLiveGames();
+
+  const hasLiveData = games.length > 0 && !error;
 
   // Get date range boundaries
   const getDateBounds = useCallback((range: DateRange) => {
@@ -56,63 +53,45 @@ const Games = () => {
     }
   }, []);
 
-  // Helper to get qualification for a game
-  const getQualification = useMemo(() => {
-    return (game: typeof mockGames[0]) => {
-      const facts = getGameFacts(game.id);
-      if (!facts) {
-        return {
-          signal: 'PASS' as BetSignal,
-          confidenceScore: 0,
-          riskScore: 50,
-          volatility: 'Medium' as const,
-          injuryUncertainty: 'Low' as const,
-          reason: 'Data unavailable',
-        };
-      }
-      return calculateBetQualification({
-        game: facts.game,
-        injuries: facts.injuries,
-        risk: facts.risk,
-        homeLast5: facts.recentForm.homeLast5,
-        awayLast5: facts.recentForm.awayLast5,
-      });
-    };
-  }, []);
+  // Get unique sports from live data
+  const availableSports = useMemo(() => {
+    const sports = new Set(games.map(g => g.sport));
+    return Array.from(sports).sort();
+  }, [games]);
 
-  // Filter games by date range first
+  // Filter games by date range
   const gamesInDateRange = useMemo(() => {
     const bounds = getDateBounds(dateRange);
-    return mockGames.filter(game => {
+    return games.filter(game => {
       const gameDate = new Date(game.startTime);
       return gameDate >= bounds.start && gameDate < bounds.end;
     });
-  }, [dateRange, getDateBounds]);
+  }, [games, dateRange, getDateBounds]);
 
-  // Count games per sport (within date range)
+  // Count games per sport
   const sportCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    allSports.forEach(sport => {
-      counts[sport.id] = gamesInDateRange.filter(g => g.sport === sport.id).length;
+    availableSports.forEach(sport => {
+      counts[sport] = gamesInDateRange.filter(g => g.sport === sport).length;
     });
     return counts;
-  }, [gamesInDateRange, allSports]);
+  }, [gamesInDateRange, availableSports]);
 
-  // Calculate stats based on current filters (sport + date range)
-  // TOTAL = GOOD + BORDERLINE + PASS (no NEUTRAL in UI)
+  // Calculate stats
   const qualifiedStats = useMemo(() => {
     const gamesForStats = selectedSport 
       ? gamesInDateRange.filter(g => g.sport === selectedSport)
       : gamesInDateRange;
     
-    const qualifications = gamesForStats.map(g => getQualification(g));
+    const qualifications = gamesForStats.map(g => calculateLiveBetQualification(g));
     const good = qualifications.filter(q => q.signal === 'GOOD').length;
     const borderline = qualifications.filter(q => q.signal === 'BORDERLINE').length;
     const pass = qualifications.filter(q => q.signal === 'PASS').length;
     
     return { good, borderline, pass, total: gamesForStats.length };
-  }, [gamesInDateRange, selectedSport, getQualification]);
+  }, [gamesInDateRange, selectedSport]);
 
+  // Filter and sort games
   const filteredAndSortedGames = useMemo(() => {
     const filtered = gamesInDateRange.filter(game => {
       const matchesSearch = searchQuery === '' || 
@@ -122,40 +101,30 @@ const Games = () => {
         game.awayTeam.abbreviation.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSport = !selectedSport || game.sport === selectedSport;
-      const matchesSignal = !selectedSignal || getQualification(game).signal === selectedSignal;
+      const matchesSignal = !selectedSignal || calculateLiveBetQualification(game).signal === selectedSignal;
 
       return matchesSearch && matchesSport && matchesSignal;
     });
 
-    // Sort by bet signal priority (GOOD first, then BORDERLINE, then PASS/NEUTRAL)
-    // Then by sport priority
+    // Sort by bet signal priority, then by start time
     return filtered.sort((a, b) => {
-      const qualA = getQualification(a);
-      const qualB = getQualification(b);
-      const signalOrder = { 'GOOD': 0, 'BORDERLINE': 1, 'PASS': 2, 'NEUTRAL': 3 };
+      const qualA = calculateLiveBetQualification(a);
+      const qualB = calculateLiveBetQualification(b);
+      const signalOrder = { 'GOOD': 0, 'BORDERLINE': 1, 'PASS': 2 };
       const signalDiff = signalOrder[qualA.signal] - signalOrder[qualB.signal];
       if (signalDiff !== 0) return signalDiff;
-      return getSportPriority(a.sport) - getSportPriority(b.sport);
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
-  }, [gamesInDateRange, searchQuery, selectedSport, selectedSignal, getQualification]);
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    // Simulate refresh delay
-    setTimeout(() => {
-      setLastUpdated(new Date());
-      setIsRefreshing(false);
-    }, 500);
-  }, []);
+  }, [gamesInDateRange, searchQuery, selectedSport, selectedSignal]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedSport(null);
-    setDateRange('next24h');
+    setDateRange('next7d');
     setSelectedSignal(null);
   };
 
-  const hasActiveFilters = searchQuery || selectedSport || selectedSignal || dateRange !== 'next24h';
+  const hasActiveFilters = searchQuery || selectedSport || selectedSignal || dateRange !== 'next7d';
 
   const dateRangeOptions: { value: DateRange; label: string }[] = [
     { value: 'today', label: 'Today' },
@@ -165,35 +134,24 @@ const Games = () => {
     { value: 'nextMonth', label: 'Next Month' },
   ];
 
-  const formatLastUpdated = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
+  const formatLastUpdated = (dateStr: string | null) => {
+    if (!dateStr) return 'Never';
+    return new Date(dateStr).toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
     });
   };
 
-  // Fetch live odds data
-  const { 
-    games: liveGames, 
-    isLoading: isLoadingOdds, 
-    error: oddsError, 
-    lastUpdated: oddsLastUpdated,
-    remainingRequests,
-    refetch: refetchOdds 
-  } = useOddsAPI(selectedSport || 'nba');
-
-  const hasLiveData = liveGames.length > 0 && !oddsError;
-
   return (
     <div className="min-h-screen flex flex-col">
       <LiveDataBanner 
         isLive={hasLiveData}
-        lastUpdated={oddsLastUpdated}
+        lastUpdated={lastUpdated}
         remainingRequests={remainingRequests}
-        isLoading={isLoadingOdds}
-        onRefresh={refetchOdds}
-        error={oddsError}
+        isLoading={isLoading}
+        onRefresh={refetch}
+        error={error}
       />
       <Header />
       
@@ -203,30 +161,29 @@ const Games = () => {
           {hasLiveData && (
             <div className="mb-4 flex items-center gap-2 text-sm text-emerald-400">
               <Wifi className="h-4 w-4" />
-              <span>Showing {liveGames.length} live games from The Odds API</span>
+              <span>Live data: {games.length} games from SportsGameOdds API</span>
             </div>
           )}
           
-          {/* Page Header with Refresh */}
+          {/* Page Header */}
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Upcoming Games</h1>
+              <h1 className="text-3xl font-bold mb-2">Live Games</h1>
               <p className="text-muted-foreground">
-                Search and explore matchups. Games sorted by bet quality — GOOD bets shown first.
+                Real-time odds and win rates. Games sorted by bet quality — GOOD bets shown first.
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>Updated at {formatLastUpdated(lastUpdated)}</span>
+                <span>Updated {formatLastUpdated(lastUpdated)}</span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handleRefresh}
-                disabled={isRefreshing}
+                onClick={refetch}
+                disabled={isLoading}
               >
-                <RefreshCw className={`h-4 w-4 mr-1.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
@@ -270,13 +227,12 @@ const Games = () => {
             </div>
             <div className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
               <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-              <span>GOOD + BORDERLINE + PASS = TOTAL. Only GOOD and BORDERLINE are recommended bets.</span>
+              <span>Based on real win rates and live odds. Only GOOD and BORDERLINE are recommended bets.</span>
             </div>
           </div>
 
           {/* Search & Filters */}
           <div className="space-y-4 mb-8">
-            {/* Search Input */}
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
@@ -306,14 +262,13 @@ const Games = () => {
               ))}
             </div>
 
-            {/* Sport Filter - ALL sports, sorted by priority */}
+            {/* Sport Filter */}
             <div className="flex flex-wrap gap-2">
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2">
                 <Filter className="h-4 w-4" />
                 <span>Sport:</span>
               </div>
               
-              {/* All Sports option */}
               <Badge
                 variant={selectedSport === null ? 'default' : 'outline'}
                 className="cursor-pointer hover:bg-primary/20 transition-colors"
@@ -322,27 +277,20 @@ const Games = () => {
                 All Sports ({gamesInDateRange.length})
               </Badge>
 
-              {allSports.map(sport => {
-                const count = sportCounts[sport.id] || 0;
-                const isDisabled = count === 0;
+              {availableSports.map(sport => {
+                const count = sportCounts[sport] || 0;
                 return (
                   <Badge
-                    key={sport.id}
-                    variant={selectedSport === sport.id ? 'default' : 'outline'}
-                    className={`cursor-pointer transition-colors ${
-                      isDisabled 
-                        ? 'opacity-50 cursor-not-allowed hover:bg-transparent' 
-                        : 'hover:bg-primary/20'
-                    }`}
-                    onClick={() => !isDisabled && setSelectedSport(selectedSport === sport.id ? null : sport.id)}
-                    title={`${sport.coverage.description} • ${formatSurfacedRange(sport)}`}
+                    key={sport}
+                    variant={selectedSport === sport ? 'default' : 'outline'}
+                    className="cursor-pointer hover:bg-primary/20 transition-colors"
+                    onClick={() => setSelectedSport(selectedSport === sport ? null : sport)}
                   >
-                    {sport.shortName} ({count})
+                    {sport} ({count})
                   </Badge>
                 );
               })}
 
-              {/* Clear Filters */}
               {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2 ml-2">
                   <X className="h-3 w-3 mr-1" />
@@ -352,15 +300,35 @@ const Games = () => {
             </div>
           </div>
 
+          {/* Loading State */}
+          {isLoading && games.length === 0 && (
+            <div className="text-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-muted-foreground">Loading live games...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && games.length === 0 && (
+            <div className="text-center py-16">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10 mb-4">
+                <X className="h-8 w-8 text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Failed to load games</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={refetch}>Try Again</Button>
+            </div>
+          )}
+
           {/* Results */}
-          {filteredAndSortedGames.length === 0 ? (
+          {!isLoading && !error && filteredAndSortedGames.length === 0 && (
             <div className="text-center py-16">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-semibold mb-2">No games found</h3>
               <p className="text-muted-foreground mb-4">
-                Try adjusting your search or filters, or expand the date range.
+                Try adjusting your filters or expand the date range.
               </p>
               {hasActiveFilters && (
                 <Button variant="outline" onClick={clearFilters}>
@@ -368,11 +336,13 @@ const Games = () => {
                 </Button>
               )}
             </div>
-          ) : (
+          )}
+
+          {filteredAndSortedGames.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAndSortedGames.map((game, index) => (
                 <div key={game.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                  <GameCard game={game} />
+                  <LiveGameCard game={game} />
                 </div>
               ))}
             </div>
@@ -389,8 +359,6 @@ const Games = () => {
       </main>
 
       <Footer />
-      
-      {/* AI Betting Chatbot - no game context for general questions */}
       <BettingChatBot />
     </div>
   );

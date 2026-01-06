@@ -21,7 +21,6 @@ const leagueIdMap: Record<string, string> = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -42,14 +41,11 @@ serve(async (req) => {
 
     console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
 
-    // Fetch events with odds from SportsGameOdds API
-    // Note: SportsGameOdds v2 is required for most API keys.
+    // Fetch events with odds from SportsGameOdds API v2
     const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${leagueId}&oddsAvailable=true&limit=50`;
     
     const response = await fetch(apiUrl, {
-      headers: {
-        'x-api-key': API_KEY,
-      },
+      headers: { 'x-api-key': API_KEY },
     });
     
     if (!response.ok) {
@@ -77,48 +73,44 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    // v2 returns a paginated payload with `data`; keep fallbacks for safety.
     const events = data?.data || data?.events || data?.items || [];
 
     console.log(`Received ${events.length} events from SportsGameOdds`);
 
-    // Transform the data to our format
+    // Helper functions for odds parsing
+    const getPrice = (o: any) =>
+      o?.closeFairOdds ?? o?.closeOdds ?? o?.fairOdds ?? o?.odds ?? 0;
+
+    const getLine = (o: any) =>
+      o?.line ?? o?.point ?? o?.closeFairSpread ?? o?.fairSpread ?? 
+      o?.closeFairOverUnder ?? o?.fairOverUnder ?? 0;
+
+    // Transform events to our format
     const transformedGames = events.map((event: any) => {
-      const homeTeam = event.teams?.home?.name || event.homeTeam || 'Home';
-      const awayTeam = event.teams?.away?.name || event.awayTeam || 'Away';
+      const homeTeamName = event.teams?.home?.name || event.homeTeam || 'Home';
+      const awayTeamName = event.teams?.away?.name || event.awayTeam || 'Away';
       
-      // Extract odds from the event
+      // Extract team records if available
+      const homeRecord = event.teams?.home?.record || 
+                         event.homeRecord || 
+                         event.teams?.home?.seasonRecord || null;
+      const awayRecord = event.teams?.away?.record || 
+                         event.awayRecord || 
+                         event.teams?.away?.seasonRecord || null;
+      
+      // Parse odds
       const odds = (event as any).odds ?? {};
-      let moneylineHome = 0;
-      let moneylineAway = 0;
-      let spreadHome = 0;
-      let spreadHomeOdds = -110;
-      let spreadAway = 0;
-      let spreadAwayOdds = -110;
-      let totalOver = 0;
-      let totalOverOdds = -110;
-      let totalUnder = 0;
-      let totalUnderOdds = -110;
-
-      const getPrice = (o: any) =>
-        o?.closeFairOdds ?? o?.closeOdds ?? o?.fairOdds ?? o?.odds ?? 0;
-
-      const getLine = (o: any) =>
-        o?.line ??
-        o?.point ??
-        o?.closeFairSpread ??
-        o?.fairSpread ??
-        o?.closeFairOverUnder ??
-        o?.fairOverUnder ??
-        0;
+      let moneylineHome = 0, moneylineAway = 0;
+      let spreadHome = 0, spreadHomeOdds = -110;
+      let spreadAway = 0, spreadAwayOdds = -110;
+      let totalOver = 0, totalOverOdds = -110;
+      let totalUnder = 0, totalUnderOdds = -110;
 
       const oddsEntries = odds && typeof odds === 'object' ? Object.entries(odds) : [];
 
-      // Parse odds object - SportsGameOdds uses oddID format (varies by API version)
       for (const [oddId, oddData] of oddsEntries) {
         const odd = oddData as any;
 
-        // Moneyline odds (h2h)
         if (oddId.includes('moneyline') || oddId.includes('h2h')) {
           if (oddId.includes('home')) {
             moneylineHome = getPrice(odd);
@@ -127,7 +119,6 @@ serve(async (req) => {
           }
         }
 
-        // Spread/handicap odds
         if (oddId.includes('spread') || oddId.includes('handicap')) {
           if (oddId.includes('home')) {
             spreadHome = getLine(odd);
@@ -138,7 +129,6 @@ serve(async (req) => {
           }
         }
 
-        // Total/over-under odds
         if (oddId.includes('total') || oddId.includes('over') || oddId.includes('under')) {
           if (oddId.includes('over')) {
             totalOver = getLine(odd);
@@ -155,26 +145,15 @@ serve(async (req) => {
         sportKey: leagueId.toLowerCase(),
         sportTitle: event.league || leagueId,
         commenceTime: event.startTime || event.startDate || new Date().toISOString(),
-        homeTeam,
-        awayTeam,
+        homeTeam: homeTeamName,
+        awayTeam: awayTeamName,
+        homeRecord,
+        awayRecord,
         bookmaker: 'Consensus',
         odds: {
-          moneyline: {
-            home: moneylineHome,
-            away: moneylineAway,
-          },
-          spread: {
-            home: spreadHome,
-            homeOdds: spreadHomeOdds,
-            away: spreadAway,
-            awayOdds: spreadAwayOdds,
-          },
-          total: {
-            over: totalOver,
-            overOdds: totalOverOdds,
-            under: totalUnder,
-            underOdds: totalUnderOdds,
-          },
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          spread: { home: spreadHome, homeOdds: spreadHomeOdds, away: spreadAway, awayOdds: spreadAwayOdds },
+          total: { over: totalOver, overOdds: totalOverOdds, under: totalUnder, underOdds: totalUnderOdds },
         },
         hasOdds: Object.keys(odds).length > 0,
       };
@@ -185,7 +164,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         games: transformedGames,
-        remainingRequests: null, // SportsGameOdds doesn't expose this in the same way
+        remainingRequests: null,
         lastUpdated: new Date().toISOString(),
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
