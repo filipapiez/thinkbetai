@@ -92,7 +92,8 @@ const calculateVolatility = (risk?: RiskAssessment, odds?: OddsData): 'Low' | 'M
 export const calculateBetQualification = (input: QualificationInput): BetQualification => {
   const { game, odds, injuries, risk, homeLast5, awayLast5 } = input;
   
-  // If no odds available, return NEUTRAL
+  // If no odds available, return NEUTRAL (Master Event Pool rule)
+  // Games exist in the pool regardless of odds availability
   if (!odds) {
     return {
       signal: 'NEUTRAL',
@@ -102,7 +103,7 @@ export const calculateBetQualification = (input: QualificationInput): BetQualifi
       impliedProbability: 50,
       volatility: 'Medium',
       injuryUncertainty: 'Low',
-      reason: 'Line not available',
+      reason: 'Odds not yet available',
     };
   }
   

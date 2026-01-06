@@ -81,7 +81,7 @@ export interface PerformanceData {
 
 export interface GameFacts {
   game: Game;
-  odds: OddsData;
+  odds: OddsData | null; // null = odds not available yet
   injuries: Injury[];
   recentForm: {
     homeLast5: GameResult[];
@@ -92,6 +92,7 @@ export interface GameFacts {
   risk: RiskAssessment;
   lastUpdated: string;
   performanceHistory: PerformanceData[];
+  oddsStatus: 'available' | 'pending' | 'suspended'; // Tracks why odds may be missing
 }
 
 // NBA Teams
@@ -161,51 +162,81 @@ export const nhlTeams: Team[] = [
 // Combine all teams for reference
 export const mockTeams: Team[] = [...nbaTeams, ...nflTeams, ...tennisPlayers, ...tableTennisPlayers, ...soccerTeams, ...mlbTeams, ...nhlTeams];
 
-// Generate 25+ games across all sports
+// IDs of games where odds are NOT yet available (Master Event Pool concept)
+// These games exist in the schedule but betting markets haven't opened
+const gamesWithoutOdds = new Set(['nba-7', 'nba-8', 'nfl-5', 'ten-6', 'ten-7', 'soc-5', 'soc-6', 'mlb-4', 'nhl-4', 'nhl-5']);
+
+// IDs of games where odds are suspended (markets temporarily closed)
+const gamesWithSuspendedOdds = new Set(['tt-4', 'soc-4']);
+
+// MASTER EVENT POOL - All scheduled games regardless of odds availability
+// Odds are layered ON TOP of games, they don't determine if a game exists
 export const mockGames: Game[] = [
-  // NBA Games (6)
+  // NBA Games (8) - 2 without odds yet
   { id: 'nba-1', sport: 'NBA', homeTeam: nbaTeams[0], awayTeam: nbaTeams[1], startTime: '2026-01-06T19:30:00Z', venue: 'Crypto.com Arena', status: 'scheduled' },
   { id: 'nba-2', sport: 'NBA', homeTeam: nbaTeams[2], awayTeam: nbaTeams[3], startTime: '2026-01-06T22:00:00Z', venue: 'Chase Center', status: 'scheduled' },
   { id: 'nba-3', sport: 'NBA', homeTeam: nbaTeams[4], awayTeam: nbaTeams[5], startTime: '2026-01-07T19:00:00Z', venue: 'Wells Fargo Center', status: 'scheduled' },
   { id: 'nba-4', sport: 'NBA', homeTeam: nbaTeams[1], awayTeam: nbaTeams[0], startTime: '2026-01-07T20:00:00Z', venue: 'TD Garden', status: 'scheduled' },
   { id: 'nba-5', sport: 'NBA', homeTeam: nbaTeams[5], awayTeam: nbaTeams[2], startTime: '2026-01-08T21:00:00Z', venue: 'Ball Arena', status: 'scheduled' },
   { id: 'nba-6', sport: 'NBA', homeTeam: nbaTeams[3], awayTeam: nbaTeams[4], startTime: '2026-01-08T19:30:00Z', venue: 'Kaseya Center', status: 'scheduled' },
+  { id: 'nba-7', sport: 'NBA', homeTeam: nbaTeams[0], awayTeam: nbaTeams[2], startTime: '2026-01-09T22:00:00Z', venue: 'Crypto.com Arena', status: 'scheduled' }, // No odds
+  { id: 'nba-8', sport: 'NBA', homeTeam: nbaTeams[4], awayTeam: nbaTeams[1], startTime: '2026-01-09T19:30:00Z', venue: 'Wells Fargo Center', status: 'scheduled' }, // No odds
   
-  // NFL Games (4)
+  // NFL Games (5) - 1 without odds yet
   { id: 'nfl-1', sport: 'NFL', homeTeam: nflTeams[0], awayTeam: nflTeams[1], startTime: '2026-01-06T20:15:00Z', venue: 'Arrowhead Stadium', status: 'scheduled' },
   { id: 'nfl-2', sport: 'NFL', homeTeam: nflTeams[2], awayTeam: nflTeams[3], startTime: '2026-01-07T13:00:00Z', venue: 'Ford Field', status: 'scheduled' },
   { id: 'nfl-3', sport: 'NFL', homeTeam: nflTeams[1], awayTeam: nflTeams[2], startTime: '2026-01-07T16:30:00Z', venue: 'Highmark Stadium', status: 'scheduled' },
   { id: 'nfl-4', sport: 'NFL', homeTeam: nflTeams[3], awayTeam: nflTeams[0], startTime: '2026-01-08T20:15:00Z', venue: 'Lincoln Financial Field', status: 'scheduled' },
+  { id: 'nfl-5', sport: 'NFL', homeTeam: nflTeams[0], awayTeam: nflTeams[2], startTime: '2026-01-12T13:00:00Z', venue: 'Arrowhead Stadium', status: 'scheduled' }, // No odds
   
-  // Tennis Matches (5)
+  // Tennis Matches (7) - 2 without odds yet
   { id: 'ten-1', sport: 'Tennis', homeTeam: tennisPlayers[0], awayTeam: tennisPlayers[1], startTime: '2026-01-06T10:00:00Z', venue: 'Australian Open - Rod Laver Arena', status: 'scheduled' },
   { id: 'ten-2', sport: 'Tennis', homeTeam: tennisPlayers[2], awayTeam: tennisPlayers[3], startTime: '2026-01-06T14:00:00Z', venue: 'Australian Open - Margaret Court Arena', status: 'scheduled' },
   { id: 'ten-3', sport: 'Tennis', homeTeam: tennisPlayers[4], awayTeam: tennisPlayers[5], startTime: '2026-01-07T10:00:00Z', venue: 'Australian Open - Rod Laver Arena', status: 'scheduled' },
   { id: 'ten-4', sport: 'Tennis', homeTeam: tennisPlayers[1], awayTeam: tennisPlayers[2], startTime: '2026-01-07T16:00:00Z', venue: 'Australian Open - Rod Laver Arena', status: 'scheduled' },
   { id: 'ten-5', sport: 'Tennis', homeTeam: tennisPlayers[0], awayTeam: tennisPlayers[4], startTime: '2026-01-08T14:00:00Z', venue: 'Australian Open - Rod Laver Arena', status: 'scheduled' },
+  { id: 'ten-6', sport: 'Tennis', homeTeam: tennisPlayers[3], awayTeam: tennisPlayers[5], startTime: '2026-01-09T10:00:00Z', venue: 'Australian Open - Margaret Court Arena', status: 'scheduled' }, // No odds
+  { id: 'ten-7', sport: 'Tennis', homeTeam: tennisPlayers[0], awayTeam: tennisPlayers[2], startTime: '2026-01-10T14:00:00Z', venue: 'Australian Open - Rod Laver Arena', status: 'scheduled' }, // No odds
   
-  // Table Tennis (4)
+  // Table Tennis (4) - 1 with suspended odds
   { id: 'tt-1', sport: 'Table Tennis', homeTeam: tableTennisPlayers[0], awayTeam: tableTennisPlayers[1], startTime: '2026-01-06T08:00:00Z', venue: 'WTT Singapore Smash', status: 'scheduled' },
   { id: 'tt-2', sport: 'Table Tennis', homeTeam: tableTennisPlayers[2], awayTeam: tableTennisPlayers[3], startTime: '2026-01-06T12:00:00Z', venue: 'WTT Singapore Smash', status: 'scheduled' },
   { id: 'tt-3', sport: 'Table Tennis', homeTeam: tableTennisPlayers[4], awayTeam: tableTennisPlayers[5], startTime: '2026-01-07T08:00:00Z', venue: 'WTT Singapore Smash', status: 'scheduled' },
-  { id: 'tt-4', sport: 'Table Tennis', homeTeam: tableTennisPlayers[0], awayTeam: tableTennisPlayers[4], startTime: '2026-01-08T10:00:00Z', venue: 'WTT Singapore Smash - Finals', status: 'scheduled' },
+  { id: 'tt-4', sport: 'Table Tennis', homeTeam: tableTennisPlayers[0], awayTeam: tableTennisPlayers[4], startTime: '2026-01-08T10:00:00Z', venue: 'WTT Singapore Smash - Finals', status: 'scheduled' }, // Odds suspended
   
-  // Soccer (4)
+  // Soccer (6) - 2 without/suspended odds
   { id: 'soc-1', sport: 'Soccer', homeTeam: soccerTeams[0], awayTeam: soccerTeams[1], startTime: '2026-01-06T20:00:00Z', venue: 'Santiago Bernabéu', status: 'scheduled' },
   { id: 'soc-2', sport: 'Soccer', homeTeam: soccerTeams[2], awayTeam: soccerTeams[3], startTime: '2026-01-07T17:30:00Z', venue: 'Etihad Stadium', status: 'scheduled' },
   { id: 'soc-3', sport: 'Soccer', homeTeam: soccerTeams[4], awayTeam: soccerTeams[5], startTime: '2026-01-07T20:00:00Z', venue: 'Emirates Stadium', status: 'scheduled' },
-  { id: 'soc-4', sport: 'Soccer', homeTeam: soccerTeams[3], awayTeam: soccerTeams[0], startTime: '2026-01-08T15:00:00Z', venue: 'Anfield', status: 'scheduled' },
+  { id: 'soc-4', sport: 'Soccer', homeTeam: soccerTeams[3], awayTeam: soccerTeams[0], startTime: '2026-01-08T15:00:00Z', venue: 'Anfield', status: 'scheduled' }, // Odds suspended
+  { id: 'soc-5', sport: 'Soccer', homeTeam: soccerTeams[1], awayTeam: soccerTeams[4], startTime: '2026-01-09T20:00:00Z', venue: 'Camp Nou', status: 'scheduled' }, // No odds
+  { id: 'soc-6', sport: 'Soccer', homeTeam: soccerTeams[5], awayTeam: soccerTeams[2], startTime: '2026-01-10T17:30:00Z', venue: 'Allianz Arena', status: 'scheduled' }, // No odds
   
-  // MLB (3)
+  // MLB (4) - 1 without odds
   { id: 'mlb-1', sport: 'MLB', homeTeam: mlbTeams[0], awayTeam: mlbTeams[1], startTime: '2026-01-06T22:10:00Z', venue: 'Dodger Stadium', status: 'scheduled' },
   { id: 'mlb-2', sport: 'MLB', homeTeam: mlbTeams[2], awayTeam: mlbTeams[3], startTime: '2026-01-07T19:20:00Z', venue: 'Truist Park', status: 'scheduled' },
   { id: 'mlb-3', sport: 'MLB', homeTeam: mlbTeams[1], awayTeam: mlbTeams[0], startTime: '2026-01-08T19:05:00Z', venue: 'Yankee Stadium', status: 'scheduled' },
+  { id: 'mlb-4', sport: 'MLB', homeTeam: mlbTeams[0], awayTeam: mlbTeams[2], startTime: '2026-01-09T22:10:00Z', venue: 'Dodger Stadium', status: 'scheduled' }, // No odds
   
-  // NHL (3)
+  // NHL (5) - 2 without odds
   { id: 'nhl-1', sport: 'NHL', homeTeam: nhlTeams[0], awayTeam: nhlTeams[1], startTime: '2026-01-06T21:00:00Z', venue: 'Rogers Place', status: 'scheduled' },
   { id: 'nhl-2', sport: 'NHL', homeTeam: nhlTeams[2], awayTeam: nhlTeams[3], startTime: '2026-01-07T20:00:00Z', venue: 'Canada Life Centre', status: 'scheduled' },
   { id: 'nhl-3', sport: 'NHL', homeTeam: nhlTeams[1], awayTeam: nhlTeams[2], startTime: '2026-01-08T19:00:00Z', venue: 'Amerant Bank Arena', status: 'scheduled' },
+  { id: 'nhl-4', sport: 'NHL', homeTeam: nhlTeams[3], awayTeam: nhlTeams[0], startTime: '2026-01-09T21:00:00Z', venue: 'T-Mobile Arena', status: 'scheduled' }, // No odds
+  { id: 'nhl-5', sport: 'NHL', homeTeam: nhlTeams[0], awayTeam: nhlTeams[3], startTime: '2026-01-10T20:00:00Z', venue: 'Rogers Place', status: 'scheduled' }, // No odds
 ];
+
+// Helper to check if game has odds available
+export const hasOddsAvailable = (gameId: string): boolean => {
+  return !gamesWithoutOdds.has(gameId) && !gamesWithSuspendedOdds.has(gameId);
+};
+
+// Get odds status for a game
+export const getOddsStatus = (gameId: string): 'available' | 'pending' | 'suspended' => {
+  if (gamesWithSuspendedOdds.has(gameId)) return 'suspended';
+  if (gamesWithoutOdds.has(gameId)) return 'pending';
+  return 'available';
+};
 
 // Performance history for charts
 const generatePerformanceHistory = (): PerformanceData[] => {
@@ -232,6 +263,7 @@ export const getGameFacts = (gameId: string): GameFacts | null => {
 
   const sport = game.sport;
   const isHighProfile = game.homeTeam.stats?.ranking && game.homeTeam.stats.ranking <= 3;
+  const oddsStatus = getOddsStatus(gameId);
   
   // Generate sport-appropriate injuries
   const generateInjuries = (): Injury[] => {
@@ -246,18 +278,22 @@ export const getGameFacts = (gameId: string): GameFacts | null => {
     ];
   };
 
+  // Only provide odds if they're available (Master Event Pool concept)
+  const odds: OddsData | null = oddsStatus === 'available' ? {
+    moneyline: { home: -145, away: +125 },
+    spread: { home: -3.5, away: +3.5, line: -110 },
+    total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 224.5 },
+    impliedProb: { homePct: 59.2, awayPct: 44.4 },
+    lineMovement: {
+      opening: { home: -130, away: +110 },
+      current: { home: -145, away: +125 },
+    },
+  } : null;
+
   return {
     game,
-    odds: {
-      moneyline: { home: -145, away: +125 },
-      spread: { home: -3.5, away: +3.5, line: -110 },
-      total: { over: -110, under: -110, line: sport === 'Soccer' ? 2.5 : 224.5 },
-      impliedProb: { homePct: 59.2, awayPct: 44.4 },
-      lineMovement: {
-        opening: { home: -130, away: +110 },
-        current: { home: -145, away: +125 },
-      },
-    },
+    odds,
+    oddsStatus,
     injuries: generateInjuries(),
     recentForm: {
       homeLast5: [
