@@ -111,12 +111,33 @@ export const calculateBetQualification = (input: QualificationInput): BetQualifi
   const modelProb = calculateModelProbability({ game, odds, injuries, risk, homeLast5, awayLast5 });
   const impliedProb = odds.impliedProb;
   
-  // Determine which side has edge
+  // Determine which side has positive edge (model > implied = value)
   const homeEdge = modelProb.homePct - impliedProb.homePct;
   const awayEdge = modelProb.awayPct - impliedProb.awayPct;
   
-  const pick: 'home' | 'away' = Math.abs(homeEdge) >= Math.abs(awayEdge) ? 'home' : 'away';
-  const edge = pick === 'home' ? homeEdge : awayEdge;
+  // Pick the side with the better positive edge
+  // If both negative, pick the less negative (closer to fair value)
+  let pick: 'home' | 'away';
+  let edge: number;
+  
+  if (homeEdge >= 0 && awayEdge >= 0) {
+    // Both have positive edge (rare) - pick larger
+    pick = homeEdge >= awayEdge ? 'home' : 'away';
+    edge = pick === 'home' ? homeEdge : awayEdge;
+  } else if (homeEdge >= 0) {
+    // Only home has positive edge
+    pick = 'home';
+    edge = homeEdge;
+  } else if (awayEdge >= 0) {
+    // Only away has positive edge
+    pick = 'away';
+    edge = awayEdge;
+  } else {
+    // Both negative - no real edge, pick less negative
+    pick = homeEdge >= awayEdge ? 'home' : 'away';
+    edge = pick === 'home' ? homeEdge : awayEdge;
+  }
+  
   const modelProbability = pick === 'home' ? modelProb.homePct : modelProb.awayPct;
   const impliedProbability = pick === 'home' ? impliedProb.homePct : impliedProb.awayPct;
   
