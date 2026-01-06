@@ -6,11 +6,120 @@ import { LiveDataBanner } from '@/components/LiveDataBanner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Calendar, MapPin, Clock, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, Calendar, MapPin, Clock, TrendingUp, TrendingDown, Minus, Loader2, AlertTriangle, Shield, Activity, Target, Zap, Info } from 'lucide-react';
 import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@/lib/liveTypes';
 import { getGameById } from '@/hooks/useLiveGames';
 import { BettingChatBot } from '@/components/BettingChatBot';
 import { cn } from '@/lib/utils';
+
+// Risk assessment based on odds analysis
+interface RiskAnalysis {
+  level: 'Low' | 'Medium' | 'High';
+  score: number;
+  factors: string[];
+}
+
+function analyzeRisk(game: LiveGame): RiskAnalysis {
+  const factors: string[] = [];
+  let score = 30;
+  
+  const homeML = game.odds.moneyline.home;
+  const awayML = game.odds.moneyline.away;
+  const spread = Math.abs(game.odds.spread.home);
+  
+  // Heavy favorite risk
+  if (homeML < -250 || awayML < -250) {
+    score += 20;
+    factors.push('Heavy favorite - low payout potential');
+  }
+  
+  // Close spread = unpredictable
+  if (spread > 0 && spread <= 2.5) {
+    score += 15;
+    factors.push('Very close spread - coin flip territory');
+  }
+  
+  // Live game volatility
+  if (game.status === 'live') {
+    score += 25;
+    factors.push('Live betting - high volatility');
+  }
+  
+  // No meaningful odds
+  if (!game.hasOdds || (homeML === 0 && awayML === 0)) {
+    score += 20;
+    factors.push('Limited odds data available');
+  }
+  
+  // Large spread = blowout potential
+  if (spread >= 10) {
+    score += 10;
+    factors.push('Large spread - blowout risk');
+  }
+  
+  if (factors.length === 0) {
+    factors.push('Standard risk profile');
+  }
+  
+  score = Math.min(100, Math.max(0, score));
+  const level = score <= 40 ? 'Low' : score <= 65 ? 'Medium' : 'High';
+  
+  return { level, score, factors };
+}
+
+// Value analysis based on implied probabilities
+interface ValueAnalysis {
+  homeValue: number;
+  awayValue: number;
+  recommendation: string;
+  confidence: number;
+}
+
+function analyzeValue(game: LiveGame): ValueAnalysis {
+  const homeML = game.odds.moneyline.home;
+  const awayML = game.odds.moneyline.away;
+  
+  if (homeML === 0 || awayML === 0) {
+    return {
+      homeValue: 0,
+      awayValue: 0,
+      recommendation: 'Insufficient odds data for value analysis',
+      confidence: 0,
+    };
+  }
+  
+  // Convert to implied probability
+  const homeImplied = homeML > 0 
+    ? 100 / (homeML + 100) 
+    : Math.abs(homeML) / (Math.abs(homeML) + 100);
+  const awayImplied = awayML > 0 
+    ? 100 / (awayML + 100) 
+    : Math.abs(awayML) / (Math.abs(awayML) + 100);
+  
+  // Value = 1 - implied (lower implied = more value)
+  const homeValue = Math.round((1 - homeImplied) * 100);
+  const awayValue = Math.round((1 - awayImplied) * 100);
+  
+  let recommendation = '';
+  let confidence = 50;
+  
+  const diff = Math.abs(homeImplied - awayImplied);
+  
+  if (diff >= 0.25) {
+    const underdog = homeImplied < awayImplied ? 'home' : 'away';
+    recommendation = `Clear underdog value on ${underdog === 'home' ? game.homeTeam.name : game.awayTeam.name}`;
+    confidence = 75;
+  } else if (diff >= 0.10) {
+    recommendation = 'Moderate edge available - proceed with caution';
+    confidence = 60;
+  } else {
+    recommendation = 'Close matchup - consider spread or total bets instead';
+    confidence = 45;
+  }
+  
+  return { homeValue, awayValue, recommendation, confidence };
+}
 
 const GameDetail = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -19,35 +128,29 @@ const GameDetail = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Try to get game from cache first
     const cachedGame = getGameById(gameId || '');
     if (cachedGame) {
       setGame(cachedGame);
       setIsLoading(false);
       return;
     }
-
-    // If not in cache, try fetching from API
-    const fetchGame = async () => {
-      setIsLoading(true);
-      try {
-        // For now, just show not found if not in cache
-        // In a full implementation, we'd fetch the specific event
-        setError('Game not in cache - please go back to Games and click again');
-        setGame(null);
-      } catch (err) {
-        setError('Failed to load game');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGame();
+    setError('Game not in cache - please go back to Games and click again');
+    setIsLoading(false);
   }, [gameId]);
 
   const qualification = useMemo(() => {
     if (!game) return null;
     return calculateLiveBetQualification(game);
+  }, [game]);
+
+  const risk = useMemo(() => {
+    if (!game) return null;
+    return analyzeRisk(game);
+  }, [game]);
+
+  const value = useMemo(() => {
+    if (!game) return null;
+    return analyzeValue(game);
   }, [game]);
 
   if (isLoading) {
@@ -210,7 +313,10 @@ const GameDetail = () => {
             {/* Moneyline */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Moneyline</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Moneyline
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
@@ -240,7 +346,10 @@ const GameDetail = () => {
             {/* Spread */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Spread</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
+                  Spread
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
@@ -270,7 +379,10 @@ const GameDetail = () => {
             {/* Total */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Total (O/U)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Total (O/U)
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center">
@@ -298,14 +410,97 @@ const GameDetail = () => {
             </Card>
           </div>
 
-          {/* Analysis Card */}
+          {/* Analysis Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Risk Assessment */}
+            {risk && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className={cn(
+                      "h-5 w-5",
+                      risk.level === 'Low' ? 'text-emerald-400' :
+                      risk.level === 'Medium' ? 'text-amber-400' : 'text-red-400'
+                    )} />
+                    Risk Assessment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Risk Level: {risk.level}</span>
+                      <span className="text-sm text-muted-foreground">{risk.score}/100</span>
+                    </div>
+                    <Progress 
+                      value={risk.score} 
+                      className={cn(
+                        "h-3",
+                        risk.level === 'Low' ? '[&>div]:bg-emerald-500' :
+                        risk.level === 'Medium' ? '[&>div]:bg-amber-500' : '[&>div]:bg-red-500'
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {risk.factors.map((factor, i) => (
+                      <div key={i} className="flex items-start gap-2 text-sm">
+                        <AlertTriangle className={cn(
+                          "h-4 w-4 mt-0.5 shrink-0",
+                          risk.level === 'Low' ? 'text-emerald-400' :
+                          risk.level === 'Medium' ? 'text-amber-400' : 'text-red-400'
+                        )} />
+                        <span className="text-muted-foreground">{factor}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Value Analysis */}
+            {value && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Value Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="text-center p-3 rounded-lg bg-muted/30">
+                      <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation} Value</div>
+                      <div className="text-2xl font-bold">{value.homeValue}%</div>
+                    </div>
+                    <div className="text-center p-3 rounded-lg bg-muted/30">
+                      <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation} Value</div>
+                      <div className="text-2xl font-bold">{value.awayValue}%</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                    <Info className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                    <div>
+                      <p className="text-sm font-medium">{value.recommendation}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Confidence: {value.confidence}%
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* AI Summary Card */}
           {qualification && (
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>AI Bet Analysis</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  AI Bet Analysis Summary
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center p-4 rounded-lg bg-muted/30">
                     <div className="text-sm text-muted-foreground mb-1">Signal</div>
                     <div className={cn(
@@ -325,18 +520,32 @@ const GameDetail = () => {
                     <div className="text-xl font-bold">{qualification.volatility}</div>
                   </div>
                   <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground mb-1">Pick</div>
+                    <div className="text-sm text-muted-foreground mb-1">Recommended Pick</div>
                     <div className="text-xl font-bold">
                       {qualification.pick === 'home' ? game.homeTeam.abbreviation : game.awayTeam.abbreviation}
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4 text-center">
+                <p className="text-sm text-muted-foreground text-center p-3 bg-muted/20 rounded-lg">
                   {qualification.reason}
                 </p>
               </CardContent>
             </Card>
           )}
+
+          {/* Disclaimer */}
+          <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-400">Disclaimer</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This analysis is for informational purposes only. Sports betting involves risk. 
+                  Past performance does not guarantee future results. Please bet responsibly.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
