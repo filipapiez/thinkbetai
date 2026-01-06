@@ -43,7 +43,8 @@ serve(async (req) => {
     console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
 
     // Fetch events with odds from SportsGameOdds API
-    const apiUrl = `https://api.sportsgameodds.com/v1/events?leagueID=${leagueId}&marketOddsAvailable=true&limit=50`;
+    // Note: SportsGameOdds v2 is required for most API keys.
+    const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${leagueId}&oddsAvailable=true&limit=50`;
     
     const response = await fetch(apiUrl, {
       headers: {
@@ -76,8 +77,9 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const events = data.events || [];
-    
+    // v2 returns a paginated payload with `data`; keep fallbacks for safety.
+    const events = data?.data || data?.events || data?.items || [];
+
     console.log(`Received ${events.length} events from SportsGameOdds`);
 
     // Transform the data to our format
@@ -86,7 +88,7 @@ serve(async (req) => {
       const awayTeam = event.teams?.away?.name || event.awayTeam || 'Away';
       
       // Extract odds from the event
-      const odds = event.odds || {};
+      const odds = (event as any).odds ?? {};
       let moneylineHome = 0;
       let moneylineAway = 0;
       let spreadHome = 0;
@@ -98,38 +100,52 @@ serve(async (req) => {
       let totalUnder = 0;
       let totalUnderOdds = -110;
 
-      // Parse odds object - SportsGameOdds uses oddID format
-      for (const [oddId, oddData] of Object.entries(odds)) {
+      const getPrice = (o: any) =>
+        o?.closeFairOdds ?? o?.closeOdds ?? o?.fairOdds ?? o?.odds ?? 0;
+
+      const getLine = (o: any) =>
+        o?.line ??
+        o?.point ??
+        o?.closeFairSpread ??
+        o?.fairSpread ??
+        o?.closeFairOverUnder ??
+        o?.fairOverUnder ??
+        0;
+
+      const oddsEntries = odds && typeof odds === 'object' ? Object.entries(odds) : [];
+
+      // Parse odds object - SportsGameOdds uses oddID format (varies by API version)
+      for (const [oddId, oddData] of oddsEntries) {
         const odd = oddData as any;
-        
+
         // Moneyline odds (h2h)
         if (oddId.includes('moneyline') || oddId.includes('h2h')) {
           if (oddId.includes('home')) {
-            moneylineHome = odd.closeOdds || odd.odds || 0;
+            moneylineHome = getPrice(odd);
           } else if (oddId.includes('away')) {
-            moneylineAway = odd.closeOdds || odd.odds || 0;
+            moneylineAway = getPrice(odd);
           }
         }
-        
+
         // Spread/handicap odds
         if (oddId.includes('spread') || oddId.includes('handicap')) {
           if (oddId.includes('home')) {
-            spreadHome = odd.line || odd.point || 0;
-            spreadHomeOdds = odd.closeOdds || odd.odds || -110;
+            spreadHome = getLine(odd);
+            spreadHomeOdds = getPrice(odd) || -110;
           } else if (oddId.includes('away')) {
-            spreadAway = odd.line || odd.point || 0;
-            spreadAwayOdds = odd.closeOdds || odd.odds || -110;
+            spreadAway = getLine(odd);
+            spreadAwayOdds = getPrice(odd) || -110;
           }
         }
-        
+
         // Total/over-under odds
         if (oddId.includes('total') || oddId.includes('over') || oddId.includes('under')) {
           if (oddId.includes('over')) {
-            totalOver = odd.line || odd.point || 0;
-            totalOverOdds = odd.closeOdds || odd.odds || -110;
+            totalOver = getLine(odd);
+            totalOverOdds = getPrice(odd) || -110;
           } else if (oddId.includes('under')) {
-            totalUnder = odd.line || odd.point || 0;
-            totalUnderOdds = odd.closeOdds || odd.odds || -110;
+            totalUnder = getLine(odd);
+            totalUnderOdds = getPrice(odd) || -110;
           }
         }
       }
