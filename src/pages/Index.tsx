@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
-import { MockDataBanner } from '@/components/MockDataBanner';
+import { LiveDataBanner } from '@/components/LiveDataBanner';
+import { useOddsAPI } from '@/hooks/useOddsAPI';
 import { platformStats } from '@/lib/mockData';
 import { 
   Search, 
@@ -22,6 +23,18 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
+  // Fetch live data status
+  const { 
+    games: liveGames, 
+    isLoading, 
+    error, 
+    lastUpdated,
+    remainingRequests,
+    refetch 
+  } = useOddsAPI('nba');
+
+  const hasLiveData = liveGames.length > 0 && !error;
+
   const features = [
     {
       icon: TrendingUp,
@@ -75,7 +88,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <MockDataBanner />
+      <LiveDataBanner 
+        isLive={hasLiveData}
+        lastUpdated={lastUpdated}
+        remainingRequests={remainingRequests}
+        isLoading={isLoading}
+        onRefresh={refetch}
+        error={error}
+      />
       <Header />
       
       <main className="flex-1">
