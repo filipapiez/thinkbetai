@@ -10,6 +10,7 @@ import { mockGames, getGameFacts } from '@/lib/mockData';
 import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock } from 'lucide-react';
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
 import { SPORT_CONFIGS, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
+import { BettingChatBot } from '@/components/BettingChatBot';
 
 type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d' | 'nextMonth';
 
@@ -363,6 +364,9 @@ const Games = () => {
       </main>
 
       <Footer />
+      
+      {/* AI Betting Chatbot - no game context for general questions */}
+      <BettingChatBot />
     </div>
   );
 };
