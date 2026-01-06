@@ -201,6 +201,15 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [insights, setInsights] = useState<AIInsight[]>([]);
 
+  // Guard against undefined facts
+  if (!facts || !facts.game) {
+    return (
+      <div className="text-center py-4 text-muted-foreground text-sm">
+        Unable to load game data. Please try refreshing the page.
+      </div>
+    );
+  }
+
   const { game } = facts;
 
   const handleSubmit = async (e: React.FormEvent) => {
