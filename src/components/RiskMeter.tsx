@@ -1,14 +1,77 @@
-import { RiskAssessment } from '@/lib/mockData';
-import { AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { RiskAssessment, OddsData } from '@/lib/mockData';
+import { AlertTriangle, CheckCircle, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface RiskMeterProps {
   risk: RiskAssessment;
+  odds?: OddsData;
   compact?: boolean;
 }
 
-export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
+// Calculate volatility based on line movement and other factors
+const calculateVolatility = (risk: RiskAssessment, odds?: OddsData): { 
+  level: 'Low' | 'Medium' | 'High'; 
+  adjustedReasons: string[];
+  lineMovementMagnitude: number;
+  lineMovementCause?: string;
+} => {
+  let lineMovementMagnitude = 0;
+  let lineMovementCause: string | undefined;
+  
+  if (odds?.lineMovement) {
+    lineMovementMagnitude = Math.abs(odds.lineMovement.current.home - odds.lineMovement.opening.home);
+    
+    // Determine cause of line movement
+    if (lineMovementMagnitude >= 15) {
+      lineMovementCause = 'Sharp money or news-driven';
+    } else if (lineMovementMagnitude >= 10) {
+      lineMovementCause = 'Moderate public action';
+    } else if (lineMovementMagnitude >= 5) {
+      lineMovementCause = 'Early market adjustment';
+    }
+  }
+  
+  // Key rule: Meaningful line movement cannot be labeled "Low Volatility"
+  let adjustedLevel = risk.level;
+  const adjustedReasons = [...risk.reasons];
+  
+  if (lineMovementMagnitude >= 15 && risk.level === 'Low') {
+    adjustedLevel = 'High';
+    adjustedReasons.unshift(`Sharp line movement (${lineMovementMagnitude} cents)`);
+  } else if (lineMovementMagnitude >= 10 && risk.level === 'Low') {
+    adjustedLevel = 'Medium';
+    adjustedReasons.unshift(`Moderate line movement (${lineMovementMagnitude} cents)`);
+  } else if (lineMovementMagnitude >= 5 && risk.level === 'Low') {
+    adjustedLevel = 'Medium';
+    adjustedReasons.unshift(`Line has moved since open`);
+  }
+  
+  // Check for injury uncertainty contradictions
+  const hasInjuryUncertainty = risk.reasons.some(r => 
+    r.toLowerCase().includes('questionable') || 
+    r.toLowerCase().includes('uncertain')
+  );
+  
+  if (hasInjuryUncertainty && adjustedLevel === 'Low') {
+    adjustedLevel = 'Medium';
+    if (!adjustedReasons.some(r => r.includes('injury'))) {
+      adjustedReasons.push('Injury uncertainty factor');
+    }
+  }
+  
+  return {
+    level: adjustedLevel,
+    adjustedReasons,
+    lineMovementMagnitude,
+    lineMovementCause,
+  };
+};
+
+export const RiskMeter = ({ risk, odds, compact = false }: RiskMeterProps) => {
+  const { level, adjustedReasons, lineMovementMagnitude, lineMovementCause } = calculateVolatility(risk, odds);
+  
   const getConfig = () => {
-    switch (risk.level) {
+    switch (level) {
       case 'Low':
         return {
           icon: CheckCircle,
@@ -17,6 +80,7 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
           bgColor: 'bg-success/10',
           borderColor: 'border-success/30',
           percentage: 25,
+          description: 'Stable lines, clear signals',
         };
       case 'Medium':
         return {
@@ -26,6 +90,7 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
           bgColor: 'bg-warning/10',
           borderColor: 'border-warning/30',
           percentage: 55,
+          description: 'Moderate movement/uncertainty',
         };
       case 'High':
         return {
@@ -35,6 +100,7 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
           bgColor: 'bg-destructive/10',
           borderColor: 'border-destructive/30',
           percentage: 85,
+          description: 'Sharp swings/conflicting indicators',
         };
     }
   };
@@ -46,7 +112,7 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
     return (
       <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${config.bgColor} ${config.borderColor} border`}>
         <Icon className={`h-4 w-4 ${config.textColor}`} />
-        <span className={`text-sm font-semibold ${config.textColor}`}>{risk.level} Volatility</span>
+        <span className={`text-sm font-semibold ${config.textColor}`}>{level} Volatility</span>
       </div>
     );
   }
@@ -58,7 +124,10 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
           <Icon className={`h-5 w-5 ${config.textColor}`} />
           <h3 className="font-semibold">Risk / Volatility</h3>
         </div>
-        <span className={`text-lg font-bold ${config.textColor}`}>{risk.level}</span>
+        <div className="text-right">
+          <span className={`text-lg font-bold ${config.textColor}`}>{level}</span>
+          <p className="text-xs text-muted-foreground">{config.description}</p>
+        </div>
       </div>
 
       {/* Meter Bar */}
@@ -81,17 +150,33 @@ export const RiskMeter = ({ risk, compact = false }: RiskMeterProps) => {
         <span>High</span>
       </div>
 
+      {/* Line Movement Badge (if applicable) */}
+      {lineMovementMagnitude >= 5 && lineMovementCause && (
+        <div className="mb-4 flex items-center gap-2">
+          <Badge variant={lineMovementMagnitude >= 15 ? 'destructive' : 'warning'} className="text-xs">
+            {lineMovementMagnitude >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+            {lineMovementMagnitude}¢ movement
+          </Badge>
+          <span className="text-xs text-muted-foreground">{lineMovementCause}</span>
+        </div>
+      )}
+
       {/* Reasons */}
       <div className="space-y-2">
         <h4 className="text-sm font-medium text-muted-foreground">Contributing Factors:</h4>
         <ul className="space-y-1.5">
-          {risk.reasons.map((reason, index) => (
+          {adjustedReasons.map((reason, index) => (
             <li key={index} className="text-sm flex items-start gap-2">
               <span className={`mt-1.5 h-1.5 w-1.5 rounded-full ${config.gradient} shrink-0`} />
               {reason}
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Volatility Scale Explanation */}
+      <div className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">
+        <p>Volatility based on: line movement • injury/news uncertainty • performance variance • market disagreement</p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { OddsData } from '@/lib/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 
 interface OddsCardProps {
   odds: OddsData;
@@ -8,30 +9,78 @@ interface OddsCardProps {
   awayTeam: string;
 }
 
+// Determine line movement cause based on magnitude and direction
+const getLineMovementAnalysis = (odds: OddsData) => {
+  if (!odds.lineMovement) return null;
+  
+  const change = odds.lineMovement.current.home - odds.lineMovement.opening.home;
+  const magnitude = Math.abs(change);
+  
+  let cause: string;
+  let icon: typeof TrendingUp;
+  let colorClass: string;
+  let severity: 'low' | 'medium' | 'high';
+  
+  // Determine cause based on magnitude
+  if (magnitude >= 20) {
+    cause = 'News-driven adjustment (injury/lineup)';
+    severity = 'high';
+  } else if (magnitude >= 15) {
+    cause = 'Sharp money (professional bettors)';
+    severity = 'high';
+  } else if (magnitude >= 10) {
+    cause = 'Moderate public action';
+    severity = 'medium';
+  } else if (magnitude >= 5) {
+    cause = 'Early market adjustment';
+    severity = 'low';
+  } else {
+    cause = 'Minimal movement';
+    severity = 'low';
+  }
+  
+  // Determine direction
+  if (change < -5) {
+    icon = TrendingDown;
+    colorClass = 'text-destructive';
+  } else if (change > 5) {
+    icon = TrendingUp;
+    colorClass = 'text-success';
+  } else {
+    icon = Minus;
+    colorClass = 'text-muted-foreground';
+  }
+  
+  return {
+    change,
+    magnitude,
+    cause,
+    icon,
+    colorClass,
+    severity,
+    direction: change > 0 ? 'toward home' : change < 0 ? 'toward away' : 'stable',
+  };
+};
+
 export const OddsCard = ({ odds, homeTeam, awayTeam }: OddsCardProps) => {
   const formatOdds = (value: number) => {
     if (value > 0) return `+${value}`;
     return value.toString();
   };
 
-  const getLineMovementIcon = () => {
-    if (!odds.lineMovement) return null;
-    const change = odds.lineMovement.current.home - odds.lineMovement.opening.home;
-    if (change < -5) return <TrendingDown className="h-4 w-4 text-destructive" />;
-    if (change > 5) return <TrendingUp className="h-4 w-4 text-success" />;
-    return <Minus className="h-4 w-4 text-muted-foreground" />;
-  };
+  const lineAnalysis = getLineMovementAnalysis(odds);
+  const Icon = lineAnalysis?.icon || Minus;
 
   return (
     <Card variant="glass">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <span>Current Odds</span>
-          {odds.lineMovement && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {getLineMovementIcon()}
-              <span>Line moved</span>
-            </div>
+          {lineAnalysis && lineAnalysis.magnitude >= 5 && (
+            <Badge variant={lineAnalysis.severity === 'high' ? 'destructive' : lineAnalysis.severity === 'medium' ? 'warning' : 'secondary'} className="text-xs">
+              <Icon className="h-3 w-3 mr-1" />
+              {lineAnalysis.magnitude}¢ {lineAnalysis.direction}
+            </Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -107,21 +156,41 @@ export const OddsCard = ({ odds, homeTeam, awayTeam }: OddsCardProps) => {
           </div>
         </div>
 
-        {/* Line Movement */}
+        {/* Line Movement with Explanation */}
         {odds.lineMovement && (
-          <div className="pt-3 border-t border-border">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Line Movement</h4>
+          <div className="pt-3 border-t border-border space-y-3">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Line Movement</h4>
+            
+            {/* Opening vs Current */}
             <div className="flex items-center justify-between text-sm">
               <div>
                 <p className="text-muted-foreground">Opening</p>
                 <p className="font-mono">{formatOdds(odds.lineMovement.opening.home)} / {formatOdds(odds.lineMovement.opening.away)}</p>
               </div>
-              <div className="text-muted-foreground">→</div>
+              <div className="flex items-center gap-2">
+                {lineAnalysis && <Icon className={`h-5 w-5 ${lineAnalysis.colorClass}`} />}
+              </div>
               <div className="text-right">
                 <p className="text-muted-foreground">Current</p>
                 <p className="font-mono">{formatOdds(odds.lineMovement.current.home)} / {formatOdds(odds.lineMovement.current.away)}</p>
               </div>
             </div>
+
+            {/* Movement Cause Explanation */}
+            {lineAnalysis && lineAnalysis.magnitude >= 5 && (
+              <div className={`flex items-start gap-2 p-2 rounded-lg ${
+                lineAnalysis.severity === 'high' ? 'bg-destructive/10' : 
+                lineAnalysis.severity === 'medium' ? 'bg-warning/10' : 'bg-muted/50'
+              }`}>
+                <Info className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                <div className="text-xs">
+                  <p className="font-medium text-foreground">{lineAnalysis.cause}</p>
+                  <p className="text-muted-foreground mt-0.5">
+                    Line moved {lineAnalysis.magnitude} cents {lineAnalysis.direction} since open
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

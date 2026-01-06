@@ -177,7 +177,7 @@ const GameDetail = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              <RiskMeter risk={risk} />
+              <RiskMeter risk={risk} odds={odds} />
               <RecentFormCard 
                 homeLast5={recentForm.homeLast5} 
                 awayLast5={recentForm.awayLast5} 
@@ -219,7 +219,7 @@ const GameDetail = () => {
 
           {/* AI Explanation - Full Width */}
           <div className="mt-6">
-            <AIExplanationCard gameId={game.id} />
+            <AIExplanationCard gameId={game.id} facts={facts} />
           </div>
         </div>
       </main>
