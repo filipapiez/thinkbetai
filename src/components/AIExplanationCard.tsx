@@ -17,11 +17,11 @@ const generateExplanation = (facts: GameFacts) => {
   const homeTeam = game.homeTeam.name;
   const awayTeam = game.awayTeam.name;
   
-  // Get sport accuracy
+  // Get sport accuracy (qualified picks only)
   const sportData = platformStats.sportBreakdown.find(s => s.sport === sport);
   const accuracy = sportData 
-    ? `${sportData.wins}/${sportData.predictions} (${sportData.winRate}%)`
-    : `${platformStats.correctPredictions}/${platformStats.totalPredictions} (${platformStats.winRate}%)`;
+    ? `${sportData.wins}/${sportData.qualified} (${sportData.winRate}%)`
+    : `${platformStats.correctQualified}/${platformStats.totalQualified} (${platformStats.qualifiedWinRate}%)`;
   
   // Calculate injury summary
   const homeInjuries = injuries.filter(i => i.team === homeTeam);

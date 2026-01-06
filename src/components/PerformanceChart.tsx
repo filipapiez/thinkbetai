@@ -50,21 +50,21 @@ const getChartConfig = (sport: string) => {
   }
 };
 
-// Get sport-specific accuracy from platform stats
-const getSportAccuracy = (sport: string) => {
+// Get sport-specific QUALIFIED accuracy from platform stats (GOOD bets only)
+const getQualifiedAccuracy = (sport: string) => {
   const sportData = platformStats.sportBreakdown.find(s => s.sport === sport);
   if (sportData) {
     return {
       wins: sportData.wins,
-      total: sportData.predictions,
+      total: sportData.qualified,
       winRate: sportData.winRate,
       timeframe: 'last 30 days',
     };
   }
   return {
-    wins: platformStats.correctPredictions,
-    total: platformStats.totalPredictions,
-    winRate: platformStats.winRate,
+    wins: platformStats.correctQualified,
+    total: platformStats.totalQualified,
+    winRate: platformStats.qualifiedWinRate,
     timeframe: 'all time',
   };
 };
@@ -79,7 +79,7 @@ export const PerformanceChart = ({
   awayLast5 
 }: PerformanceChartProps) => {
   const config = getChartConfig(sport);
-  const sportAccuracy = getSportAccuracy(sport);
+  const qualifiedAccuracy = getQualifiedAccuracy(sport);
   
   // Generate unique chart key for caching
   const cacheKey = `${sport}_${gameId}`;
@@ -269,13 +269,13 @@ export const PerformanceChart = ({
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Award className="h-4 w-4 text-amber-400" />
-              <span className="text-sm text-muted-foreground">{sport} Accuracy</span>
+              <span className="text-sm text-muted-foreground">{sport} Qualified Accuracy</span>
             </div>
             <p className="text-xl font-bold text-amber-400">
-              {sportAccuracy.wins}/{sportAccuracy.total}
+              {qualifiedAccuracy.wins}/{qualifiedAccuracy.total}
             </p>
             <p className="text-xs text-muted-foreground">
-              ({sportAccuracy.winRate}%) — {sportAccuracy.timeframe}
+              ({qualifiedAccuracy.winRate}%) — {qualifiedAccuracy.timeframe}
             </p>
           </div>
         </div>
