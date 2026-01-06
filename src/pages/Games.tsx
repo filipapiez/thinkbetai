@@ -11,7 +11,7 @@ import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Clock } from 
 import { calculateBetQualification, sortGamesBySignal, BetSignal } from '@/lib/betQualification';
 import { SPORT_CONFIGS, getSportConfig, formatSurfacedRange, getSportPriority } from '@/lib/sportConfig';
 
-type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d';
+type DateRange = 'today' | 'tomorrow' | 'next24h' | 'next7d' | 'nextMonth';
 
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +37,8 @@ const Games = () => {
     const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const next7d = new Date(today);
     next7d.setDate(next7d.getDate() + 7);
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
 
     switch (range) {
       case 'today':
@@ -47,6 +49,8 @@ const Games = () => {
         return { start: now, end: next24h };
       case 'next7d':
         return { start: today, end: next7d };
+      case 'nextMonth':
+        return { start: today, end: nextMonth };
     }
   }, []);
 
@@ -159,6 +163,7 @@ const Games = () => {
     { value: 'tomorrow', label: 'Tomorrow' },
     { value: 'next24h', label: 'Next 24h' },
     { value: 'next7d', label: 'Next 7 days' },
+    { value: 'nextMonth', label: 'Next Month' },
   ];
 
   const formatLastUpdated = (date: Date) => {
