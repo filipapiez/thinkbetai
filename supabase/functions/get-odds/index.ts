@@ -5,39 +5,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Map our sport IDs to The Odds API sport keys
-const sportKeyMap: Record<string, string> = {
-  'nba': 'basketball_nba',
-  'nfl': 'americanfootball_nfl',
-  'mlb': 'baseball_mlb',
-  'nhl': 'icehockey_nhl',
-  'soccer': 'soccer_epl', // English Premier League as default
-  'tennis': 'tennis_atp_aus_open', // ATP Australian Open as example
-  'mma': 'mma_mixed_martial_arts',
-  'boxing': 'boxing_boxing',
-  'golf': 'golf_pga_championship',
+// Map our sport IDs to SportsGameOdds league IDs
+const leagueIdMap: Record<string, string> = {
+  'nba': 'NBA',
+  'nfl': 'NFL',
+  'mlb': 'MLB',
+  'nhl': 'NHL',
+  'ncaaf': 'NCAAF',
+  'ncaab': 'NCAAB',
+  'soccer': 'EPL',
+  'mma': 'UFC',
+  'tennis': 'ATP',
+  'boxing': 'BOXING',
+  'golf': 'PGA',
 };
-
-interface OddsAPIGame {
-  id: string;
-  sport_key: string;
-  sport_title: string;
-  commence_time: string;
-  home_team: string;
-  away_team: string;
-  bookmakers: Array<{
-    key: string;
-    title: string;
-    markets: Array<{
-      key: string;
-      outcomes: Array<{
-        name: string;
-        price: number;
-        point?: number;
-      }>;
-    }>;
-  }>;
-}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -46,9 +27,9 @@ serve(async (req) => {
   }
 
   try {
-    const API_KEY = Deno.env.get('THE_ODDS_API_KEY');
+    const API_KEY = Deno.env.get('SPORTSGAMEODDS_API_KEY');
     if (!API_KEY) {
-      console.error('THE_ODDS_API_KEY not configured');
+      console.error('SPORTSGAMEODDS_API_KEY not configured');
       return new Response(
         JSON.stringify({ error: 'API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -57,20 +38,24 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const sport = url.searchParams.get('sport') || 'nba';
-    const sportKey = sportKeyMap[sport.toLowerCase()] || 'basketball_nba';
+    const leagueId = leagueIdMap[sport.toLowerCase()] || 'NBA';
 
-    console.log(`Fetching odds for sport: ${sport} (${sportKey})`);
+    console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
 
-    // Fetch upcoming games with odds from The Odds API
-    const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/odds/?apiKey=${API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
+    // Fetch events with odds from SportsGameOdds API
+    const apiUrl = `https://api.sportsgameodds.com/v1/events?leagueID=${leagueId}&marketOddsAvailable=true&limit=50`;
     
-    const response = await fetch(oddsUrl);
+    const response = await fetch(apiUrl, {
+      headers: {
+        'x-api-key': API_KEY,
+      },
+    });
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`The Odds API error: ${response.status} - ${errorText}`);
+      console.error(`SportsGameOdds API error: ${response.status} - ${errorText}`);
       
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 403) {
         return new Response(
           JSON.stringify({ error: 'Invalid API key' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -90,67 +75,73 @@ serve(async (req) => {
       );
     }
 
-    const games: OddsAPIGame[] = await response.json();
+    const data = await response.json();
+    const events = data.events || [];
     
-    // Log remaining requests
-    const remainingRequests = response.headers.get('x-requests-remaining');
-    console.log(`Remaining API requests: ${remainingRequests}`);
+    console.log(`Received ${events.length} events from SportsGameOdds`);
 
     // Transform the data to our format
-    const transformedGames = games.map((game) => {
-      // Get the first bookmaker with data (usually DraftKings or FanDuel)
-      const bookmaker = game.bookmakers[0];
+    const transformedGames = events.map((event: any) => {
+      const homeTeam = event.teams?.home?.name || event.homeTeam || 'Home';
+      const awayTeam = event.teams?.away?.name || event.awayTeam || 'Away';
       
+      // Extract odds from the event
+      const odds = event.odds || {};
       let moneylineHome = 0;
       let moneylineAway = 0;
       let spreadHome = 0;
-      let spreadHomeOdds = 0;
+      let spreadHomeOdds = -110;
       let spreadAway = 0;
-      let spreadAwayOdds = 0;
+      let spreadAwayOdds = -110;
       let totalOver = 0;
-      let totalOverOdds = 0;
+      let totalOverOdds = -110;
       let totalUnder = 0;
-      let totalUnderOdds = 0;
+      let totalUnderOdds = -110;
 
-      if (bookmaker) {
-        const h2hMarket = bookmaker.markets.find(m => m.key === 'h2h');
-        const spreadsMarket = bookmaker.markets.find(m => m.key === 'spreads');
-        const totalsMarket = bookmaker.markets.find(m => m.key === 'totals');
-
-        if (h2hMarket) {
-          const homeOutcome = h2hMarket.outcomes.find(o => o.name === game.home_team);
-          const awayOutcome = h2hMarket.outcomes.find(o => o.name === game.away_team);
-          moneylineHome = homeOutcome?.price || 0;
-          moneylineAway = awayOutcome?.price || 0;
+      // Parse odds object - SportsGameOdds uses oddID format
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        
+        // Moneyline odds (h2h)
+        if (oddId.includes('moneyline') || oddId.includes('h2h')) {
+          if (oddId.includes('home')) {
+            moneylineHome = odd.closeOdds || odd.odds || 0;
+          } else if (oddId.includes('away')) {
+            moneylineAway = odd.closeOdds || odd.odds || 0;
+          }
         }
-
-        if (spreadsMarket) {
-          const homeOutcome = spreadsMarket.outcomes.find(o => o.name === game.home_team);
-          const awayOutcome = spreadsMarket.outcomes.find(o => o.name === game.away_team);
-          spreadHome = homeOutcome?.point || 0;
-          spreadHomeOdds = homeOutcome?.price || -110;
-          spreadAway = awayOutcome?.point || 0;
-          spreadAwayOdds = awayOutcome?.price || -110;
+        
+        // Spread/handicap odds
+        if (oddId.includes('spread') || oddId.includes('handicap')) {
+          if (oddId.includes('home')) {
+            spreadHome = odd.line || odd.point || 0;
+            spreadHomeOdds = odd.closeOdds || odd.odds || -110;
+          } else if (oddId.includes('away')) {
+            spreadAway = odd.line || odd.point || 0;
+            spreadAwayOdds = odd.closeOdds || odd.odds || -110;
+          }
         }
-
-        if (totalsMarket) {
-          const overOutcome = totalsMarket.outcomes.find(o => o.name === 'Over');
-          const underOutcome = totalsMarket.outcomes.find(o => o.name === 'Under');
-          totalOver = overOutcome?.point || 0;
-          totalOverOdds = overOutcome?.price || -110;
-          totalUnder = underOutcome?.point || 0;
-          totalUnderOdds = underOutcome?.price || -110;
+        
+        // Total/over-under odds
+        if (oddId.includes('total') || oddId.includes('over') || oddId.includes('under')) {
+          if (oddId.includes('over')) {
+            totalOver = odd.line || odd.point || 0;
+            totalOverOdds = odd.closeOdds || odd.odds || -110;
+          } else if (oddId.includes('under')) {
+            totalUnder = odd.line || odd.point || 0;
+            totalUnderOdds = odd.closeOdds || odd.odds || -110;
+          }
         }
       }
 
       return {
-        id: game.id,
-        sportKey: game.sport_key,
-        sportTitle: game.sport_title,
-        commenceTime: game.commence_time,
-        homeTeam: game.home_team,
-        awayTeam: game.away_team,
-        bookmaker: bookmaker?.title || 'N/A',
+        id: event.eventID || event.id,
+        sportKey: leagueId.toLowerCase(),
+        sportTitle: event.league || leagueId,
+        commenceTime: event.startTime || event.startDate || new Date().toISOString(),
+        homeTeam,
+        awayTeam,
+        bookmaker: 'Consensus',
         odds: {
           moneyline: {
             home: moneylineHome,
@@ -169,7 +160,7 @@ serve(async (req) => {
             underOdds: totalUnderOdds,
           },
         },
-        hasOdds: !!bookmaker,
+        hasOdds: Object.keys(odds).length > 0,
       };
     });
 
@@ -178,7 +169,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         games: transformedGames,
-        remainingRequests: remainingRequests ? parseInt(remainingRequests) : null,
+        remainingRequests: null, // SportsGameOdds doesn't expose this in the same way
         lastUpdated: new Date().toISOString(),
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
