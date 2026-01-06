@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart, BarChart, Bar, Cell } from 'recharts';
-import { TrendingUp, Target, Award, Activity } from 'lucide-react';
-import { PerformanceData, GameResult } from '@/lib/mockData';
+import { Badge } from '@/components/ui/badge';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart, BarChart, Bar } from 'recharts';
+import { TrendingUp, Target, Award, Activity, Info } from 'lucide-react';
+import { PerformanceData, GameResult, platformStats } from '@/lib/mockData';
 
 interface PerformanceChartProps {
   data: PerformanceData[];
@@ -43,10 +44,29 @@ const getChartConfig = (sport: string) => {
       return {
         chartType: 'probability',
         title: 'Win Probability Trend',
-        description: 'Predicted vs actual outcomes over time',
+        description: 'Model confidence over last 10 games (context, not guarantee)',
         yAxisLabel: 'Win %',
       };
   }
+};
+
+// Get sport-specific accuracy from platform stats
+const getSportAccuracy = (sport: string) => {
+  const sportData = platformStats.sportBreakdown.find(s => s.sport === sport);
+  if (sportData) {
+    return {
+      wins: sportData.wins,
+      total: sportData.predictions,
+      winRate: sportData.winRate,
+      timeframe: 'last 30 days',
+    };
+  }
+  return {
+    wins: platformStats.correctPredictions,
+    total: platformStats.totalPredictions,
+    winRate: platformStats.winRate,
+    timeframe: 'all time',
+  };
 };
 
 export const PerformanceChart = ({ 
@@ -59,6 +79,7 @@ export const PerformanceChart = ({
   awayLast5 
 }: PerformanceChartProps) => {
   const config = getChartConfig(sport);
+  const sportAccuracy = getSportAccuracy(sport);
   
   // Generate unique chart key for caching
   const cacheKey = `${sport}_${gameId}`;
@@ -227,7 +248,7 @@ export const PerformanceChart = ({
           </ResponsiveContainer>
         </div>
 
-        {/* Stats Row */}
+        {/* Stats Row with Proper Accuracy Context */}
         <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -235,6 +256,7 @@ export const PerformanceChart = ({
               <span className="text-sm text-muted-foreground">{homeTeam} Form</span>
             </div>
             <p className="text-xl font-bold">{stats.homeWins}/5 Wins</p>
+            <p className="text-xs text-muted-foreground">Last 5 games</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
@@ -242,15 +264,39 @@ export const PerformanceChart = ({
               <span className="text-sm text-muted-foreground">{awayTeam} Form</span>
             </div>
             <p className="text-xl font-bold text-emerald-400">{stats.awayWins}/5 Wins</p>
+            <p className="text-xs text-muted-foreground">Last 5 games</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-1">
               <Award className="h-4 w-4 text-amber-400" />
-              <span className="text-sm text-muted-foreground">Prediction Accuracy</span>
+              <span className="text-sm text-muted-foreground">{sport} Accuracy</span>
             </div>
-            <p className="text-xl font-bold text-amber-400">{stats.accuracy}%</p>
+            <p className="text-xl font-bold text-amber-400">
+              {sportAccuracy.wins}/{sportAccuracy.total}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              ({sportAccuracy.winRate}%) — {sportAccuracy.timeframe}
+            </p>
           </div>
         </div>
+
+        {/* Accuracy Transparency Note */}
+        <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border">
+          <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="text-xs text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">About This Chart</p>
+            <p>
+              {config.chartType === 'form' 
+                ? 'Shows recent match results (last 5 games) for context. Past performance does not guarantee future outcomes.'
+                : 'Shows model confidence across recent games for context, not a guarantee for today. Accuracy is computed as Correct Predictions / Total Predictions.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          Historical accuracy reflects past performance and does not guarantee future results.
+        </p>
       </CardContent>
     </Card>
   );
