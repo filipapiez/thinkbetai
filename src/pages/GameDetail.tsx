@@ -7,9 +7,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Calendar, MapPin, Clock, TrendingUp, TrendingDown, Minus, Loader2, AlertTriangle, Shield, Activity, Target, Zap, Info } from 'lucide-react';
+import {
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  Clock,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Loader2,
+  Info,
+  AlertTriangle,
+  Shield,
+  Activity,
+  Target,
+  Zap,
+} from 'lucide-react';
 import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@/lib/liveTypes';
-import { getGameById } from '@/hooks/useLiveGames';
+import { useLiveGames } from '@/hooks/useLiveGames';
 import { BettingChatBot } from '@/components/BettingChatBot';
 import { cn } from '@/lib/utils';
 import { fetchGameData, ScrapedGameData } from '@/lib/api/gameData';
@@ -114,12 +129,8 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
   }
 
   // Convert to implied probability
-  const homeImplied = homeML > 0
-    ? 100 / (homeML + 100)
-    : Math.abs(homeML) / (Math.abs(homeML) + 100);
-  const awayImplied = awayML > 0
-    ? 100 / (awayML + 100)
-    : Math.abs(awayML) / (Math.abs(awayML) + 100);
+  const homeImplied = homeML > 0 ? 100 / (homeML + 100) : Math.abs(homeML) / (Math.abs(homeML) + 100);
+  const awayImplied = awayML > 0 ? 100 / (awayML + 100) : Math.abs(awayML) / (Math.abs(awayML) + 100);
 
   // Value = 1 - implied (lower implied = more value)
   const homeValue = Math.round((1 - homeImplied) * 100);
@@ -147,33 +158,28 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
 
 const GameDetail = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const [game, setGame] = useState<LiveGame | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { games, isLoading: isLoadingGames, error: gamesError } = useLiveGames();
+
+  const game = useMemo(() => {
+    if (!gameId) return undefined;
+    return games.find((g) => g.id === gameId);
+  }, [games, gameId]);
+
   const [scrapedData, setScrapedData] = useState<ScrapedGameData | null>(null);
   const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
 
   useEffect(() => {
-    const cachedGame = getGameById(gameId || '');
-    if (cachedGame) {
-      setGame(cachedGame);
-      setIsLoading(false);
-      
-      // Fetch scraped data for the game
-      setIsLoadingScrapedData(true);
-      fetchGameData(cachedGame.homeTeam.name, cachedGame.awayTeam.name, cachedGame.sport)
-        .then(response => {
-          if (response.success && response.data) {
-            setScrapedData(response.data);
-          }
-        })
-        .finally(() => setIsLoadingScrapedData(false));
-      
-      return;
-    }
-    setError('Game not in cache - please go back to Games and click again');
-    setIsLoading(false);
-  }, [gameId]);
+    if (!game) return;
+
+    setIsLoadingScrapedData(true);
+    fetchGameData(game.homeTeam.name, game.awayTeam.name, game.sport)
+      .then((response) => {
+        if (response.success && response.data) {
+          setScrapedData(response.data);
+        }
+      })
+      .finally(() => setIsLoadingScrapedData(false));
+  }, [game]);
 
   const qualification = useMemo(() => {
     if (!game) return null;
@@ -190,7 +196,7 @@ const GameDetail = () => {
     return analyzeValue(game);
   }, [game]);
 
-  if (isLoading) {
+  if (isLoadingGames) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -202,15 +208,33 @@ const GameDetail = () => {
     );
   }
 
-  if (!game || error) {
+  if (gamesError && games.length === 0) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center max-w-xl px-6">
+            <h1 className="text-2xl font-bold mb-3">Can’t load games right now</h1>
+            <p className="text-muted-foreground mb-6">{gamesError}</p>
+            <Button asChild>
+              <Link to="/games">Back to Games</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-xl px-6">
             <h1 className="text-2xl font-bold mb-4">Game Not Found</h1>
             <p className="text-muted-foreground mb-6">
-              {error || "The game you're looking for doesn't exist or has ended."}
+              This link may be stale (games refresh often). Go back to Games and open the matchup again.
             </p>
             <Button asChild>
               <Link to="/games">Back to Games</Link>
