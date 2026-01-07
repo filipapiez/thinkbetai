@@ -150,7 +150,7 @@ const Paywall = () => {
             <Card variant="glass" className="border-primary/50">
               <CardHeader className="text-center pb-2">
                 <Badge className="w-fit mx-auto mb-2">Premium Access</Badge>
-                <CardTitle className="text-2xl">$49/month</CardTitle>
+                <CardTitle className="text-2xl">$400/month</CardTitle>
                 <CardDescription>
                   Full access to all premium features
                 </CardDescription>

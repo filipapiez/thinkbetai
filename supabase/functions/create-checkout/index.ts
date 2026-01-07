@@ -61,7 +61,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1RcXSrCVTx7xR0lbR1ELMb7z", // Premium Access $49/month
+          price: "price_1SX7kFQrqKHReEDt1ghpltli", // Premium Access $400/month
           quantity: 1,
         },
       ],
