@@ -1,21 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate limiting (per IP, per minute)
+// Rate limiting (per user, per minute)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 30; // 30 requests per minute
 const RATE_WINDOW_MS = 60 * 1000;
 
-function checkRateLimit(ip: string): boolean {
+function checkRateLimit(userId: string): boolean {
   const now = Date.now();
-  const record = rateLimitMap.get(ip);
+  const record = rateLimitMap.get(userId);
   
   if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_WINDOW_MS });
     return true;
   }
   
@@ -25,6 +26,29 @@ function checkRateLimit(ip: string): boolean {
   
   record.count++;
   return true;
+}
+
+// Authentication helper
+async function authenticateUser(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  return { userId: data.user.id };
 }
 
 // Allowed sports (whitelist)
@@ -79,12 +103,17 @@ serve(async (req) => {
   }
 
   try {
-    // Rate limiting
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                     req.headers.get('cf-connecting-ip') || 
-                     'unknown';
-    
-    if (!checkRateLimit(clientIP)) {
+    // Authentication check
+    const auth = await authenticateUser(req);
+    if (!auth) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting by user ID
+    if (!checkRateLimit(auth.userId)) {
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -121,7 +150,7 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Fetching odds for sport: ${validatedSport} (leagueID: ${leagueId})`);
+    console.log(`User ${auth.userId} fetching odds for sport: ${validatedSport} (leagueID: ${leagueId})`);
 
     // Fetch events with odds from SportsGameOdds API v2
     const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${encodeURIComponent(leagueId)}&oddsAvailable=true&limit=50`;
