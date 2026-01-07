@@ -85,41 +85,60 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`SportsGameOdds API error: ${response.status} - ${errorText}`);
-      
+
       if (response.status === 401 || response.status === 403) {
         return new Response(
           JSON.stringify({ error: 'Invalid API key' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      if (response.status === 429) {
-        // If we have *any* cached snapshot (even slightly stale), return it to keep the UI working.
-        if (cached) {
-          return new Response(JSON.stringify(cached.data), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'STALE' },
-          });
-        }
 
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      // If we have *any* cached snapshot (even slightly stale), return it to keep the UI working.
+      if (cached) {
+        return new Response(JSON.stringify(cached.data), {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'x-cache': 'STALE',
+            'x-upstream-status': String(response.status),
+          },
+        });
       }
-      
+
+      // Never bubble 429/500 to the browser (it shows as a runtime error overlay).
+      // Return an empty payload + metadata so the UI can continue.
+      const emptyPayload = {
+        games: [],
+        remainingRequests: null,
+        lastUpdated: new Date().toISOString(),
+        error:
+          response.status === 429
+            ? 'Rate limit exceeded'
+            : response.status === 400
+              ? 'League not available or invalid'
+              : 'Failed to fetch odds data',
+        rateLimited: response.status === 429,
+        upstreamStatus: response.status,
+      };
+
       // Handle subscription tier limitations gracefully
       if (response.status === 400 && errorText.includes('unavailable at your current subscription')) {
         console.log(`League ${leagueId} not available in subscription - returning empty`);
-        return new Response(
-          JSON.stringify({ games: [], remainingRequests: null, lastUpdated: new Date().toISOString() }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify(emptyPayload), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+        });
       }
-      
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch odds data' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+
+      // Invalid league ID
+      if (response.status === 400 && errorText.toLowerCase().includes('invalid')) {
+        return new Response(JSON.stringify(emptyPayload), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+        });
+      }
+
+      return new Response(JSON.stringify(emptyPayload), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+      });
     }
 
     const data = await response.json();
