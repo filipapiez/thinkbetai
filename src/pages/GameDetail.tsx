@@ -12,6 +12,11 @@ import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@
 import { getGameById } from '@/hooks/useLiveGames';
 import { BettingChatBot } from '@/components/BettingChatBot';
 import { cn } from '@/lib/utils';
+import { fetchGameData, ScrapedGameData } from '@/lib/api/gameData';
+import { ScrapedInjuryCard } from '@/components/ScrapedInjuryCard';
+import { ScrapedFormCard } from '@/components/ScrapedFormCard';
+import { AIAnalysisCard } from '@/components/AIAnalysisCard';
+import { PerformanceChartLive } from '@/components/PerformanceChartLive';
 
 // Risk assessment based on odds analysis
 interface RiskAnalysis {
@@ -126,12 +131,25 @@ const GameDetail = () => {
   const [game, setGame] = useState<LiveGame | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scrapedData, setScrapedData] = useState<ScrapedGameData | null>(null);
+  const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
 
   useEffect(() => {
     const cachedGame = getGameById(gameId || '');
     if (cachedGame) {
       setGame(cachedGame);
       setIsLoading(false);
+      
+      // Fetch scraped data for the game
+      setIsLoadingScrapedData(true);
+      fetchGameData(cachedGame.homeTeam.name, cachedGame.awayTeam.name, cachedGame.sport)
+        .then(response => {
+          if (response.success && response.data) {
+            setScrapedData(response.data);
+          }
+        })
+        .finally(() => setIsLoadingScrapedData(false));
+      
       return;
     }
     setError('Game not in cache - please go back to Games and click again');
@@ -489,6 +507,46 @@ const GameDetail = () => {
               </Card>
             )}
           </div>
+
+          {/* Scraped Data Section */}
+          {isLoadingScrapedData ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-3 text-muted-foreground">Loading game data...</span>
+            </div>
+          ) : scrapedData && (
+            <>
+              {/* Injuries and Form */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <ScrapedInjuryCard 
+                  injuries={scrapedData.injuries}
+                  homeTeam={game.homeTeam.name}
+                  awayTeam={game.awayTeam.name}
+                />
+                <ScrapedFormCard 
+                  recentForm={scrapedData.recentForm}
+                  headToHead={scrapedData.headToHead}
+                  homeTeam={game.homeTeam.name}
+                  awayTeam={game.awayTeam.name}
+                />
+              </div>
+
+              {/* Chart and AI Analysis */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <PerformanceChartLive 
+                  recentForm={scrapedData.recentForm}
+                  homeTeam={game.homeTeam.name}
+                  awayTeam={game.awayTeam.name}
+                  sport={game.sport}
+                />
+                <AIAnalysisCard 
+                  game={game}
+                  qualification={qualification}
+                  scrapedData={scrapedData}
+                />
+              </div>
+            </>
+          )}
 
           {/* AI Summary Card */}
           {qualification && (
