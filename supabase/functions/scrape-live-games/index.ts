@@ -3,6 +3,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting (per IP, per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // 10 requests per minute (scraping is expensive)
+const RATE_WINDOW_MS = 60 * 1000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 interface ScrapedGame {
   id: string;
   homeTeam: string;
@@ -14,6 +36,9 @@ interface ScrapedGame {
   awayScore?: number;
   league?: string;
 }
+
+// Allowed sports whitelist
+const ALLOWED_SPORTS = ['all', 'soccer', 'tennis', 'tabletennis', 'basketball', 'football', 'hockey', 'baseball', 'boxing', 'mma', 'golf', 'cricket', 'esports', 'rugby', 'f1', 'nascar'];
 
 const sportSearchQueries: Record<string, string[]> = {
   soccer: ['Premier League matches today', 'La Liga games today', 'Bundesliga fixtures today', 'Serie A matches today', 'MLS games today', 'Ligue 1 matches today', 'Champions League matches today'],
@@ -33,20 +58,40 @@ const sportSearchQueries: Record<string, string[]> = {
   nascar: ['NASCAR race today', 'NASCAR Cup Series'],
 };
 
+// Validate sport input
+function validateSport(sport: string | null): string {
+  if (!sport) return 'all';
+  const normalized = sport.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (normalized.length > 20) return 'all';
+  return ALLOWED_SPORTS.includes(normalized) ? normalized : 'all';
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('cf-connecting-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.', games: [] }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const url = new URL(req.url);
-    const sport = url.searchParams.get('sport') || 'all';
+    const sport = validateSport(url.searchParams.get('sport'));
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
       console.log('FIRECRAWL_API_KEY not configured');
       return new Response(
-        JSON.stringify({ success: false, error: 'Firecrawl not configured', games: [] }),
+        JSON.stringify({ success: false, error: 'Service not configured', games: [] }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -54,8 +99,15 @@ Deno.serve(async (req) => {
     console.log(`Scraping live games for sport: ${sport}`);
 
     const queries = sport === 'all' 
-      ? Object.values(sportSearchQueries).flat().slice(0, 5) // Limit to avoid rate limits
-      : sportSearchQueries[sport.toLowerCase()] || [`${sport} games today live`];
+      ? Object.values(sportSearchQueries).flat().slice(0, 5)
+      : sportSearchQueries[sport] || [];
+
+    if (queries.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, games: [], source: 'scraped', lastUpdated: new Date().toISOString() }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const allGames: ScrapedGame[] = [];
 
@@ -66,14 +118,12 @@ Deno.serve(async (req) => {
           const games = parseGamesFromSearch(searchResult.data, sport);
           allGames.push(...games);
         }
-        // Small delay between requests
         await new Promise(r => setTimeout(r, 500));
       } catch (err) {
-        console.warn(`Error searching for "${query}":`, err);
+        console.warn(`[Internal] Error searching`);
       }
     }
 
-    // Deduplicate by home+away team
     const uniqueGames = deduplicateGames(allGames);
 
     console.log(`Found ${uniqueGames.length} unique games`);
@@ -88,7 +138,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('[Internal] Error scraping live games:', error);
+    console.error('[Internal] Error scraping live games');
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -115,7 +165,7 @@ async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
   });
 
   if (!response.ok) {
-    console.error(`Firecrawl search failed: ${response.status}`);
+    console.error(`[Internal] Firecrawl search failed: ${response.status}`);
     return null;
   }
 
@@ -128,7 +178,6 @@ function parseGamesFromSearch(searchResults: any[], sport: string): ScrapedGame[
   for (const result of searchResults) {
     const content = result.markdown || result.description || '';
     
-    // Pattern: "Team A vs Team B" or "Team A v Team B" or "Team A @ Team B"
     const matchPatterns = [
       /([A-Z][a-zA-Z\s]+?)\s+(?:vs\.?|v\.?|@)\s+([A-Z][a-zA-Z\s]+?)(?:\s|,|$|\n)/gi,
       /([A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?)\s+(\d+)\s*[-–]\s*(\d+)\s+([A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?)/gi,
@@ -141,7 +190,6 @@ function parseGamesFromSearch(searchResults: any[], sport: string): ScrapedGame[
         const homeTeam = cleanTeamName(match[1]);
         const awayTeam = match[4] ? cleanTeamName(match[4]) : cleanTeamName(match[2]);
         
-        // Skip if teams are too short or look like non-team text
         if (homeTeam.length < 3 || awayTeam.length < 3) continue;
         if (homeTeam.toLowerCase() === awayTeam.toLowerCase()) continue;
 
@@ -168,7 +216,7 @@ function parseGamesFromSearch(searchResults: any[], sport: string): ScrapedGame[
 function cleanTeamName(name: string): string {
   return name
     .trim()
-    .replace(/^\d+\s*/, '') // Remove leading numbers
+    .replace(/^\d+\s*/, '')
     .replace(/\s+/g, ' ')
     .slice(0, 30);
 }
@@ -198,7 +246,6 @@ function detectStatus(content: string): 'scheduled' | 'live' | 'final' {
 }
 
 function extractTime(content: string): string | null {
-  // Look for time patterns like "7:30 PM ET" or "19:30"
   const timeMatch = content.match(/(\d{1,2}):(\d{2})\s*(AM|PM|ET|PT|CT)?/i);
   if (timeMatch) {
     const now = new Date();

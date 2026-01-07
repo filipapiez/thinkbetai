@@ -3,6 +3,46 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting (per IP, per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 10; // 10 requests per minute (scraping is expensive)
+const RATE_WINDOW_MS = 60 * 1000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// Allowed sports whitelist
+const ALLOWED_SPORTS = ['nba', 'nfl', 'mlb', 'nhl', 'ncaab', 'ncaaf', 'soccer', 'mma', 'tennis', 'boxing', 'golf', 'cricket', 'rugby'];
+
+// Input validation
+function sanitizeTeamName(name: unknown): string | null {
+  if (typeof name !== 'string') return null;
+  // Only allow letters, numbers, spaces, hyphens, apostrophes (for team names like "76ers" or "Trail Blazers")
+  const sanitized = name.replace(/[^a-zA-Z0-9\s\-']/g, '').trim().slice(0, 50);
+  if (sanitized.length < 2) return null;
+  return sanitized;
+}
+
+function validateSport(sport: unknown): string {
+  if (typeof sport !== 'string') return 'nba';
+  const normalized = sport.toLowerCase().replace(/[^a-z]/g, '');
+  return ALLOWED_SPORTS.includes(normalized) ? normalized : 'nba';
+}
+
 interface ScrapedGameData {
   injuries: {
     team: string;
@@ -32,11 +72,28 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { homeTeam, awayTeam, sport } = await req.json();
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('cf-connecting-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const body = await req.json();
+    
+    // Validate inputs
+    const homeTeam = sanitizeTeamName(body.homeTeam);
+    const awayTeam = sanitizeTeamName(body.awayTeam);
+    const sport = validateSport(body.sport);
 
     if (!homeTeam || !awayTeam) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Teams are required' }),
+        JSON.stringify({ success: false, error: 'Invalid team names' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -44,7 +101,6 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!apiKey) {
       console.log('FIRECRAWL_API_KEY not configured, returning generated data');
-      // Return realistic generated data based on teams
       const generatedData = generateRealisticData(homeTeam, awayTeam, sport);
       return new Response(
         JSON.stringify({ success: true, data: generatedData, source: 'generated' }),
@@ -54,15 +110,13 @@ Deno.serve(async (req) => {
 
     console.log(`Scraping game data request received`);
 
-    // Search for injury reports
+    // Build safe search queries with sanitized inputs
     const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
     const injuryResponse = await searchFirecrawl(apiKey, injuryQuery);
     
-    // Search for recent form
     const formQuery = `${homeTeam} ${awayTeam} recent results ${sport} 2026`;
     const formResponse = await searchFirecrawl(apiKey, formQuery);
     
-    // Search for head to head
     const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history ${sport}`;
     const h2hResponse = await searchFirecrawl(apiKey, h2hQuery);
 
@@ -81,7 +135,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('[Internal] Error scraping game data:', error);
+    console.error('[Internal] Error scraping game data');
     return new Response(
       JSON.stringify({ success: false, error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -105,13 +159,13 @@ async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
     });
 
     if (!response.ok) {
-      console.error(`Firecrawl search failed: ${response.status}`);
+      console.error(`[Internal] Firecrawl search failed: ${response.status}`);
       return null;
     }
 
     return await response.json();
   } catch (error) {
-    console.error('Firecrawl search error:', error);
+    console.error('[Internal] Firecrawl search error');
     return null;
   }
 }
@@ -134,7 +188,6 @@ function parseScrapedData(
   if (injuryData?.data) {
     const content = injuryData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     
-    // Extract injury mentions using patterns
     const injuryPatterns = [
       /(\w+(?:\s+\w+)?)\s*(?:is|remains|listed as|ruled)\s*(out|questionable|probable|day-to-day)/gi,
       /(\w+(?:\s+\w+)?)\s*\((out|questionable|probable|GTD)\)/gi,
@@ -149,7 +202,6 @@ function parseScrapedData(
                       statusRaw === 'out' ? 'Out' :
                       statusRaw === 'questionable' ? 'Questionable' : 'Probable';
         
-        // Determine team based on context
         const team = content.indexOf(player) < content.indexOf(awayTeam) ? homeTeam : awayTeam;
         
         if (!injuries.find(i => i.player === player)) {
@@ -169,7 +221,6 @@ function parseScrapedData(
   if (formData?.data) {
     const content = formData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     
-    // Extract W/L patterns
     const winPattern = /(\d+)-(\d+)/g;
     let match;
     if ((match = winPattern.exec(content)) !== null) {
@@ -183,7 +234,6 @@ function parseScrapedData(
     }
   }
 
-  // Generate realistic form data
   recentForm.push(
     { team: homeTeam, last5: generateLast5Games() },
     { team: awayTeam, last5: generateLast5Games() }
@@ -194,7 +244,6 @@ function parseScrapedData(
     const content = h2hData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     analysis = content.substring(0, 500);
     
-    // Generate H2H based on scraped content
     for (let i = 0; i < 5; i++) {
       const homeWins = Math.random() > 0.5;
       headToHead.push({
@@ -205,7 +254,6 @@ function parseScrapedData(
     }
   }
 
-  // If no data was scraped, return generated data
   if (injuries.length === 0 && teamStats.length === 0) {
     return generateRealisticData(homeTeam, awayTeam, sport);
   }
@@ -216,7 +264,6 @@ function parseScrapedData(
 function generateRealisticData(homeTeam: string, awayTeam: string, sport: string): ScrapedGameData {
   const injuries: ScrapedGameData['injuries'] = [];
   
-  // Generate 2-4 injuries per team
   const homeInjuryCount = 2 + Math.floor(Math.random() * 3);
   const awayInjuryCount = 2 + Math.floor(Math.random() * 3);
   
@@ -313,14 +360,14 @@ function generateScore(sport: string): string {
 
 function getPositionForSport(sport: string): string {
   const positions: Record<string, string[]> = {
-    'NBA': ['PG', 'SG', 'SF', 'PF', 'C'],
-    'NCAAB': ['G', 'F', 'C'],
-    'NFL': ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S'],
-    'NCAAF': ['QB', 'RB', 'WR', 'OL', 'DL', 'LB', 'DB'],
-    'NHL': ['C', 'LW', 'RW', 'D', 'G'],
-    'MLB': ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'],
+    'nba': ['PG', 'SG', 'SF', 'PF', 'C'],
+    'ncaab': ['G', 'F', 'C'],
+    'nfl': ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S'],
+    'ncaaf': ['QB', 'RB', 'WR', 'OL', 'DL', 'LB', 'DB'],
+    'nhl': ['C', 'LW', 'RW', 'D', 'G'],
+    'mlb': ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'],
   };
-  const sportPositions = positions[sport?.toUpperCase()] || positions['NBA'];
+  const sportPositions = positions[sport?.toLowerCase()] || positions['nba'];
   return sportPositions[Math.floor(Math.random() * sportPositions.length)];
 }
 
