@@ -216,6 +216,16 @@ const Login = () => {
                         />
                       </div>
                     </div>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="text-sm text-muted-foreground px-0 h-auto"
+                        onClick={() => navigate('/reset-password')}
+                      >
+                        Forgot password?
+                      </Button>
+                    </div>
                     <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
                       {isLoading ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
