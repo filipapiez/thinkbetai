@@ -10,21 +10,57 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { User as UserIcon, Mail, Lock, CreditCard, Star, LogIn, Loader2 } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, CreditCard, Star, LogIn, Loader2, Ticket, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 
 // Validation schemas
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const codeSchema = z.string().min(1, 'Please enter an access code').max(50, 'Code is too long');
+
+interface Profile {
+  id: string;
+  user_id: string;
+  email: string | null;
+  has_access: boolean;
+  access_type: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 const Account = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accessCode, setAccessCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedeemingCode, setIsRedeemingCode] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+
+  // Fetch user profile
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+      return data as Profile;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -33,6 +69,15 @@ const Account = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setIsInitializing(false);
+        
+        // Fetch profile after auth state change
+        if (session?.user) {
+          setTimeout(() => {
+            fetchProfile(session.user.id).then(setProfile);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
       }
     );
 
@@ -41,6 +86,10 @@ const Account = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsInitializing(false);
+      
+      if (session?.user) {
+        fetchProfile(session.user.id).then(setProfile);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -129,7 +178,7 @@ const Account = () => {
         return;
       }
       
-      toast.success('Account created! Check your email to confirm, or you can login directly.');
+      toast.success('Account created! You can now activate your access.');
       setEmail('');
       setPassword('');
     } catch (error) {
@@ -155,6 +204,77 @@ const Account = () => {
     }
   };
 
+  const handleRedeemCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      codeSchema.parse(accessCode.trim());
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+    
+    if (!user) {
+      toast.error('Please log in first');
+      return;
+    }
+    
+    setIsRedeemingCode(true);
+    try {
+      // Check if code exists and is active
+      const { data: codeData, error: codeError } = await supabase
+        .from('access_codes')
+        .select('*')
+        .eq('code', accessCode.trim().toUpperCase())
+        .eq('is_active', true)
+        .single();
+      
+      if (codeError || !codeData) {
+        toast.error('Invalid or expired access code.');
+        return;
+      }
+      
+      // Check max uses if set
+      if (codeData.max_uses !== null && codeData.current_uses >= codeData.max_uses) {
+        toast.error('This code has reached its maximum usage limit.');
+        return;
+      }
+      
+      // Update user profile with access
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          has_access: true,
+          access_type: 'free_code',
+        })
+        .eq('user_id', user.id);
+      
+      if (updateError) {
+        toast.error('Failed to activate access. Please try again.');
+        return;
+      }
+      
+      // Increment code usage
+      await supabase
+        .from('access_codes')
+        .update({ current_uses: codeData.current_uses + 1 })
+        .eq('id', codeData.id);
+      
+      // Refresh profile
+      const updatedProfile = await fetchProfile(user.id);
+      setProfile(updatedProfile);
+      
+      toast.success('Access code redeemed! Welcome to ThinkBetAI!');
+      setAccessCode('');
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsRedeemingCode(false);
+    }
+  };
+
   if (isInitializing) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -168,6 +288,7 @@ const Account = () => {
     );
   }
 
+  // Not logged in - show login/signup
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -182,7 +303,7 @@ const Account = () => {
               </div>
               <h1 className="text-2xl font-bold mb-2">Welcome to ThinkBetAI</h1>
               <p className="text-muted-foreground">
-                Sign in to save games and access personalized insights.
+                Sign in to access AI-powered sports analysis.
               </p>
             </div>
 
@@ -292,6 +413,141 @@ const Account = () => {
     );
   }
 
+  // Logged in but no access - show activation options
+  if (!profile?.has_access) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <MockDataBanner />
+        <Header />
+        
+        <main className="flex-1 py-8 md:py-16">
+          <div className="container max-w-lg">
+            <div className="text-center mb-8">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 mb-4">
+                <Star className="h-8 w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl font-bold mb-2">Activate Your Access</h1>
+              <p className="text-muted-foreground">
+                Welcome, {user.email}! Choose how to unlock ThinkBetAI.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Access Code Card */}
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Ticket className="h-5 w-5 text-primary" />
+                    Have an Access Code?
+                  </CardTitle>
+                  <CardDescription>
+                    Enter your code to unlock full access instantly.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleRedeemCode} className="space-y-4">
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder="Enter access code"
+                        value={accessCode}
+                        onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                        className="uppercase tracking-wider font-mono"
+                        disabled={isRedeemingCode}
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      variant="hero" 
+                      className="w-full" 
+                      disabled={isRedeemingCode || !accessCode.trim()}
+                    >
+                      {isRedeemingCode ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Redeem Code
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Subscription Options */}
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Subscribe
+                  </CardTitle>
+                  <CardDescription>
+                    Choose a plan that fits your needs.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto py-4"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">Basic</span>
+                      <span className="text-sm text-muted-foreground">Essential features</span>
+                    </div>
+                    <span className="text-lg font-bold">$49</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto py-4 border-primary/50 bg-primary/5"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    <div className="flex flex-col items-start">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Pro</span>
+                        <Badge variant="secondary" className="text-xs">Popular</Badge>
+                      </div>
+                      <span className="text-sm text-muted-foreground">Advanced analytics</span>
+                    </div>
+                    <span className="text-lg font-bold">$99</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto py-4"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-semibold">Insider</span>
+                      <span className="text-sm text-muted-foreground">Full access + priority support</span>
+                    </div>
+                    <span className="text-lg font-bold">$299</span>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Logout option */}
+              <div className="text-center">
+                <Button 
+                  variant="ghost" 
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                  className="text-muted-foreground"
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Log out
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  // Full access - show account dashboard
   return (
     <div className="min-h-screen flex flex-col">
       <MockDataBanner />
@@ -342,41 +598,45 @@ const Account = () => {
                     <CreditCard className="h-5 w-5" />
                     Subscription
                   </CardTitle>
-                  <Badge variant="secondary">Free</Badge>
+                  <Badge className="bg-primary/20 text-primary border-primary/30">
+                    {profile?.access_type === 'free_code' ? 'Access Code' : 
+                     profile?.access_type === 'basic' ? 'Basic' :
+                     profile?.access_type === 'pro' ? 'Pro' :
+                     profile?.access_type === 'insider' ? 'Insider' : 'Active'}
+                  </Badge>
                 </div>
                 <CardDescription>
-                  Upgrade to access premium features and AI analysis.
+                  You have full access to ThinkBetAI.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
                   <div className="flex items-center gap-2 mb-2">
-                    <Star className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">Pro Plan</span>
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <span className="font-semibold">Access Active</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Unlimited AI analysis, real-time alerts, and priority data updates.
+                  <p className="text-sm text-muted-foreground">
+                    Enjoy unlimited AI analysis, live data, and personalized insights.
                   </p>
-                  <Button variant="hero" className="w-full">
-                    Upgrade to Pro
-                  </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Saved Games */}
+            {/* Quick Actions */}
             <Card variant="glass">
               <CardHeader>
-                <CardTitle>Saved Games</CardTitle>
-                <CardDescription>
-                  Games you've bookmarked for quick access.
-                </CardDescription>
+                <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No saved games yet.</p>
-                  <p className="text-sm">Browse games and save the matchups you want to follow.</p>
-                </div>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/games')}>
+                  View Live Games
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/chat')}>
+                  Chat with AI
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/settings')}>
+                  Settings
+                </Button>
               </CardContent>
             </Card>
           </div>
