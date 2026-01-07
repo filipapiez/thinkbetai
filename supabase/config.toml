@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.confirm-payment]
 verify_jwt = false
+
+[functions.customer-portal]
+verify_jwt = false
