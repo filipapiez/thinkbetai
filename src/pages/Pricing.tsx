@@ -15,6 +15,7 @@ const pricingPlans = [
     id: 'basic',
     name: 'Basic',
     price: 49,
+    priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -26,12 +27,12 @@ const pricingPlans = [
     ],
     cta: 'Get Started',
     popular: false,
-    hasCheckout: false,
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 400,
+    price: 89,
+    priceId: 'price_1Sn2EBQrqKHReEDtxXgWQBQL',
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -45,12 +46,12 @@ const pricingPlans = [
     ],
     cta: 'Go Pro',
     popular: true,
-    hasCheckout: true,
   },
   {
     id: 'insider',
     name: 'Insider',
-    price: 750,
+    price: 299,
+    priceId: 'price_1Sn2DhQrqKHReEDtr8LCdEXA',
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -65,7 +66,6 @@ const pricingPlans = [
     ],
     cta: 'Become an Insider',
     popular: false,
-    hasCheckout: false,
   },
 ];
 
@@ -74,12 +74,7 @@ const Pricing = () => {
   const { user } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const handleSubscribe = async (planId: string, hasCheckout: boolean) => {
-    if (!hasCheckout) {
-      toast.info('This plan is coming soon!');
-      return;
-    }
-
+  const handleSubscribe = async (planId: string, priceId: string) => {
     if (!user) {
       navigate('/login', { state: { from: { pathname: '/pricing' } } });
       return;
@@ -87,7 +82,9 @@ const Pricing = () => {
 
     setLoadingPlan(planId);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout');
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId }
+      });
       
       if (error) {
         toast.error('Failed to start checkout. Please try again.');
@@ -169,7 +166,7 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={() => handleSubscribe(plan.id, plan.hasCheckout)}
+                      onClick={() => handleSubscribe(plan.id, plan.priceId)}
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"

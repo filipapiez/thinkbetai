@@ -20,6 +20,11 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Parse request body to get priceId
+    const { priceId } = await req.json().catch(() => ({}));
+    if (!priceId) throw new Error("No priceId provided");
+    logStep("Price ID received", { priceId });
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -55,19 +60,19 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
-    // Create checkout session
+    // Create checkout session with the provided priceId
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: "price_1SX7kFQrqKHReEDt1ghpltli", // Premium Access $400/month
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: "subscription",
       success_url: `${origin}/account?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/paywall`,
+      cancel_url: `${origin}/pricing`,
       metadata: {
         user_id: user.id,
       },
