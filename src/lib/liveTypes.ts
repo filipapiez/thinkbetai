@@ -41,7 +41,7 @@ export interface LiveGame {
   startTime: string;
   venue: string;
   status: 'scheduled' | 'live' | 'final';
-  odds: LiveOdds;
+  odds?: LiveOdds; // Made optional for scraped games without odds
   hasOdds: boolean;
 }
 
@@ -57,21 +57,33 @@ export interface LiveBetQualification {
 
 // Calculate bet qualification for live games based on odds value
 export function calculateLiveBetQualification(game: LiveGame): LiveBetQualification {
+  // Early return if no odds data
+  if (!game.odds || !game.hasOdds) {
+    return {
+      signal: 'PASS',
+      confidenceScore: 30,
+      riskScore: 60,
+      volatility: 'High',
+      reason: 'No odds available',
+      pick: 'home',
+    };
+  }
+
   let confidenceScore = 50;
   let riskScore = 30;
   const reasons: string[] = [];
   
-  const homeML = game.odds.moneyline.home;
-  const awayML = game.odds.moneyline.away;
-  const spread = game.odds.spread.home;
-  const total = game.odds.total.over;
+  const homeML = game.odds.moneyline?.home ?? 0;
+  const awayML = game.odds.moneyline?.away ?? 0;
+  const spread = game.odds.spread?.home ?? 0;
+  const total = game.odds.total?.over ?? 0;
   
   // Check if we have meaningful odds data
   const hasMoneyline = homeML !== 0 && awayML !== 0;
   const hasSpread = spread !== 0;
   const hasTotal = total !== 0;
   
-  if (!game.hasOdds || (!hasMoneyline && !hasSpread && !hasTotal)) {
+  if (!hasMoneyline && !hasSpread && !hasTotal) {
     return {
       signal: 'PASS',
       confidenceScore: 30,
