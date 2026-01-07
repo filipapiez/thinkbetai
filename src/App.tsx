@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
@@ -11,6 +13,8 @@ import Account from "./pages/Account";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
+import Login from "./pages/Login";
+import Paywall from "./pages/Paywall";
 import NotFound from "./pages/NotFound";
 import { BettingChatBot } from "./components/BettingChatBot";
 
@@ -22,18 +26,48 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/games" element={<Games />} />
-          <Route path="/games/:gameId" element={<GameDetail />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/about" element={<About />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <BettingChatBot />
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/paywall" element={<Paywall />} />
+            
+            {/* Protected routes - require auth + subscription */}
+            <Route path="/games" element={
+              <ProtectedRoute requireSubscription>
+                <Games />
+              </ProtectedRoute>
+            } />
+            <Route path="/games/:gameId" element={
+              <ProtectedRoute requireSubscription>
+                <GameDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute requireSubscription>
+                <Chat />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected routes - require auth only */}
+            <Route path="/account" element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <BettingChatBot />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
