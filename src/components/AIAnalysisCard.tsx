@@ -99,7 +99,7 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
       if (awayWins >= 4 && homeFavored) {
         risks.push(`${game.awayTeam.name} is playing well recently`);
       }
-      if (Math.abs(game.odds.moneyline.home) < 120) {
+      if (game.odds && Math.abs(game.odds.moneyline.home) < 120) {
         risks.push('Close line suggests unpredictable matchup');
       }
       if (game.status === 'live') {

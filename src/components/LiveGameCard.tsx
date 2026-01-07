@@ -163,7 +163,7 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
           </div>
 
           {/* Odds Display */}
-          {game.hasOdds && (
+          {game.hasOdds && game.odds ? (
             <div className="grid grid-cols-3 gap-2 text-center text-xs mb-4 p-2 rounded-lg bg-muted/30">
               <div>
                 <div className="text-muted-foreground">Moneyline</div>
@@ -189,6 +189,10 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
                   O/U {game.odds.total.over}
                 </div>
               </div>
+            </div>
+          ) : (
+            <div className="text-xs text-muted-foreground mb-4">
+              Odds not available
             </div>
           )}
 

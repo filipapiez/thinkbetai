@@ -25,6 +25,9 @@ interface APIResponse {
   games: APIGame[];
   remainingRequests: number | null;
   lastUpdated: string;
+  error?: string;
+  rateLimited?: boolean;
+  upstreamStatus?: number;
 }
 
 // Map sport keys to display names - 20+ popular sports
@@ -116,6 +119,7 @@ let gamesCache: Map<string, LiveGame> = new Map();
 // Cache for API responses - 10 min cache as per requirements
 let apiCache: { data: LiveGame[]; timestamp: number } | null = null;
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const STORAGE_KEY = 'liveGamesCache_v1';
 
 // Helper to delay between requests
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -133,11 +137,31 @@ export function useLiveGames() {
 
   const fetchGames = useCallback(async (forceRefresh = false) => {
     // Check cache first (unless force refresh)
-    if (!forceRefresh && apiCache && Date.now() - apiCache.timestamp < CACHE_DURATION) {
-      setGames(apiCache.data);
-      setLastUpdated(new Date(apiCache.timestamp).toISOString());
-      setIsLoading(false);
-      return;
+    if (!forceRefresh) {
+      // 1) In-memory cache
+      if (apiCache && Date.now() - apiCache.timestamp < CACHE_DURATION) {
+        setGames(apiCache.data);
+        setLastUpdated(new Date(apiCache.timestamp).toISOString());
+        setIsLoading(false);
+        return;
+      }
+
+      // 2) Persisted cache (survives refresh)
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as { timestamp: number; data: LiveGame[] };
+          if (parsed?.timestamp && Array.isArray(parsed.data) && Date.now() - parsed.timestamp < CACHE_DURATION) {
+            apiCache = { data: parsed.data, timestamp: parsed.timestamp };
+            setGames(parsed.data);
+            setLastUpdated(new Date(parsed.timestamp).toISOString());
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
     }
 
     setIsLoading(true);
@@ -151,26 +175,31 @@ export function useLiveGames() {
       // 1. Fetch from odds API (primary source)
       for (const sport of SPORTS_TO_FETCH) {
         try {
-          const response = await fetch(
-            `${baseUrl}/functions/v1/get-odds?sport=${sport}`,
-            {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' },
-            }
-          );
-
-          if (response.status === 429) {
-            console.warn(`Rate limited on ${sport}, pausing...`);
-            await delay(8000);
-            continue;
-          }
+          const response = await fetch(`${baseUrl}/functions/v1/get-odds?sport=${sport}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          });
 
           if (!response.ok) {
             console.warn(`Failed to fetch ${sport}: ${response.status}`);
+            // If auth/key issue, no point continuing
+            if (response.status === 401) break;
             continue;
           }
 
           const result: APIResponse = await response.json();
+
+          if (result.rateLimited) {
+            console.warn(`Upstream rate limit hit on ${sport}; stopping API fetches for now.`);
+            // Don't hammer the provider further
+            break;
+          }
+
+          if (result.error) {
+            console.warn(`API returned error for ${sport}: ${result.error}`);
+            continue;
+          }
+
           for (const game of result.games) {
             const transformed = transformGame(game);
             if (!seenIds.has(transformed.id)) {
@@ -245,6 +274,13 @@ export function useLiveGames() {
       gamesCache = new Map();
       allGames.forEach(game => gamesCache.set(game.id, game));
       apiCache = { data: allGames, timestamp: Date.now() };
+
+      // Persist cache (so refresh doesn't re-hit the API)
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apiCache));
+      } catch {
+        // ignore
+      }
       
       setGames(allGames);
       setLastUpdated(new Date().toISOString());

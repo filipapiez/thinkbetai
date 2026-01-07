@@ -27,50 +27,59 @@ interface RiskAnalysis {
 }
 
 function analyzeRisk(game: LiveGame): RiskAnalysis {
+  // Scraped games may not have odds
+  if (!game.odds) {
+    return {
+      level: 'High',
+      score: 75,
+      factors: ['Odds not available for this game'],
+    };
+  }
+
   const factors: string[] = [];
   let score = 30;
-  
+
   const homeML = game.odds.moneyline.home;
   const awayML = game.odds.moneyline.away;
   const spread = Math.abs(game.odds.spread.home);
-  
+
   // Heavy favorite risk
   if (homeML < -250 || awayML < -250) {
     score += 20;
     factors.push('Heavy favorite - low payout potential');
   }
-  
+
   // Close spread = unpredictable
   if (spread > 0 && spread <= 2.5) {
     score += 15;
     factors.push('Very close spread - coin flip territory');
   }
-  
+
   // Live game volatility
   if (game.status === 'live') {
     score += 25;
     factors.push('Live betting - high volatility');
   }
-  
+
   // No meaningful odds
   if (!game.hasOdds || (homeML === 0 && awayML === 0)) {
     score += 20;
     factors.push('Limited odds data available');
   }
-  
+
   // Large spread = blowout potential
   if (spread >= 10) {
     score += 10;
     factors.push('Large spread - blowout risk');
   }
-  
+
   if (factors.length === 0) {
     factors.push('Standard risk profile');
   }
-  
+
   score = Math.min(100, Math.max(0, score));
   const level = score <= 40 ? 'Low' : score <= 65 ? 'Medium' : 'High';
-  
+
   return { level, score, factors };
 }
 
@@ -83,9 +92,18 @@ interface ValueAnalysis {
 }
 
 function analyzeValue(game: LiveGame): ValueAnalysis {
+  if (!game.odds) {
+    return {
+      homeValue: 0,
+      awayValue: 0,
+      recommendation: 'Insufficient odds data for value analysis',
+      confidence: 0,
+    };
+  }
+
   const homeML = game.odds.moneyline.home;
   const awayML = game.odds.moneyline.away;
-  
+
   if (homeML === 0 || awayML === 0) {
     return {
       homeValue: 0,
@@ -94,24 +112,24 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
       confidence: 0,
     };
   }
-  
+
   // Convert to implied probability
-  const homeImplied = homeML > 0 
-    ? 100 / (homeML + 100) 
+  const homeImplied = homeML > 0
+    ? 100 / (homeML + 100)
     : Math.abs(homeML) / (Math.abs(homeML) + 100);
-  const awayImplied = awayML > 0 
-    ? 100 / (awayML + 100) 
+  const awayImplied = awayML > 0
+    ? 100 / (awayML + 100)
     : Math.abs(awayML) / (Math.abs(awayML) + 100);
-  
+
   // Value = 1 - implied (lower implied = more value)
   const homeValue = Math.round((1 - homeImplied) * 100);
   const awayValue = Math.round((1 - awayImplied) * 100);
-  
+
   let recommendation = '';
   let confidence = 50;
-  
+
   const diff = Math.abs(homeImplied - awayImplied);
-  
+
   if (diff >= 0.25) {
     const underdog = homeImplied < awayImplied ? 'home' : 'away';
     recommendation = `Clear underdog value on ${underdog === 'home' ? game.homeTeam.name : game.awayTeam.name}`;
@@ -123,7 +141,7 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
     recommendation = 'Close matchup - consider spread or total bets instead';
     confidence = 45;
   }
-  
+
   return { homeValue, awayValue, recommendation, confidence };
 }
 
@@ -328,106 +346,116 @@ const GameDetail = () => {
           </Card>
 
           {/* Odds Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Moneyline */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Moneyline
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
-                    <div className={cn(
-                      "text-2xl font-bold font-mono",
-                      game.odds.moneyline.home < 0 ? "text-emerald-400" : "text-foreground"
-                    )}>
-                      {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+          {game.odds ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Moneyline */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Moneyline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
+                      <div className={cn(
+                        "text-2xl font-bold font-mono",
+                        game.odds.moneyline.home < 0 ? "text-emerald-400" : "text-foreground"
+                      )}>
+                        {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+                      </div>
+                    </div>
+                    <div className="text-muted-foreground">vs</div>
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
+                      <div className={cn(
+                        "text-2xl font-bold font-mono",
+                        game.odds.moneyline.away < 0 ? "text-emerald-400" : "text-foreground"
+                      )}>
+                        {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-muted-foreground">vs</div>
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
-                    <div className={cn(
-                      "text-2xl font-bold font-mono",
-                      game.odds.moneyline.away < 0 ? "text-emerald-400" : "text-foreground"
-                    )}>
-                      {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Spread */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Spread
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
-                    <div className="text-2xl font-bold font-mono">
-                      {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
+              {/* Spread */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Activity className="h-4 w-4" />
+                    Spread
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
+                      <div className="text-2xl font-bold font-mono">
+                        {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
+                    <div className="text-muted-foreground">vs</div>
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
+                      <div className="text-2xl font-bold font-mono">
+                        {game.odds.spread.away > 0 ? '+' : ''}{game.odds.spread.away || 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ({game.odds.spread.awayOdds > 0 ? '+' : ''}{game.odds.spread.awayOdds})
+                      </div>
                     </div>
                   </div>
-                  <div className="text-muted-foreground">vs</div>
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
-                    <div className="text-2xl font-bold font-mono">
-                      {game.odds.spread.away > 0 ? '+' : ''}{game.odds.spread.away || 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      ({game.odds.spread.awayOdds > 0 ? '+' : ''}{game.odds.spread.awayOdds})
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Total */}
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  Total (O/U)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Over</div>
-                    <div className="text-2xl font-bold font-mono">
-                      {game.odds.total.over || 'N/A'}
+              {/* Total */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Total (O/U)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between items-center">
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">Over</div>
+                      <div className="text-2xl font-bold font-mono">
+                        {game.odds.total.over || 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
+                    <div className="text-muted-foreground">/</div>
+                    <div className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">Under</div>
+                      <div className="text-2xl font-bold font-mono">
+                        {game.odds.total.under || 'N/A'}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ({game.odds.total.underOdds > 0 ? '+' : ''}{game.odds.total.underOdds})
+                      </div>
                     </div>
                   </div>
-                  <div className="text-muted-foreground">/</div>
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Under</div>
-                    <div className="text-2xl font-bold font-mono">
-                      {game.odds.total.under || 'N/A'}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      ({game.odds.total.underOdds > 0 ? '+' : ''}{game.odds.total.underOdds})
-                    </div>
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card className="mb-6">
+              <CardContent className="p-6 flex items-center gap-3 text-sm text-muted-foreground">
+                <Info className="h-4 w-4" />
+                Odds are not available for this game (scraped listing).
               </CardContent>
             </Card>
-          </div>
+          )}
+
 
           {/* Analysis Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
