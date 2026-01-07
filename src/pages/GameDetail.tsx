@@ -17,6 +17,7 @@ import { ScrapedInjuryCard } from '@/components/ScrapedInjuryCard';
 import { ScrapedFormCard } from '@/components/ScrapedFormCard';
 import { AIAnalysisCard } from '@/components/AIAnalysisCard';
 import { PerformanceChartLive } from '@/components/PerformanceChartLive';
+import { QualifiedBetAccuracyChart } from '@/components/QualifiedBetAccuracyChart';
 
 // Risk assessment based on odds analysis
 interface RiskAnalysis {
@@ -590,6 +591,11 @@ const GameDetail = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Qualified Bet Accuracy Chart */}
+          <div className="mb-6">
+            <QualifiedBetAccuracyChart sport={game.sport} />
+          </div>
 
           {/* Disclaimer */}
           <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
