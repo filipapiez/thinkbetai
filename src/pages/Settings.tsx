@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Settings2, Check, Lock, Crown, Bell, Palette, Database } from 'lucide-react';
+import { Settings2, Check, Bell, Palette, Database } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SportConfig {
@@ -25,11 +25,6 @@ const SPORTS_CONFIG: SportConfig[] = [
   { id: 'ncaab', name: 'College Basketball', shortName: 'NCAAB', leagueId: 'NCAAB', available: true, requiresUpgrade: false },
   { id: 'ncaaf', name: 'College Football', shortName: 'NCAAF', leagueId: 'NCAAF', available: true, requiresUpgrade: false },
   { id: 'mlb', name: 'MLB Baseball', shortName: 'MLB', leagueId: 'MLB', available: true, requiresUpgrade: false },
-  { id: 'soccer', name: 'Soccer (EPL)', shortName: 'Soccer', leagueId: 'EPL', available: false, requiresUpgrade: true },
-  { id: 'mma', name: 'MMA / UFC', shortName: 'MMA', leagueId: 'UFC', available: false, requiresUpgrade: true },
-  { id: 'tennis', name: 'Tennis (ATP)', shortName: 'Tennis', leagueId: 'ATP', available: false, requiresUpgrade: true },
-  { id: 'boxing', name: 'Boxing', shortName: 'Boxing', leagueId: 'BOXING', available: false, requiresUpgrade: true },
-  { id: 'golf', name: 'Golf (PGA)', shortName: 'Golf', leagueId: 'PGA', available: false, requiresUpgrade: true },
 ];
 
 const STORAGE_KEY = 'betting-sports-preferences';
@@ -83,7 +78,6 @@ const SettingsPage = () => {
   };
 
   const availableSports = SPORTS_CONFIG.filter(s => s.available);
-  const upgradeSports = SPORTS_CONFIG.filter(s => s.requiresUpgrade);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -151,36 +145,6 @@ const SettingsPage = () => {
                 </div>
               </div>
 
-              <Separator className="my-6" />
-
-              {/* Locked Sports */}
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-amber-400" />
-                  Requires API Upgrade ({upgradeSports.length})
-                </h3>
-                <div className="grid gap-3">
-                  {upgradeSports.map(sport => (
-                    <div 
-                      key={sport.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/20 opacity-60"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Badge variant="secondary">{sport.shortName}</Badge>
-                        <span className="font-medium">{sport.name}</span>
-                        <Badge variant="outline" className="text-amber-400 border-amber-400/30 text-xs">
-                          <Crown className="h-3 w-3 mr-1" />
-                          Upgrade
-                        </Badge>
-                      </div>
-                      <Switch disabled checked={false} />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">
-                  These sports require a higher tier SportsGameOdds API subscription.
-                </p>
-              </div>
             </CardContent>
           </Card>
 

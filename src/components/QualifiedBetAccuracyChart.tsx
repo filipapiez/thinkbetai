@@ -17,15 +17,15 @@ interface SportAccuracy {
   profit: number;
 }
 
-// Get accuracy for specific sport with higher win ratios
+// Get accuracy for specific sport with higher win ratios (72-83%)
 const getSportAccuracy = (sport: string): SportAccuracy => {
   const sportData: Record<string, SportAccuracy> = {
-    'NBA': { wins: 127, losses: 53, total: 180, winRate: 70.6, profit: 24.8 },
-    'NFL': { wins: 58, losses: 22, total: 80, winRate: 72.5, profit: 31.2 },
-    'NHL': { wins: 98, losses: 42, total: 140, winRate: 70.0, profit: 22.4 },
-    'NCAAB': { wins: 142, losses: 68, total: 210, winRate: 67.6, profit: 18.9 },
-    'NCAAF': { wins: 52, losses: 23, total: 75, winRate: 69.3, profit: 26.1 },
-    'MLB': { wins: 158, losses: 82, total: 240, winRate: 65.8, profit: 15.6 },
+    'NBA': { wins: 149, losses: 51, total: 200, winRate: 74.5, profit: 32.8 },
+    'NFL': { wins: 66, losses: 14, total: 80, winRate: 82.5, profit: 48.2 },
+    'NHL': { wins: 108, losses: 32, total: 140, winRate: 77.1, profit: 38.4 },
+    'NCAAB': { wins: 168, losses: 52, total: 220, winRate: 76.4, profit: 35.9 },
+    'NCAAF': { wins: 58, losses: 17, total: 75, winRate: 77.3, profit: 41.1 },
+    'MLB': { wins: 182, losses: 58, total: 240, winRate: 75.8, profit: 34.6 },
   };
   
   return sportData[sport.toUpperCase()] || sportData['NBA'];
@@ -109,7 +109,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
                     tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                   />
                   <YAxis 
-                    domain={[55, 80]} 
+                    domain={[65, 90]} 
                     tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                     tickFormatter={(v) => `${v}%`}
                   />
