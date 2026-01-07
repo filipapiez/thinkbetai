@@ -5,8 +5,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Map our sport IDs to SportsGameOdds league IDs
-// 20 most popular sports
+// Rate limiting (per IP, per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 30; // 30 requests per minute
+const RATE_WINDOW_MS = 60 * 1000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// Allowed sports (whitelist)
 const leagueIdMap: Record<string, string> = {
   // Major US Sports
   'nba': 'NBA',
@@ -40,8 +61,15 @@ const leagueIdMap: Record<string, string> = {
   'nascar': 'NASCAR',
 };
 
+// Validate sport parameter
+function validateSport(sport: string | null): string | null {
+  if (!sport) return 'nba';
+  const normalized = sport.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (normalized.length > 20) return null;
+  return leagueIdMap[normalized] ? normalized : null;
+}
+
 // In-memory cache to reduce external API calls and avoid rate limits
-// Note: cache is per runtime instance (helps a lot even with occasional cold starts)
 const oddsCache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -51,18 +79,39 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('cf-connecting-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const API_KEY = Deno.env.get('SPORTSGAMEODDS_API_KEY');
     if (!API_KEY) {
-      console.error('SPORTSGAMEODDS_API_KEY not configured');
+      console.error('[Internal] SPORTSGAMEODDS_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
+        JSON.stringify({ error: 'Service temporarily unavailable' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const url = new URL(req.url);
-    const sport = url.searchParams.get('sport') || 'nba';
-    const leagueId = leagueIdMap[sport.toLowerCase()] || 'NBA';
+    const sportParam = url.searchParams.get('sport');
+    const validatedSport = validateSport(sportParam);
+    
+    if (validatedSport === null) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid sport parameter' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const leagueId = leagueIdMap[validatedSport] || 'NBA';
 
     // Cache lookup
     const cached = oddsCache.get(leagueId);
@@ -72,11 +121,10 @@ serve(async (req) => {
       });
     }
 
-    console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
+    console.log(`Fetching odds for sport: ${validatedSport} (leagueID: ${leagueId})`);
 
     // Fetch events with odds from SportsGameOdds API v2
-    // Use oddsAvailable=true to only get events with active odds
-    const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${leagueId}&oddsAvailable=true&limit=50`;
+    const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${encodeURIComponent(leagueId)}&oddsAvailable=true&limit=50`;
     
     const response = await fetch(apiUrl, {
       headers: { 'x-api-key': API_KEY },
@@ -92,18 +140,14 @@ serve(async (req) => {
         );
       }
 
-      // If we have *any* cached snapshot (even slightly stale), return it to keep the UI working.
+      // Return cached data if available
       if (cached) {
         return new Response(JSON.stringify(cached.data), {
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Never bubble 429/500 to the browser (it shows as a runtime error overlay).
-      // Return an empty payload + metadata so the UI can continue.
+      // Return empty payload
       const emptyPayload = {
         games: [],
         remainingRequests: null,
@@ -121,9 +165,8 @@ serve(async (req) => {
 
     console.log(`Received ${events.length} events from SportsGameOdds for ${leagueId}`);
 
-    // Transform events to our format using correct v2 API structure
+    // Transform events to our format
     const transformedGames = events.map((event: any) => {
-      // v2 API structure: teams.home.names.long/short, teams.away.names.long/short
       const homeTeamName = event.teams?.home?.names?.long || 
                            event.teams?.home?.names?.medium || 
                            event.teams?.home?.name || 
@@ -135,19 +178,14 @@ serve(async (req) => {
                            event.awayTeam || 
                            'Away Team';
       
-      // Get abbreviations
       const homeAbbr = event.teams?.home?.names?.short || homeTeamName.substring(0, 3).toUpperCase();
       const awayAbbr = event.teams?.away?.names?.short || awayTeamName.substring(0, 3).toUpperCase();
       
-      // Get start time from status.startsAt (v2 format)
       const startTime = event.status?.startsAt || event.startTime || event.startDate || new Date().toISOString();
       
-      // Get status
       const isLive = event.status?.live === true;
-      const isStarted = event.status?.started === true;
       const isEnded = event.status?.ended === true;
       
-      // Parse odds from v2 format (oddID keys like "points-home-game-ml-home")
       const odds = event.odds || {};
       let moneylineHome = 0, moneylineAway = 0;
       let spreadHome = 0, spreadHomeOdds = -110;
@@ -155,7 +193,6 @@ serve(async (req) => {
       let totalOver = 0, totalOverOdds = -110;
       let totalUnder = 0, totalUnderOdds = -110;
 
-      // Helper to parse American odds string to number
       const parseOdds = (oddsStr: any): number => {
         if (typeof oddsStr === 'number') return oddsStr;
         if (typeof oddsStr === 'string') {
@@ -165,20 +202,16 @@ serve(async (req) => {
         return 0;
       };
 
-      // v2 uses oddID format: {statID}-{statEntityID}-{periodID}-{betTypeID}-{sideID}
       for (const [oddId, oddData] of Object.entries(odds)) {
         const odd = oddData as any;
         const fairOdds = parseOdds(odd?.fairOdds || odd?.bookOdds || odd?.odds || 0);
         
-        // Moneyline: points-home-game-ml-home, points-away-game-ml-away
         if (oddId === 'points-home-game-ml-home' || oddId.includes('-ml-home')) {
           moneylineHome = fairOdds;
         }
         if (oddId === 'points-away-game-ml-away' || oddId.includes('-ml-away')) {
           moneylineAway = fairOdds;
         }
-        
-        // Spread: points-home-game-sp-home, points-away-game-sp-away
         if (oddId === 'points-home-game-sp-home' || oddId.includes('-sp-home')) {
           spreadHome = parseFloat(odd?.fairSpread || odd?.bookSpread || odd?.spread || odd?.line || 0);
           spreadHomeOdds = fairOdds || -110;
@@ -187,8 +220,6 @@ serve(async (req) => {
           spreadAway = parseFloat(odd?.fairSpread || odd?.bookSpread || odd?.spread || odd?.line || 0);
           spreadAwayOdds = fairOdds || -110;
         }
-        
-        // Over/Under: points-all-game-ou-over, points-all-game-ou-under
         if (oddId === 'points-all-game-ou-over' || oddId.includes('-ou-over')) {
           totalOver = parseFloat(odd?.fairOverUnder || odd?.bookOverUnder || odd?.overUnder || odd?.line || 0);
           totalOverOdds = fairOdds || -110;
@@ -221,7 +252,6 @@ serve(async (req) => {
       };
     });
 
-    // Filter out games without team names
     const validGames = transformedGames.filter((g: any) => 
       g.homeTeam !== 'Home Team' && g.awayTeam !== 'Away Team'
     );
@@ -234,7 +264,6 @@ serve(async (req) => {
       lastUpdated: new Date().toISOString(),
     };
 
-    // Update cache
     oddsCache.set(leagueId, { data: responsePayload, timestamp: Date.now() });
 
     return new Response(JSON.stringify(responsePayload), {
@@ -242,7 +271,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[Internal] Error in get-odds function:', error);
+    console.error('[Internal] Error in get-odds function');
     return new Response(
       JSON.stringify({ error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

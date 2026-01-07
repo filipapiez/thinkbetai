@@ -5,20 +5,134 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting (per IP, per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 20; // 20 requests per minute
+const RATE_WINDOW_MS = 60 * 1000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+// Input validation
+const MAX_MESSAGE_LENGTH = 2000;
+const MAX_MESSAGES = 20;
+const MAX_TEAM_NAME_LENGTH = 100;
+
+function sanitizeString(str: string, maxLength: number): string {
+  if (typeof str !== 'string') return '';
+  return str.trim().slice(0, maxLength).replace(/[<>]/g, '');
+}
+
+function validateMessages(messages: unknown): { role: string; content: string }[] | null {
+  if (!Array.isArray(messages)) return null;
+  if (messages.length > MAX_MESSAGES) return null;
+  
+  const validated: { role: string; content: string }[] = [];
+  for (const msg of messages) {
+    if (!msg || typeof msg !== 'object') return null;
+    const role = (msg as any).role;
+    const content = (msg as any).content;
+    
+    if (!['user', 'assistant', 'system'].includes(role)) return null;
+    if (typeof content !== 'string' || content.length > MAX_MESSAGE_LENGTH) return null;
+    
+    validated.push({ role, content: sanitizeString(content, MAX_MESSAGE_LENGTH) });
+  }
+  return validated;
+}
+
+function validateGameContext(ctx: unknown): object | null {
+  if (!ctx || typeof ctx !== 'object') return null;
+  const c = ctx as any;
+  
+  return {
+    sport: sanitizeString(c.sport || '', 50),
+    homeTeam: sanitizeString(c.homeTeam || '', MAX_TEAM_NAME_LENGTH),
+    awayTeam: sanitizeString(c.awayTeam || '', MAX_TEAM_NAME_LENGTH),
+    venue: sanitizeString(c.venue || '', 200),
+    startTime: sanitizeString(c.startTime || '', 50),
+    odds: c.odds ? {
+      moneyline: {
+        home: Number(c.odds?.moneyline?.home) || 0,
+        away: Number(c.odds?.moneyline?.away) || 0,
+      },
+      spread: {
+        home: Number(c.odds?.spread?.home) || 0,
+        line: Number(c.odds?.spread?.line) || 0,
+      },
+      total: {
+        line: Number(c.odds?.total?.line) || 0,
+      },
+      impliedProb: {
+        homePct: Number(c.odds?.impliedProb?.homePct) || 50,
+        awayPct: Number(c.odds?.impliedProb?.awayPct) || 50,
+      },
+    } : null,
+    betSignal: c.betSignal ? {
+      signal: sanitizeString(c.betSignal?.signal || '', 50),
+      edge: Number(c.betSignal?.edge) || 0,
+      confidence: Number(c.betSignal?.confidence) || 0,
+      pick: ['home', 'away'].includes(c.betSignal?.pick) ? c.betSignal.pick : 'home',
+      reason: sanitizeString(c.betSignal?.reason || '', 500),
+    } : null,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, gameContext } = await req.json();
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('cf-connecting-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const messages = validateMessages(body.messages);
+    
+    if (!messages || messages.length === 0) {
+      return new Response(JSON.stringify({ error: "Invalid request format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const gameContext = body.gameContext ? validateGameContext(body.gameContext) : null;
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      console.error("[Internal] LOVABLE_API_KEY not configured");
+      return new Response(JSON.stringify({ error: "Service temporarily unavailable" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    console.log("Received chat request with", messages?.length, "messages");
+    console.log(`Chat request received: ${messages.length} messages`);
 
     // Build context-aware system prompt
     let systemPrompt = `You are ThinkBetAI Assistant, an AI helper for the ThinkBetAI sports betting analysis platform. You ONLY answer questions about:
@@ -47,27 +161,28 @@ IMPORTANT RULES:
 
     // Add game-specific context if provided
     if (gameContext) {
+      const ctx = gameContext as any;
       systemPrompt += `
 
 CURRENT GAME CONTEXT:
-- Sport: ${gameContext.sport}
-- Match: ${gameContext.homeTeam} vs ${gameContext.awayTeam}
-- Venue: ${gameContext.venue}
-- Start Time: ${gameContext.startTime}
-${gameContext.odds ? `
+- Sport: ${ctx.sport}
+- Match: ${ctx.homeTeam} vs ${ctx.awayTeam}
+- Venue: ${ctx.venue}
+- Start Time: ${ctx.startTime}
+${ctx.odds ? `
 CURRENT ODDS:
-- Moneyline: ${gameContext.homeTeam} ${gameContext.odds.moneyline?.home > 0 ? '+' : ''}${gameContext.odds.moneyline?.home} / ${gameContext.awayTeam} ${gameContext.odds.moneyline?.away > 0 ? '+' : ''}${gameContext.odds.moneyline?.away}
-- Spread: ${gameContext.homeTeam} ${gameContext.odds.spread?.home > 0 ? '+' : ''}${gameContext.odds.spread?.home} (${gameContext.odds.spread?.line})
-- Total: O/U ${gameContext.odds.total?.line}
-- Implied Probability: ${gameContext.homeTeam} ${gameContext.odds.impliedProb?.homePct?.toFixed(1)}% / ${gameContext.awayTeam} ${gameContext.odds.impliedProb?.awayPct?.toFixed(1)}%
+- Moneyline: ${ctx.homeTeam} ${ctx.odds.moneyline?.home > 0 ? '+' : ''}${ctx.odds.moneyline?.home} / ${ctx.awayTeam} ${ctx.odds.moneyline?.away > 0 ? '+' : ''}${ctx.odds.moneyline?.away}
+- Spread: ${ctx.homeTeam} ${ctx.odds.spread?.home > 0 ? '+' : ''}${ctx.odds.spread?.home} (${ctx.odds.spread?.line})
+- Total: O/U ${ctx.odds.total?.line}
+- Implied Probability: ${ctx.homeTeam} ${ctx.odds.impliedProb?.homePct?.toFixed(1)}% / ${ctx.awayTeam} ${ctx.odds.impliedProb?.awayPct?.toFixed(1)}%
 ` : ''}
-${gameContext.betSignal ? `
+${ctx.betSignal ? `
 BET SIGNAL ANALYSIS:
-- Signal: ${gameContext.betSignal.signal}
-- Edge: ${gameContext.betSignal.edge > 0 ? '+' : ''}${gameContext.betSignal.edge}%
-- Confidence: ${gameContext.betSignal.confidence}%
-- Recommended Pick: ${gameContext.betSignal.pick === 'home' ? gameContext.homeTeam : gameContext.awayTeam}
-- Reason: ${gameContext.betSignal.reason}
+- Signal: ${ctx.betSignal.signal}
+- Edge: ${ctx.betSignal.edge > 0 ? '+' : ''}${ctx.betSignal.edge}%
+- Confidence: ${ctx.betSignal.confidence}%
+- Recommended Pick: ${ctx.betSignal.pick === 'home' ? ctx.homeTeam : ctx.awayTeam}
+- Reason: ${ctx.betSignal.reason}
 ` : ''}
 
 When answering questions, use this context to provide specific, relevant information about this game.`;
@@ -98,12 +213,6 @@ When answering questions, use this context to provide specific, relevant informa
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
       
       return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
         status: 500,
@@ -116,7 +225,7 @@ When answering questions, use this context to provide specific, relevant informa
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    console.error("[Internal] Betting chat error:", error);
+    console.error("[Internal] Betting chat error");
     return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

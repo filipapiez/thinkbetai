@@ -5,18 +5,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting (per IP, per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 30; // 30 requests per minute
+const RATE_WINDOW_MS = 60 * 1000;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
 // Plan-based limits
-const PLAN_LIMITS = {
+const PLAN_LIMITS: Record<string, number> = {
   basic: 50,
   pro: 100,
   insider: 250,
 };
 
-// Cache for events (10 minute TTL)
-const eventCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+// Allowed date filters
+const ALLOWED_DATE_FILTERS = ['today', 'tomorrow', 'next24h', 'next7d', 'nextMonth'];
 
-// Map sport IDs to The Odds API sport keys
+// Allowed sports whitelist
 const sportKeyMap: Record<string, string[]> = {
   'nfl': ['americanfootball_nfl'],
   'nba': ['basketball_nba'],
@@ -29,10 +50,31 @@ const sportKeyMap: Record<string, string[]> = {
   'tennis': ['tennis_atp_aus_open', 'tennis_wta_aus_open'],
   'boxing': ['boxing_boxing'],
   'golf': ['golf_pga_championship'],
-  'nascar': [], // Not directly supported
-  'esports': [], // Not directly supported
-  'table-tennis': [], // Limited support
 };
+
+// Validate inputs
+function validateSport(sport: string | null): string {
+  if (!sport || sport === 'all') return 'all';
+  const normalized = sport.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  if (normalized.length > 20) return 'all';
+  return sportKeyMap[normalized] ? normalized : 'all';
+}
+
+function validatePlan(plan: string | null): keyof typeof PLAN_LIMITS {
+  if (!plan) return 'basic';
+  const normalized = plan.toLowerCase().replace(/[^a-z]/g, '');
+  return PLAN_LIMITS[normalized] ? normalized as keyof typeof PLAN_LIMITS : 'basic';
+}
+
+function validateDateFilter(dateFilter: string | null): string {
+  if (!dateFilter) return 'next7d';
+  const normalized = dateFilter.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return ALLOWED_DATE_FILTERS.includes(normalized) ? normalized : 'next7d';
+}
+
+// Cache for events (10 minute TTL)
+const eventCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 10 * 60 * 1000;
 
 interface EventResponse {
   id: string;
@@ -59,19 +101,31 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('cf-connecting-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const API_KEY = Deno.env.get('THE_ODDS_API_KEY');
     if (!API_KEY) {
-      console.error('THE_ODDS_API_KEY not configured');
+      console.error('[Internal] THE_ODDS_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
+        JSON.stringify({ error: 'Service temporarily unavailable' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const url = new URL(req.url);
-    const sport = url.searchParams.get('sport') || 'all';
-    const plan = (url.searchParams.get('plan') || 'basic') as keyof typeof PLAN_LIMITS;
-    const dateFilter = url.searchParams.get('date') || 'next7d';
+    const sport = validateSport(url.searchParams.get('sport'));
+    const plan = validatePlan(url.searchParams.get('plan'));
+    const dateFilter = validateDateFilter(url.searchParams.get('date'));
     const forceRefresh = url.searchParams.get('refresh') === 'true';
 
     const planLimit = PLAN_LIMITS[plan] || PLAN_LIMITS.basic;
@@ -99,7 +153,6 @@ serve(async (req) => {
     // Determine which sports to fetch
     let sportsToFetch: string[] = [];
     if (sport === 'all') {
-      // Fetch from major sports
       sportsToFetch = [
         'americanfootball_nfl',
         'basketball_nba',
@@ -111,7 +164,7 @@ serve(async (req) => {
         'mma_mixed_martial_arts',
       ];
     } else {
-      sportsToFetch = sportKeyMap[sport.toLowerCase()] || [];
+      sportsToFetch = sportKeyMap[sport] || [];
     }
 
     if (sportsToFetch.length === 0) {
@@ -126,12 +179,11 @@ serve(async (req) => {
     const allGames: TransformedGame[] = [];
     let remainingRequests: number | null = null;
 
-    // Fetch events from each sport until we hit the plan limit
     for (const sportKey of sportsToFetch) {
-      if (allGames.length >= planLimit * 1.5) break; // Fetch a bit more than needed for filtering
+      if (allGames.length >= planLimit * 1.5) break;
 
       try {
-        const eventsUrl = `https://api.the-odds-api.com/v4/sports/${sportKey}/events?apiKey=${API_KEY}`;
+        const eventsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sportKey)}/events?apiKey=${encodeURIComponent(API_KEY)}`;
         const response = await fetch(eventsUrl);
 
         if (!response.ok) {
@@ -142,12 +194,10 @@ serve(async (req) => {
         remainingRequests = parseInt(response.headers.get('x-requests-remaining') || '0');
         const events: EventResponse[] = await response.json();
 
-        // Transform events
         for (const event of events) {
           const now = new Date();
           const eventDate = new Date(event.commence_time);
           
-          // Apply date filter
           let includeEvent = false;
           const daysDiff = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
           
@@ -186,17 +236,13 @@ serve(async (req) => {
 
         console.log(`Fetched ${events.length} events from ${sportKey}, total: ${allGames.length}`);
       } catch (err) {
-        console.error(`Error fetching ${sportKey}:`, err);
+        console.error(`[Internal] Error fetching ${sportKey}`);
       }
     }
 
-    // Sort by start time
     allGames.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-
-    // Cache the full results
     eventCache.set(cacheKey, { data: allGames, timestamp: Date.now() });
 
-    // Return limited by plan
     const limitedGames = allGames.slice(0, planLimit);
 
     console.log(`Returning ${limitedGames.length} of ${allGames.length} games (plan limit: ${planLimit})`);
@@ -214,7 +260,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[Internal] Error in get-events function:', error);
+    console.error('[Internal] Error in get-events function');
     return new Response(
       JSON.stringify({ error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
