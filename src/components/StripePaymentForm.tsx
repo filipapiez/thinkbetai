@@ -32,7 +32,7 @@ const CheckoutForm = ({ planId, planName, price, accessToken, onSuccess, onCance
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const [isReady, setIsReady] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -100,6 +100,7 @@ const CheckoutForm = ({ planId, planName, price, accessToken, onSuccess, onCance
         options={{
           layout: 'tabs',
         }}
+        onReady={() => setIsReady(true)}
       />
       
       <div className="flex gap-3 pt-4">
@@ -114,13 +115,18 @@ const CheckoutForm = ({ planId, planName, price, accessToken, onSuccess, onCance
         </Button>
         <Button
           type="submit"
-          disabled={!stripe || isProcessing}
+          disabled={!stripe || !isReady || isProcessing}
           className="flex-1"
         >
           {isProcessing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Processing...
+            </>
+          ) : !isReady ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
             </>
           ) : (
             <>
