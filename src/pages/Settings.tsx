@@ -30,16 +30,27 @@ const SPORTS_CONFIG: SportConfig[] = [
 const STORAGE_KEY = 'betting-sports-preferences';
 
 const SettingsPage = () => {
+  // Note: localStorage stores user preferences (sport selections) - not sensitive data
   const [enabledSports, setEnabledSports] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return new Set(JSON.parse(saved));
-      } catch {
-        return new Set(SPORTS_CONFIG.filter(s => s.available).map(s => s.id));
+    const defaultSports = new Set(SPORTS_CONFIG.filter(s => s.available).map(s => s.id));
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Validate: must be an array of strings that match known sport IDs
+        if (Array.isArray(parsed)) {
+          const validSportIds = SPORTS_CONFIG.map(s => s.id);
+          const validatedSports = parsed.filter(
+            (item): item is string => typeof item === 'string' && validSportIds.includes(item)
+          );
+          return new Set(validatedSports);
+        }
       }
+    } catch {
+      // Invalid data - clear and use defaults
+      localStorage.removeItem(STORAGE_KEY);
     }
-    return new Set(SPORTS_CONFIG.filter(s => s.available).map(s => s.id));
+    return defaultSports;
   });
 
   const [notifications, setNotifications] = useState(true);
