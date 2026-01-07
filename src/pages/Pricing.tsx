@@ -1,9 +1,14 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Trophy } from 'lucide-react';
+import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const pricingPlans = [
   {
@@ -21,11 +26,12 @@ const pricingPlans = [
     ],
     cta: 'Get Started',
     popular: false,
+    hasCheckout: false,
   },
   {
     id: 'pro',
     name: 'Pro',
-    price: 99,
+    price: 400,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -39,11 +45,12 @@ const pricingPlans = [
     ],
     cta: 'Go Pro',
     popular: true,
+    hasCheckout: true,
   },
   {
     id: 'insider',
     name: 'Insider',
-    price: 299,
+    price: 750,
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -58,13 +65,43 @@ const pricingPlans = [
     ],
     cta: 'Become an Insider',
     popular: false,
+    hasCheckout: false,
   },
 ];
 
 const Pricing = () => {
-  const handleSubscribe = (planId: string) => {
-    // TODO: Integrate with Stripe
-    console.log(`Subscribe to ${planId}`);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  const handleSubscribe = async (planId: string, hasCheckout: boolean) => {
+    if (!hasCheckout) {
+      toast.info('This plan is coming soon!');
+      return;
+    }
+
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/pricing' } } });
+      return;
+    }
+
+    setLoadingPlan(planId);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      
+      if (error) {
+        toast.error('Failed to start checkout. Please try again.');
+        return;
+      }
+      
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      toast.error('An unexpected error occurred.');
+    } finally {
+      setLoadingPlan(null);
+    }
   };
 
   return (
@@ -132,11 +169,15 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={() => handleSubscribe(plan.id)}
+                      onClick={() => handleSubscribe(plan.id, plan.hasCheckout)}
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
+                      disabled={loadingPlan === plan.id}
                     >
+                      {loadingPlan === plan.id ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : null}
                       {plan.cta}
                     </Button>
                   </CardContent>
