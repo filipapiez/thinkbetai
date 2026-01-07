@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // Map our sport IDs to SportsGameOdds league IDs
-// 15 most popular sports
+// 20 most popular sports
 const leagueIdMap: Record<string, string> = {
   // Major US Sports
   'nba': 'NBA',
@@ -15,21 +15,29 @@ const leagueIdMap: Record<string, string> = {
   'nhl': 'NHL',
   'ncaab': 'NCAAB',
   'ncaaf': 'NCAAF',
+  'wnba': 'WNBA',
   // Soccer Leagues
   'epl': 'EPL',
   'laliga': 'LALIGA',
   'bundesliga': 'BUNDESLIGA',
   'seriea': 'SERIEA',
   'mls': 'MLS',
-  // Other Popular Sports
+  'ligue1': 'LIGUE1',
+  'ucl': 'UCL',
+  // Combat Sports
   'ufc': 'UFC',
+  'boxing': 'BOXING',
+  // Tennis
   'atp': 'ATP',
   'wta': 'WTA',
+  // Other Popular Sports
   'tabletennis': 'TABLETENNIS',
-  'boxing': 'BOXING',
   'pga': 'PGA',
   'cricket': 'CRICKET',
   'esports': 'ESPORTS',
+  'rugby': 'RUGBY',
+  'f1': 'F1',
+  'nascar': 'NASCAR',
 };
 
 // In-memory cache to reduce external API calls and avoid rate limits
