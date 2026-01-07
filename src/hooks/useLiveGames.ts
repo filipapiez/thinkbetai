@@ -147,8 +147,9 @@ export function useLiveGames() {
           );
 
           if (response.status === 429) {
-            console.warn(`Rate limited on ${sport}, skipping...`);
-            await delay(2000); // Wait longer if rate limited
+            console.warn(`Rate limited on ${sport}, pausing...`);
+            // Back off hard to avoid cascading 429s
+            await delay(8000);
             continue;
           }
 
@@ -159,9 +160,9 @@ export function useLiveGames() {
 
           const result: APIResponse = await response.json();
           allGames.push(...result.games.map(transformGame));
-          
-          // Delay between requests to avoid rate limits
-          await delay(500);
+
+          // Larger delay between requests to avoid rate limits (15 sports is a lot)
+          await delay(1200);
         } catch (err) {
           console.warn(`Error fetching ${sport}:`, err);
         }

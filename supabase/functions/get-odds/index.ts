@@ -32,6 +32,11 @@ const leagueIdMap: Record<string, string> = {
   'esports': 'ESPORTS',
 };
 
+// In-memory cache to reduce external API calls and avoid rate limits
+// Note: cache is per runtime instance (helps a lot even with occasional cold starts)
+const oddsCache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -50,6 +55,14 @@ serve(async (req) => {
     const url = new URL(req.url);
     const sport = url.searchParams.get('sport') || 'nba';
     const leagueId = leagueIdMap[sport.toLowerCase()] || 'NBA';
+
+    // Cache lookup
+    const cached = oddsCache.get(leagueId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'HIT' },
+      });
+    }
 
     console.log(`Fetching odds for sport: ${sport} (leagueID: ${leagueId})`);
 
@@ -73,6 +86,13 @@ serve(async (req) => {
       }
       
       if (response.status === 429) {
+        // If we have *any* cached snapshot (even slightly stale), return it to keep the UI working.
+        if (cached) {
+          return new Response(JSON.stringify(cached.data), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'STALE' },
+          });
+        }
+
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -206,14 +226,18 @@ serve(async (req) => {
 
     console.log(`Returning ${validGames.length} valid games with odds for ${leagueId}`);
 
-    return new Response(
-      JSON.stringify({ 
-        games: validGames,
-        remainingRequests: null,
-        lastUpdated: new Date().toISOString(),
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const responsePayload = {
+      games: validGames,
+      remainingRequests: null,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // Update cache
+    oddsCache.set(leagueId, { data: responsePayload, timestamp: Date.now() });
+
+    return new Response(JSON.stringify(responsePayload), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+    });
 
   } catch (error) {
     console.error('Error in get-odds function:', error);

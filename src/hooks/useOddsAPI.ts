@@ -51,12 +51,7 @@ export function useOddsAPI(sport: string = 'nba') {
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('get-odds', {
-        body: {},
-        headers: {},
-      });
-
-      // The invoke method doesn't support query params directly, so we use the URL
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-odds?sport=${sport}`,
         {
