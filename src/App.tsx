@@ -10,6 +10,7 @@ import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
+import Subscription from "./pages/Subscription";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
@@ -58,6 +59,11 @@ const App = () => (
             <Route path="/account" element={
               <ProtectedRoute>
                 <Account />
+              </ProtectedRoute>
+            } />
+            <Route path="/subscription" element={
+              <ProtectedRoute>
+                <Subscription />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
