@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info } from 'lucide-react';
 import { useState } from 'react';
 
 export const Header = () => {
@@ -29,6 +29,10 @@ export const Header = () => {
           </Link>
           <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Pricing
+          </Link>
+          <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <Info className="h-4 w-4" />
+            About
           </Link>
           <Link to="/settings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Settings className="h-4 w-4" />
@@ -89,6 +93,14 @@ export const Header = () => {
             >
               <TrendingUp className="h-4 w-4" />
               Pricing
+            </Link>
+            <Link 
+              to="/about" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Info className="h-4 w-4" />
+              About Us
             </Link>
             <Link 
               to="/settings" 

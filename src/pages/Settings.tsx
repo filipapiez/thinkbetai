@@ -202,23 +202,6 @@ const SettingsPage = () => {
             </CardContent>
           </Card>
 
-          {/* API Info */}
-          <div className="mt-8 p-4 rounded-lg bg-muted/20 border border-border">
-            <h3 className="font-medium mb-2">Data Source</h3>
-            <p className="text-sm text-muted-foreground">
-              Live odds data is provided by SportsGameOdds API. Your current subscription 
-              supports {availableSports.length} sports. To unlock additional sports like 
-              MMA, Tennis, and Soccer, upgrade your API subscription at{' '}
-              <a 
-                href="https://sportsgameodds.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                sportsgameodds.com
-              </a>
-            </p>
-          </div>
         </div>
       </main>
 
