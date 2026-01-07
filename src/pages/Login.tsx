@@ -97,49 +97,49 @@ const Login = () => {
     // Clear previous promo error
     setPromoError('');
     
-    // Validate promo code before creating account
-    const trimmedCode = promoCode.trim().toUpperCase();
-    if (trimmedCode && trimmedCode !== 'GETIT') {
-      setPromoError('Invalid promo code');
-      return;
-    }
-    
     setIsLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
+      // Use server-side signup with promo validation
+      const { data, error } = await supabase.functions.invoke('signup-with-promo', {
+        body: {
+          email: email.trim(),
+          password,
+          promoCode: promoCode.trim(),
         },
       });
       
       if (error) {
-        if (error.message.includes('already registered')) {
+        toast.error('Sign up failed. Please try again.');
+        return;
+      }
+      
+      if (data?.error) {
+        if (data.error === 'Invalid promo code') {
+          setPromoError('Invalid promo code');
+        } else if (data.error.includes('already registered')) {
           toast.error('This email is already registered. Please log in.');
         } else {
-          toast.error('Sign up failed. Please try again.');
+          toast.error(data.error);
         }
         return;
       }
-
-      // If valid promo code provided, redeem it
-      if (trimmedCode === 'GETIT' && data.user) {
-        const { data: redeemed } = await supabase.rpc('redeem_access_code', {
-          code_text: trimmedCode,
-          requesting_user_id: data.user.id,
-        });
-        
-        if (redeemed) {
-          toast.success('Account created with promo code! Full access unlocked.');
-          await refreshProfile();
-          return;
-        }
+      
+      // Sign in the user after successful signup
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      
+      if (signInError) {
+        toast.error('Account created but failed to sign in. Please log in manually.');
+        return;
       }
       
-      toast.success('Account created! Choose a plan to get started.');
+      if (data?.isPro) {
+        toast.success('Account created with PRO access!');
+      } else {
+        toast.success('Account created! Choose a plan to get started.');
+      }
     } catch (error) {
       toast.error('An unexpected error occurred.');
     } finally {

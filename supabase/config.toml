@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.check-subscription]
 verify_jwt = false
+
+[functions.signup-with-promo]
+verify_jwt = false
