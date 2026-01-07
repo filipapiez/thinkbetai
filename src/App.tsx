@@ -18,6 +18,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Paywall from "./pages/Paywall";
 import ResetPassword from "./pages/ResetPassword";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import { BettingChatBot } from "./components/BettingChatBot";
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/paywall" element={<Paywall />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             
             {/* Protected routes - require auth + subscription */}
             <Route path="/games" element={
