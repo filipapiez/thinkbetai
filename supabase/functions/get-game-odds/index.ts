@@ -1,21 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate limiting (per IP, per minute)
+// Rate limiting (per user, per minute)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 30; // 30 requests per minute
 const RATE_WINDOW_MS = 60 * 1000;
 
-function checkRateLimit(ip: string): boolean {
+function checkRateLimit(userId: string): boolean {
   const now = Date.now();
-  const record = rateLimitMap.get(ip);
+  const record = rateLimitMap.get(userId);
   
   if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_WINDOW_MS });
     return true;
   }
   
@@ -25,6 +26,29 @@ function checkRateLimit(ip: string): boolean {
   
   record.count++;
   return true;
+}
+
+// Authentication helper
+async function authenticateUser(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  return { userId: data.user.id };
 }
 
 // Cache for odds (5 minute TTL)
@@ -81,12 +105,6 @@ function validatePlan(plan: unknown): string {
   return ALLOWED_PLANS.includes(normalized) ? normalized : 'basic';
 }
 
-function validateUserId(userId: unknown): string {
-  if (typeof userId !== 'string') return 'anonymous';
-  // Sanitize user ID, limit length
-  return userId.replace(/[^a-zA-Z0-9_@.-]/g, '').slice(0, 100) || 'anonymous';
-}
-
 interface OddsResponse {
   id: string;
   sport_key: string;
@@ -114,12 +132,17 @@ serve(async (req) => {
   }
 
   try {
-    // Rate limiting
-    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                     req.headers.get('cf-connecting-ip') || 
-                     'unknown';
-    
-    if (!checkRateLimit(clientIP)) {
+    // Authentication check
+    const auth = await authenticateUser(req);
+    if (!auth) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting by user ID
+    if (!checkRateLimit(auth.userId)) {
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -141,7 +164,6 @@ serve(async (req) => {
     const eventId = validateEventId(body.eventId);
     const sportKey = validateSportKey(body.sportKey);
     const plan = validatePlan(body.plan);
-    const userId = validateUserId(body.userId);
 
     if (!eventId || !sportKey) {
       return new Response(
@@ -150,9 +172,9 @@ serve(async (req) => {
       );
     }
 
-    // Check daily usage limit
+    // Check daily usage limit (by user ID)
     const today = new Date().toISOString().split('T')[0];
-    const userKey = `${userId}_${clientIP}`;
+    const userKey = auth.userId;
     const userUsage = dailyUsage.get(userKey);
     const dailyLimit = DAILY_LIMITS[plan] || DAILY_LIMITS.basic;
 
@@ -171,7 +193,7 @@ serve(async (req) => {
     const cacheKey = `${eventId}`;
     const cached = oddsCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`Returning cached odds for event ${eventId}`);
+      console.log(`Returning cached odds for event ${eventId} (user: ${auth.userId})`);
       return new Response(
         JSON.stringify({
           ...cached.data,
@@ -182,7 +204,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Fetching odds for event ${eventId} in sport ${sportKey}`);
+    console.log(`User ${auth.userId} fetching odds for event ${eventId} in sport ${sportKey}`);
 
     // Fetch odds for this specific event
     const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sportKey)}/odds/?apiKey=${encodeURIComponent(API_KEY)}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&eventIds=${encodeURIComponent(eventId)}`;
