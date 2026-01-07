@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || '/games';
@@ -93,6 +94,16 @@ const Login = () => {
     e.preventDefault();
     if (!validateInputs()) return;
     
+    // Clear previous promo error
+    setPromoError('');
+    
+    // Validate promo code before creating account
+    const trimmedCode = promoCode.trim().toUpperCase();
+    if (trimmedCode && trimmedCode !== 'GETIT') {
+      setPromoError('Invalid promo code');
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -114,10 +125,10 @@ const Login = () => {
         return;
       }
 
-      // If promo code provided, try to redeem it after signup
-      if (promoCode.trim() && data.user) {
+      // If valid promo code provided, redeem it
+      if (trimmedCode === 'GETIT' && data.user) {
         const { data: redeemed } = await supabase.rpc('redeem_access_code', {
-          code_text: promoCode.trim().toUpperCase(),
+          code_text: trimmedCode,
           requesting_user_id: data.user.id,
         });
         
@@ -247,12 +258,18 @@ const Login = () => {
                       <Input
                         id="promo-code"
                         type="text"
-                        placeholder="Enter code like GETIT"
+                        placeholder="Enter promo code"
                         value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                        className="uppercase tracking-wider font-mono"
+                        onChange={(e) => {
+                          setPromoCode(e.target.value.toUpperCase());
+                          setPromoError('');
+                        }}
+                        className={`uppercase tracking-wider font-mono ${promoError ? 'border-destructive' : ''}`}
                         disabled={isLoading}
                       />
+                      {promoError && (
+                        <p className="text-sm text-destructive">{promoError}</p>
+                      )}
                     </div>
                     <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
                       {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
