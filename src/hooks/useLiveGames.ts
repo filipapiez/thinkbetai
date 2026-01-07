@@ -78,11 +78,17 @@ function transformGame(apiGame: APIGame): LiveGame {
 }
 
 // Sports to fetch - limited to what the API subscription supports
-// UFC, ATP, EPL require higher tier subscriptions
 const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb'];
 
 // Store for game lookup by ID
 let gamesCache: Map<string, LiveGame> = new Map();
+
+// Cache for API responses - 10 min cache as per requirements
+let apiCache: { data: LiveGame[]; timestamp: number } | null = null;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+// Helper to delay between requests
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export function getGameById(gameId: string): LiveGame | undefined {
   return gamesCache.get(gameId);
@@ -95,7 +101,15 @@ export function useLiveGames() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [remainingRequests, setRemainingRequests] = useState<number | null>(null);
 
-  const fetchGames = useCallback(async () => {
+  const fetchGames = useCallback(async (forceRefresh = false) => {
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && apiCache && Date.now() - apiCache.timestamp < CACHE_DURATION) {
+      setGames(apiCache.data);
+      setLastUpdated(new Date(apiCache.timestamp).toISOString());
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -103,8 +117,8 @@ export function useLiveGames() {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       const allGames: LiveGame[] = [];
       
-      // Fetch from multiple sports in parallel
-      const fetchPromises = SPORTS_TO_FETCH.map(async (sport) => {
+      // Fetch sports SEQUENTIALLY with delays to avoid rate limits
+      for (const sport of SPORTS_TO_FETCH) {
         try {
           const response = await fetch(
             `${baseUrl}/functions/v1/get-odds?sport=${sport}`,
@@ -114,30 +128,36 @@ export function useLiveGames() {
             }
           );
 
+          if (response.status === 429) {
+            console.warn(`Rate limited on ${sport}, skipping...`);
+            await delay(2000); // Wait longer if rate limited
+            continue;
+          }
+
           if (!response.ok) {
             console.warn(`Failed to fetch ${sport}: ${response.status}`);
-            return [];
+            continue;
           }
 
           const result: APIResponse = await response.json();
-          return result.games.map(transformGame);
+          allGames.push(...result.games.map(transformGame));
+          
+          // Delay between requests to avoid rate limits
+          await delay(500);
         } catch (err) {
           console.warn(`Error fetching ${sport}:`, err);
-          return [];
         }
-      });
-
-      const results = await Promise.all(fetchPromises);
-      results.forEach(sportGames => allGames.push(...sportGames));
+      }
       
       // Sort by start time
       allGames.sort((a, b) => 
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
       );
       
-      // Update cache for game lookup
+      // Update caches
       gamesCache = new Map();
       allGames.forEach(game => gamesCache.set(game.id, game));
+      apiCache = { data: allGames, timestamp: Date.now() };
       
       setGames(allGames);
       setLastUpdated(new Date().toISOString());
@@ -145,7 +165,7 @@ export function useLiveGames() {
       if (allGames.length === 0) {
         toast.info('No upcoming games found');
       } else {
-        console.log(`Loaded ${allGames.length} games across ${SPORTS_TO_FETCH.length} sports`);
+        console.log(`Loaded ${allGames.length} games`);
       }
 
     } catch (err) {

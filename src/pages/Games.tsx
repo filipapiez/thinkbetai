@@ -180,7 +180,7 @@ const Games = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={refetch}
+                onClick={() => refetch(true)}
                 disabled={isLoading}
               >
                 <RefreshCw className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -316,7 +316,7 @@ const Games = () => {
               </div>
               <h3 className="text-lg font-semibold mb-2">Failed to load games</h3>
               <p className="text-muted-foreground mb-4">{error}</p>
-              <Button onClick={refetch}>Try Again</Button>
+              <Button onClick={() => refetch(true)}>Try Again</Button>
             </div>
           )}
 
