@@ -33,17 +33,28 @@ const Paywall = () => {
     return null;
   }
 
+  const [promoError, setPromoError] = useState('');
+
   const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!promoCode.trim()) {
+    setPromoError('');
+    
+    const trimmedCode = promoCode.trim().toUpperCase();
+    if (!trimmedCode) {
       toast.error('Please enter a promo code');
+      return;
+    }
+    
+    // Validate promo code client-side first
+    if (trimmedCode !== 'GETIT') {
+      setPromoError('Invalid promo code');
       return;
     }
     
     setIsRedeemingCode(true);
     try {
       const { data, error } = await supabase.rpc('redeem_access_code', {
-        code_text: promoCode.trim().toUpperCase(),
+        code_text: trimmedCode,
         requesting_user_id: user.id,
       });
       
@@ -53,7 +64,7 @@ const Paywall = () => {
       }
       
       if (!data) {
-        toast.error('Invalid or expired promo code.');
+        setPromoError('Invalid promo code');
         return;
       }
       
@@ -107,18 +118,26 @@ const Paywall = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleRedeemCode} className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter your promo code (optional)"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                    className="uppercase tracking-wider font-mono flex-1"
-                    disabled={isRedeemingCode}
-                  />
-                  <Button type="submit" disabled={isRedeemingCode || !promoCode.trim()}>
-                    {isRedeemingCode ? 'Redeeming...' : 'Redeem'}
-                  </Button>
+                <form onSubmit={handleRedeemCode} className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Enter promo code"
+                      value={promoCode}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        setPromoError('');
+                      }}
+                      className={`uppercase tracking-wider font-mono flex-1 ${promoError ? 'border-destructive' : ''}`}
+                      disabled={isRedeemingCode}
+                    />
+                    <Button type="submit" disabled={isRedeemingCode || !promoCode.trim()}>
+                      {isRedeemingCode ? 'Unlocking...' : 'Unlock'}
+                    </Button>
+                  </div>
+                  {promoError && (
+                    <p className="text-sm text-destructive">{promoError}</p>
+                  )}
                 </form>
               </CardContent>
             </Card>
