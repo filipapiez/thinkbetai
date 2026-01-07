@@ -223,44 +223,21 @@ const Account = () => {
     
     setIsRedeemingCode(true);
     try {
-      // Check if code exists and is active
-      const { data: codeData, error: codeError } = await supabase
-        .from('access_codes')
-        .select('*')
-        .eq('code', accessCode.trim().toUpperCase())
-        .eq('is_active', true)
-        .single();
+      // Use secure function to redeem code
+      const { data, error } = await supabase.rpc('redeem_access_code', {
+        code_text: accessCode.trim().toUpperCase(),
+        requesting_user_id: user.id,
+      });
       
-      if (codeError || !codeData) {
+      if (error) {
+        toast.error('Failed to redeem code. Please try again.');
+        return;
+      }
+      
+      if (!data) {
         toast.error('Invalid or expired access code.');
         return;
       }
-      
-      // Check max uses if set
-      if (codeData.max_uses !== null && codeData.current_uses >= codeData.max_uses) {
-        toast.error('This code has reached its maximum usage limit.');
-        return;
-      }
-      
-      // Update user profile with access
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          has_access: true,
-          access_type: 'free_code',
-        })
-        .eq('user_id', user.id);
-      
-      if (updateError) {
-        toast.error('Failed to activate access. Please try again.');
-        return;
-      }
-      
-      // Increment code usage
-      await supabase
-        .from('access_codes')
-        .update({ current_uses: codeData.current_uses + 1 })
-        .eq('id', codeData.id);
       
       // Refresh profile
       const updatedProfile = await fetchProfile(user.id);
