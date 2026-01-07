@@ -1,21 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Check, Zap, Crown, Trophy } from 'lucide-react';
 
 const pricingPlans = [
   {
     id: 'basic',
     name: 'Basic',
     price: 49,
-    priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
+    paymentLink: 'https://buy.stripe.com/aFa7sNcfIbvS2Wh8QX3840I',
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -32,7 +27,7 @@ const pricingPlans = [
     id: 'pro',
     name: 'Pro',
     price: 89,
-    priceId: 'price_1Sn2EBQrqKHReEDtxXgWQBQL',
+    paymentLink: 'https://buy.stripe.com/00w28tfrUarO54p3wD3840H',
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -51,7 +46,7 @@ const pricingPlans = [
     id: 'insider',
     name: 'Insider',
     price: 299,
-    priceId: 'price_1Sn2DhQrqKHReEDtr8LCdEXA',
+    paymentLink: 'https://buy.stripe.com/dRm28t6Vo43q8gBaZ53840J',
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -70,35 +65,8 @@ const pricingPlans = [
 ];
 
 const Pricing = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-
-  const handleSubscribe = async (planId: string, priceId: string) => {
-    if (!user) {
-      navigate('/login', { state: { from: { pathname: '/pricing' } } });
-      return;
-    }
-
-    setLoadingPlan(planId);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }
-      });
-      
-      if (error) {
-        toast.error('Failed to start checkout. Please try again.');
-        return;
-      }
-      
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setLoadingPlan(null);
-    }
+  const handleSubscribe = (paymentLink: string) => {
+    window.open(paymentLink, '_blank');
   };
 
   return (
@@ -166,15 +134,11 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={() => handleSubscribe(plan.id, plan.priceId)}
+                      onClick={() => handleSubscribe(plan.paymentLink)}
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
-                      disabled={loadingPlan === plan.id}
                     >
-                      {loadingPlan === plan.id ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : null}
                       {plan.cta}
                     </Button>
                   </CardContent>
