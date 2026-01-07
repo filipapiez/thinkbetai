@@ -11,6 +11,7 @@ import GameDetail from "./pages/GameDetail";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
 import Subscription from "./pages/Subscription";
+import Admin from "./pages/Admin";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
@@ -64,6 +65,11 @@ const App = () => (
             <Route path="/subscription" element={
               <ProtectedRoute>
                 <Subscription />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Admin />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
