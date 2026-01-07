@@ -43,7 +43,7 @@ const Account = () => {
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 mb-4">
                 <User className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Welcome to BetIQ</h1>
+              <h1 className="text-2xl font-bold mb-2">Welcome to ThinkBetAI</h1>
               <p className="text-muted-foreground">
                 Sign in to save games and access personalized insights.
               </p>

@@ -12,7 +12,7 @@ export const Footer = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
                 <TrendingUp className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="text-lg font-bold">BetIQ</span>
+              <span className="text-lg font-bold">ThinkBetAI</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-sm">
               Educational sports analytics platform. Understand odds, injuries, and matchup context.
@@ -71,7 +71,7 @@ export const Footer = () => {
           </div>
           
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} BetIQ. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} ThinkBetAI. All rights reserved.</p>
             <p>21+ only where applicable. Know when to stop.</p>
           </div>
         </div>

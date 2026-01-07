@@ -160,10 +160,10 @@ const Chat = () => {
             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <MessageCircle className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-3xl font-bold">BetIQ Assistant</h1>
+            <h1 className="text-3xl font-bold">ThinkBetAI Assistant</h1>
           </div>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Your AI-powered betting expert. Ask questions about odds, strategies, terminology, and how to use BetIQ.
+            Your AI-powered betting expert. Ask questions about odds, strategies, terminology, and how to use ThinkBetAI.
           </p>
         </div>
 
@@ -177,7 +177,7 @@ const Chat = () => {
                     <Sparkles className="h-12 w-12 mx-auto text-primary/60" />
                     <h2 className="text-xl font-semibold">How can I help you today?</h2>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      I'm here to answer your sports betting questions and help you navigate BetIQ.
+                      I'm here to answer your sports betting questions and help you navigate ThinkBetAI.
                     </p>
                   </div>
                   
