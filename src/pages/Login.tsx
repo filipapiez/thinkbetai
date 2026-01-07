@@ -153,11 +153,22 @@ const Login = () => {
       
       <main className="flex-1 py-8 md:py-16">
         <div className="container max-w-md">
+          {/* Unlock Banner */}
+          <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/20 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Lock className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-primary">Premium Features Locked</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Sign in or create an account to unlock. <a href="/pricing" className="text-primary hover:underline">View our plans</a>
+            </p>
+          </div>
+
           <div className="text-center mb-8">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 mb-4">
               <UserIcon className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Welcome to ThinkBetAI</h1>
+            <h1 className="text-2xl font-bold mb-2">Unlock ThinkBetAI</h1>
             <p className="text-muted-foreground">
               Sign in to access AI-powered sports analysis.
             </p>
