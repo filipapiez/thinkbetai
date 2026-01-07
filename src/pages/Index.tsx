@@ -347,7 +347,7 @@ const Index = () => {
                 Ready to Start Winning?
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                Join thousands of smart bettors who trust BetIQ for data-driven picks. 
+                Join thousands of smart bettors who trust ThinkBetAI for data-driven picks. 
                 Start your free trial today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

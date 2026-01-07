@@ -12,6 +12,7 @@ import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import { BettingChatBot } from "./components/BettingChatBot";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <BettingChatBot />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

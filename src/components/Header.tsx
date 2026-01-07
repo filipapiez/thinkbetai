@@ -14,7 +14,7 @@ export const Header = () => {
             <TrendingUp className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
-            BetIQ
+            ThinkBetAI
           </span>
         </Link>
 
