@@ -68,7 +68,7 @@ serve(async (req) => {
     const cached = oddsCache.get(leagueId);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       return new Response(JSON.stringify(cached.data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'HIT' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -83,13 +83,12 @@ serve(async (req) => {
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`SportsGameOdds API error: ${response.status} - ${errorText}`);
+      console.error(`[Internal] SportsGameOdds API error: ${response.status}`);
 
       if (response.status === 401 || response.status === 403) {
         return new Response(
-          JSON.stringify({ error: 'Invalid API key' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Service configuration error' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -99,8 +98,6 @@ serve(async (req) => {
           headers: {
             ...corsHeaders,
             'Content-Type': 'application/json',
-            'x-cache': 'STALE',
-            'x-upstream-status': String(response.status),
           },
         });
       }
@@ -111,33 +108,11 @@ serve(async (req) => {
         games: [],
         remainingRequests: null,
         lastUpdated: new Date().toISOString(),
-        error:
-          response.status === 429
-            ? 'Rate limit exceeded'
-            : response.status === 400
-              ? 'League not available or invalid'
-              : 'Failed to fetch odds data',
-        rateLimited: response.status === 429,
-        upstreamStatus: response.status,
+        error: 'Unable to fetch data at this time',
       };
 
-      // Handle subscription tier limitations gracefully
-      if (response.status === 400 && errorText.includes('unavailable at your current subscription')) {
-        console.log(`League ${leagueId} not available in subscription - returning empty`);
-        return new Response(JSON.stringify(emptyPayload), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
-        });
-      }
-
-      // Invalid league ID
-      if (response.status === 400 && errorText.toLowerCase().includes('invalid')) {
-        return new Response(JSON.stringify(emptyPayload), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
-        });
-      }
-
       return new Response(JSON.stringify(emptyPayload), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -263,13 +238,13 @@ serve(async (req) => {
     oddsCache.set(leagueId, { data: responsePayload, timestamp: Date.now() });
 
     return new Response(JSON.stringify(responsePayload), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'x-cache': 'MISS' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in get-odds function:', error);
+    console.error('[Internal] Error in get-odds function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

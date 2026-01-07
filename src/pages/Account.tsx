@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { MockDataBanner } from '@/components/MockDataBanner';
@@ -8,30 +10,165 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Lock, CreditCard, Star, LogIn } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, CreditCard, Star, LogIn, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+// Validation schemas
+const emailSchema = z.string().email('Please enter a valid email address');
+const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 
 const Account = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsInitializing(false);
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsInitializing(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const validateInputs = (): boolean => {
+    try {
+      emailSchema.parse(email);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return false;
+      }
+    }
+    
+    try {
+      passwordSchema.parse(password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - in real app would call auth API
-    if (email && password) {
-      setIsLoggedIn(true);
+    
+    if (!validateInputs()) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid email or password. Please try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email to confirm your account.');
+        } else {
+          toast.error('Login failed. Please try again.');
+        }
+        return;
+      }
+      
+      toast.success('Logged in successfully!');
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock signup - in real app would call auth API
-    if (email && password) {
-      setIsLoggedIn(true);
+    
+    if (!validateInputs()) return;
+    
+    setIsLoading(true);
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+      
+      if (error) {
+        if (error.message.includes('already registered')) {
+          toast.error('This email is already registered. Please log in instead.');
+        } else if (error.message.includes('Password')) {
+          toast.error('Password does not meet requirements. Use at least 6 characters.');
+        } else {
+          toast.error('Sign up failed. Please try again.');
+        }
+        return;
+      }
+      
+      toast.success('Account created! Check your email to confirm, or you can login directly.');
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!isLoggedIn) {
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast.error('Logout failed. Please try again.');
+        return;
+      }
+      toast.success('Logged out successfully!');
+    } catch (error) {
+      toast.error('An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <MockDataBanner />
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
         <MockDataBanner />
@@ -41,7 +178,7 @@ const Account = () => {
           <div className="container max-w-md">
             <div className="text-center mb-8">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 mb-4">
-                <User className="h-8 w-8 text-primary" />
+                <UserIcon className="h-8 w-8 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mb-2">Welcome to ThinkBetAI</h1>
               <p className="text-muted-foreground">
@@ -70,6 +207,8 @@ const Account = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="pl-10"
+                            disabled={isLoading}
+                            required
                           />
                         </div>
                       </div>
@@ -84,11 +223,17 @@ const Account = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="pl-10"
+                            disabled={isLoading}
+                            required
                           />
                         </div>
                       </div>
-                      <Button type="submit" variant="hero" className="w-full">
-                        <LogIn className="h-4 w-4 mr-2" />
+                      <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <LogIn className="h-4 w-4 mr-2" />
+                        )}
                         Log In
                       </Button>
                     </form>
@@ -107,6 +252,8 @@ const Account = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="pl-10"
+                            disabled={isLoading}
+                            required
                           />
                         </div>
                       </div>
@@ -117,14 +264,19 @@ const Account = () => {
                           <Input
                             id="signup-password"
                             type="password"
-                            placeholder="Create a password"
+                            placeholder="Create a password (min 6 chars)"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="pl-10"
+                            disabled={isLoading}
+                            required
                           />
                         </div>
                       </div>
-                      <Button type="submit" variant="hero" className="w-full">
+                      <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : null}
                         Create Account
                       </Button>
                     </form>
@@ -154,21 +306,29 @@ const Account = () => {
             <Card variant="glass">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+                  <UserIcon className="h-5 w-5" />
                   Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-2xl font-bold text-primary-foreground">
-                    {email.charAt(0).toUpperCase()}
+                    {user.email?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div>
-                    <p className="font-medium">{email}</p>
-                    <p className="text-sm text-muted-foreground">Member since Jan 2026</p>
+                    <p className="font-medium">{user.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Member since {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" onClick={() => setIsLoggedIn(false)}>
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Log Out
                 </Button>
               </CardContent>

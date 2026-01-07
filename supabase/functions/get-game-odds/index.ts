@@ -102,25 +102,24 @@ serve(async (req) => {
     const response = await fetch(oddsUrl);
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`The Odds API error: ${response.status} - ${errorText}`);
+      console.error(`[Internal] The Odds API error: ${response.status}`);
 
       if (response.status === 401) {
         return new Response(
-          JSON.stringify({ error: 'Invalid API key' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Service configuration error' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'API rate limit exceeded' }),
+          JSON.stringify({ error: 'Service temporarily busy' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch odds' }),
+        JSON.stringify({ error: 'Service temporarily unavailable' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -216,9 +215,9 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in get-game-odds function:', error);
+    console.error('[Internal] Error in get-game-odds function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
