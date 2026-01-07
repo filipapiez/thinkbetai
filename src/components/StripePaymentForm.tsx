@@ -13,34 +13,25 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader2, CreditCard, CheckCircle } from 'lucide-react';
 
-// Stripe publishable key
-const stripePromise = loadStripe('pk_live_51Q2zNxQrqKHReEDtSKDxMWSWxgJNH3FDqAYdzMVHhmfupJu5N3qnFqfh5HESwkdQ0qSGKlJqZEofZP3O2CGEZ3qz001VvtsDuE');
+// Stripe publishable key (prefer env so it matches the backend Stripe secret key mode)
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+  'pk_live_51Q2zNxQrqKHReEDtSKDxMWSWxgJNH3FDqAYdzMVHhmfupJu5N3qnFqfh5HESwkdQ0qSGKlJqZEofZP3O2CGEZ3qz001VvtsDuE';
+
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 interface CheckoutFormProps {
   planId: string;
   planName: string;
   price: number;
+  accessToken: string;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const CheckoutForm = ({ planId, planName, price, onSuccess, onCancel }: CheckoutFormProps) => {
+const CheckoutForm = ({ planId, planName, price, accessToken, onSuccess, onCancel }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Store payment intent ID when elements are ready
-    const getPaymentIntentId = async () => {
-      if (elements) {
-        const { error } = await elements.submit();
-        if (!error) {
-          // Payment intent ID will be available after form submission
-        }
-      }
-    };
-  }, [elements]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,8 +43,7 @@ const CheckoutForm = ({ planId, planName, price, onSuccess, onCancel }: Checkout
     setIsProcessing(true);
 
     try {
-      // Submit the payment
-      const { error, paymentIntent } = await stripe.confirmPayment({
+      const result = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: window.location.href,
@@ -61,33 +51,37 @@ const CheckoutForm = ({ planId, planName, price, onSuccess, onCancel }: Checkout
         redirect: 'if_required',
       });
 
-      if (error) {
-        toast.error(error.message || 'Payment failed');
-        setIsProcessing(false);
+      if (result.error) {
+        console.error('Stripe confirmPayment error:', result.error);
+        toast.error(result.error.message || 'Payment failed');
         return;
       }
 
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Confirm payment on backend and update profile
-        const { data: session } = await supabase.auth.getSession();
+      const paymentIntent = result.paymentIntent;
+
+      if (paymentIntent?.status === 'succeeded') {
         const { error: confirmError } = await supabase.functions.invoke('confirm-payment', {
           body: { paymentIntentId: paymentIntent.id },
           headers: {
-            Authorization: `Bearer ${session?.session?.access_token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
         if (confirmError) {
+          console.error('confirm-payment invoke error:', confirmError);
           toast.error('Payment succeeded but failed to activate. Please contact support.');
-          console.error('Confirm error:', confirmError);
         } else {
           toast.success('Payment successful! Welcome to ThinkBetAI!');
           onSuccess();
         }
+        return;
       }
+
+      toast.error(`Payment not completed (status: ${paymentIntent?.status ?? 'unknown'})`);
     } catch (err) {
-      console.error('Payment error:', err);
-      toast.error('An unexpected error occurred');
+      console.error('Payment exception:', err);
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }
@@ -250,6 +244,7 @@ export const StripePaymentForm = ({ planId, planName, price, onSuccess, onCancel
             planId={planId}
             planName={planName}
             price={price}
+            accessToken={session!.access_token}
             onSuccess={onSuccess}
             onCancel={onCancel}
           />
