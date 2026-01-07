@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Zap, Check, Loader2, Ticket, CreditCard } from 'lucide-react';
+import { Lock, Check, Ticket, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Paywall = () => {
@@ -18,7 +18,6 @@ const Paywall = () => {
   
   const [promoCode, setPromoCode] = useState('');
   const [isRedeemingCode, setIsRedeemingCode] = useState(false);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || '/games';
 
@@ -68,28 +67,6 @@ const Paywall = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    setIsCheckingOut(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: 'price_1RcXSrCVTx7xR0lbR1ELMb7z' },
-      });
-      
-      if (error) {
-        toast.error('Failed to start checkout. Please try again.');
-        return;
-      }
-      
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error) {
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setIsCheckingOut(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -133,14 +110,14 @@ const Paywall = () => {
                 <form onSubmit={handleRedeemCode} className="flex gap-2">
                   <Input
                     type="text"
-                    placeholder="e.g. GETIT"
+                    placeholder="Enter your promo code (optional)"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                     className="uppercase tracking-wider font-mono flex-1"
                     disabled={isRedeemingCode}
                   />
                   <Button type="submit" disabled={isRedeemingCode || !promoCode.trim()}>
-                    {isRedeemingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Redeem'}
+                    {isRedeemingCode ? 'Redeeming...' : 'Redeem'}
                   </Button>
                 </form>
               </CardContent>
@@ -150,7 +127,7 @@ const Paywall = () => {
             <Card variant="glass" className="border-primary/50">
               <CardHeader className="text-center pb-2">
                 <Badge className="w-fit mx-auto mb-2">Premium Access</Badge>
-                <CardTitle className="text-2xl">$400/month</CardTitle>
+                <CardTitle className="text-2xl">Starting at $49/month</CardTitle>
                 <CardDescription>
                   Full access to all premium features
                 </CardDescription>
@@ -175,15 +152,10 @@ const Paywall = () => {
                 <Button 
                   variant="hero" 
                   className="w-full" 
-                  onClick={handleCheckout}
-                  disabled={isCheckingOut}
+                  onClick={() => navigate('/pricing')}
                 >
-                  {isCheckingOut ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <CreditCard className="h-4 w-4 mr-2" />
-                  )}
-                  Subscribe Now
+                  <CreditCard className="h-4 w-4 mr-2" />
+                  View Plans
                 </Button>
                 
                 <p className="text-xs text-center text-muted-foreground">
