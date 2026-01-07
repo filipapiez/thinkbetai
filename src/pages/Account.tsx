@@ -157,7 +157,7 @@ const Account = () => {
                     You have full access to ThinkBetAI.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-primary" />
@@ -167,6 +167,10 @@ const Account = () => {
                       Enjoy unlimited AI analysis, live data, and personalized insights.
                     </p>
                   </div>
+                  <Button variant="outline" className="w-full" onClick={() => navigate('/subscription')}>
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Manage Subscription
+                  </Button>
                 </CardContent>
               </Card>
 
