@@ -147,20 +147,31 @@ export function useLiveGames() {
       }
 
       // 2) Persisted cache (survives refresh)
+      // Note: localStorage stores public game data (schedules/odds) - not sensitive
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw) as { timestamp: number; data: LiveGame[] };
-          if (parsed?.timestamp && Array.isArray(parsed.data) && Date.now() - parsed.timestamp < CACHE_DURATION) {
-            apiCache = { data: parsed.data, timestamp: parsed.timestamp };
-            setGames(parsed.data);
+          const parsed = JSON.parse(raw);
+          // Validate cache structure before using
+          if (
+            parsed &&
+            typeof parsed === 'object' &&
+            typeof parsed.timestamp === 'number' &&
+            parsed.timestamp > 0 &&
+            Array.isArray(parsed.data) &&
+            Date.now() - parsed.timestamp < CACHE_DURATION
+          ) {
+            const validatedData = parsed.data as LiveGame[];
+            apiCache = { data: validatedData, timestamp: parsed.timestamp };
+            setGames(validatedData);
             setLastUpdated(new Date(parsed.timestamp).toISOString());
             setIsLoading(false);
             return;
           }
         }
       } catch {
-        // ignore
+        // Invalid cache data - clear it and continue to fetch fresh
+        localStorage.removeItem(STORAGE_KEY);
       }
     }
 
