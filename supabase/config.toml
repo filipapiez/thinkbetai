@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.get-game-odds]
 verify_jwt = false
+
+[functions.scrape-game-data]
+verify_jwt = false
+
+[functions.scrape-live-games]
+verify_jwt = false

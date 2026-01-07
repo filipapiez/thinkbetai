@@ -134,8 +134,9 @@ export function useLiveGames() {
     try {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       const allGames: LiveGame[] = [];
+      const seenIds = new Set<string>();
       
-      // Fetch sports SEQUENTIALLY with delays to avoid rate limits
+      // 1. Fetch from odds API (primary source)
       for (const sport of SPORTS_TO_FETCH) {
         try {
           const response = await fetch(
@@ -148,7 +149,6 @@ export function useLiveGames() {
 
           if (response.status === 429) {
             console.warn(`Rate limited on ${sport}, pausing...`);
-            // Back off hard to avoid cascading 429s
             await delay(8000);
             continue;
           }
@@ -159,13 +159,69 @@ export function useLiveGames() {
           }
 
           const result: APIResponse = await response.json();
-          allGames.push(...result.games.map(transformGame));
+          for (const game of result.games) {
+            const transformed = transformGame(game);
+            if (!seenIds.has(transformed.id)) {
+              seenIds.add(transformed.id);
+              allGames.push(transformed);
+            }
+          }
 
-          // Larger delay between requests to avoid rate limits (15 sports is a lot)
           await delay(1200);
         } catch (err) {
           console.warn(`Error fetching ${sport}:`, err);
         }
+      }
+
+      // 2. Supplement with scraped games from Google (via Firecrawl)
+      try {
+        console.log('Fetching scraped games from Google...');
+        const scrapedResponse = await fetch(
+          `${baseUrl}/functions/v1/scrape-live-games?sport=all`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+
+        if (scrapedResponse.ok) {
+          const scrapedData = await scrapedResponse.json();
+          if (scrapedData.success && scrapedData.games) {
+            console.log(`Got ${scrapedData.games.length} scraped games`);
+            for (const game of scrapedData.games) {
+              const id = game.id || `scraped_${game.homeTeam}_${game.awayTeam}`;
+              if (!seenIds.has(id)) {
+                seenIds.add(id);
+                // Transform scraped game to LiveGame format
+                allGames.push({
+                  id,
+                  sport: sportDisplayNames[game.sport?.toLowerCase()] || game.league || game.sport || 'Unknown',
+                  sportKey: game.sport?.toLowerCase() || 'unknown',
+                  homeTeam: {
+                    id: game.homeTeam.toLowerCase().replace(/\s+/g, '-'),
+                    name: game.homeTeam,
+                    abbreviation: game.homeTeam.substring(0, 3).toUpperCase(),
+                    stats: undefined,
+                  },
+                  awayTeam: {
+                    id: game.awayTeam.toLowerCase().replace(/\s+/g, '-'),
+                    name: game.awayTeam,
+                    abbreviation: game.awayTeam.substring(0, 3).toUpperCase(),
+                    stats: undefined,
+                  },
+                  startTime: game.startTime,
+                  venue: `${game.homeTeam} Arena`,
+                  status: game.status || 'scheduled',
+                  odds: undefined, // Scraped games don't have odds
+                  hasOdds: false,
+                });
+              }
+            }
+          }
+        }
+      } catch (scrapeErr) {
+        console.warn('Error fetching scraped games:', scrapeErr);
+        // Non-fatal - continue with API games
       }
       
       // Sort by start time
@@ -184,7 +240,7 @@ export function useLiveGames() {
       if (allGames.length === 0) {
         toast.info('No upcoming games found');
       } else {
-        console.log(`Loaded ${allGames.length} games`);
+        console.log(`Loaded ${allGames.length} total games`);
       }
 
     } catch (err) {
