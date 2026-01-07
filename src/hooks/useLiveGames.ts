@@ -27,19 +27,30 @@ interface APIResponse {
   lastUpdated: string;
 }
 
-// Map sport keys to display names
+// Map sport keys to display names - 15 most popular sports
 const sportDisplayNames: Record<string, string> = {
+  // Major US Sports
   'nba': 'NBA',
   'nfl': 'NFL',
   'mlb': 'MLB',
   'nhl': 'NHL',
   'ncaab': 'NCAAB',
   'ncaaf': 'NCAAF',
-  'epl': 'Soccer',
-  'ufc': 'MMA',
-  'atp': 'Tennis',
-  'pga': 'Golf',
+  // Soccer Leagues
+  'epl': 'Premier League',
+  'laliga': 'La Liga',
+  'bundesliga': 'Bundesliga',
+  'seriea': 'Serie A',
+  'mls': 'MLS',
+  // Other Popular Sports
+  'ufc': 'UFC',
+  'atp': 'ATP Tennis',
+  'wta': 'WTA Tennis',
+  'tabletennis': 'Table Tennis',
   'boxing': 'Boxing',
+  'pga': 'Golf',
+  'cricket': 'Cricket',
+  'esports': 'Esports',
 };
 
 function transformGame(apiGame: APIGame): LiveGame {
@@ -77,8 +88,15 @@ function transformGame(apiGame: APIGame): LiveGame {
   };
 }
 
-// Sports to fetch - limited to what the API subscription supports
-const SPORTS_TO_FETCH = ['nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb'];
+// 15 most popular sports to fetch
+const SPORTS_TO_FETCH = [
+  // Major US Sports (most likely to have games)
+  'nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb',
+  // Soccer Leagues
+  'epl', 'laliga', 'bundesliga', 'seriea', 'mls',
+  // Other Popular Sports
+  'ufc', 'atp', 'wta', 'tabletennis',
+];
 
 // Store for game lookup by ID
 let gamesCache: Map<string, LiveGame> = new Map();
