@@ -16,18 +16,21 @@ interface ScrapedGame {
 }
 
 const sportSearchQueries: Record<string, string[]> = {
-  soccer: ['Premier League matches today', 'La Liga games today', 'Bundesliga fixtures today', 'Serie A matches today', 'MLS games today'],
+  soccer: ['Premier League matches today', 'La Liga games today', 'Bundesliga fixtures today', 'Serie A matches today', 'MLS games today', 'Ligue 1 matches today', 'Champions League matches today'],
   tennis: ['ATP tennis matches today', 'WTA tennis matches today'],
-  tabletennis: ['table tennis matches today live'],
-  basketball: ['NBA games today', 'NCAA basketball games today'],
+  tabletennis: ['table tennis matches today live', 'ITTF table tennis today'],
+  basketball: ['NBA games today', 'NCAA basketball games today', 'WNBA games today'],
   football: ['NFL games today', 'NCAA football games today'],
   hockey: ['NHL games today'],
   baseball: ['MLB games today'],
-  boxing: ['boxing fights today'],
-  mma: ['UFC fights today'],
-  golf: ['PGA tournament today'],
-  cricket: ['cricket matches today live'],
-  esports: ['esports matches today live'],
+  boxing: ['boxing fights today', 'boxing matches this week'],
+  mma: ['UFC fights today', 'UFC event this week'],
+  golf: ['PGA tournament today', 'golf tournament leaderboard'],
+  cricket: ['cricket matches today live', 'IPL matches today', 'Test cricket today'],
+  esports: ['esports matches today live', 'League of Legends matches today', 'CS2 matches today'],
+  rugby: ['rugby matches today', 'Six Nations rugby', 'Rugby World Cup'],
+  f1: ['Formula 1 race today', 'F1 Grand Prix this week'],
+  nascar: ['NASCAR race today', 'NASCAR Cup Series'],
 };
 
 Deno.serve(async (req) => {
