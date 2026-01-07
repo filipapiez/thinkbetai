@@ -19,7 +19,6 @@ serve(async (req) => {
     }
 
     console.log("Received chat request with", messages?.length, "messages");
-    console.log("Game context:", gameContext);
 
     // Build context-aware system prompt
     let systemPrompt = `You are ThinkBetAI Assistant, an AI helper for the ThinkBetAI sports betting analysis platform. You ONLY answer questions about:
@@ -91,23 +90,22 @@ When answering questions, use this context to provide specific, relevant informa
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+      console.error("[Internal] AI gateway error:", response.status);
       
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+        return new Response(JSON.stringify({ error: "Service temporarily busy. Please try again in a moment." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add more credits." }), {
+        return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       
-      return new Response(JSON.stringify({ error: "AI service error" }), {
+      return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -118,8 +116,8 @@ When answering questions, use this context to provide specific, relevant informa
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    console.error("Betting chat error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+    console.error("[Internal] Betting chat error:", error);
+    return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

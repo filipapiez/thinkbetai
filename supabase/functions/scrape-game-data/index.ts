@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Scraping data for ${homeTeam} vs ${awayTeam} (${sport})`);
+    console.log(`Scraping game data request received`);
 
     // Search for injury reports
     const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
@@ -81,10 +81,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error scraping game data:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to scrape data';
+    console.error('[Internal] Error scraping game data:', error);
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
