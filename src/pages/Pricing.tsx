@@ -81,7 +81,7 @@ const Pricing = () => {
   const handlePaymentSuccess = async () => {
     await refreshProfile();
     setSelectedPlan(null);
-    navigate('/games');
+    navigate('/payment-success');
   };
 
   const handleCancel = () => {
