@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Check, Ticket, CreditCard } from 'lucide-react';
+import { Lock, Check, Ticket, CreditCard, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { StripePaymentForm } from '@/components/StripePaymentForm';
 
 const Paywall = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const Paywall = () => {
   
   const [promoCode, setPromoCode] = useState('');
   const [isRedeemingCode, setIsRedeemingCode] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || '/games';
 
@@ -32,8 +35,6 @@ const Paywall = () => {
     navigate('/login', { replace: true });
     return null;
   }
-
-  const [promoError, setPromoError] = useState('');
 
   const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +79,47 @@ const Paywall = () => {
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    await refreshProfile();
+    setShowPayment(false);
+    toast.success('Payment successful! Welcome to ThinkBetAI!');
+    navigate(from, { replace: true });
+  };
+
+  // Show payment form
+  if (showPayment) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <main className="flex-1 py-8 md:py-16">
+          <div className="container max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Complete Your Purchase</h1>
+              <Button variant="ghost" size="icon" onClick={() => setShowPayment(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <StripePaymentForm
+              planId="pro"
+              planName="Pro Plan"
+              price={89}
+              onSuccess={handlePaymentSuccess}
+              onCancel={() => setShowPayment(false)}
+            />
+            
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              Secure payment powered by Stripe. Your card details are never stored on our servers.
+            </p>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -91,7 +133,7 @@ const Paywall = () => {
               <span className="font-semibold text-primary">Premium Features Locked</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Unlock full access to AI-powered sports analysis. <a href="/pricing" className="text-primary hover:underline">View our plans</a>
+              Unlock full access to AI-powered sports analysis
             </p>
           </div>
 
@@ -145,8 +187,8 @@ const Paywall = () => {
             {/* Subscription Card */}
             <Card variant="glass" className="border-primary/50">
               <CardHeader className="text-center pb-2">
-                <Badge className="w-fit mx-auto mb-2">Premium Access</Badge>
-                <CardTitle className="text-2xl">Starting at $49/month</CardTitle>
+                <Badge className="w-fit mx-auto mb-2">Pro Plan</Badge>
+                <CardTitle className="text-2xl">$89/month</CardTitle>
                 <CardDescription>
                   Full access to all premium features
                 </CardDescription>
@@ -171,11 +213,21 @@ const Paywall = () => {
                 <Button 
                   variant="hero" 
                   className="w-full" 
-                  onClick={() => navigate('/pricing')}
+                  onClick={() => setShowPayment(true)}
                 >
                   <CreditCard className="h-4 w-4 mr-2" />
-                  View Plans
+                  Subscribe Now
                 </Button>
+                
+                <div className="text-center">
+                  <Button 
+                    variant="link" 
+                    className="text-xs text-muted-foreground"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    View all plans
+                  </Button>
+                </div>
                 
                 <p className="text-xs text-center text-muted-foreground">
                   Secure checkout powered by Stripe. Cancel anytime.

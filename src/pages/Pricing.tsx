@@ -1,16 +1,19 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Trophy } from 'lucide-react';
+import { Check, Zap, Crown, Trophy, X } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { StripePaymentForm } from '@/components/StripePaymentForm';
 
 const pricingPlans = [
   {
     id: 'basic',
     name: 'Basic',
     price: 49,
-    paymentLink: 'https://buy.stripe.com/aFa7sNcfIbvS2Wh8QX3840I',
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -27,7 +30,6 @@ const pricingPlans = [
     id: 'pro',
     name: 'Pro',
     price: 89,
-    paymentLink: 'https://buy.stripe.com/00w28tfrUarO54p3wD3840H',
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -46,7 +48,6 @@ const pricingPlans = [
     id: 'insider',
     name: 'Insider',
     price: 299,
-    paymentLink: 'https://buy.stripe.com/dRm28t6Vo43q8gBaZ53840J',
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -65,9 +66,61 @@ const pricingPlans = [
 ];
 
 const Pricing = () => {
-  const handleSubscribe = (paymentLink: string) => {
-    window.open(paymentLink, '_blank');
+  const navigate = useNavigate();
+  const { user, isSubscribed, refreshProfile } = useAuth();
+  const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
+
+  const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/pricing' } } });
+      return;
+    }
+    setSelectedPlan(plan);
   };
+
+  const handlePaymentSuccess = async () => {
+    await refreshProfile();
+    setSelectedPlan(null);
+    navigate('/games');
+  };
+
+  const handleCancel = () => {
+    setSelectedPlan(null);
+  };
+
+  // If showing payment form
+  if (selectedPlan) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        
+        <main className="flex-1 py-16">
+          <div className="container max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Complete Your Purchase</h1>
+              <Button variant="ghost" size="icon" onClick={handleCancel}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <StripePaymentForm
+              planId={selectedPlan.id}
+              planName={selectedPlan.name}
+              price={selectedPlan.price}
+              onSuccess={handlePaymentSuccess}
+              onCancel={handleCancel}
+            />
+            
+            <p className="text-xs text-center text-muted-foreground mt-4">
+              Secure payment powered by Stripe. Your card details are never stored on our servers.
+            </p>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -134,12 +187,13 @@ const Pricing = () => {
                     </ul>
 
                     <Button 
-                      onClick={() => handleSubscribe(plan.paymentLink)}
+                      onClick={() => handleSelectPlan(plan)}
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
+                      disabled={isSubscribed}
                     >
-                      {plan.cta}
+                      {isSubscribed ? 'Already Subscribed' : plan.cta}
                     </Button>
                   </CardContent>
                 </Card>
