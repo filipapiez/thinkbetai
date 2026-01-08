@@ -138,25 +138,71 @@ export const FullAIReport = ({ game, qualification, scrapedData, risk, value }: 
     // Head-to-Head
     sections.push(`## 🔄 HEAD-TO-HEAD HISTORY`);
     
-    // Check for known matchups (table tennis players)
+    // Table Tennis H2H Database - [player1Keywords, player2Keywords, player1Wins, player2Wins]
+    const tableTennisH2H: [string[], string[], number, number][] = [
+      [['liang', 'jingkun'], ['ovtcharov', 'dimitrij'], 2, 0],
+      [['fan', 'zhendong'], ['ma', 'long'], 8, 12],
+      [['fan', 'zhendong'], ['wang', 'chuqin'], 7, 3],
+      [['wang', 'chuqin'], ['ma', 'long'], 4, 6],
+      [['tomokazu', 'harimoto'], ['fan', 'zhendong'], 2, 9],
+      [['tomokazu', 'harimoto'], ['ma', 'long'], 1, 5],
+      [['lin', 'gaoyuan'], ['fan', 'zhendong'], 3, 8],
+      [['lin', 'gaoyuan'], ['ma', 'long'], 2, 7],
+      [['liang', 'jingkun'], ['fan', 'zhendong'], 2, 6],
+      [['liang', 'jingkun'], ['ma', 'long'], 1, 5],
+      [['liang', 'jingkun'], ['wang', 'chuqin'], 3, 4],
+      [['hugo', 'calderano'], ['fan', 'zhendong'], 1, 6],
+      [['hugo', 'calderano'], ['ma', 'long'], 2, 4],
+      [['truls', 'moregard'], ['fan', 'zhendong'], 1, 3],
+      [['truls', 'moregard'], ['wang', 'chuqin'], 2, 2],
+      [['felix', 'lebrun'], ['wang', 'chuqin'], 1, 2],
+      [['felix', 'lebrun'], ['fan', 'zhendong'], 0, 2],
+      [['alexis', 'lebrun'], ['felix', 'lebrun'], 3, 5],
+      [['timo', 'boll'], ['ma', 'long'], 5, 11],
+      [['timo', 'boll'], ['fan', 'zhendong'], 1, 6],
+      [['timo', 'boll'], ['ovtcharov', 'dimitrij'], 8, 6],
+      [['xu', 'xin'], ['ma', 'long'], 6, 10],
+      [['xu', 'xin'], ['fan', 'zhendong'], 3, 7],
+      [['jang', 'woojin'], ['fan', 'zhendong'], 1, 4],
+      [['jang', 'woojin'], ['wang', 'chuqin'], 2, 3],
+      [['lin', 'shidong'], ['wang', 'chuqin'], 1, 2],
+      [['patrick', 'franziska'], ['ovtcharov', 'dimitrij'], 4, 5],
+      [['quadri', 'aruna'], ['ovtcharov', 'dimitrij'], 2, 4],
+      [['dang', 'qiu'], ['ovtcharov', 'dimitrij'], 3, 3],
+      [['simon', 'gauzy'], ['timo', 'boll'], 2, 5],
+    ];
+    
     const homeName = game.homeTeam.name.toLowerCase();
     const awayName = game.awayTeam.name.toLowerCase();
     
-    // Known H2H records
+    // Find matching H2H record
     let h2hData: { homeWins: number; awayWins: number } | null = null;
     
-    if ((homeName.includes('liang') && homeName.includes('jingkun') && awayName.includes('ovtcharov')) ||
-        (awayName.includes('liang') && awayName.includes('jingkun') && homeName.includes('ovtcharov'))) {
-      // Liang Jingkun vs Ovtcharov - Liang has 2 wins
-      const liangIsHome = homeName.includes('liang');
-      h2hData = liangIsHome ? { homeWins: 2, awayWins: 0 } : { homeWins: 0, awayWins: 2 };
+    for (const [p1Keys, p2Keys, p1Wins, p2Wins] of tableTennisH2H) {
+      const homeMatchesP1 = p1Keys.every(k => homeName.includes(k));
+      const awayMatchesP2 = p2Keys.every(k => awayName.includes(k));
+      const homeMatchesP2 = p2Keys.every(k => homeName.includes(k));
+      const awayMatchesP1 = p1Keys.every(k => awayName.includes(k));
+      
+      if (homeMatchesP1 && awayMatchesP2) {
+        h2hData = { homeWins: p1Wins, awayWins: p2Wins };
+        break;
+      } else if (homeMatchesP2 && awayMatchesP1) {
+        h2hData = { homeWins: p2Wins, awayWins: p1Wins };
+        break;
+      }
     }
     
     if (h2hData) {
       sections.push(`- ${game.homeTeam.name}: ${h2hData.homeWins} wins`);
       sections.push(`- ${game.awayTeam.name}: ${h2hData.awayWins} wins`);
-      const dominant = h2hData.homeWins > h2hData.awayWins ? game.homeTeam.name : game.awayTeam.name;
-      sections.push(`- 📊 **${dominant}** has the head-to-head advantage`);
+      const total = h2hData.homeWins + h2hData.awayWins;
+      if (h2hData.homeWins !== h2hData.awayWins) {
+        const dominant = h2hData.homeWins > h2hData.awayWins ? game.homeTeam.name : game.awayTeam.name;
+        sections.push(`- 📊 **${dominant}** has the head-to-head advantage`);
+      } else {
+        sections.push(`- 📊 **Even head-to-head record** (${total} meetings)`);
+      }
     } else if (scrapedData?.headToHead && scrapedData.headToHead.length > 0) {
       const homeWins = scrapedData.headToHead.filter(h => 
         h.winner.toLowerCase().includes(game.homeTeam.name.toLowerCase())
