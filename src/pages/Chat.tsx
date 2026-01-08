@@ -143,10 +143,10 @@ const Chat = () => {
   };
 
   const quickQuestions = [
-    { icon: HelpCircle, text: 'How do moneylines work?' },
-    { icon: DollarSign, text: 'What is a parlay bet?' },
-    { icon: BarChart3, text: 'How do I find value bets?' },
-    { icon: TrendingUp, text: 'Explain bankroll management' },
+    { icon: HelpCircle, text: "Who's injured today in the NBA?" },
+    { icon: TrendingUp, text: "What are the best odds for tonight's games?" },
+    { icon: BarChart3, text: 'Any NFL games today?' },
+    { icon: DollarSign, text: 'How do moneylines work?' },
   ];
 
   return (
