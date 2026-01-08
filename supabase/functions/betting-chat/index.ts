@@ -32,6 +32,7 @@ function checkRateLimit(userId: string): boolean {
 async function authenticateUser(req: Request): Promise<{ userId: string } | null> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
+    console.log('No valid auth header found');
     return null;
   }
 
@@ -42,13 +43,14 @@ async function authenticateUser(req: Request): Promise<{ userId: string } | null
   );
 
   const token = authHeader.replace('Bearer ', '');
-  const { data, error } = await supabase.auth.getUser(token);
+  const { data, error } = await supabase.auth.getClaims(token);
   
-  if (error || !data?.user) {
+  if (error || !data?.claims) {
+    console.log('Auth claims error:', error?.message);
     return null;
   }
 
-  return { userId: data.user.id };
+  return { userId: data.claims.sub as string };
 }
 
 // Input validation
