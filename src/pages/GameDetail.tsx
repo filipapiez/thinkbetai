@@ -33,6 +33,7 @@ import { ScrapedFormCard } from '@/components/ScrapedFormCard';
 import { AIAnalysisCard } from '@/components/AIAnalysisCard';
 import { PerformanceChartLive } from '@/components/PerformanceChartLive';
 import { QualifiedBetAccuracyChart } from '@/components/QualifiedBetAccuracyChart';
+import { FullAIReport } from '@/components/FullAIReport';
 import type { PopularGame } from '@/hooks/usePopularGames';
 
 function popularGameToLiveGame(pg: PopularGame): LiveGame {
@@ -717,6 +718,17 @@ const GameDetail = () => {
           {/* Qualified Bet Accuracy Chart */}
           <div className="mb-6">
             <QualifiedBetAccuracyChart sport={game.sport} />
+          </div>
+
+          {/* Full AI Report */}
+          <div className="mb-6">
+            <FullAIReport 
+              game={game}
+              qualification={qualification}
+              scrapedData={scrapedData}
+              risk={risk}
+              value={value}
+            />
           </div>
 
           {/* Soft Disclaimer */}
