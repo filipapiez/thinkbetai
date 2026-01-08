@@ -22,7 +22,7 @@ import Paywall from "./pages/Paywall";
 import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
-import { CrispChat } from "./components/CrispChat";
+
 
 const queryClient = new QueryClient();
 
@@ -86,7 +86,7 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <CrispChat />
+          
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

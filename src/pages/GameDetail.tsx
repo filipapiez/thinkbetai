@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@/lib/liveTypes';
 import { useLiveGames } from '@/hooks/useLiveGames';
-import { BettingChatBot } from '@/components/BettingChatBot';
+
 import { cn } from '@/lib/utils';
 import { fetchGameData, ScrapedGameData } from '@/lib/api/gameData';
 import { ScrapedInjuryCard } from '@/components/ScrapedInjuryCard';
@@ -727,7 +727,7 @@ const GameDetail = () => {
       </main>
 
       <Footer />
-      <BettingChatBot />
+      
     </div>
   );
 };
