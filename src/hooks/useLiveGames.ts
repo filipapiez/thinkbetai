@@ -251,7 +251,7 @@ export function useLiveGames() {
               const id = game.id || `scraped_${game.homeTeam}_${game.awayTeam}`;
               if (!seenIds.has(id)) {
                 seenIds.add(id);
-                // Transform scraped game to LiveGame format with odds
+                // Transform scraped game to LiveGame format with odds and stats
                 const liveGame: LiveGame = {
                   id,
                   sport: sportDisplayNames[game.sport?.toLowerCase()] || game.league || game.sport || 'Unknown',
@@ -260,13 +260,35 @@ export function useLiveGames() {
                     id: game.homeTeam.toLowerCase().replace(/\s+/g, '-'),
                     name: game.homeTeam,
                     abbreviation: game.homeTeam.substring(0, 3).toUpperCase(),
-                    stats: undefined,
+                    stats: game.homeStats ? {
+                      wins: game.homeStats.wins || 0,
+                      losses: game.homeStats.losses || 0,
+                      winPct: game.homeStats.winPct || 0,
+                      record: game.homeStats.record,
+                      weightClass: game.homeStats.weightClass,
+                      knockouts: game.homeStats.knockouts,
+                      submissions: game.homeStats.submissions,
+                      worldRanking: game.homeStats.worldRanking,
+                      points: game.homeStats.points,
+                      titlesWon: game.homeStats.titlesWon,
+                    } : undefined,
                   },
                   awayTeam: {
                     id: game.awayTeam.toLowerCase().replace(/\s+/g, '-'),
                     name: game.awayTeam,
                     abbreviation: game.awayTeam.substring(0, 3).toUpperCase(),
-                    stats: undefined,
+                    stats: game.awayStats ? {
+                      wins: game.awayStats.wins || 0,
+                      losses: game.awayStats.losses || 0,
+                      winPct: game.awayStats.winPct || 0,
+                      record: game.awayStats.record,
+                      weightClass: game.awayStats.weightClass,
+                      knockouts: game.awayStats.knockouts,
+                      submissions: game.awayStats.submissions,
+                      worldRanking: game.awayStats.worldRanking,
+                      points: game.awayStats.points,
+                      titlesWon: game.awayStats.titlesWon,
+                    } : undefined,
                   },
                   startTime: game.startTime,
                   venue: `${game.homeTeam} Arena`,

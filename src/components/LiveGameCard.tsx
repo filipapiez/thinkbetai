@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom';
 import { LiveGame, LiveBetQualification, calculateLiveBetQualification } from '@/lib/liveTypes';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap, Percent } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap, Percent, Trophy, Award } from 'lucide-react';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { LiveTeam } from '@/lib/liveTypes';
 
 interface LiveGameCardProps {
   game: LiveGame;
@@ -75,6 +76,72 @@ const WinRateBadge = ({ winPct }: { winPct?: number }) => {
   );
 };
 
+// Fighter stats component for UFC/MMA/Boxing
+const FighterStatsBadge = ({ team, position }: { team: LiveTeam; position: 'red' | 'blue' }) => {
+  const stats = team.stats;
+  if (!stats?.record && !stats?.weightClass) return null;
+  
+  return (
+    <div className="flex flex-col items-center gap-1 mt-1">
+      {stats.weightClass && (
+        <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-primary/10 border-primary/30">
+          {stats.weightClass}
+        </Badge>
+      )}
+      {stats.record && (
+        <span className="text-[10px] font-mono text-muted-foreground">
+          {stats.record}
+        </span>
+      )}
+    </div>
+  );
+};
+
+// Table Tennis / Tennis stats component
+const PlayerStatsBadge = ({ team }: { team: LiveTeam }) => {
+  const stats = team.stats;
+  if (!stats?.worldRanking && !stats?.points) return null;
+  
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      {stats.worldRanking && (
+        <div className="flex items-center gap-0.5 text-[10px] text-amber-400">
+          <Trophy className="h-3 w-3" />
+          #{stats.worldRanking}
+        </div>
+      )}
+      {stats.points && (
+        <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+          <Award className="h-3 w-3" />
+          {stats.points}pts
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Get position label based on sport
+const getPositionLabel = (sport: string, isHome: boolean): string | null => {
+  const sportLower = sport.toLowerCase();
+  if (['ufc', 'mma', 'boxing'].includes(sportLower)) {
+    return isHome ? 'Red Corner' : 'Blue Corner';
+  }
+  if (['tennis', 'table tennis', 'atp', 'wta', 'wtt'].includes(sportLower)) {
+    return null; // No position labels for racket sports
+  }
+  return isHome ? 'Home' : 'Away';
+};
+
+// Check if sport is a combat sport
+const isCombatSport = (sport: string): boolean => {
+  return ['ufc', 'mma', 'boxing'].includes(sport.toLowerCase());
+};
+
+// Check if sport is a racket sport (tennis/table tennis)
+const isRacketSport = (sport: string): boolean => {
+  return ['tennis', 'table tennis', 'atp', 'wta', 'wtt'].includes(sport.toLowerCase());
+};
+
 export const LiveGameCard = ({ game }: LiveGameCardProps) => {
   const qualification = useMemo(() => calculateLiveBetQualification(game), [game]);
   
@@ -123,18 +190,27 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
           </div>
 
           <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Home Team */}
+            {/* Home/Red Corner Team */}
             <div className="flex-1 text-center">
               <div className={cn(
                 "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
+                qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
+                isCombatSport(game.sport) && "border-2 border-red-500/50"
               )}>
                 {game.homeTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.homeTeam.name}</p>
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-xs text-muted-foreground">Home</p>
-                <WinRateBadge winPct={game.homeTeam.stats?.winPct} />
+              <div className="flex flex-col items-center gap-1">
+                {getPositionLabel(game.sport, true) && (
+                  <p className="text-xs text-muted-foreground">{getPositionLabel(game.sport, true)}</p>
+                )}
+                {isCombatSport(game.sport) ? (
+                  <FighterStatsBadge team={game.homeTeam} position="red" />
+                ) : isRacketSport(game.sport) ? (
+                  <PlayerStatsBadge team={game.homeTeam} />
+                ) : (
+                  <WinRateBadge winPct={game.homeTeam.stats?.winPct} />
+                )}
               </div>
             </div>
 
@@ -146,18 +222,27 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
               </div>
             </div>
 
-            {/* Away Team */}
+            {/* Away/Blue Corner Team */}
             <div className="flex-1 text-center">
               <div className={cn(
                 "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
+                qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
+                isCombatSport(game.sport) && "border-2 border-blue-500/50"
               )}>
                 {game.awayTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.awayTeam.name}</p>
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-xs text-muted-foreground">Away</p>
-                <WinRateBadge winPct={game.awayTeam.stats?.winPct} />
+              <div className="flex flex-col items-center gap-1">
+                {getPositionLabel(game.sport, false) && (
+                  <p className="text-xs text-muted-foreground">{getPositionLabel(game.sport, false)}</p>
+                )}
+                {isCombatSport(game.sport) ? (
+                  <FighterStatsBadge team={game.awayTeam} position="blue" />
+                ) : isRacketSport(game.sport) ? (
+                  <PlayerStatsBadge team={game.awayTeam} />
+                ) : (
+                  <WinRateBadge winPct={game.awayTeam.stats?.winPct} />
+                )}
               </div>
             </div>
           </div>
