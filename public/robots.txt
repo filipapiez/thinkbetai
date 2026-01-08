@@ -1,8 +1,13 @@
+# ThinkBetAI Robots.txt
+# https://thinkbetai.com
+
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +15,26 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
 User-agent: *
 Allow: /
+Crawl-delay: 2
+
+# Sitemap location
+Sitemap: https://thinkbetai.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /api/
+Disallow: /account
+Disallow: /settings
