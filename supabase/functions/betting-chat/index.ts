@@ -118,6 +118,146 @@ function validateGameContext(ctx: unknown): object | null {
   };
 }
 
+// Detect if user is asking about player/game availability, injuries, or live info
+function detectSportsDataQuery(message: string): { isDataQuery: boolean; queryType: string; searchTerms: string[] } {
+  const lowerMsg = message.toLowerCase();
+  
+  // Player availability patterns
+  const playingPatterns = [
+    /is\s+([a-z\s]+)\s+playing/i,
+    /will\s+([a-z\s]+)\s+play/i,
+    /([a-z\s]+)\s+playing\s+today/i,
+    /([a-z\s]+)\s+status/i,
+    /([a-z\s]+)\s+injury/i,
+    /([a-z\s]+)\s+injured/i,
+    /([a-z\s]+)\s+out/i,
+    /([a-z\s]+)\s+lineup/i,
+  ];
+  
+  // Injury-related keywords
+  const injuryKeywords = ['injury', 'injured', 'hurt', 'questionable', 'doubtful', 'probable', 'out', 'gtd', 'day-to-day'];
+  
+  // Game schedule keywords
+  const scheduleKeywords = ['playing today', 'game today', 'games today', 'schedule', 'when do', 'what time', 'start time'];
+  
+  // Odds/lines keywords
+  const oddsKeywords = ['odds', 'spread', 'moneyline', 'over under', 'total', 'line'];
+  
+  const searchTerms: string[] = [];
+  
+  // Check for player name patterns
+  for (const pattern of playingPatterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      searchTerms.push(match[1].trim());
+    }
+  }
+  
+  // Check query type
+  let queryType = 'general';
+  if (injuryKeywords.some(k => lowerMsg.includes(k))) {
+    queryType = 'injury';
+  } else if (scheduleKeywords.some(k => lowerMsg.includes(k))) {
+    queryType = 'schedule';
+  } else if (oddsKeywords.some(k => lowerMsg.includes(k))) {
+    queryType = 'odds';
+  } else if (searchTerms.length > 0) {
+    queryType = 'player_status';
+  }
+  
+  const isDataQuery = queryType !== 'general' || searchTerms.length > 0;
+  
+  return { isDataQuery, queryType, searchTerms };
+}
+
+// Fetch sports data from The Odds API / SportsGameOdds
+async function fetchSportsData(queryType: string, searchTerms: string[]): Promise<string | null> {
+  const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+  if (!apiKey) {
+    console.log('No SportsGameOdds API key configured');
+    return null;
+  }
+  
+  const timestamp = new Date().toISOString();
+  
+  try {
+    // Fetch upcoming events to find relevant games
+    const sports = ['basketball_nba', 'football_nfl', 'hockey_nhl', 'baseball_mlb'];
+    let allEvents: any[] = [];
+    
+    for (const sport of sports) {
+      try {
+        const response = await fetch(
+          `https://api.sportsgameodds.com/v2/events?sportID=${sport}&status=upcoming,live&limit=20`,
+          {
+            headers: {
+              'X-API-Key': apiKey,
+            },
+          }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data) {
+            allEvents = [...allEvents, ...data.data];
+          }
+        }
+      } catch (e) {
+        console.log(`Error fetching ${sport}:`, e);
+      }
+    }
+    
+    // Search for matching players/teams in events
+    const searchLower = searchTerms.map(t => t.toLowerCase());
+    const relevantEvents = allEvents.filter(event => {
+      const homeTeam = (event.homeTeam?.name || event.teams?.home?.name || '').toLowerCase();
+      const awayTeam = (event.awayTeam?.name || event.teams?.away?.name || '').toLowerCase();
+      const allText = `${homeTeam} ${awayTeam}`.toLowerCase();
+      
+      return searchLower.some(term => allText.includes(term));
+    });
+    
+    if (relevantEvents.length === 0 && allEvents.length > 0) {
+      // Return general upcoming games info
+      const upcomingGames = allEvents.slice(0, 5).map(e => {
+        const home = e.homeTeam?.name || e.teams?.home?.name || 'TBD';
+        const away = e.awayTeam?.name || e.teams?.away?.name || 'TBD';
+        const startTime = e.startTime || e.commence_time || 'TBD';
+        return `• ${away} @ ${home} - ${new Date(startTime).toLocaleString()}`;
+      }).join('\n');
+      
+      return `**Upcoming Games** (SportsGameOdds API - ${timestamp})\n${upcomingGames}\n\n⚠️ Status can change close to game time.`;
+    }
+    
+    if (relevantEvents.length > 0) {
+      const gameInfos = relevantEvents.slice(0, 3).map(e => {
+        const home = e.homeTeam?.name || e.teams?.home?.name || 'TBD';
+        const away = e.awayTeam?.name || e.teams?.away?.name || 'TBD';
+        const startTime = e.startTime || e.commence_time;
+        const status = e.status || 'scheduled';
+        const odds = e.odds || {};
+        
+        let info = `**${away} @ ${home}**\n`;
+        info += `• Status: ${status.charAt(0).toUpperCase() + status.slice(1)}\n`;
+        info += `• Game Time: ${startTime ? new Date(startTime).toLocaleString() : 'TBD'}\n`;
+        
+        if (odds.moneyline) {
+          info += `• Moneyline: ${home} ${odds.moneyline.home > 0 ? '+' : ''}${odds.moneyline.home} / ${away} ${odds.moneyline.away > 0 ? '+' : ''}${odds.moneyline.away}\n`;
+        }
+        
+        return info;
+      }).join('\n');
+      
+      return `**Game Information** (SportsGameOdds API - ${timestamp})\n\n${gameInfos}\n\n⚠️ Status can change close to game time. Check official sources for final lineups.`;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching sports data:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -165,6 +305,23 @@ serve(async (req) => {
 
     console.log(`Chat request from user ${auth.userId}: ${messages.length} messages`);
 
+    // Check if the latest user message is asking for live sports data
+    const latestUserMessage = [...messages].reverse().find(m => m.role === 'user');
+    let liveDataContext = '';
+    
+    if (latestUserMessage) {
+      const dataQuery = detectSportsDataQuery(latestUserMessage.content);
+      
+      if (dataQuery.isDataQuery) {
+        console.log(`Detected sports data query: ${dataQuery.queryType}, terms: ${dataQuery.searchTerms.join(', ')}`);
+        
+        const sportsData = await fetchSportsData(dataQuery.queryType, dataQuery.searchTerms);
+        if (sportsData) {
+          liveDataContext = `\n\nLIVE SPORTS DATA (from licensed API):\n${sportsData}`;
+        }
+      }
+    }
+
     // Build context-aware system prompt
     let systemPrompt = `You are ThinkBetAI Assistant, an AI helper for the ThinkBetAI sports betting analysis platform. You ONLY answer questions about:
 
@@ -182,13 +339,20 @@ serve(async (req) => {
    - Interpreting team stats and recent form
    - Using ThinkBetAI's AI analysis for decision making
 
+3. Live Sports Information:
+   - When users ask about player availability, injuries, lineups, schedules, or odds, you have access to LIVE DATA from licensed sports data APIs
+   - Always cite the source (e.g., "SportsGameOdds API") and timestamp when providing live data
+   - Always include the disclaimer: "⚠️ Status can change close to game time."
+   - If data is not available, inform the user and suggest checking official team sources
+
 IMPORTANT RULES:
 - If someone asks about anything NOT related to sports betting or ThinkBetAI, politely decline and redirect them to betting-related topics
 - Never provide advice on non-sports topics, personal matters, coding, or general knowledge
+- When providing player/game status info, ALWAYS include: Status, Source + timestamp, and the disclaimer
 - Be concise and helpful
 - Always remind users that betting involves risk and to gamble responsibly
 - Don't make guarantees about outcomes
-- Format responses with bullet points when helpful`;
+- Format responses with bullet points when helpful${liveDataContext}`;
 
     // Add game-specific context if provided
     if (gameContext) {
