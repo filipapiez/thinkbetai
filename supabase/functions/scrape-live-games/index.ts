@@ -27,26 +27,43 @@ let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
-// Sports to track - using ESPN schedule URLs
+// 15+ Sports to track - using ESPN schedule URLs
 const SPORTS_CONFIG = [
+  // Major US Sports (6)
   { sport: 'Football', url: 'https://www.espn.com/nfl/schedule', league: 'NFL' },
   { sport: 'Football', url: 'https://www.espn.com/college-football/schedule', league: 'NCAAF' },
   { sport: 'Basketball', url: 'https://www.espn.com/nba/schedule', league: 'NBA' },
   { sport: 'Basketball', url: 'https://www.espn.com/mens-college-basketball/schedule', league: 'NCAAB' },
   { sport: 'Hockey', url: 'https://www.espn.com/nhl/schedule', league: 'NHL' },
   { sport: 'Baseball', url: 'https://www.espn.com/mlb/schedule', league: 'MLB' },
+  // Soccer (5 leagues)
   { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/eng.1', league: 'EPL' },
   { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/uefa.champions', league: 'Champions League' },
   { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/esp.1', league: 'La Liga' },
+  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/ger.1', league: 'Bundesliga' },
   { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/usa.1', league: 'MLS' },
+  // Combat Sports (2)
   { sport: 'MMA', url: 'https://www.espn.com/mma/schedule/_/league/ufc', league: 'UFC' },
   { sport: 'Boxing', url: 'https://www.espn.com/boxing/schedule', league: 'Boxing' },
+  // Tennis (1)
   { sport: 'Tennis', url: 'https://www.espn.com/tennis/schedule', league: 'ATP/WTA' },
+  // Golf (1)
   { sport: 'Golf', url: 'https://www.espn.com/golf/schedule', league: 'PGA' },
-  { sport: 'Table Tennis', url: 'https://www.espn.com/olympics/schedule', league: 'Table Tennis' },
+  // Cricket (1)
+  { sport: 'Cricket', url: 'https://www.espn.com/cricket/schedule', league: 'IPL/International' },
+  // Rugby (1)
+  { sport: 'Rugby', url: 'https://www.espn.com/rugby/schedule', league: 'Rugby Union' },
+  // Motorsport (1)
+  { sport: 'Motorsport', url: 'https://www.espn.com/racing/schedule/_/series/f1', league: 'Formula 1' },
+  // Esports (1)
+  { sport: 'Esports', url: 'https://www.espn.com/esports/schedule', league: 'Esports' },
+  // WNBA (1)
+  { sport: 'Basketball', url: 'https://www.espn.com/wnba/schedule', league: 'WNBA' },
+  // Lacrosse (1)
+  { sport: 'Lacrosse', url: 'https://www.espn.com/lacrosse/schedule', league: 'PLL' },
 ];
 
-// Major leagues ranked by popularity
+// Major leagues ranked by popularity (15+ sports)
 const LEAGUE_POPULARITY: Record<string, number> = {
   'NFL': 100,
   'NCAAF': 85,
@@ -54,16 +71,22 @@ const LEAGUE_POPULARITY: Record<string, number> = {
   'NCAAB': 80,
   'MLB': 85,
   'NHL': 80,
+  'WNBA': 70,
   'EPL': 90,
   'La Liga': 85,
   'Champions League': 95,
+  'Bundesliga': 82,
   'MLS': 65,
   'UFC': 92,
   'MMA': 75,
   'Boxing': 78,
-  'Table Tennis': 55,
-  'ATP/WTA': 60,
-  'PGA': 55,
+  'ATP/WTA': 65,
+  'PGA': 60,
+  'IPL/International': 75,
+  'Rugby Union': 68,
+  'Formula 1': 85,
+  'Esports': 60,
+  'PLL': 50,
 };
 
 // Popular teams for scoring
@@ -433,8 +456,7 @@ function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
   }
   
   return Array.from(seen.values())
-    .sort((a, b) => b.popularityScore - a.popularityScore)
-    .slice(0, 15);
+    .sort((a, b) => b.popularityScore - a.popularityScore); // No cap - let frontend handle plan limits
 }
 
 // ============================================================================

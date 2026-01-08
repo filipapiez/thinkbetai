@@ -51,17 +51,17 @@ async function authenticateUser(req: Request): Promise<{ userId: string } | null
   return { userId: data.user.id };
 }
 
-// Plan-based limits
+// Plan-based limits (Basic: 30, Pro: 90, Insider: unlimited)
 const PLAN_LIMITS: Record<string, number> = {
-  basic: 50,
-  pro: 100,
-  insider: 250,
+  basic: 30,
+  pro: 90,
+  insider: 999999, // Unlimited
 };
 
 // Allowed date filters
 const ALLOWED_DATE_FILTERS = ['today', 'tomorrow', 'next24h', 'next7d', 'nextMonth'];
 
-// Allowed sports whitelist
+// 15+ Sports whitelist
 const sportKeyMap: Record<string, string[]> = {
   'nfl': ['americanfootball_nfl'],
   'nba': ['basketball_nba'],
@@ -69,11 +69,18 @@ const sportKeyMap: Record<string, string[]> = {
   'nhl': ['icehockey_nhl'],
   'ncaaf': ['americanfootball_ncaaf'],
   'ncaab': ['basketball_ncaab'],
-  'soccer': ['soccer_epl', 'soccer_usa_mls', 'soccer_uefa_champs_league'],
+  'soccer': ['soccer_epl', 'soccer_usa_mls', 'soccer_uefa_champs_league', 'soccer_spain_la_liga', 'soccer_germany_bundesliga', 'soccer_italy_serie_a'],
   'mma': ['mma_mixed_martial_arts'],
-  'tennis': ['tennis_atp_aus_open', 'tennis_wta_aus_open'],
+  'tennis': ['tennis_atp_aus_open', 'tennis_wta_aus_open', 'tennis_atp_us_open', 'tennis_wta_us_open'],
   'boxing': ['boxing_boxing'],
-  'golf': ['golf_pga_championship'],
+  'golf': ['golf_pga_championship', 'golf_masters_tournament'],
+  'cricket': ['cricket_ipl', 'cricket_international_t20'],
+  'rugby': ['rugbyleague_nrl', 'rugbyunion_six_nations'],
+  'motorsport': ['motorsport_formula_one'],
+  'esports': ['esports_lol', 'esports_csgo'],
+  'handball': ['handball_ehf_champions_league'],
+  'volleyball': ['volleyball_fivb'],
+  'cycling': ['cycling_tour_de_france'],
 };
 
 // Validate inputs
@@ -179,18 +186,38 @@ serve(async (req) => {
       }
     }
 
-    // Determine which sports to fetch
+    // Determine which sports to fetch (15+ sports)
     let sportsToFetch: string[] = [];
     if (sport === 'all') {
       sportsToFetch = [
+        // Major US Sports
         'americanfootball_nfl',
+        'americanfootball_ncaaf',
         'basketball_nba',
+        'basketball_ncaab',
         'baseball_mlb',
         'icehockey_nhl',
-        'americanfootball_ncaaf',
-        'basketball_ncaab',
-        'soccer_epl',
+        // Combat Sports
         'mma_mixed_martial_arts',
+        'boxing_boxing',
+        // Soccer (multiple leagues)
+        'soccer_epl',
+        'soccer_usa_mls',
+        'soccer_spain_la_liga',
+        'soccer_germany_bundesliga',
+        // Tennis
+        'tennis_atp_aus_open',
+        'tennis_wta_aus_open',
+        // Golf
+        'golf_pga_championship',
+        // Rugby
+        'rugbyleague_nrl',
+        // Cricket
+        'cricket_ipl',
+        // Motorsport
+        'motorsport_formula_one',
+        // Esports
+        'esports_lol',
       ];
     } else {
       sportsToFetch = sportKeyMap[sport] || [];
