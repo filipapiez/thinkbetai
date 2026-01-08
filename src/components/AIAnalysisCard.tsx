@@ -50,21 +50,58 @@ function generateSportSpecificAnalysis(
   const favorite = homeFavored ? game.homeTeam.name : game.awayTeam.name;
   const underdog = homeFavored ? game.awayTeam.name : game.homeTeam.name;
   
-  // Injury statement
+  // Injury statement with detailed impact analysis
   let injuryStatement = '';
   if (hasInjuries) {
     const injuryParts: string[] = [];
+    
+    // Home team injuries with impact
     if (homeInjuries.length > 0) {
-      const keyPlayers = homeInjuries.slice(0, 2).map(i => i.player).join(' and ');
-      injuryParts.push(`${game.homeTeam.name} is missing ${keyPlayers}`);
+      const outPlayers = homeInjuries.filter(i => i.status === 'Out');
+      const questionable = homeInjuries.filter(i => i.status === 'Questionable');
+      
+      if (outPlayers.length > 0) {
+        const keyPlayers = outPlayers.slice(0, 2).map(i => `${i.player}${i.injuryType ? ` (${i.injuryType})` : ''}`).join(' and ');
+        injuryParts.push(`${game.homeTeam.name} is confirmed without ${keyPlayers}`);
+      }
+      if (questionable.length > 0) {
+        const qPlayers = questionable.slice(0, 2).map(i => i.player).join(' and ');
+        injuryParts.push(`${qPlayers} listed as questionable for ${game.homeTeam.name}`);
+      }
     }
+    
+    // Away team injuries with impact
     if (awayInjuries.length > 0) {
-      const keyPlayers = awayInjuries.slice(0, 2).map(i => i.player).join(' and ');
-      injuryParts.push(`${game.awayTeam.name} is without ${keyPlayers}`);
+      const outPlayers = awayInjuries.filter(i => i.status === 'Out');
+      const questionable = awayInjuries.filter(i => i.status === 'Questionable');
+      
+      if (outPlayers.length > 0) {
+        const keyPlayers = outPlayers.slice(0, 2).map(i => `${i.player}${i.injuryType ? ` (${i.injuryType})` : ''}`).join(' and ');
+        injuryParts.push(`${game.awayTeam.name} missing ${keyPlayers}`);
+      }
+      if (questionable.length > 0) {
+        const qPlayers = questionable.slice(0, 2).map(i => i.player).join(' and ');
+        injuryParts.push(`${qPlayers} game-time decisions for ${game.awayTeam.name}`);
+      }
     }
-    injuryStatement = injuryParts.join(', while ') + '. This significantly impacts the matchup dynamics.';
+    
+    injuryStatement = injuryParts.join('. ') + '. ';
+    
+    // Add impact analysis
+    const totalHomeOut = homeInjuries.filter(i => i.status === 'Out').length;
+    const totalAwayOut = awayInjuries.filter(i => i.status === 'Out').length;
+    
+    if (totalHomeOut > totalAwayOut) {
+      injuryStatement += `This gives ${game.awayTeam.name} a notable advantage - expect them to exploit the depleted roster with adjusted rotations and increased workload on remaining starters.`;
+    } else if (totalAwayOut > totalHomeOut) {
+      injuryStatement += `${game.homeTeam.name} benefits here - their healthier roster combined with home court should translate to better execution and depth in crunch time.`;
+    } else if (totalHomeOut > 0 && totalAwayOut > 0) {
+      injuryStatement += `Both teams dealing with absences creates unpredictability - role players will need to step up, making this matchup harder to project.`;
+    } else {
+      injuryStatement += `Monitor game-time decisions closely as these questionable players could significantly shift the betting landscape.`;
+    }
   } else {
-    injuryStatement = 'Both teams appear to be at full strength with no significant injuries reported. This removes injury uncertainty from the analysis.';
+    injuryStatement = 'Both teams appear at full strength with no significant injuries reported. This removes injury variance from the equation - the outcome will come down to execution, game plan, and which team performs closer to their ceiling.';
   }
   
   const paragraphs: string[] = [];
