@@ -4,7 +4,16 @@ const corsHeaders = {
 };
 
 // ============================================================================
-// SPORTSBOOK API - RapidAPI (sportsbook-api2.p.rapidapi.com)
+// SPORTSBOOK API via RapidAPI
+// Host: sportsbook-api2.p.rapidapi.com
+// Base URL must go through RapidAPI proxy
+// 
+// Available endpoints (from Swagger docs):
+// - GET /v0/competitions/ - List all competitions
+// - GET /v0/competitions/{competitionKey}/events - Events for a competition
+// - GET /v0/events/{eventKey}/markets - Markets for an event
+// - GET /v0/advantages/?type=ARBITRAGE - Arbitrage opportunities
+// - GET /v1/advantages/?type=PLUS_EV - Plus EV opportunities
 // ============================================================================
 
 interface ScheduledGame {
@@ -24,32 +33,15 @@ interface ScheduledGame {
   hasOdds?: boolean;
 }
 
-// Short cache to prevent API spam (5 minutes)
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
-// League popularity scores
 const LEAGUE_POPULARITY: Record<string, number> = {
-  'NFL': 100,
-  'NBA': 95,
-  'MLB': 85,
-  'NHL': 80,
-  'NCAAF': 85,
-  'NCAAB': 80,
-  'EPL': 90,
-  'La Liga': 85,
-  'Champions League': 95,
-  'Bundesliga': 82,
-  'Serie A': 80,
-  'Ligue 1': 75,
-  'MLS': 65,
-  'UFC': 92,
-  'Boxing': 78,
-  'ATP': 70,
-  'WTA': 65,
-  'PGA': 65,
-  'WNBA': 70,
+  'NFL': 100, 'NBA': 95, 'MLB': 85, 'NHL': 80, 'NCAAF': 85, 'NCAAB': 80,
+  'EPL': 90, 'La Liga': 85, 'Champions League': 95, 'Bundesliga': 82,
+  'Serie A': 80, 'Ligue 1': 75, 'MLS': 65, 'UFC': 92, 'Boxing': 78,
+  'ATP': 70, 'WTA': 65, 'PGA': 65, 'WNBA': 70,
 };
 
 function isCacheValid(): boolean {
@@ -57,355 +49,281 @@ function isCacheValid(): boolean {
   return (Date.now() - cacheTimestamp) < CACHE_TTL_MS;
 }
 
-// Sportsbook API leagues to fetch
-const SPORTSBOOK_LEAGUES = [
-  // US Sports
-  { id: 'nfl', sport: 'Football', league: 'NFL' },
-  { id: 'nba', sport: 'Basketball', league: 'NBA' },
-  { id: 'mlb', sport: 'Baseball', league: 'MLB' },
-  { id: 'nhl', sport: 'Hockey', league: 'NHL' },
-  { id: 'ncaaf', sport: 'Football', league: 'NCAAF' },
-  { id: 'ncaab', sport: 'Basketball', league: 'NCAAB' },
-  { id: 'wnba', sport: 'Basketball', league: 'WNBA' },
-  // Soccer
-  { id: 'epl', sport: 'Soccer', league: 'EPL' },
-  { id: 'laliga', sport: 'Soccer', league: 'La Liga' },
-  { id: 'bundesliga', sport: 'Soccer', league: 'Bundesliga' },
-  { id: 'seriea', sport: 'Soccer', league: 'Serie A' },
-  { id: 'ligue1', sport: 'Soccer', league: 'Ligue 1' },
-  { id: 'mls', sport: 'Soccer', league: 'MLS' },
-  { id: 'ucl', sport: 'Soccer', league: 'Champions League' },
-  // Combat sports
-  { id: 'ufc', sport: 'MMA', league: 'UFC' },
-  { id: 'boxing', sport: 'Boxing', league: 'Boxing' },
-  // Tennis
-  { id: 'atp', sport: 'Tennis', league: 'ATP' },
-  { id: 'wta', sport: 'Tennis', league: 'WTA' },
-  // Golf
-  { id: 'pga', sport: 'Golf', league: 'PGA' },
-];
-
 async function fetchSportsbookGames(apiKey: string): Promise<ScheduledGame[]> {
   const allGames: ScheduledGame[] = [];
+  
+  // Use RapidAPI proxy - this is the correct URL format
   const baseUrl = 'https://sportsbook-api2.p.rapidapi.com';
   
-  // First, try to get available leagues/sports
-  try {
-    console.log('[Sportsbook API] Fetching available sports...');
-    
-    const sportsResponse = await fetch(`${baseUrl}/v0/sports`, {
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'sportsbook-api2.p.rapidapi.com',
-      },
-    });
-    
-    if (!sportsResponse.ok) {
-      console.error(`[Sportsbook API] Sports endpoint error: ${sportsResponse.status}`);
-      const errorText = await sportsResponse.text();
-      console.error(`[Sportsbook API] Error details: ${errorText}`);
-    } else {
-      const sportsData = await sportsResponse.json();
-      console.log('[Sportsbook API] Available sports:', JSON.stringify(sportsData).slice(0, 500));
-    }
-  } catch (e) {
-    console.error('[Sportsbook API] Error fetching sports:', e);
-  }
+  const headers = {
+    'X-RapidAPI-Key': apiKey,
+    'X-RapidAPI-Host': 'sportsbook-api2.p.rapidapi.com',
+  };
 
-  // Try to fetch events/games
+  // Step 1: Fetch competitions list
   try {
-    console.log('[Sportsbook API] Fetching events...');
+    console.log('[Sportsbook API] Fetching competitions from /v0/competitions/...');
     
-    const eventsResponse = await fetch(`${baseUrl}/v0/events`, {
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'sportsbook-api2.p.rapidapi.com',
-      },
-    });
+    const response = await fetch(`${baseUrl}/v0/competitions/`, { headers });
     
-    if (!eventsResponse.ok) {
-      console.error(`[Sportsbook API] Events endpoint error: ${eventsResponse.status}`);
-      const errorText = await eventsResponse.text();
-      console.error(`[Sportsbook API] Error details: ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Sportsbook API] Competitions error ${response.status}:`, errorText);
     } else {
-      const eventsData = await eventsResponse.json();
-      console.log('[Sportsbook API] Events response:', JSON.stringify(eventsData).slice(0, 1000));
+      const data = await response.json();
+      console.log('[Sportsbook API] Competitions response type:', typeof data);
+      console.log('[Sportsbook API] Competitions:', JSON.stringify(data).slice(0, 1500));
       
-      // Parse events based on API structure
-      const events = Array.isArray(eventsData) ? eventsData : 
-                     eventsData.events ? eventsData.events : 
-                     eventsData.data ? eventsData.data : [];
+      // Parse competitions
+      const competitions = Array.isArray(data) ? data : 
+                           data.competitions || data.data || [];
       
-      for (const event of events) {
-        const game = parseEventToGame(event);
-        if (game) {
-          allGames.push(game);
+      console.log(`[Sportsbook API] Found ${competitions.length} competitions`);
+      
+      // Fetch events for top competitions
+      for (const comp of competitions.slice(0, 15)) {
+        const compKey = comp.key || comp.competitionKey || comp.id;
+        if (!compKey) continue;
+        
+        try {
+          console.log(`[Sportsbook API] Fetching events for ${compKey}...`);
+          const eventsResponse = await fetch(`${baseUrl}/v0/competitions/${compKey}/events`, { headers });
+          
+          if (eventsResponse.ok) {
+            const eventsData = await eventsResponse.json();
+            const events = Array.isArray(eventsData) ? eventsData :
+                          eventsData.events || eventsData.data || [];
+            
+            console.log(`[Sportsbook API] Found ${events.length} events for ${compKey}`);
+            
+            for (const event of events.slice(0, 20)) {
+              const game = parseEventToGame(event, comp);
+              if (game) {
+                allGames.push(game);
+              }
+            }
+          }
+        } catch (e) {
+          console.log(`[Sportsbook API] Error fetching events for ${compKey}:`, e);
         }
       }
     }
   } catch (e) {
-    console.error('[Sportsbook API] Error fetching events:', e);
+    console.error('[Sportsbook API] Error fetching competitions:', e);
   }
 
-  // Also try odds endpoint
+  // Step 2: Fetch arbitrage advantages (these contain game data with odds)
   try {
-    console.log('[Sportsbook API] Fetching odds...');
+    console.log('[Sportsbook API] Fetching ARBITRAGE advantages...');
     
-    const oddsResponse = await fetch(`${baseUrl}/v0/odds`, {
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'sportsbook-api2.p.rapidapi.com',
-      },
-    });
+    const response = await fetch(`${baseUrl}/v0/advantages/?type=ARBITRAGE`, { headers });
     
-    if (!oddsResponse.ok) {
-      console.error(`[Sportsbook API] Odds endpoint error: ${oddsResponse.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Sportsbook API] Arbitrage error ${response.status}:`, errorText);
     } else {
-      const oddsData = await oddsResponse.json();
-      console.log('[Sportsbook API] Odds response:', JSON.stringify(oddsData).slice(0, 1000));
+      const data = await response.json();
+      console.log('[Sportsbook API] Arbitrage response:', JSON.stringify(data).slice(0, 1500));
       
-      // Parse odds data
-      const odds = Array.isArray(oddsData) ? oddsData : 
-                   oddsData.odds ? oddsData.odds : 
-                   oddsData.data ? oddsData.data : [];
+      const advantages = Array.isArray(data) ? data : data.advantages || data.data || [];
+      console.log(`[Sportsbook API] Found ${advantages.length} arbitrage opportunities`);
       
-      for (const odd of odds) {
-        const game = parseOddsToGame(odd);
-        if (game) {
-          allGames.push(game);
-        }
+      for (const adv of advantages) {
+        const game = parseAdvantageToGame(adv);
+        if (game) allGames.push(game);
       }
     }
   } catch (e) {
-    console.error('[Sportsbook API] Error fetching odds:', e);
+    console.error('[Sportsbook API] Error fetching arbitrage:', e);
   }
 
-  // Try games endpoint
+  // Step 3: Fetch Plus EV advantages
   try {
-    console.log('[Sportsbook API] Fetching games...');
+    console.log('[Sportsbook API] Fetching PLUS_EV advantages...');
     
-    const gamesResponse = await fetch(`${baseUrl}/v0/games`, {
-      headers: {
-        'X-RapidAPI-Key': apiKey,
-        'X-RapidAPI-Host': 'sportsbook-api2.p.rapidapi.com',
-      },
-    });
+    const response = await fetch(`${baseUrl}/v1/advantages/?type=PLUS_EV`, { headers });
     
-    if (!gamesResponse.ok) {
-      console.error(`[Sportsbook API] Games endpoint error: ${gamesResponse.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Sportsbook API] Plus EV error ${response.status}:`, errorText);
     } else {
-      const gamesData = await gamesResponse.json();
-      console.log('[Sportsbook API] Games response:', JSON.stringify(gamesData).slice(0, 1000));
+      const data = await response.json();
+      console.log('[Sportsbook API] Plus EV response:', JSON.stringify(data).slice(0, 1500));
       
-      const games = Array.isArray(gamesData) ? gamesData : 
-                    gamesData.games ? gamesData.games : 
-                    gamesData.data ? gamesData.data : [];
+      const advantages = Array.isArray(data) ? data : data.advantages || data.data || [];
+      console.log(`[Sportsbook API] Found ${advantages.length} plus EV opportunities`);
       
-      for (const game of games) {
-        const parsed = parseGameData(game);
-        if (parsed) {
-          allGames.push(parsed);
-        }
+      for (const adv of advantages) {
+        const game = parseAdvantageToGame(adv);
+        if (game) allGames.push(game);
       }
     }
   } catch (e) {
-    console.error('[Sportsbook API] Error fetching games:', e);
+    console.error('[Sportsbook API] Error fetching plus EV:', e);
+  }
+
+  // Step 4: Try MIDDLES
+  try {
+    console.log('[Sportsbook API] Fetching MIDDLES...');
+    
+    const response = await fetch(`${baseUrl}/v0/advantages/?type=MIDDLES`, { headers });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[Sportsbook API] Middles response:', JSON.stringify(data).slice(0, 500));
+      
+      const advantages = Array.isArray(data) ? data : data.advantages || data.data || [];
+      for (const adv of advantages) {
+        const game = parseAdvantageToGame(adv);
+        if (game) allGames.push(game);
+      }
+    }
+  } catch (e) {
+    console.log('[Sportsbook API] Error fetching middles:', e);
   }
 
   return allGames;
 }
 
-function parseEventToGame(event: any): ScheduledGame | null {
+function parseEventToGame(event: any, competition: any): ScheduledGame | null {
   try {
-    const homeTeam = event.home_team || event.homeTeam || event.team1 || event.home?.name || '';
-    const awayTeam = event.away_team || event.awayTeam || event.team2 || event.away?.name || '';
+    const homeTeam = event.homeTeam || event.home_team || event.homeName ||
+                     event.participants?.[0]?.name || event.home?.name || '';
+    const awayTeam = event.awayTeam || event.away_team || event.awayName ||
+                     event.participants?.[1]?.name || event.away?.name || '';
     
     if (!homeTeam || !awayTeam) return null;
     
-    const sport = event.sport || event.sport_key || 'Sports';
-    const league = event.league || event.competition || event.sport_title || sport;
-    
-    // Parse odds from various API formats
-    const odds = parseOddsFromEvent(event);
+    const compName = competition?.name || competition?.key || '';
+    const sport = mapSport(compName);
+    const league = mapLeague(compName);
     
     return {
-      id: `sb_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      sport: mapSport(sport),
-      league: mapLeague(league),
-      homeTeam: homeTeam,
-      awayTeam: awayTeam,
-      startTime: event.commence_time || event.start_time || event.date || new Date().toISOString(),
-      popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
-      status: 'scheduled',
-      odds: odds,
-      hasOdds: odds !== undefined && (odds.moneyline !== undefined || odds.spread !== undefined || odds.total !== undefined),
+      id: `sb_${event.key || event.eventKey || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      sport,
+      league,
+      homeTeam,
+      awayTeam,
+      startTime: event.startTime || event.commence_time || event.start || new Date().toISOString(),
+      popularityScore: LEAGUE_POPULARITY[league] || 60,
+      status: getEventStatus(event),
+      hasOdds: false,
     };
   } catch {
     return null;
   }
 }
 
-function parseOddsFromEvent(event: any): ScheduledGame['odds'] {
-  const odds: ScheduledGame['odds'] = {};
-  
-  // Try to extract moneyline
-  if (event.odds?.moneyline) {
-    odds.moneyline = {
-      home: event.odds.moneyline.home || event.odds.moneyline.h2h?.[0] || 0,
-      away: event.odds.moneyline.away || event.odds.moneyline.h2h?.[1] || 0,
-      draw: event.odds.moneyline.draw,
-    };
-  } else if (event.home_odds || event.away_odds) {
-    odds.moneyline = {
-      home: parseFloat(event.home_odds) || 0,
-      away: parseFloat(event.away_odds) || 0,
-      draw: event.draw_odds ? parseFloat(event.draw_odds) : undefined,
-    };
-  } else if (event.bookmakers && Array.isArray(event.bookmakers) && event.bookmakers.length > 0) {
-    const bookmaker = event.bookmakers[0];
-    const h2hMarket = bookmaker.markets?.find((m: any) => m.key === 'h2h');
-    if (h2hMarket && h2hMarket.outcomes) {
-      const homeOutcome = h2hMarket.outcomes.find((o: any) => o.name === event.home_team);
-      const awayOutcome = h2hMarket.outcomes.find((o: any) => o.name === event.away_team);
-      if (homeOutcome && awayOutcome) {
+function parseAdvantageToGame(advantage: any): ScheduledGame | null {
+  try {
+    // Extract event info from advantage
+    const event = advantage.event || {};
+    const market = advantage.market || {};
+    
+    // Try multiple ways to get team names
+    let homeTeam = event.homeTeam || event.homeName || advantage.homeTeam || '';
+    let awayTeam = event.awayTeam || event.awayName || advantage.awayTeam || '';
+    
+    // Try to parse from event name like "Team A vs Team B"
+    if ((!homeTeam || !awayTeam) && event.name) {
+      const match = event.name.match(/(.+?)\s+(?:vs\.?|@)\s+(.+)/i);
+      if (match) {
+        homeTeam = match[2].trim(); // Team after 'vs' is usually home
+        awayTeam = match[1].trim();
+      }
+    }
+    
+    // Try outcomes
+    if ((!homeTeam || !awayTeam) && advantage.outcomes && advantage.outcomes.length >= 2) {
+      homeTeam = advantage.outcomes[0]?.name || advantage.outcomes[0]?.team || 'Team 1';
+      awayTeam = advantage.outcomes[1]?.name || advantage.outcomes[1]?.team || 'Team 2';
+    }
+    
+    if (!homeTeam && !awayTeam) return null;
+    
+    const competition = event.competition || advantage.competition || '';
+    const sport = mapSport(competition);
+    const league = mapLeague(competition);
+    
+    // Extract odds
+    const odds: ScheduledGame['odds'] = {};
+    
+    if (advantage.outcomes && advantage.outcomes.length >= 2) {
+      const outcome1 = advantage.outcomes[0];
+      const outcome2 = advantage.outcomes[1];
+      
+      // Get American odds
+      const homeOdds = outcome1.americanOdds || outcome1.price || outcome1.odds || 0;
+      const awayOdds = outcome2.americanOdds || outcome2.price || outcome2.odds || 0;
+      
+      if (homeOdds && awayOdds) {
         odds.moneyline = {
-          home: homeOutcome.price || 0,
-          away: awayOutcome.price || 0,
+          home: typeof homeOdds === 'number' ? homeOdds : parseFloat(homeOdds),
+          away: typeof awayOdds === 'number' ? awayOdds : parseFloat(awayOdds),
         };
       }
     }
-    
-    // Spreads
-    const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads');
-    if (spreadMarket && spreadMarket.outcomes) {
-      const homeSpread = spreadMarket.outcomes.find((o: any) => o.name === event.home_team);
-      const awaySpread = spreadMarket.outcomes.find((o: any) => o.name === event.away_team);
-      if (homeSpread && awaySpread) {
-        odds.spread = {
-          home: homeSpread.point || 0,
-          homeOdds: homeSpread.price || -110,
-          away: awaySpread.point || 0,
-          awayOdds: awaySpread.price || -110,
-        };
-      }
-    }
-    
-    // Totals
-    const totalsMarket = bookmaker.markets?.find((m: any) => m.key === 'totals');
-    if (totalsMarket && totalsMarket.outcomes) {
-      const overOutcome = totalsMarket.outcomes.find((o: any) => o.name === 'Over');
-      const underOutcome = totalsMarket.outcomes.find((o: any) => o.name === 'Under');
-      if (overOutcome && underOutcome) {
-        odds.total = {
-          over: overOutcome.point || 0,
-          overOdds: overOutcome.price || -110,
-          under: underOutcome.point || 0,
-          underOdds: underOutcome.price || -110,
-        };
-      }
-    }
-  }
-  
-  // Check if we have any odds
-  if (Object.keys(odds).length === 0) {
-    return undefined;
-  }
-  
-  return odds;
-}
-
-function parseOddsToGame(odd: any): ScheduledGame | null {
-  try {
-    const homeTeam = odd.home_team || odd.homeTeam || odd.team1 || '';
-    const awayTeam = odd.away_team || odd.awayTeam || odd.team2 || '';
-    
-    if (!homeTeam || !awayTeam) return null;
-    
-    const sport = odd.sport || odd.sport_key || 'Sports';
-    const league = odd.league || odd.competition || sport;
-    const odds = parseOddsFromEvent(odd);
     
     return {
-      id: `sb_odds_${odd.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      sport: mapSport(sport),
-      league: mapLeague(league),
-      homeTeam: homeTeam,
-      awayTeam: awayTeam,
-      startTime: odd.commence_time || odd.start_time || odd.date || new Date().toISOString(),
-      popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
+      id: `sb_adv_${advantage.id || event.key || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      sport,
+      league,
+      homeTeam: homeTeam || 'Home Team',
+      awayTeam: awayTeam || 'Away Team',
+      startTime: event.startTime || event.start || advantage.eventTime || new Date().toISOString(),
+      popularityScore: (LEAGUE_POPULARITY[league] || 60) + 10, // Boost advantages
       status: 'scheduled',
-      odds: odds,
-      hasOdds: odds !== undefined,
+      odds: Object.keys(odds).length > 0 ? odds : undefined,
+      hasOdds: Object.keys(odds).length > 0,
     };
   } catch {
     return null;
   }
 }
 
-function parseGameData(game: any): ScheduledGame | null {
-  try {
-    const homeTeam = game.home_team || game.homeTeam || game.home?.name || game.team1 || '';
-    const awayTeam = game.away_team || game.awayTeam || game.away?.name || game.team2 || '';
-    
-    if (!homeTeam || !awayTeam) return null;
-    
-    const sport = game.sport || game.sport_key || 'Sports';
-    const league = game.league || game.competition || sport;
-    const odds = parseOddsFromEvent(game);
-    
-    return {
-      id: `sb_game_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      sport: mapSport(sport),
-      league: mapLeague(league),
-      homeTeam: homeTeam,
-      awayTeam: awayTeam,
-      startTime: game.commence_time || game.start_time || game.date || new Date().toISOString(),
-      popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
-      status: game.status === 'live' ? 'live' : game.status === 'completed' ? 'completed' : 'scheduled',
-      odds: odds,
-      hasOdds: odds !== undefined,
-    };
-  } catch {
-    return null;
-  }
+function getEventStatus(event: any): 'scheduled' | 'live' | 'completed' {
+  const status = (event.status || '').toLowerCase();
+  if (status.includes('live') || status.includes('progress') || status.includes('started')) return 'live';
+  if (status.includes('complete') || status.includes('finish') || status.includes('ended')) return 'completed';
+  return 'scheduled';
 }
 
-function mapSport(sport: string): string {
-  const sportLower = (sport || '').toLowerCase();
-  if (sportLower.includes('football') || sportLower.includes('nfl') || sportLower.includes('ncaaf')) return 'Football';
-  if (sportLower.includes('basketball') || sportLower.includes('nba') || sportLower.includes('ncaab')) return 'Basketball';
-  if (sportLower.includes('baseball') || sportLower.includes('mlb')) return 'Baseball';
-  if (sportLower.includes('hockey') || sportLower.includes('nhl')) return 'Hockey';
-  if (sportLower.includes('soccer') || sportLower.includes('football')) return 'Soccer';
-  if (sportLower.includes('mma') || sportLower.includes('ufc')) return 'MMA';
-  if (sportLower.includes('boxing')) return 'Boxing';
-  if (sportLower.includes('tennis')) return 'Tennis';
-  if (sportLower.includes('golf')) return 'Golf';
-  return sport || 'Sports';
+function mapSport(input: string): string {
+  const lower = (input || '').toLowerCase();
+  if (lower.includes('basketball') || lower.includes('nba') || lower.includes('ncaab') || lower.includes('wnba')) return 'Basketball';
+  if (lower.includes('football') || lower.includes('nfl') || lower.includes('ncaaf')) return 'Football';
+  if (lower.includes('baseball') || lower.includes('mlb')) return 'Baseball';
+  if (lower.includes('hockey') || lower.includes('nhl') || lower.includes('ice')) return 'Hockey';
+  if (lower.includes('soccer') || lower.includes('premier') || lower.includes('liga') || lower.includes('bundesliga') || lower.includes('serie') || lower.includes('ligue') || lower.includes('mls') || lower.includes('champions')) return 'Soccer';
+  if (lower.includes('mma') || lower.includes('ufc') || lower.includes('martial')) return 'MMA';
+  if (lower.includes('boxing')) return 'Boxing';
+  if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta')) return 'Tennis';
+  if (lower.includes('golf') || lower.includes('pga')) return 'Golf';
+  return 'Sports';
 }
 
-function mapLeague(league: string): string {
-  const leagueLower = (league || '').toLowerCase();
-  if (leagueLower.includes('nfl')) return 'NFL';
-  if (leagueLower.includes('nba')) return 'NBA';
-  if (leagueLower.includes('mlb')) return 'MLB';
-  if (leagueLower.includes('nhl')) return 'NHL';
-  if (leagueLower.includes('ncaaf') || leagueLower.includes('college football')) return 'NCAAF';
-  if (leagueLower.includes('ncaab') || leagueLower.includes('college basketball')) return 'NCAAB';
-  if (leagueLower.includes('premier league') || leagueLower.includes('epl')) return 'EPL';
-  if (leagueLower.includes('la liga') || leagueLower.includes('laliga')) return 'La Liga';
-  if (leagueLower.includes('champions league') || leagueLower.includes('ucl')) return 'Champions League';
-  if (leagueLower.includes('bundesliga')) return 'Bundesliga';
-  if (leagueLower.includes('serie a')) return 'Serie A';
-  if (leagueLower.includes('ligue 1')) return 'Ligue 1';
-  if (leagueLower.includes('mls')) return 'MLS';
-  if (leagueLower.includes('ufc')) return 'UFC';
-  if (leagueLower.includes('boxing')) return 'Boxing';
-  if (leagueLower.includes('atp')) return 'ATP';
-  if (leagueLower.includes('wta')) return 'WTA';
-  if (leagueLower.includes('pga')) return 'PGA';
-  if (leagueLower.includes('wnba')) return 'WNBA';
-  return league || 'Sports';
+function mapLeague(input: string): string {
+  const lower = (input || '').toLowerCase();
+  if (lower.includes('nfl')) return 'NFL';
+  if (lower.includes('nba')) return 'NBA';
+  if (lower.includes('mlb')) return 'MLB';
+  if (lower.includes('nhl')) return 'NHL';
+  if (lower.includes('ncaaf') || lower.includes('college football')) return 'NCAAF';
+  if (lower.includes('ncaab') || lower.includes('college basketball')) return 'NCAAB';
+  if (lower.includes('wnba')) return 'WNBA';
+  if (lower.includes('premier') || lower.includes('epl')) return 'EPL';
+  if (lower.includes('la liga') || lower.includes('spain')) return 'La Liga';
+  if (lower.includes('bundesliga') || lower.includes('germany')) return 'Bundesliga';
+  if (lower.includes('serie a') || lower.includes('italy')) return 'Serie A';
+  if (lower.includes('ligue 1') || lower.includes('france')) return 'Ligue 1';
+  if (lower.includes('mls')) return 'MLS';
+  if (lower.includes('champions') || lower.includes('ucl')) return 'Champions League';
+  if (lower.includes('ufc') || lower.includes('mma')) return 'UFC';
+  if (lower.includes('boxing')) return 'Boxing';
+  if (lower.includes('atp')) return 'ATP';
+  if (lower.includes('wta')) return 'WTA';
+  if (lower.includes('pga')) return 'PGA';
+  return input || 'Sports';
 }
 
 function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
@@ -415,7 +333,8 @@ function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
     const key = `${game.homeTeam.toLowerCase()}_${game.awayTeam.toLowerCase()}_${game.league}`;
     const reverseKey = `${game.awayTeam.toLowerCase()}_${game.homeTeam.toLowerCase()}_${game.league}`;
     
-    if (!seen.has(key) && !seen.has(reverseKey)) {
+    const existing = seen.get(key) || seen.get(reverseKey);
+    if (!existing || (!existing.hasOdds && game.hasOdds)) {
       seen.set(key, game);
     }
   }
@@ -437,7 +356,6 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const forceRefresh = url.searchParams.get('refresh') === 'true';
     
-    // Check cache first (unless force refresh)
     if (!forceRefresh && isCacheValid()) {
       console.log('[Sportsbook API] Returning cached games:', cachedGames.length);
       return new Response(
@@ -451,37 +369,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (forceRefresh) {
-      console.log('[Sportsbook API] Force refresh requested');
-    }
-
     const apiKey = Deno.env.get('RAPIDAPI_KEY');
     if (!apiKey) {
       throw new Error('RAPIDAPI_KEY not configured');
     }
 
-    console.log('[Sportsbook API] Fetching games...');
+    console.log('[Sportsbook API] Starting fresh fetch...');
     
     const games = await fetchSportsbookGames(apiKey);
     
-    console.log(`[Sportsbook API] Total games fetched: ${games.length}`);
+    console.log(`[Sportsbook API] Total games: ${games.length}`);
 
     if (games.length === 0) {
       return new Response(
         JSON.stringify({
           success: false,
           games: [],
-          error: 'Sportsbook API returned 0 games. Check the edge function logs for API response details. You may need to check your RapidAPI subscription or the API endpoints.',
-          debug: 'Check Supabase edge function logs for detailed API responses',
+          error: 'No games found. Check edge function logs for API responses.',
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Deduplicate and rank
     const rankedGames = deduplicateAndRank(games);
-
-    // Update cache
     cachedGames = rankedGames;
     cacheTimestamp = Date.now();
 
@@ -494,7 +404,6 @@ Deno.serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error) {
     console.error('[Sportsbook API] Error:', error);
     
@@ -503,19 +412,18 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: true,
           games: cachedGames,
-          source: 'stale-cache',
-          lastUpdated: new Date(cacheTimestamp).toISOString(),
-          error: 'Using cached data due to API error',
+          source: 'stale_cache',
+          warning: 'API error, returned stale cache',
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     return new Response(
       JSON.stringify({
         success: false,
         games: [],
-        error: error instanceof Error ? error.message : 'Failed to fetch games',
+        error: error instanceof Error ? error.message : 'Unknown error',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
