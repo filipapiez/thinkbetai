@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
+export interface PopularGameOdds {
+  moneyline?: { home: number; away: number; draw?: number };
+  spread?: { home: number; homeOdds: number; away: number; awayOdds: number };
+  total?: { over: number; overOdds: number; under: number; underOdds: number };
+}
+
 export interface PopularGame {
   id: string;
   sport: string;
@@ -9,8 +15,10 @@ export interface PopularGame {
   awayTeam: string;
   startTime: string;
   popularityScore: number;
-  status: 'scheduled';
+  status: 'scheduled' | 'live' | 'completed';
   injuries?: string[];
+  odds?: PopularGameOdds;
+  hasOdds?: boolean;
 }
 
 interface PopularGamesResponse {

@@ -17,10 +17,11 @@ interface ScheduledGame {
   popularityScore: number;
   status: 'scheduled' | 'live' | 'completed';
   odds?: {
-    homeOdds?: number;
-    awayOdds?: number;
-    drawOdds?: number;
+    moneyline?: { home: number; away: number; draw?: number };
+    spread?: { home: number; homeOdds: number; away: number; awayOdds: number };
+    total?: { over: number; overOdds: number; under: number; underOdds: number };
   };
+  hasOdds?: boolean;
 }
 
 // Short cache to prevent API spam (5 minutes)
@@ -224,6 +225,9 @@ function parseEventToGame(event: any): ScheduledGame | null {
     const sport = event.sport || event.sport_key || 'Sports';
     const league = event.league || event.competition || event.sport_title || sport;
     
+    // Parse odds from various API formats
+    const odds = parseOddsFromEvent(event);
+    
     return {
       id: `sb_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       sport: mapSport(sport),
@@ -233,15 +237,81 @@ function parseEventToGame(event: any): ScheduledGame | null {
       startTime: event.commence_time || event.start_time || event.date || new Date().toISOString(),
       popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
       status: 'scheduled',
-      odds: event.odds ? {
-        homeOdds: event.odds.home,
-        awayOdds: event.odds.away,
-        drawOdds: event.odds.draw,
-      } : undefined,
+      odds: odds,
+      hasOdds: odds !== undefined && (odds.moneyline !== undefined || odds.spread !== undefined || odds.total !== undefined),
     };
   } catch {
     return null;
   }
+}
+
+function parseOddsFromEvent(event: any): ScheduledGame['odds'] {
+  const odds: ScheduledGame['odds'] = {};
+  
+  // Try to extract moneyline
+  if (event.odds?.moneyline) {
+    odds.moneyline = {
+      home: event.odds.moneyline.home || event.odds.moneyline.h2h?.[0] || 0,
+      away: event.odds.moneyline.away || event.odds.moneyline.h2h?.[1] || 0,
+      draw: event.odds.moneyline.draw,
+    };
+  } else if (event.home_odds || event.away_odds) {
+    odds.moneyline = {
+      home: parseFloat(event.home_odds) || 0,
+      away: parseFloat(event.away_odds) || 0,
+      draw: event.draw_odds ? parseFloat(event.draw_odds) : undefined,
+    };
+  } else if (event.bookmakers && Array.isArray(event.bookmakers) && event.bookmakers.length > 0) {
+    const bookmaker = event.bookmakers[0];
+    const h2hMarket = bookmaker.markets?.find((m: any) => m.key === 'h2h');
+    if (h2hMarket && h2hMarket.outcomes) {
+      const homeOutcome = h2hMarket.outcomes.find((o: any) => o.name === event.home_team);
+      const awayOutcome = h2hMarket.outcomes.find((o: any) => o.name === event.away_team);
+      if (homeOutcome && awayOutcome) {
+        odds.moneyline = {
+          home: homeOutcome.price || 0,
+          away: awayOutcome.price || 0,
+        };
+      }
+    }
+    
+    // Spreads
+    const spreadMarket = bookmaker.markets?.find((m: any) => m.key === 'spreads');
+    if (spreadMarket && spreadMarket.outcomes) {
+      const homeSpread = spreadMarket.outcomes.find((o: any) => o.name === event.home_team);
+      const awaySpread = spreadMarket.outcomes.find((o: any) => o.name === event.away_team);
+      if (homeSpread && awaySpread) {
+        odds.spread = {
+          home: homeSpread.point || 0,
+          homeOdds: homeSpread.price || -110,
+          away: awaySpread.point || 0,
+          awayOdds: awaySpread.price || -110,
+        };
+      }
+    }
+    
+    // Totals
+    const totalsMarket = bookmaker.markets?.find((m: any) => m.key === 'totals');
+    if (totalsMarket && totalsMarket.outcomes) {
+      const overOutcome = totalsMarket.outcomes.find((o: any) => o.name === 'Over');
+      const underOutcome = totalsMarket.outcomes.find((o: any) => o.name === 'Under');
+      if (overOutcome && underOutcome) {
+        odds.total = {
+          over: overOutcome.point || 0,
+          overOdds: overOutcome.price || -110,
+          under: underOutcome.point || 0,
+          underOdds: underOutcome.price || -110,
+        };
+      }
+    }
+  }
+  
+  // Check if we have any odds
+  if (Object.keys(odds).length === 0) {
+    return undefined;
+  }
+  
+  return odds;
 }
 
 function parseOddsToGame(odd: any): ScheduledGame | null {
@@ -253,6 +323,7 @@ function parseOddsToGame(odd: any): ScheduledGame | null {
     
     const sport = odd.sport || odd.sport_key || 'Sports';
     const league = odd.league || odd.competition || sport;
+    const odds = parseOddsFromEvent(odd);
     
     return {
       id: `sb_odds_${odd.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -263,6 +334,8 @@ function parseOddsToGame(odd: any): ScheduledGame | null {
       startTime: odd.commence_time || odd.start_time || odd.date || new Date().toISOString(),
       popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
       status: 'scheduled',
+      odds: odds,
+      hasOdds: odds !== undefined,
     };
   } catch {
     return null;
@@ -278,6 +351,7 @@ function parseGameData(game: any): ScheduledGame | null {
     
     const sport = game.sport || game.sport_key || 'Sports';
     const league = game.league || game.competition || sport;
+    const odds = parseOddsFromEvent(game);
     
     return {
       id: `sb_game_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -288,6 +362,8 @@ function parseGameData(game: any): ScheduledGame | null {
       startTime: game.commence_time || game.start_time || game.date || new Date().toISOString(),
       popularityScore: LEAGUE_POPULARITY[mapLeague(league)] || 60,
       status: game.status === 'live' ? 'live' : game.status === 'completed' ? 'completed' : 'scheduled',
+      odds: odds,
+      hasOdds: odds !== undefined,
     };
   } catch {
     return null;

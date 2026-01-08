@@ -226,9 +226,9 @@ export function useLiveGames() {
         }
       }
 
-      // 2. Supplement with scraped games from Google (via Firecrawl)
+      // 2. Supplement with scraped games from Sportsbook API
       try {
-        console.log('Fetching scraped games from Google...');
+        console.log('Fetching scraped games from Sportsbook API...');
         // Get user session for auth header
         const { data: { session } } = await supabase.auth.getSession();
         const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -251,8 +251,8 @@ export function useLiveGames() {
               const id = game.id || `scraped_${game.homeTeam}_${game.awayTeam}`;
               if (!seenIds.has(id)) {
                 seenIds.add(id);
-                // Transform scraped game to LiveGame format
-                allGames.push({
+                // Transform scraped game to LiveGame format with odds
+                const liveGame: LiveGame = {
                   id,
                   sport: sportDisplayNames[game.sport?.toLowerCase()] || game.league || game.sport || 'Unknown',
                   sportKey: game.sport?.toLowerCase() || 'unknown',
@@ -271,9 +271,15 @@ export function useLiveGames() {
                   startTime: game.startTime,
                   venue: `${game.homeTeam} Arena`,
                   status: game.status || 'scheduled',
-                  odds: undefined, // Scraped games don't have odds
-                  hasOdds: false,
-                });
+                  // Map odds from PopularGame format to LiveGame format
+                  odds: game.odds ? {
+                    moneyline: game.odds.moneyline || { home: 0, away: 0 },
+                    spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+                    total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+                  } : undefined,
+                  hasOdds: game.hasOdds || false,
+                };
+                allGames.push(liveGame);
               }
             }
           }
