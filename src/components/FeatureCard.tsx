@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import { forwardRef } from 'react';
 
 interface FeatureCardProps {
   icon: LucideIcon;
@@ -7,9 +8,10 @@ interface FeatureCardProps {
   delay?: number;
 }
 
-export const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: FeatureCardProps) => {
+export const FeatureCard = forwardRef<HTMLDivElement, FeatureCardProps>(({ icon: Icon, title, description, delay = 0 }, ref) => {
   return (
     <div 
+      ref={ref}
       className="group relative overflow-hidden rounded-2xl bg-card/50 border border-border/50 p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-lg animate-slide-up"
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -25,4 +27,6 @@ export const FeatureCard = ({ icon: Icon, title, description, delay = 0 }: Featu
       </div>
     </div>
   );
-};
+});
+
+FeatureCard.displayName = 'FeatureCard';
