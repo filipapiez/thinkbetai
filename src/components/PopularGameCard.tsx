@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PopularGame } from '@/hooks/usePopularGames';
 
@@ -10,28 +11,96 @@ interface PopularGameCardProps {
   rank?: number;
 }
 
-const PopularityBadge = ({ score }: { score: number }) => {
-  let variant: { bg: string; text: string; label: string };
-  
-  if (score >= 150) {
-    variant = { bg: 'bg-amber-500/20 border-amber-500/40', text: 'text-amber-400', label: 'HIGH INTEREST' };
-  } else if (score >= 100) {
-    variant = { bg: 'bg-blue-500/20 border-blue-500/40', text: 'text-blue-400', label: 'POPULAR' };
-  } else {
-    variant = { bg: 'bg-muted/50 border-border', text: 'text-muted-foreground', label: 'SCHEDULED' };
+type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
+
+// Calculate betting signal based on odds
+function calculateBetSignal(game: PopularGame): { signal: BetSignal; confidence: number } {
+  if (!game.odds || !game.hasOdds) {
+    return { signal: 'PASS', confidence: 30 };
   }
-  
+
+  let confidenceScore = 50;
+  let riskScore = 30;
+
+  const homeML = game.odds.moneyline?.home ?? 0;
+  const awayML = game.odds.moneyline?.away ?? 0;
+  const spread = game.odds.spread?.home ?? 0;
+
+  const hasMoneyline = homeML !== 0 && awayML !== 0;
+  const hasSpread = spread !== 0;
+
+  if (!hasMoneyline && !hasSpread) {
+    return { signal: 'PASS', confidence: 30 };
+  }
+
+  if (hasMoneyline) {
+    const homeImplied = homeML > 0 ? 100 / (homeML + 100) : Math.abs(homeML) / (Math.abs(homeML) + 100);
+    const awayImplied = awayML > 0 ? 100 / (awayML + 100) : Math.abs(awayML) / (Math.abs(awayML) + 100);
+    const impliedDiff = Math.abs(homeImplied - awayImplied);
+
+    if (impliedDiff >= 0.25) {
+      confidenceScore += 15;
+    } else if (impliedDiff >= 0.10) {
+      confidenceScore += 10;
+    } else {
+      riskScore += 10;
+    }
+
+    if (homeML < -300 || awayML < -300) {
+      riskScore += 15;
+      confidenceScore -= 10;
+    }
+
+    if ((homeML >= 150 && homeML <= 250) || (awayML >= 150 && awayML <= 250)) {
+      confidenceScore += 12;
+    }
+  }
+
+  if (hasSpread) {
+    const absSpread = Math.abs(spread);
+    if (absSpread <= 3) {
+      confidenceScore += 8;
+    } else if (absSpread >= 10) {
+      riskScore += 8;
+    }
+  }
+
+  confidenceScore = Math.min(100, Math.max(0, confidenceScore));
+  riskScore = Math.min(100, Math.max(0, riskScore));
+
+  let signal: BetSignal;
+  if (confidenceScore >= 70 && riskScore <= 45) {
+    signal = 'GOOD';
+  } else if (riskScore > 55 || confidenceScore < 45) {
+    signal = 'PASS';
+  } else {
+    signal = 'BORDERLINE';
+  }
+
+  return { signal, confidence: Math.round(confidenceScore) };
+}
+
+const BetSignalBadge = ({ signal, confidence }: { signal: BetSignal; confidence: number }) => {
+  const variants = {
+    'GOOD': { bg: 'bg-emerald-500/20 border-emerald-500/40', text: 'text-emerald-400', label: 'GOOD BET', icon: TrendingUp },
+    'BORDERLINE': { bg: 'bg-amber-500/20 border-amber-500/40', text: 'text-amber-400', label: 'BORDERLINE', icon: Minus },
+    'PASS': { bg: 'bg-red-500/20 border-red-500/40', text: 'text-red-400', label: 'PASS', icon: TrendingDown },
+  };
+
+  const v = variants[signal];
+  const Icon = v.icon;
+
   return (
-    <Badge 
-      variant="outline" 
+    <Badge
+      variant="outline"
       className={cn(
         "text-xs font-semibold px-2 py-0.5 flex items-center gap-1",
-        variant.bg,
-        variant.text
+        v.bg,
+        v.text
       )}
     >
-      <Star className="h-3 w-3" />
-      {variant.label}
+      <Icon className="h-3 w-3" />
+      {v.label}
     </Badge>
   );
 };
@@ -43,6 +112,9 @@ const formatOdds = (odds: number | undefined): string => {
 };
 
 export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
+  // Calculate betting signal
+  const betSignal = useMemo(() => calculateBetSignal(game), [game]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -110,7 +182,7 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
                   <span>{formatTime(game.startTime)}</span>
                 </div>
               </div>
-              <PopularityBadge score={game.popularityScore} />
+              <BetSignalBadge signal={betSignal.signal} confidence={betSignal.confidence} />
             </div>
 
             <div className="flex items-center justify-between gap-4 mb-4">
