@@ -1,21 +1,19 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate limiting (per user, per minute)
+// Rate limiting (per IP, per minute)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 10; // 10 requests per minute (scraping is expensive)
+const RATE_LIMIT = 30; // 30 requests per minute
 const RATE_WINDOW_MS = 60 * 1000;
 
-function checkRateLimit(userId: string): boolean {
+function checkRateLimit(identifier: string): boolean {
   const now = Date.now();
-  const record = rateLimitMap.get(userId);
+  const record = rateLimitMap.get(identifier);
   
   if (!record || now > record.resetTime) {
-    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_WINDOW_MS });
     return true;
   }
   
@@ -27,27 +25,13 @@ function checkRateLimit(userId: string): boolean {
   return true;
 }
 
-// Authentication helper
-async function authenticateUser(req: Request): Promise<{ userId: string } | null> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null;
+// Get client identifier for rate limiting (IP-based for unauthenticated)
+function getClientIdentifier(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
   }
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_ANON_KEY')!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const token = authHeader.replace('Bearer ', '');
-  const { data, error } = await supabase.auth.getUser(token);
-  
-  if (error || !data?.user) {
-    return null;
-  }
-
-  return { userId: data.user.id };
+  return req.headers.get('x-real-ip') || 'unknown';
 }
 
 // Allowed sports whitelist
@@ -97,17 +81,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authentication check
-    const auth = await authenticateUser(req);
-    if (!auth) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Rate limiting by user ID
-    if (!checkRateLimit(auth.userId)) {
+    // Rate limiting by client IP
+    const clientId = getClientIdentifier(req);
+    if (!checkRateLimit(clientId)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -138,7 +114,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`User ${auth.userId} scraping game data request received`);
+    console.log(`Scraping game data: ${homeTeam} vs ${awayTeam} (${sport})`);
 
     // Build safe search queries with sanitized inputs
     const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
