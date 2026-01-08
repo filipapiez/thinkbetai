@@ -15,8 +15,16 @@ type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
 // Calculate betting signal based on odds - exported for use in other components
 export function calculateBetSignal(game: PopularGame): { signal: BetSignal; confidence: number } {
+  // If no odds data, use popularity-based scoring instead
   if (!game.odds || !game.hasOdds) {
-    return { signal: 'PASS', confidence: 30 };
+    // Use popularity score to determine signal for games without odds
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 85) {
+      return { signal: 'GOOD', confidence: 65 };
+    } else if (popularity >= 70) {
+      return { signal: 'BORDERLINE', confidence: 55 };
+    }
+    return { signal: 'PASS', confidence: 40 };
   }
 
   let confidenceScore = 50;
@@ -30,7 +38,12 @@ export function calculateBetSignal(game: PopularGame): { signal: BetSignal; conf
   const hasSpread = spread !== 0;
 
   if (!hasMoneyline && !hasSpread) {
-    return { signal: 'PASS', confidence: 30 };
+    // Fallback to popularity when odds incomplete
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 80) {
+      return { signal: 'BORDERLINE', confidence: 50 };
+    }
+    return { signal: 'PASS', confidence: 35 };
   }
 
   if (hasMoneyline) {
