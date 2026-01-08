@@ -481,7 +481,34 @@ const GameDetail = () => {
           )}
 
 
-          {/* Analysis Grid */}
+          {/* === STRUCTURED GAME VIEW ORDER === */}
+          
+          {/* 3) Key Injuries & Availability */}
+          {isLoadingScrapedData ? (
+            <div className="flex items-center justify-center py-8 mb-6">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-3 text-muted-foreground">Loading injury data...</span>
+            </div>
+          ) : scrapedData && (
+            <div className="mb-6">
+              <ScrapedInjuryCard 
+                injuries={scrapedData.injuries}
+                homeTeam={game.homeTeam.name}
+                awayTeam={game.awayTeam.name}
+              />
+            </div>
+          )}
+          
+          {/* 4) AI Analysis - CRITICAL SECTION */}
+          <div className="mb-6">
+            <AIAnalysisCard 
+              game={game}
+              qualification={qualification}
+              scrapedData={scrapedData}
+            />
+          </div>
+          
+          {/* 5) Supporting Stats / Chart (sport-specific) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Risk Assessment */}
             {risk && (
@@ -560,45 +587,23 @@ const GameDetail = () => {
               </Card>
             )}
           </div>
-
-          {/* Scraped Data Section */}
-          {isLoadingScrapedData ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-3 text-muted-foreground">Loading game data...</span>
+          
+          {/* Recent Form & Performance Chart */}
+          {scrapedData && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <ScrapedFormCard 
+                recentForm={scrapedData.recentForm}
+                headToHead={scrapedData.headToHead}
+                homeTeam={game.homeTeam.name}
+                awayTeam={game.awayTeam.name}
+              />
+              <PerformanceChartLive 
+                recentForm={scrapedData.recentForm}
+                homeTeam={game.homeTeam.name}
+                awayTeam={game.awayTeam.name}
+                sport={game.sport}
+              />
             </div>
-          ) : scrapedData && (
-            <>
-              {/* Injuries and Form */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <ScrapedInjuryCard 
-                  injuries={scrapedData.injuries}
-                  homeTeam={game.homeTeam.name}
-                  awayTeam={game.awayTeam.name}
-                />
-                <ScrapedFormCard 
-                  recentForm={scrapedData.recentForm}
-                  headToHead={scrapedData.headToHead}
-                  homeTeam={game.homeTeam.name}
-                  awayTeam={game.awayTeam.name}
-                />
-              </div>
-
-              {/* Chart and AI Analysis */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <PerformanceChartLive 
-                  recentForm={scrapedData.recentForm}
-                  homeTeam={game.homeTeam.name}
-                  awayTeam={game.awayTeam.name}
-                  sport={game.sport}
-                />
-                <AIAnalysisCard 
-                  game={game}
-                  qualification={qualification}
-                  scrapedData={scrapedData}
-                />
-              </div>
-            </>
           )}
 
           {/* AI Summary Card */}
