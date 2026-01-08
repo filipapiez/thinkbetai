@@ -22,10 +22,10 @@ interface ScheduledGame {
   injuries?: string[];
 }
 
-// In-memory cache with 12-hour TTL (twice daily refresh at 9 AM and 10 PM)
+// Short cache to prevent API spam (5 minutes)
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 // 15+ Sports to track - using ESPN schedule URLs
 const SPORTS_CONFIG = [
