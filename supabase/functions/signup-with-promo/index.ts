@@ -117,49 +117,60 @@ const handler = async (req: Request): Promise<Response> => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const adminEmail = Deno.env.get("ADMIN_EMAIL");
 
-    if (resendApiKey) {
-      const resend = new Resend(resendApiKey);
-      const createdAt = new Date().toISOString();
+    console.log("Email config check - RESEND_API_KEY exists:", !!resendApiKey);
+    console.log("Email config check - ADMIN_EMAIL:", adminEmail || "NOT SET");
 
-      // Email to admin
-      if (adminEmail) {
-        try {
-          await resend.emails.send({
-            from: "ThinkBetAI <onboarding@resend.dev>",
-            to: [adminEmail],
-            subject: "New ThinkBetAI Signup",
-            html: `
-              <h2>New User Signup</h2>
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Plan:</strong> ${isPro ? "PRO (Free forever – promo)" : "No plan (Free / Locked)"}</p>
-              <p><strong>Promo code used:</strong> ${promoUsed || "None"}</p>
-              <p><strong>Signup date:</strong> ${createdAt}</p>
-            `,
-          });
-          console.log("Admin notification email sent");
-        } catch (emailError) {
-          console.error("Failed to send admin email:", emailError);
-        }
+    if (resendApiKey && adminEmail) {
+      const resend = new Resend(resendApiKey);
+      const createdAt = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+
+      // Email to admin - ALWAYS send on every signup
+      console.log("Attempting to send admin notification email to:", adminEmail);
+      try {
+        const adminEmailResult = await resend.emails.send({
+          from: "ThinkBetAI <onboarding@resend.dev>",
+          to: [adminEmail],
+          subject: `🆕 New ThinkBetAI Signup: ${email}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #10b981;">🎉 New User Signup!</h2>
+              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 8px 0;"><strong>Email:</strong> ${email}</p>
+                <p style="margin: 8px 0;"><strong>Plan:</strong> ${isPro ? "✅ PRO (Free forever – promo)" : "❌ No plan (Free / Locked)"}</p>
+                <p style="margin: 8px 0;"><strong>Promo code used:</strong> ${promoUsed || "None"}</p>
+                <p style="margin: 8px 0;"><strong>Signup date:</strong> ${createdAt}</p>
+              </div>
+            </div>
+          `,
+        });
+        console.log("Admin notification email sent successfully:", JSON.stringify(adminEmailResult));
+      } catch (emailError: any) {
+        console.error("Failed to send admin email - Error:", emailError?.message || emailError);
+        console.error("Full error:", JSON.stringify(emailError));
       }
 
       // Welcome email to user
+      console.log("Attempting to send welcome email to:", email);
       try {
-        await resend.emails.send({
+        const userEmailResult = await resend.emails.send({
           from: "ThinkBetAI <onboarding@resend.dev>",
           to: [email],
-          subject: "Welcome to ThinkBetAI",
+          subject: "Welcome to ThinkBetAI! 🎯",
           html: `
-            <h2>Welcome to ThinkBetAI!</h2>
-            <p>Thanks for signing up. If you have any questions or need help, reply to this email and we'll be happy to help.</p>
-            <p>— ThinkBetAI Team</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #10b981;">Welcome to ThinkBetAI!</h2>
+              <p>Thanks for signing up. You're now part of our community of smart bettors.</p>
+              <p>If you have any questions or need help, just reply to this email.</p>
+              <p style="margin-top: 30px;">— The ThinkBetAI Team</p>
+            </div>
           `,
         });
-        console.log("Welcome email sent to user");
-      } catch (emailError) {
-        console.error("Failed to send welcome email:", emailError);
+        console.log("Welcome email sent successfully:", JSON.stringify(userEmailResult));
+      } catch (emailError: any) {
+        console.error("Failed to send welcome email - Error:", emailError?.message || emailError);
       }
     } else {
-      console.log("RESEND_API_KEY not configured, skipping emails");
+      console.error("Email sending skipped - Missing config. RESEND_API_KEY:", !!resendApiKey, "ADMIN_EMAIL:", !!adminEmail);
     }
 
     return new Response(
