@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Clock } from 'lucide-react';
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
-import { BettingChatBot } from '@/components/BettingChatBot';
+
 
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
@@ -366,7 +366,7 @@ const Games = () => {
       </main>
 
       <Footer />
-      <BettingChatBot />
+      
     </div>
   );
 };
