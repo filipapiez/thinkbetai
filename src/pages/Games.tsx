@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PopularGameCard, calculateBetSignal } from '@/components/PopularGameCard';
-import { UFCEventsSection } from '@/components/UFCEventsSection';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -204,8 +203,6 @@ const Games = () => {
             </CardContent>
           </Card>
 
-          {/* UFC Events Section */}
-          <UFCEventsSection />
 
           {/* Search & Filters */}
           <div className="space-y-4 mb-8">
