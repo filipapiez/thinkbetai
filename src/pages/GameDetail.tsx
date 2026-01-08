@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useMemo, useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -33,6 +33,46 @@ import { ScrapedFormCard } from '@/components/ScrapedFormCard';
 import { AIAnalysisCard } from '@/components/AIAnalysisCard';
 import { PerformanceChartLive } from '@/components/PerformanceChartLive';
 import { QualifiedBetAccuracyChart } from '@/components/QualifiedBetAccuracyChart';
+import type { PopularGame } from '@/hooks/usePopularGames';
+
+function popularGameToLiveGame(pg: PopularGame): LiveGame {
+  const abbrev = (name: string) => {
+    if (!name) return 'TBD';
+    if (name.length <= 4) return name.toUpperCase();
+    const words = name.split(' ').filter(Boolean);
+    if (words.length >= 2) return words.slice(0, 3).map(w => w[0]).join('').toUpperCase();
+    return name.slice(0, 3).toUpperCase();
+  };
+
+  return {
+    id: pg.id,
+    sport: pg.sport,
+    sportKey: pg.sport.toLowerCase().replace(/\s+/g, '-'),
+    homeTeam: {
+      id: pg.homeTeam.toLowerCase().replace(/\s+/g, '-'),
+      name: pg.homeTeam,
+      abbreviation: abbrev(pg.homeTeam),
+      stats: undefined,
+    },
+    awayTeam: {
+      id: pg.awayTeam.toLowerCase().replace(/\s+/g, '-'),
+      name: pg.awayTeam,
+      abbreviation: abbrev(pg.awayTeam),
+      stats: undefined,
+    },
+    startTime: pg.startTime,
+    venue: `${pg.homeTeam} Arena`,
+    status: pg.status === 'live' ? 'live' : pg.status === 'completed' ? 'final' : 'scheduled',
+    odds: pg.odds
+      ? {
+          moneyline: pg.odds.moneyline || { home: 0, away: 0 },
+          spread: pg.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+          total: pg.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+        }
+      : undefined,
+    hasOdds: Boolean(pg.hasOdds && pg.odds),
+  };
+}
 
 // Risk assessment based on odds analysis
 interface RiskAnalysis {
@@ -158,12 +198,35 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
 
 const GameDetail = () => {
   const { gameId } = useParams<{ gameId: string }>();
+  const location = useLocation();
   const { games, isLoading: isLoadingGames, error: gamesError } = useLiveGames();
+
+  const stateGame = (location.state as { game?: PopularGame } | null)?.game;
+
+  const cachedPopularGame = useMemo(() => {
+    if (!gameId) return undefined;
+    try {
+      const raw = localStorage.getItem('popular_games_cache');
+      if (!raw) return undefined;
+      const parsed = JSON.parse(raw);
+      const list = parsed?.games;
+      if (!Array.isArray(list)) return undefined;
+      return list.find((g: PopularGame) => g?.id === gameId);
+    } catch {
+      return undefined;
+    }
+  }, [gameId]);
 
   const game = useMemo(() => {
     if (!gameId) return undefined;
-    return games.find((g) => g.id === gameId);
-  }, [games, gameId]);
+    const live = games.find((g) => g.id === gameId);
+    if (live) return live;
+
+    const popular = stateGame || cachedPopularGame;
+    if (popular) return popularGameToLiveGame(popular);
+
+    return undefined;
+  }, [games, gameId, stateGame, cachedPopularGame]);
 
   const [scrapedData, setScrapedData] = useState<ScrapedGameData | null>(null);
   const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
@@ -196,7 +259,7 @@ const GameDetail = () => {
     return analyzeValue(game);
   }, [game]);
 
-  if (isLoadingGames) {
+  if (isLoadingGames && !game) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -208,7 +271,7 @@ const GameDetail = () => {
     );
   }
 
-  if (gamesError && games.length === 0) {
+  if (gamesError && games.length === 0 && !game) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
