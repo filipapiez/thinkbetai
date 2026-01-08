@@ -405,10 +405,10 @@ const GameDetail = () => {
           <Card variant="glass" className="mb-6 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                {/* Teams */}
+                {/* Teams/Fighters */}
                 <div className="flex-1">
                   <div className="flex items-center justify-center lg:justify-start gap-6">
-                    {/* Home Team */}
+                    {/* First Team/Fighter */}
                     <div className="text-center">
                       <div className={cn(
                         "w-20 h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-2xl font-bold",
@@ -417,7 +417,10 @@ const GameDetail = () => {
                         {game.homeTeam.abbreviation}
                       </div>
                       <p className="font-semibold">{game.homeTeam.name}</p>
-                      <p className="text-xs text-muted-foreground">Home</p>
+                      <p className="text-xs text-muted-foreground">
+                        {['UFC', 'MMA', 'Boxing'].includes(game.sport) ? 'Red Corner' : 
+                         ['Tennis', 'Table Tennis', 'ATP', 'WTA'].includes(game.sport) ? '' : 'Home'}
+                      </p>
                     </div>
 
                     {/* VS */}
@@ -425,7 +428,7 @@ const GameDetail = () => {
                       <div className="text-3xl font-bold text-muted-foreground">vs</div>
                     </div>
 
-                    {/* Away Team */}
+                    {/* Second Team/Fighter */}
                     <div className="text-center">
                       <div className={cn(
                         "w-20 h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-2xl font-bold",
@@ -434,7 +437,10 @@ const GameDetail = () => {
                         {game.awayTeam.abbreviation}
                       </div>
                       <p className="font-semibold">{game.awayTeam.name}</p>
-                      <p className="text-xs text-muted-foreground">Away</p>
+                      <p className="text-xs text-muted-foreground">
+                        {['UFC', 'MMA', 'Boxing'].includes(game.sport) ? 'Blue Corner' : 
+                         ['Tennis', 'Table Tennis', 'ATP', 'WTA'].includes(game.sport) ? '' : 'Away'}
+                      </p>
                     </div>
                   </div>
                 </div>

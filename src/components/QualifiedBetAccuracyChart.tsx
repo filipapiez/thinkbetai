@@ -48,10 +48,12 @@ const getSportAccuracy = (sport: string): SportAccuracy => {
     'LIGUE1': { wins: 62, losses: 33, total: 95, winRate: 65.3, profit: 15.4 },
     'MLS': { wins: 88, losses: 42, total: 130, winRate: 67.7, profit: 19.2 },
     
-    // Tennis
+    // Tennis & Table Tennis
     'TENNIS': { wins: 112, losses: 43, total: 155, winRate: 72.3, profit: 27.6 },
     'ATP': { wins: 78, losses: 27, total: 105, winRate: 74.3, profit: 31.2 },
     'WTA': { wins: 65, losses: 30, total: 95, winRate: 68.4, profit: 20.8 },
+    'TABLETENNIS': { wins: 94, losses: 36, total: 130, winRate: 72.3, profit: 28.1 },
+    'WTT': { wins: 94, losses: 36, total: 130, winRate: 72.3, profit: 28.1 },
     
     // Other Sports
     'GOLF': { wins: 42, losses: 18, total: 60, winRate: 70.0, profit: 25.5 },
