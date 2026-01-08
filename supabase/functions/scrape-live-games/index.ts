@@ -437,7 +437,7 @@ function convertUFCEventsToGames(events: UFCEvent[]): ScheduledGame[] {
     for (const fight of event.fights) {
       games.push({
         id: `ufc_${event.id}_${fight.fighter1.replace(/\s+/g, '_')}_${fight.fighter2.replace(/\s+/g, '_')}`,
-        sport: 'MMA',
+        sport: 'UFC',
         league: 'UFC',
         homeTeam: fight.fighter1,
         awayTeam: fight.fighter2,
