@@ -69,9 +69,9 @@ export function calculateBetSignal(game: PopularGame): { signal: BetSignal; conf
   riskScore = Math.min(100, Math.max(0, riskScore));
 
   let signal: BetSignal;
-  if (confidenceScore >= 70 && riskScore <= 45) {
+  if (confidenceScore >= 60 && riskScore <= 50) {
     signal = 'GOOD';
-  } else if (riskScore > 55 || confidenceScore < 45) {
+  } else if (riskScore > 60 || confidenceScore < 40) {
     signal = 'PASS';
   } else {
     signal = 'BORDERLINE';
