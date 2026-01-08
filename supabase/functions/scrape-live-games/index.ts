@@ -589,6 +589,187 @@ async function fetchTableTennisGames(): Promise<ScheduledGame[]> {
 }
 
 // ============================================================================
+// SOCCER GAMES via FIRECRAWL (ESPN)
+// ============================================================================
+
+interface SoccerMatch {
+  homeTeam: string;
+  awayTeam: string;
+  league: string;
+  date: string;
+}
+
+async function fetchSoccerGames(): Promise<ScheduledGame[]> {
+  const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
+  if (!firecrawlKey) {
+    console.log('[Soccer] Firecrawl API key not configured, using fallback data');
+    return generateFallbackSoccerGames();
+  }
+
+  try {
+    console.log('[Soccer] Fetching ESPN Soccer schedule via Firecrawl...');
+    
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: 'https://www.espn.com/soccer/schedule',
+        formats: ['markdown'],
+        onlyMainContent: true,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[Soccer] Firecrawl API error:', response.status);
+      return generateFallbackSoccerGames();
+    }
+
+    const data = await response.json();
+    console.log('[Soccer] Firecrawl response received');
+
+    // Parse game data from scraped content
+    const games = parseSoccerGamesFromMarkdown(data);
+    
+    if (games.length === 0) {
+      console.log('[Soccer] No games parsed from ESPN, using fallback');
+      return generateFallbackSoccerGames();
+    }
+
+    console.log(`[Soccer] Parsed ${games.length} games from ESPN`);
+    return games;
+  } catch (error) {
+    console.error('[Soccer] Error fetching soccer games:', error);
+    return generateFallbackSoccerGames();
+  }
+}
+
+function parseSoccerGamesFromMarkdown(data: any): ScheduledGame[] {
+  const games: ScheduledGame[] = [];
+  const now = new Date();
+  
+  // Common soccer team names for matching
+  const soccerTeams = [
+    'Manchester United', 'Manchester City', 'Liverpool', 'Chelsea', 'Arsenal', 'Tottenham',
+    'Newcastle', 'Brighton', 'Aston Villa', 'West Ham', 'Everton', 'Fulham', 'Crystal Palace',
+    'Wolves', 'Bournemouth', 'Brentford', 'Nottingham Forest', 'Burnley', 'Sheffield United', 'Luton',
+    'Real Madrid', 'Barcelona', 'Atletico Madrid', 'Sevilla', 'Valencia', 'Athletic Bilbao',
+    'Bayern Munich', 'Borussia Dortmund', 'RB Leipzig', 'Bayer Leverkusen', 'Eintracht Frankfurt',
+    'PSG', 'Paris Saint-Germain', 'Marseille', 'Lyon', 'Monaco', 'Lille',
+    'Juventus', 'AC Milan', 'Inter Milan', 'Napoli', 'Roma', 'Lazio', 'Atalanta',
+    'Inter Miami', 'LA Galaxy', 'LAFC', 'Atlanta United', 'New York Red Bulls', 'Seattle Sounders'
+  ];
+
+  const leagueMapping: Record<string, string> = {
+    'premier league': 'EPL',
+    'english premier': 'EPL',
+    'la liga': 'La Liga',
+    'spain': 'La Liga',
+    'bundesliga': 'Bundesliga',
+    'germany': 'Bundesliga',
+    'serie a': 'Serie A',
+    'italy': 'Serie A',
+    'ligue 1': 'Ligue 1',
+    'france': 'Ligue 1',
+    'champions league': 'Champions League',
+    'ucl': 'Champions League',
+    'mls': 'MLS',
+  };
+
+  try {
+    const content = data.data?.markdown || data.markdown || '';
+    
+    // Look for patterns like "Team vs Team" or "Team @ Team"
+    const matchPatterns = [
+      /(\w+(?:\s+\w+)*)\s+(?:vs\.?|v\.?)\s+(\w+(?:\s+\w+)*)/gi,
+      /(\w+(?:\s+\w+)*)\s+(?:at|@)\s+(\w+(?:\s+\w+)*)/gi,
+    ];
+
+    for (const pattern of matchPatterns) {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        const team1 = match[1].trim();
+        const team2 = match[2].trim();
+        
+        // Check if both are soccer teams
+        const isTeam1Soccer = soccerTeams.some(t => team1.toLowerCase().includes(t.toLowerCase()) || t.toLowerCase().includes(team1.toLowerCase()));
+        const isTeam2Soccer = soccerTeams.some(t => team2.toLowerCase().includes(t.toLowerCase()) || t.toLowerCase().includes(team2.toLowerCase()));
+        
+        if (isTeam1Soccer && isTeam2Soccer) {
+          const id = `soccer_${team2.replace(/\s+/g, '_')}_${team1.replace(/\s+/g, '_')}_${games.length}`;
+          
+          // Detect league from context
+          let league = 'EPL';
+          const lowerContent = content.toLowerCase();
+          for (const [key, value] of Object.entries(leagueMapping)) {
+            if (lowerContent.includes(key)) {
+              league = value;
+              break;
+            }
+          }
+          
+          // Avoid duplicates
+          if (!games.some(g => g.homeTeam === team2 && g.awayTeam === team1)) {
+            games.push({
+              id,
+              sport: 'Soccer',
+              league,
+              homeTeam: team2,
+              awayTeam: team1,
+              startTime: new Date(now.getTime() + (games.length * 24 + 12) * 60 * 60 * 1000).toISOString(),
+              popularityScore: LEAGUE_POPULARITY[league] || 80,
+              status: 'scheduled',
+              hasOdds: false,
+            });
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[Soccer] Error parsing markdown:', error);
+  }
+
+  return games.slice(0, 20);
+}
+
+function generateFallbackSoccerGames(): ScheduledGame[] {
+  const now = new Date();
+  
+  const soccerMatchups = [
+    { home: 'Manchester City', away: 'Liverpool', league: 'EPL' },
+    { home: 'Arsenal', away: 'Chelsea', league: 'EPL' },
+    { home: 'Manchester United', away: 'Tottenham', league: 'EPL' },
+    { home: 'Newcastle', away: 'Aston Villa', league: 'EPL' },
+    { home: 'Real Madrid', away: 'Barcelona', league: 'La Liga' },
+    { home: 'Atletico Madrid', away: 'Sevilla', league: 'La Liga' },
+    { home: 'Bayern Munich', away: 'Borussia Dortmund', league: 'Bundesliga' },
+    { home: 'RB Leipzig', away: 'Bayer Leverkusen', league: 'Bundesliga' },
+    { home: 'PSG', away: 'Marseille', league: 'Ligue 1' },
+    { home: 'Lyon', away: 'Monaco', league: 'Ligue 1' },
+    { home: 'Inter Milan', away: 'AC Milan', league: 'Serie A' },
+    { home: 'Juventus', away: 'Napoli', league: 'Serie A' },
+    { home: 'Real Madrid', away: 'Bayern Munich', league: 'Champions League' },
+    { home: 'Manchester City', away: 'PSG', league: 'Champions League' },
+    { home: 'Inter Miami', away: 'LA Galaxy', league: 'MLS' },
+    { home: 'LAFC', away: 'Seattle Sounders', league: 'MLS' },
+  ];
+
+  return soccerMatchups.map((matchup, index) => ({
+    id: `soccer_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+    sport: 'Soccer',
+    league: matchup.league,
+    homeTeam: matchup.home,
+    awayTeam: matchup.away,
+    startTime: new Date(now.getTime() + (index * 2 + 1) * 24 * 60 * 60 * 1000).toISOString(),
+    popularityScore: LEAGUE_POPULARITY[matchup.league] || 80,
+    status: 'scheduled' as const,
+    hasOdds: false,
+  }));
+}
+
+// ============================================================================
 // NFL GAMES via FIRECRAWL
 // ============================================================================
 
@@ -798,16 +979,17 @@ Deno.serve(async (req) => {
     console.log('[Sportsbook API] Starting fresh fetch...');
     
     // Fetch from all sources in parallel
-    const [sportsbookGames, ufcGames, tableTennisGames, nflGames] = await Promise.all([
+    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames] = await Promise.all([
       apiKey ? fetchSportsbookGames(apiKey) : Promise.resolve([]),
       fetchUFCGames(),
       fetchTableTennisGames(),
       fetchNFLGames(),
+      fetchSoccerGames(),
     ]);
     
-    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames];
+    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames];
     
-    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length}, Table Tennis: ${tableTennisGames.length}, NFL: ${nflGames.length})`);
+    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length}, Table Tennis: ${tableTennisGames.length}, NFL: ${nflGames.length}, Soccer: ${soccerGames.length})`);
 
     if (allGames.length === 0) {
       return new Response(
