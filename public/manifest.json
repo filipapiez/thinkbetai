@@ -1,0 +1,27 @@
+{
+  "name": "ThinkBetAI - AI Betting Platform",
+  "short_name": "ThinkBetAI",
+  "description": "The #1 AI betting platform. Get AI-powered sports betting predictions, odds analysis, and real-time insights.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0a1e",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["sports", "entertainment", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
