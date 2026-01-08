@@ -469,8 +469,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Check cache first
-    if (isCacheValid()) {
+    // Check for force refresh parameter
+    const url = new URL(req.url);
+    const forceRefresh = url.searchParams.get('refresh') === 'true';
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && isCacheValid()) {
       console.log('[Scraper] Returning cached games');
       return new Response(
         JSON.stringify({
@@ -481,6 +485,10 @@ Deno.serve(async (req) => {
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+    
+    if (forceRefresh) {
+      console.log('[Scraper] Force refresh requested - bypassing cache');
     }
 
     const apiKey = Deno.env.get('FIRECRAWL_API_KEY');

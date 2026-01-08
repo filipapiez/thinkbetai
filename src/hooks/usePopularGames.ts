@@ -66,22 +66,28 @@ export function usePopularGames() {
         setIsLoading(false);
         return;
       }
+    } else {
+      // Clear client cache on force refresh
+      try {
+        localStorage.removeItem(CACHE_KEY);
+      } catch {}
     }
 
     try {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       
-      console.log('[PopularGames] Fetching from edge function');
+      console.log('[PopularGames] Fetching from edge function', forceRefresh ? '(force refresh)' : '');
       
-      const response = await fetch(
-        `${baseUrl}/functions/v1/scrape-live-games`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = forceRefresh 
+        ? `${baseUrl}/functions/v1/scrape-live-games?refresh=true`
+        : `${baseUrl}/functions/v1/scrape-live-games`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
