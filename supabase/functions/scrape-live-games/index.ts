@@ -1,7 +1,59 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 30; // requests per window
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute window
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(userId, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// ============================================================================
+// AUTHENTICATION
+// ============================================================================
+async function authenticateUser(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data, error } = await supabase.auth.getClaims(token);
+  
+  if (error || !data?.claims) {
+    console.log('[Auth] Failed to validate token:', error?.message);
+    return null;
+  }
+
+  return { userId: data.claims.sub as string };
+}
 
 // ============================================================================
 // SPORTSBOOK API via RapidAPI
@@ -958,6 +1010,25 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate user
+    const auth = await authenticateUser(req);
+    if (!auth) {
+      console.log('[Auth] Unauthorized request - no valid token');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', success: false }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit
+    if (!checkRateLimit(auth.userId)) {
+      console.log('[Rate Limit] User exceeded rate limit:', auth.userId);
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please try again later.', success: false }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const url = new URL(req.url);
     const forceRefresh = url.searchParams.get('refresh') === 'true';
     
