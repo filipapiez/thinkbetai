@@ -43,6 +43,7 @@ export interface LiveGame {
   status: 'scheduled' | 'live' | 'final';
   odds?: LiveOdds; // Made optional for scraped games without odds
   hasOdds: boolean;
+  popularityScore?: number; // Optional popularity for fallback signal calculation
 }
 
 export interface LiveBetQualification {
@@ -57,14 +58,34 @@ export interface LiveBetQualification {
 
 // Calculate bet qualification for live games based on odds value
 export function calculateLiveBetQualification(game: LiveGame): LiveBetQualification {
-  // Early return if no odds data
+  // If no odds data, use popularity-based fallback (same logic as PopularGameCard)
   if (!game.odds || !game.hasOdds) {
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 85) {
+      return {
+        signal: 'GOOD',
+        confidenceScore: 65,
+        riskScore: 40,
+        volatility: 'Medium',
+        reason: 'High popularity matchup',
+        pick: 'home',
+      };
+    } else if (popularity >= 70) {
+      return {
+        signal: 'BORDERLINE',
+        confidenceScore: 55,
+        riskScore: 50,
+        volatility: 'Medium',
+        reason: 'Moderate interest matchup',
+        pick: 'home',
+      };
+    }
     return {
       signal: 'PASS',
-      confidenceScore: 30,
+      confidenceScore: 40,
       riskScore: 60,
       volatility: 'High',
-      reason: 'No odds available',
+      reason: 'Low popularity, no odds available',
       pick: 'home',
     };
   }
@@ -84,12 +105,24 @@ export function calculateLiveBetQualification(game: LiveGame): LiveBetQualificat
   const hasTotal = total !== 0;
   
   if (!hasMoneyline && !hasSpread && !hasTotal) {
+    // Fallback to popularity when odds are incomplete
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 80) {
+      return {
+        signal: 'BORDERLINE',
+        confidenceScore: 50,
+        riskScore: 50,
+        volatility: 'Medium',
+        reason: 'Popular matchup, odds incomplete',
+        pick: 'home',
+      };
+    }
     return {
       signal: 'PASS',
-      confidenceScore: 30,
+      confidenceScore: 35,
       riskScore: 60,
       volatility: 'High',
-      reason: 'No odds available',
+      reason: 'Insufficient odds data',
       pick: 'home',
     };
   }
@@ -172,10 +205,10 @@ export function calculateLiveBetQualification(game: LiveGame): LiveBetQualificat
   let signal: 'GOOD' | 'BORDERLINE' | 'PASS';
   let reason: string;
   
-  if (confidenceScore >= 70 && riskScore <= 45) {
+  if (confidenceScore >= 60 && riskScore <= 50) {
     signal = 'GOOD';
     reason = reasons[0] || 'Strong value identified';
-  } else if (riskScore > 55 || confidenceScore < 45) {
+  } else if (riskScore > 60 || confidenceScore < 40) {
     signal = 'PASS';
     reason = reasons.find(r => r.includes('risk') || r.includes('volatility')) || 'Insufficient edge';
   } else {
