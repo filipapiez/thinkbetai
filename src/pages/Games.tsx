@@ -1,21 +1,40 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { PopularGameCard } from '@/components/PopularGameCard';
+import { PopularGameCard, calculateBetSignal } from '@/components/PopularGameCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Calendar, Filter, X, Star, Info, RefreshCw, Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Clock } from 'lucide-react';
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 import { BettingChatBot } from '@/components/BettingChatBot';
+
+type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
+  const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
 
   // Fetch popular games from scraper
   const { games, isLoading, error, lastUpdated, source, refetch } = usePopularGames();
+
+  // Calculate signals for all games
+  const gamesWithSignals = useMemo(() => {
+    return games.map(game => ({
+      game,
+      ...calculateBetSignal(game)
+    }));
+  }, [games]);
+
+  // Signal counts
+  const signalCounts = useMemo(() => {
+    const counts = { GOOD: 0, BORDERLINE: 0, PASS: 0 };
+    gamesWithSignals.forEach(g => counts[g.signal]++);
+    return counts;
+  }, [gamesWithSignals]);
 
   // Get unique sports from data
   const availableSports = useMemo(() => {
@@ -41,28 +60,40 @@ const Games = () => {
     return counts;
   }, [games, availableSports]);
 
-  // Filter games
+  // Filter and sort games by signal (GOOD first, then BORDERLINE, then PASS)
   const filteredGames = useMemo(() => {
-    return games.filter(game => {
-      const matchesSearch = searchQuery === '' || 
-        game.homeTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        game.awayTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        game.league.toLowerCase().includes(searchQuery.toLowerCase());
+    const signalPriority: Record<BetSignal, number> = { GOOD: 0, BORDERLINE: 1, PASS: 2 };
+    
+    return gamesWithSignals
+      .filter(({ game, signal }) => {
+        const matchesSearch = searchQuery === '' || 
+          game.homeTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          game.awayTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          game.league.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesSport = !selectedSport || game.sport === selectedSport;
-      const matchesLeague = !selectedLeague || game.league === selectedLeague;
+        const matchesSport = !selectedSport || game.sport === selectedSport;
+        const matchesLeague = !selectedLeague || game.league === selectedLeague;
+        const matchesSignal = !selectedSignal || signal === selectedSignal;
 
-      return matchesSearch && matchesSport && matchesLeague;
-    });
-  }, [games, searchQuery, selectedSport, selectedLeague]);
+        return matchesSearch && matchesSport && matchesLeague && matchesSignal;
+      })
+      .sort((a, b) => {
+        // Sort by signal priority first, then by confidence
+        const priorityDiff = signalPriority[a.signal] - signalPriority[b.signal];
+        if (priorityDiff !== 0) return priorityDiff;
+        return b.confidence - a.confidence;
+      })
+      .map(({ game }) => game);
+  }, [gamesWithSignals, searchQuery, selectedSport, selectedLeague, selectedSignal]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedSport(null);
     setSelectedLeague(null);
+    setSelectedSignal(null);
   };
 
-  const hasActiveFilters = searchQuery || selectedSport || selectedLeague;
+  const hasActiveFilters = searchQuery || selectedSport || selectedLeague || selectedSignal;
 
   const formatLastUpdated = (dateStr: string | null) => {
     if (!dateStr) return 'Never';
@@ -82,18 +113,16 @@ const Games = () => {
           {/* Page Header */}
           <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-6 w-6 text-amber-400" />
-                <h1 className="text-3xl font-bold">High-Interest Games</h1>
-              </div>
+              <h1 className="text-3xl font-bold mb-2">Upcoming Games</h1>
               <p className="text-muted-foreground">
-                Top 15 popular games based on publicly available schedules and general popularity signals.
+                Search and explore matchups. Games sorted by bet quality —<br className="hidden sm:block" />
+                GOOD bets shown first.
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <span>Updated {formatLastUpdated(lastUpdated)}</span>
-                {source && <Badge variant="outline" className="text-xs">{source}</Badge>}
+                <Clock className="h-4 w-4" />
+                <span>Updated at {formatLastUpdated(lastUpdated)}</span>
               </div>
               <Button 
                 variant="outline" 
@@ -107,20 +136,72 @@ const Games = () => {
             </div>
           </div>
 
-          {/* Disclaimer Banner */}
-          <div className="mb-6 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-            <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-blue-400 mb-1">Schedule Information Only</h3>
-                <p className="text-sm text-muted-foreground">
-                  This page displays game schedules based on publicly available information and general popularity signals. 
-                  No odds, spreads, totals, or betting data is shown. Games are ranked by league importance, 
-                  team prominence, and event significance.
-                </p>
+          {/* Bet Signal Summary Card */}
+          <Card className="mb-6 bg-card border-border">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">Bet Signal Summary</h3>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {selectedSport || 'All Sports'} • All Time
+                </span>
               </div>
-            </div>
-          </div>
+              
+              <div className="grid grid-cols-4 gap-3 mb-4">
+                {/* GOOD */}
+                <button
+                  onClick={() => setSelectedSignal(selectedSignal === 'GOOD' ? null : 'GOOD')}
+                  className={`p-4 rounded-lg text-center transition-all ${
+                    selectedSignal === 'GOOD' 
+                      ? 'bg-emerald-500/30 border-2 border-emerald-500' 
+                      : 'bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20'
+                  }`}
+                >
+                  <div className="text-2xl font-bold text-emerald-400">{signalCounts.GOOD}</div>
+                  <div className="text-xs text-emerald-400 font-medium">GOOD</div>
+                </button>
+                
+                {/* BORDERLINE */}
+                <button
+                  onClick={() => setSelectedSignal(selectedSignal === 'BORDERLINE' ? null : 'BORDERLINE')}
+                  className={`p-4 rounded-lg text-center transition-all ${
+                    selectedSignal === 'BORDERLINE' 
+                      ? 'bg-amber-500/30 border-2 border-amber-500' 
+                      : 'bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20'
+                  }`}
+                >
+                  <div className="text-2xl font-bold text-amber-400">{signalCounts.BORDERLINE}</div>
+                  <div className="text-xs text-amber-400 font-medium">BORDERLINE</div>
+                </button>
+                
+                {/* PASS */}
+                <button
+                  onClick={() => setSelectedSignal(selectedSignal === 'PASS' ? null : 'PASS')}
+                  className={`p-4 rounded-lg text-center transition-all ${
+                    selectedSignal === 'PASS' 
+                      ? 'bg-red-500/30 border-2 border-red-500' 
+                      : 'bg-red-500/10 border border-red-500/30 hover:bg-red-500/20'
+                  }`}
+                >
+                  <div className="text-2xl font-bold text-red-400">{signalCounts.PASS}</div>
+                  <div className="text-xs text-red-400 font-medium">PASS</div>
+                </button>
+                
+                {/* TOTAL */}
+                <div className="p-4 rounded-lg text-center bg-muted/30 border border-border">
+                  <div className="text-2xl font-bold">{games.length}</div>
+                  <div className="text-xs text-muted-foreground font-medium">TOTAL</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Info className="h-4 w-4" />
+                <span>GOOD + BORDERLINE + PASS = TOTAL. Only GOOD and BORDERLINE are recommended bets.</span>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Search & Filters */}
           <div className="space-y-4 mb-8">

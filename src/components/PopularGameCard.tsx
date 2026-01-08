@@ -13,8 +13,8 @@ interface PopularGameCardProps {
 
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 
-// Calculate betting signal based on odds
-function calculateBetSignal(game: PopularGame): { signal: BetSignal; confidence: number } {
+// Calculate betting signal based on odds - exported for use in other components
+export function calculateBetSignal(game: PopularGame): { signal: BetSignal; confidence: number } {
   if (!game.odds || !game.hasOdds) {
     return { signal: 'PASS', confidence: 30 };
   }
