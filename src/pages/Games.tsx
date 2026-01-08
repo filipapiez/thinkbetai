@@ -292,7 +292,7 @@ const Games = () => {
             <div className="text-center py-16">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
               <p className="text-muted-foreground">Loading popular games...</p>
-              <p className="text-xs text-muted-foreground mt-2">Fetching schedule data (refreshed twice daily)</p>
+              <p className="text-xs text-muted-foreground mt-2">Fetching Schedule Data</p>
             </div>
           )}
 
