@@ -13,11 +13,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { Loader2, CreditCard, CheckCircle } from 'lucide-react';
 
-// Stripe publishable key (prefer env so it matches the backend Stripe secret key mode)
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
-  'pk_live_51Q2zNxQrqKHReEDtSKDxMWSWxgJNH3FDqAYdzMVHhmfupJu5N3qnFqfh5HESwkdQ0qSGKlJqZEofZP3O2CGEZ3qz001VvtsDuE';
+// Stripe publishable key (must match the backend Stripe secret key mode)
+const STRIPE_PUBLISHABLE_KEY: string | undefined = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+const stripePromise = STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(STRIPE_PUBLISHABLE_KEY)
+  : Promise.resolve(null);
 
 interface CheckoutFormProps {
   planId: string;
@@ -156,6 +157,19 @@ export const StripePaymentForm = ({ planId, planName, price, onSuccess, onCancel
 
   useEffect(() => {
     const createPaymentIntent = async () => {
+      if (!STRIPE_PUBLISHABLE_KEY) {
+        setError('Payments are not configured. Please contact support.');
+        setIsLoading(false);
+        return;
+      }
+
+      const stripe = await stripePromise;
+      if (!stripe) {
+        setError('Payments are not configured correctly. Please contact support.');
+        setIsLoading(false);
+        return;
+      }
+
       if (!session?.access_token) {
         setError('Please log in to continue');
         setIsLoading(false);
