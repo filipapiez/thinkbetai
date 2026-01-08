@@ -5,13 +5,15 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Trophy, X } from 'lucide-react';
+import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { StripePaymentForm } from '@/components/StripePaymentForm';
-
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+// Stripe price IDs for each plan
 const pricingPlans = [
   {
     id: 'basic',
+    priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     name: 'Basic',
     price: 49,
     description: 'Perfect for casual fans looking to understand odds better',
@@ -28,6 +30,7 @@ const pricingPlans = [
   },
   {
     id: 'pro',
+    priceId: 'price_1Sn2EBQrqKHReEDtxXgWQBQL',
     name: 'Pro',
     price: 89,
     description: 'For serious enthusiasts who want deeper insights',
@@ -46,6 +49,7 @@ const pricingPlans = [
   },
   {
     id: 'insider',
+    priceId: 'price_1Sn2DhQrqKHReEDtr8LCdEXA',
     name: 'Insider',
     price: 299,
     description: 'The ultimate package for dedicated analysts',
@@ -67,60 +71,49 @@ const pricingPlans = [
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user, isSubscribed, refreshProfile } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
+  const { user, isSubscribed, session } = useAuth();
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
-  const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
+  const handleSelectPlan = async (plan: typeof pricingPlans[0]) => {
     if (!user) {
       navigate('/login', { state: { from: { pathname: '/pricing' } } });
       return;
     }
-    setSelectedPlan(plan);
+
+    if (!session?.access_token) {
+      toast.error('Please log in to continue');
+      return;
+    }
+
+    setLoadingPlanId(plan.id);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: plan.priceId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        toast.error('Failed to start checkout. Please try again.');
+        return;
+      }
+
+      if (data?.url) {
+        // Open Stripe Checkout in new tab
+        window.open(data.url, '_blank');
+      } else {
+        toast.error('No checkout URL received');
+      }
+    } catch (err) {
+      console.error('Checkout exception:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setLoadingPlanId(null);
+    }
   };
-
-  const handlePaymentSuccess = async () => {
-    await refreshProfile();
-    setSelectedPlan(null);
-    navigate('/payment-success');
-  };
-
-  const handleCancel = () => {
-    setSelectedPlan(null);
-  };
-
-  // If showing payment form
-  if (selectedPlan) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-1 py-16">
-          <div className="container max-w-md">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Complete Your Purchase</h1>
-              <Button variant="ghost" size="icon" onClick={handleCancel}>
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-            
-            <StripePaymentForm
-              planId={selectedPlan.id}
-              planName={selectedPlan.name}
-              price={selectedPlan.price}
-              onSuccess={handlePaymentSuccess}
-              onCancel={handleCancel}
-            />
-            
-            <p className="text-xs text-center text-muted-foreground mt-4">
-              Secure payment powered by Stripe. Your card details are never stored on our servers.
-            </p>
-          </div>
-        </main>
-
-        <Footer />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -191,9 +184,18 @@ const Pricing = () => {
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
-                      disabled={isSubscribed}
+                      disabled={isSubscribed || loadingPlanId === plan.id}
                     >
-                      {isSubscribed ? 'Already Subscribed' : plan.cta}
+                      {loadingPlanId === plan.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : isSubscribed ? (
+                        'Already Subscribed'
+                      ) : (
+                        plan.cta
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
