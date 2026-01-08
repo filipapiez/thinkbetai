@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface PopularGameOdds {
   moneyline?: { home: number; away: number; draw?: number };
@@ -86,6 +87,22 @@ export function usePopularGames() {
       
       console.log('[PopularGames] Fetching from edge function', forceRefresh ? '(force refresh)' : '');
       
+      // Get current session for auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('[PopularGames] No active session, using cached data only');
+        const clientCache = getClientCache();
+        if (clientCache && clientCache.games.length > 0) {
+          setGames(clientCache.games);
+          setLastUpdated(new Date(clientCache.timestamp).toISOString());
+          setSource('client-cache');
+          setIsLoading(false);
+          return;
+        }
+        throw new Error('Authentication required');
+      }
+      
       const url = forceRefresh 
         ? `${baseUrl}/functions/v1/scrape-live-games?refresh=true`
         : `${baseUrl}/functions/v1/scrape-live-games`;
@@ -94,6 +111,7 @@ export function usePopularGames() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 
