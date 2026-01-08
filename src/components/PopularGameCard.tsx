@@ -162,7 +162,7 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
         </div>
       )}
       
-      <Link to={gameLink} className="block">
+      <Link to={gameLink} state={{ game }} className="block">
         <Card variant="elevated" className="group hover:border-primary/30 transition-all duration-200 cursor-pointer">
           <CardContent className="p-5">
             {/* Header with sport/league and popularity */}
