@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { TrendingUp, ExternalLink } from 'lucide-react';
+import { forwardRef } from 'react';
 
-export const Footer = () => {
+export const Footer = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <footer className="border-t border-border/40 bg-card/30 backdrop-blur-sm mt-auto">
+    <footer ref={ref} className="border-t border-border/40 bg-card/30 backdrop-blur-sm mt-auto">
       <div className="container py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -78,4 +79,6 @@ export const Footer = () => {
       </div>
     </footer>
   );
-};
+});
+
+Footer.displayName = 'Footer';
