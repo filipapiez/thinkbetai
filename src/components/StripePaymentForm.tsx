@@ -14,11 +14,13 @@ import { toast } from 'sonner';
 import { Loader2, CreditCard, CheckCircle } from 'lucide-react';
 
 // Stripe publishable key (must match the backend Stripe secret key mode)
-const STRIPE_PUBLISHABLE_KEY: string | undefined = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+// Note: Lovable Cloud secrets are not automatically exposed to the browser at build time.
+// Publishable keys are safe to embed client-side.
+const STRIPE_PUBLISHABLE_KEY: string =
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+  'pk_live_51Q2zNxQrqKHReEDtSKDxMWSWxgJNH3FDqAYdzMVHhmfupJu5N3qnFqfh5HESwkdQ0qSGKlJqZEofZP3O2CGEZ3qz001VvtsDuE';
 
-const stripePromise = STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(STRIPE_PUBLISHABLE_KEY)
-  : Promise.resolve(null);
+const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 interface CheckoutFormProps {
   planId: string;
@@ -157,12 +159,6 @@ export const StripePaymentForm = ({ planId, planName, price, onSuccess, onCancel
 
   useEffect(() => {
     const createPaymentIntent = async () => {
-      if (!STRIPE_PUBLISHABLE_KEY) {
-        setError('Payments are not configured. Please contact support.');
-        setIsLoading(false);
-        return;
-      }
-
       const stripe = await stripePromise;
       if (!stripe) {
         setError('Payments are not configured correctly. Please contact support.');
