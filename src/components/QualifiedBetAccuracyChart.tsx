@@ -58,7 +58,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-400" />
-            {sport} Qualified Bet Accuracy
+            {sport} Model Performance
           </span>
           <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-sm px-3">
             {sportData.winRate}% Win Rate
@@ -176,10 +176,13 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
           </div>
         </div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-muted-foreground text-center pt-2 border-t border-border">
-          * Projected accuracy for {sport} qualified bets based on model predictions.
-        </p>
+        {/* Transparency Note */}
+        <div className="p-3 rounded-lg bg-muted/30 border border-border">
+          <p className="text-xs text-muted-foreground">
+            Based on <span className="font-medium text-foreground">{sportData.total} {sport.toLowerCase()} qualified matches</span> since Aug 2025. 
+            Only bets rated "Qualified" or higher are included in this record.
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

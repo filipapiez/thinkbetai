@@ -82,6 +82,45 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
     );
   };
 
+  // Generate conclusion based on form
+  const getFormConclusion = () => {
+    const homeBetter = homeRecord.wins > awayRecord.wins;
+    const awayBetter = awayRecord.wins > homeRecord.wins;
+    const homeHot = homeRecord.wins >= 4;
+    const awayHot = awayRecord.wins >= 4;
+    
+    if (homeHot && !awayHot) {
+      return `${homeTeam} enters with strong momentum (${homeRecord.wins}-${homeRecord.losses}), giving them an edge.`;
+    }
+    if (awayHot && !homeHot) {
+      return `${awayTeam} has the form advantage with ${awayRecord.wins} wins in their last 5.`;
+    }
+    if (homeHot && awayHot) {
+      return `Both teams are in excellent form. Expect a competitive, high-quality matchup.`;
+    }
+    if (homeBetter) {
+      return `${homeTeam} holds a slight form edge, but neither team has dominant momentum.`;
+    }
+    if (awayBetter) {
+      return `${awayTeam} has marginally better recent results, though both sides are inconsistent.`;
+    }
+    return `Recent form shows no strong momentum edge for either team.`;
+  };
+  
+  // Generate H2H conclusion
+  const getH2HConclusion = () => {
+    if (h2hHomeWins > h2hAwayWins + 1) {
+      return `${homeTeam} dominates this rivalry historically.`;
+    }
+    if (h2hAwayWins > h2hHomeWins + 1) {
+      return `${awayTeam} has the edge in recent head-to-head meetings.`;
+    }
+    if (h2hHomeWins === h2hAwayWins) {
+      return `Even split historically — neither team owns this matchup.`;
+    }
+    return `Slight historical lean, but head-to-head is close.`;
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -94,6 +133,14 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
         <div className="grid grid-cols-2 gap-4">
           <FormDisplay form={homeForm} teamName={homeTeam} />
           <FormDisplay form={awayForm} teamName={awayTeam} />
+        </div>
+        
+        {/* Form Conclusion */}
+        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+          <p className="text-sm text-foreground/80">
+            <span className="font-medium">Takeaway: </span>
+            {getFormConclusion()}
+          </p>
         </div>
 
         <div className="border-t border-border pt-4">
@@ -110,7 +157,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
             </div>
           </div>
           
-          <div className="space-y-1">
+          <div className="space-y-1 mb-3">
             {headToHead.slice(0, 3).map((match, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{match.date}</span>
@@ -122,6 +169,11 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
               </div>
             ))}
           </div>
+          
+          {/* H2H Conclusion */}
+          <p className="text-xs text-muted-foreground italic">
+            {getH2HConclusion()}
+          </p>
         </div>
       </CardContent>
     </Card>

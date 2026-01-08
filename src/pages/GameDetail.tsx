@@ -576,7 +576,7 @@ const GameDetail = () => {
             <Card className="mb-6">
               <CardContent className="p-6 flex items-center gap-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
-                Odds are not available for this game (scraped listing).
+                Odds currently unavailable. Analysis based on schedule, form, and market interest.
               </CardContent>
             </Card>
           )}
@@ -655,26 +655,23 @@ const GameDetail = () => {
               </Card>
             )}
 
-            {/* Value Analysis */}
+            {/* Market Interest Index */}
             {value && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
-                    Value Analysis
-                    {value.isPopularityBased && (
-                      <Badge variant="outline" className="text-xs ml-2">Based on popularity</Badge>
-                    )}
+                    Market Interest Index
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="text-center p-3 rounded-lg bg-muted/30">
-                      <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation} Value</div>
+                      <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
                       <div className="text-2xl font-bold">{value.homeValue}%</div>
                     </div>
                     <div className="text-center p-3 rounded-lg bg-muted/30">
-                      <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation} Value</div>
+                      <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
                       <div className="text-2xl font-bold">{value.awayValue}%</div>
                     </div>
                   </div>
@@ -683,7 +680,7 @@ const GameDetail = () => {
                     <div>
                       <p className="text-sm font-medium">{value.recommendation}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Confidence: {value.confidence}%
+                        Derived from league importance, team popularity, and event timing.
                       </p>
                     </div>
                   </div>
@@ -710,67 +707,16 @@ const GameDetail = () => {
             </div>
           )}
 
-          {/* AI Summary Card */}
-          {qualification && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  AI Bet Analysis Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground mb-1">Signal</div>
-                    <div className={cn(
-                      "text-xl font-bold",
-                      qualification.signal === 'GOOD' ? 'text-emerald-400' :
-                      qualification.signal === 'BORDERLINE' ? 'text-amber-400' : 'text-red-400'
-                    )}>
-                      {qualification.signal}
-                    </div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground mb-1">Confidence</div>
-                    <div className="text-xl font-bold">{qualification.confidenceScore}%</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground mb-1">Risk Level</div>
-                    <div className="text-xl font-bold">{qualification.volatility}</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-muted/30">
-                    <div className="text-sm text-muted-foreground mb-1">Recommended Pick</div>
-                    <div className="text-xl font-bold">
-                      {qualification.pick === 'home' ? game.homeTeam.abbreviation : game.awayTeam.abbreviation}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground text-center p-3 bg-muted/20 rounded-lg">
-                  {qualification.reason}
-                </p>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Qualified Bet Accuracy Chart */}
           <div className="mb-6">
             <QualifiedBetAccuracyChart sport={game.sport} />
           </div>
 
-          {/* Disclaimer */}
-          <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-amber-400">Disclaimer</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  This analysis is for informational purposes only. Sports betting involves risk. 
-                  Past performance does not guarantee future results. Please bet responsibly.
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Soft Disclaimer */}
+          <p className="text-xs text-muted-foreground text-center py-4">
+            Informational analysis only. No guarantees. Bet responsibly.
+          </p>
         </div>
       </main>
 
