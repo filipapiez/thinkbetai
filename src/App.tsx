@@ -22,7 +22,7 @@ import Paywall from "./pages/Paywall";
 import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
-import { BettingChatBot } from "./components/BettingChatBot";
+import { CrispChat } from "./components/CrispChat";
 
 const queryClient = new QueryClient();
 
@@ -86,7 +86,7 @@ const App = () => (
             
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <BettingChatBot />
+          <CrispChat />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
