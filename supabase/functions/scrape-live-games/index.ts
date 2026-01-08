@@ -16,6 +16,21 @@ const corsHeaders = {
 // - GET /v1/advantages/?type=PLUS_EV - Plus EV opportunities
 // ============================================================================
 
+interface PlayerStats {
+  wins: number;
+  losses: number;
+  winPct: number;
+  // Fighter-specific (UFC/MMA/Boxing)
+  record?: string;
+  weightClass?: string;
+  knockouts?: number;
+  submissions?: number;
+  // Racket sports (Tennis/Table Tennis)
+  worldRanking?: number;
+  points?: number;
+  titlesWon?: number;
+}
+
 interface ScheduledGame {
   id: string;
   sport: string;
@@ -31,6 +46,9 @@ interface ScheduledGame {
     total?: { over: number; overOdds: number; under: number; underOdds: number };
   };
   hasOdds?: boolean;
+  // Player/fighter stats
+  homeStats?: PlayerStats;
+  awayStats?: PlayerStats;
 }
 
 let cachedGames: ScheduledGame[] = [];
@@ -353,6 +371,10 @@ interface UFCFight {
   weightClass: string;
   isMainEvent: boolean;
   isTitleFight: boolean;
+  fighter1Record?: string;
+  fighter2Record?: string;
+  fighter1Knockouts?: number;
+  fighter2Knockouts?: number;
 }
 
 interface UFCEvent {
@@ -375,9 +397,9 @@ function generateMockUFCEvents(): UFCEvent[] {
       location: 'Sydney, Australia',
       mainEvent: 'Dricus du Plessis vs Sean Strickland',
       fights: [
-        { fighter1: 'Dricus du Plessis', fighter2: 'Sean Strickland', weightClass: 'Middleweight', isMainEvent: true, isTitleFight: true },
-        { fighter1: 'Tai Tuivasa', fighter2: 'Jairzinho Rozenstruik', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false },
-        { fighter1: 'Jimmy Crute', fighter2: 'Alonzo Menifield', weightClass: 'Light Heavyweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Dricus du Plessis', fighter2: 'Sean Strickland', weightClass: 'Middleweight', isMainEvent: true, isTitleFight: true, fighter1Record: '22-2-0', fighter2Record: '29-6-0', fighter1Knockouts: 8, fighter2Knockouts: 11 },
+        { fighter1: 'Tai Tuivasa', fighter2: 'Jairzinho Rozenstruik', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false, fighter1Record: '15-8-0', fighter2Record: '14-5-0', fighter1Knockouts: 14, fighter2Knockouts: 13 },
+        { fighter1: 'Jimmy Crute', fighter2: 'Alonzo Menifield', weightClass: 'Light Heavyweight', isMainEvent: false, isTitleFight: false, fighter1Record: '14-4-0', fighter2Record: '16-4-0', fighter1Knockouts: 9, fighter2Knockouts: 13 },
       ],
     },
     {
@@ -387,9 +409,9 @@ function generateMockUFCEvents(): UFCEvent[] {
       location: 'Las Vegas, NV',
       mainEvent: 'Brandon Moreno vs Amir Albazi',
       fights: [
-        { fighter1: 'Brandon Moreno', fighter2: 'Amir Albazi', weightClass: 'Flyweight', isMainEvent: true, isTitleFight: false },
-        { fighter1: 'Cory Sandhagen', fighter2: 'Umar Nurmagomedov', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: false },
-        { fighter1: 'Mackenzie Dern', fighter2: 'Amanda Ribas', weightClass: "Women's Strawweight", isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Brandon Moreno', fighter2: 'Amir Albazi', weightClass: 'Flyweight', isMainEvent: true, isTitleFight: false, fighter1Record: '21-8-2', fighter2Record: '17-1-0', fighter1Knockouts: 6, fighter2Knockouts: 3 },
+        { fighter1: 'Cory Sandhagen', fighter2: 'Umar Nurmagomedov', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: false, fighter1Record: '17-5-0', fighter2Record: '18-0-0', fighter1Knockouts: 5, fighter2Knockouts: 3 },
+        { fighter1: 'Mackenzie Dern', fighter2: 'Amanda Ribas', weightClass: "Women's Strawweight", isMainEvent: false, isTitleFight: false, fighter1Record: '14-5-0', fighter2Record: '13-5-0', fighter1Knockouts: 0, fighter2Knockouts: 1 },
       ],
     },
     {
@@ -399,9 +421,9 @@ function generateMockUFCEvents(): UFCEvent[] {
       location: 'Las Vegas, NV',
       mainEvent: 'Alex Pereira vs Magomed Ankalaev',
       fights: [
-        { fighter1: 'Alex Pereira', fighter2: 'Magomed Ankalaev', weightClass: 'Light Heavyweight', isMainEvent: true, isTitleFight: true },
-        { fighter1: 'Jailton Almeida', fighter2: 'Derrick Lewis', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false },
-        { fighter1: 'Justin Gaethje', fighter2: 'Dan Hooker', weightClass: 'Lightweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Alex Pereira', fighter2: 'Magomed Ankalaev', weightClass: 'Light Heavyweight', isMainEvent: true, isTitleFight: true, fighter1Record: '12-2-0', fighter2Record: '19-1-1', fighter1Knockouts: 11, fighter2Knockouts: 10 },
+        { fighter1: 'Jailton Almeida', fighter2: 'Derrick Lewis', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false, fighter1Record: '21-3-0', fighter2Record: '28-12-0', fighter1Knockouts: 5, fighter2Knockouts: 24 },
+        { fighter1: 'Justin Gaethje', fighter2: 'Dan Hooker', weightClass: 'Lightweight', isMainEvent: false, isTitleFight: false, fighter1Record: '25-5-0', fighter2Record: '24-12-0', fighter1Knockouts: 20, fighter2Knockouts: 11 },
       ],
     },
     {
@@ -411,8 +433,8 @@ function generateMockUFCEvents(): UFCEvent[] {
       location: 'Miami, FL',
       mainEvent: 'Max Holloway vs Ilia Topuria',
       fights: [
-        { fighter1: 'Max Holloway', fighter2: 'Ilia Topuria', weightClass: 'Featherweight', isMainEvent: true, isTitleFight: true },
-        { fighter1: 'Gilbert Burns', fighter2: 'Sean Brady', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Max Holloway', fighter2: 'Ilia Topuria', weightClass: 'Featherweight', isMainEvent: true, isTitleFight: true, fighter1Record: '26-8-0', fighter2Record: '16-0-0', fighter1Knockouts: 12, fighter2Knockouts: 13 },
+        { fighter1: 'Gilbert Burns', fighter2: 'Sean Brady', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false, fighter1Record: '22-7-0', fighter2Record: '17-1-0', fighter1Knockouts: 5, fighter2Knockouts: 5 },
       ],
     },
     {
@@ -422,9 +444,9 @@ function generateMockUFCEvents(): UFCEvent[] {
       location: 'Abu Dhabi, UAE',
       mainEvent: 'Islam Makhachev vs Charles Oliveira',
       fights: [
-        { fighter1: 'Islam Makhachev', fighter2: 'Charles Oliveira', weightClass: 'Lightweight', isMainEvent: true, isTitleFight: true },
-        { fighter1: 'Belal Muhammad', fighter2: 'Kamaru Usman', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false },
-        { fighter1: 'Merab Dvalishvili', fighter2: 'Sean OMalley', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: true },
+        { fighter1: 'Islam Makhachev', fighter2: 'Charles Oliveira', weightClass: 'Lightweight', isMainEvent: true, isTitleFight: true, fighter1Record: '27-1-0', fighter2Record: '34-10-0', fighter1Knockouts: 5, fighter2Knockouts: 10 },
+        { fighter1: 'Belal Muhammad', fighter2: 'Kamaru Usman', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false, fighter1Record: '24-3-0', fighter2Record: '20-4-0', fighter1Knockouts: 5, fighter2Knockouts: 9 },
+        { fighter1: 'Merab Dvalishvili', fighter2: 'Sean OMalley', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: true, fighter1Record: '18-4-0', fighter2Record: '18-2-0', fighter1Knockouts: 2, fighter2Knockouts: 12 },
       ],
     },
   ];
@@ -435,6 +457,16 @@ function convertUFCEventsToGames(events: UFCEvent[]): ScheduledGame[] {
   
   for (const event of events) {
     for (const fight of event.fights) {
+      // Parse record to get wins/losses
+      const parseRecord = (record?: string): { wins: number; losses: number } => {
+        if (!record) return { wins: 0, losses: 0 };
+        const parts = record.split('-').map(Number);
+        return { wins: parts[0] || 0, losses: parts[1] || 0 };
+      };
+      
+      const fighter1Stats = parseRecord(fight.fighter1Record);
+      const fighter2Stats = parseRecord(fight.fighter2Record);
+      
       games.push({
         id: `ufc_${event.id}_${fight.fighter1.replace(/\s+/g, '_')}_${fight.fighter2.replace(/\s+/g, '_')}`,
         sport: 'UFC',
@@ -445,6 +477,22 @@ function convertUFCEventsToGames(events: UFCEvent[]): ScheduledGame[] {
         popularityScore: fight.isMainEvent ? 95 : (fight.isTitleFight ? 90 : 75),
         status: 'scheduled',
         hasOdds: false,
+        homeStats: {
+          wins: fighter1Stats.wins,
+          losses: fighter1Stats.losses,
+          winPct: fighter1Stats.wins / (fighter1Stats.wins + fighter1Stats.losses) || 0,
+          record: fight.fighter1Record,
+          weightClass: fight.weightClass,
+          knockouts: fight.fighter1Knockouts,
+        },
+        awayStats: {
+          wins: fighter2Stats.wins,
+          losses: fighter2Stats.losses,
+          winPct: fighter2Stats.wins / (fighter2Stats.wins + fighter2Stats.losses) || 0,
+          record: fight.fighter2Record,
+          weightClass: fight.weightClass,
+          knockouts: fight.fighter2Knockouts,
+        },
       });
     }
   }
@@ -474,22 +522,26 @@ interface TableTennisMatch {
   player2: string;
   event: string;
   round: string;
+  player1Ranking?: number;
+  player2Ranking?: number;
+  player1Points?: number;
+  player2Points?: number;
 }
 
 function generateTableTennisMatches(): TableTennisMatch[] {
   return [
-    { player1: 'Fan Zhendong', player2: 'Wang Chuqin', event: 'WTT Champions Frankfurt', round: 'Final' },
-    { player1: 'Ma Long', player2: 'Lin Shidong', event: 'WTT Champions Frankfurt', round: 'Semi-Final' },
-    { player1: 'Tomokazu Harimoto', player2: 'Hugo Calderano', event: 'WTT Champions Frankfurt', round: 'Semi-Final' },
-    { player1: 'Lin Yun-Ju', player2: 'Truls Moregard', event: 'WTT Champions Frankfurt', round: 'Quarter-Final' },
-    { player1: 'Liang Jingkun', player2: 'Dimitrij Ovtcharov', event: 'WTT Champions Frankfurt', round: 'Quarter-Final' },
-    { player1: 'Sun Yingsha', player2: 'Chen Meng', event: 'WTT Champions Frankfurt', round: 'Final' },
-    { player1: 'Wang Manyu', player2: 'Mima Ito', event: 'WTT Champions Frankfurt', round: 'Semi-Final' },
-    { player1: 'Shin Yubin', player2: 'Hina Hayata', event: 'WTT Champions Frankfurt', round: 'Semi-Final' },
-    { player1: 'Alexis Lebrun', player2: 'Felix Lebrun', event: 'WTT Contender Lagos', round: 'Final' },
-    { player1: 'Quadri Aruna', player2: 'Dang Qiu', event: 'WTT Contender Lagos', round: 'Semi-Final' },
-    { player1: 'Jang Woojin', player2: 'Cho Daeseong', event: 'WTT Star Contender Doha', round: 'Final' },
-    { player1: 'Patrick Franziska', player2: 'Timo Boll', event: 'WTT Star Contender Doha', round: 'Quarter-Final' },
+    { player1: 'Fan Zhendong', player2: 'Wang Chuqin', event: 'WTT Champions Frankfurt', round: 'Final', player1Ranking: 2, player2Ranking: 1, player1Points: 6450, player2Points: 7225 },
+    { player1: 'Ma Long', player2: 'Lin Shidong', event: 'WTT Champions Frankfurt', round: 'Semi-Final', player1Ranking: 4, player2Ranking: 12, player1Points: 4850, player2Points: 2890 },
+    { player1: 'Tomokazu Harimoto', player2: 'Hugo Calderano', event: 'WTT Champions Frankfurt', round: 'Semi-Final', player1Ranking: 6, player2Ranking: 5, player1Points: 4120, player2Points: 4350 },
+    { player1: 'Lin Yun-Ju', player2: 'Truls Moregard', event: 'WTT Champions Frankfurt', round: 'Quarter-Final', player1Ranking: 7, player2Ranking: 8, player1Points: 3980, player2Points: 3750 },
+    { player1: 'Liang Jingkun', player2: 'Dimitrij Ovtcharov', event: 'WTT Champions Frankfurt', round: 'Quarter-Final', player1Ranking: 3, player2Ranking: 15, player1Points: 5200, player2Points: 2450 },
+    { player1: 'Sun Yingsha', player2: 'Chen Meng', event: 'WTT Champions Frankfurt', round: 'Final', player1Ranking: 1, player2Ranking: 2, player1Points: 8100, player2Points: 7650 },
+    { player1: 'Wang Manyu', player2: 'Mima Ito', event: 'WTT Champions Frankfurt', round: 'Semi-Final', player1Ranking: 3, player2Ranking: 6, player1Points: 6200, player2Points: 4100 },
+    { player1: 'Shin Yubin', player2: 'Hina Hayata', event: 'WTT Champions Frankfurt', round: 'Semi-Final', player1Ranking: 4, player2Ranking: 5, player1Points: 5800, player2Points: 5200 },
+    { player1: 'Alexis Lebrun', player2: 'Felix Lebrun', event: 'WTT Contender Lagos', round: 'Final', player1Ranking: 9, player2Ranking: 10, player1Points: 3450, player2Points: 3380 },
+    { player1: 'Quadri Aruna', player2: 'Dang Qiu', event: 'WTT Contender Lagos', round: 'Semi-Final', player1Ranking: 18, player2Ranking: 14, player1Points: 2280, player2Points: 2650 },
+    { player1: 'Jang Woojin', player2: 'Cho Daeseong', event: 'WTT Star Contender Doha', round: 'Final', player1Ranking: 11, player2Ranking: 16, player1Points: 2980, player2Points: 2350 },
+    { player1: 'Patrick Franziska', player2: 'Timo Boll', event: 'WTT Star Contender Doha', round: 'Quarter-Final', player1Ranking: 13, player2Ranking: 22, player1Points: 2720, player2Points: 1950 },
   ];
 }
 
@@ -506,6 +558,20 @@ function convertTableTennisToGames(matches: TableTennisMatch[]): ScheduledGame[]
     popularityScore: match.round === 'Final' ? 88 : match.round === 'Semi-Final' ? 80 : 72,
     status: 'scheduled' as const,
     hasOdds: false,
+    homeStats: {
+      wins: 0,
+      losses: 0,
+      winPct: 0,
+      worldRanking: match.player1Ranking,
+      points: match.player1Points,
+    },
+    awayStats: {
+      wins: 0,
+      losses: 0,
+      winPct: 0,
+      worldRanking: match.player2Ranking,
+      points: match.player2Points,
+    },
   }));
 }
 

@@ -4,6 +4,15 @@ export interface LiveTeamStats {
   wins: number;
   losses: number;
   winPct: number;
+  // Fighter-specific stats (UFC/MMA/Boxing)
+  record?: string; // e.g., "23-5-0"
+  weightClass?: string; // e.g., "Lightweight"
+  knockouts?: number;
+  submissions?: number;
+  // Table Tennis / Tennis stats
+  worldRanking?: number;
+  points?: number;
+  titlesWon?: number;
 }
 
 export interface LiveTeam {
