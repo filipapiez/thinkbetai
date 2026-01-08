@@ -4,10 +4,7 @@ const corsHeaders = {
 };
 
 // ============================================================================
-// POPULAR GAMES SCRAPER - ESPN SCHEDULES
-// ============================================================================
-// Fetches high-interest games twice daily (9 AM and 10 PM)
-// Includes: NFL, NBA, NHL, MLB, UFC, Soccer, Table Tennis, and more
+// POPULAR GAMES API - RapidAPI Sports Data
 // ============================================================================
 
 interface ScheduledGame {
@@ -18,7 +15,7 @@ interface ScheduledGame {
   awayTeam: string;
   startTime: string;
   popularityScore: number;
-  status: 'scheduled';
+  status: 'scheduled' | 'live' | 'completed';
   injuries?: string[];
 }
 
@@ -27,413 +24,575 @@ let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-// 15+ Sports to track - using ESPN schedule URLs
-const SPORTS_CONFIG = [
-  // Major US Sports (6)
-  { sport: 'Football', url: 'https://www.espn.com/nfl/schedule', league: 'NFL' },
-  { sport: 'Football', url: 'https://www.espn.com/college-football/schedule', league: 'NCAAF' },
-  { sport: 'Basketball', url: 'https://www.espn.com/nba/schedule', league: 'NBA' },
-  { sport: 'Basketball', url: 'https://www.espn.com/mens-college-basketball/schedule', league: 'NCAAB' },
-  { sport: 'Hockey', url: 'https://www.espn.com/nhl/schedule', league: 'NHL' },
-  { sport: 'Baseball', url: 'https://www.espn.com/mlb/schedule', league: 'MLB' },
-  // Soccer (5 leagues)
-  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/eng.1', league: 'EPL' },
-  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/uefa.champions', league: 'Champions League' },
-  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/esp.1', league: 'La Liga' },
-  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/ger.1', league: 'Bundesliga' },
-  { sport: 'Soccer', url: 'https://www.espn.com/soccer/schedule/_/league/usa.1', league: 'MLS' },
-  // Combat Sports (2)
-  { sport: 'MMA', url: 'https://www.espn.com/mma/schedule/_/league/ufc', league: 'UFC' },
-  { sport: 'Boxing', url: 'https://www.espn.com/boxing/schedule', league: 'Boxing' },
-  // Tennis (1)
-  { sport: 'Tennis', url: 'https://www.espn.com/tennis/schedule', league: 'ATP/WTA' },
-  // Golf (1)
-  { sport: 'Golf', url: 'https://www.espn.com/golf/schedule', league: 'PGA' },
-  // Cricket (1)
-  { sport: 'Cricket', url: 'https://www.espn.com/cricket/schedule', league: 'IPL/International' },
-  // Rugby (1)
-  { sport: 'Rugby', url: 'https://www.espn.com/rugby/schedule', league: 'Rugby Union' },
-  // Motorsport (1)
-  { sport: 'Motorsport', url: 'https://www.espn.com/racing/schedule/_/series/f1', league: 'Formula 1' },
-  // Esports (1)
-  { sport: 'Esports', url: 'https://www.espn.com/esports/schedule', league: 'Esports' },
-  // WNBA (1)
-  { sport: 'Basketball', url: 'https://www.espn.com/wnba/schedule', league: 'WNBA' },
-  // Lacrosse (1)
-  { sport: 'Lacrosse', url: 'https://www.espn.com/lacrosse/schedule', league: 'PLL' },
-];
-
-// Major leagues ranked by popularity (15+ sports)
+// League popularity scores for ranking
 const LEAGUE_POPULARITY: Record<string, number> = {
+  // NFL/Football
   'NFL': 100,
   'NCAAF': 85,
+  // Basketball
   'NBA': 95,
   'NCAAB': 80,
-  'MLB': 85,
-  'NHL': 80,
   'WNBA': 70,
+  'EuroLeague': 65,
+  // Baseball
+  'MLB': 85,
+  // Hockey
+  'NHL': 80,
+  'KHL': 55,
+  // Soccer
   'EPL': 90,
+  'Premier League': 90,
   'La Liga': 85,
   'Champions League': 95,
+  'UEFA Champions League': 95,
   'Bundesliga': 82,
+  'Serie A': 80,
+  'Ligue 1': 75,
   'MLS': 65,
+  'Liga MX': 70,
+  // Combat Sports
   'UFC': 92,
   'MMA': 75,
   'Boxing': 78,
-  'ATP/WTA': 65,
-  'PGA': 60,
-  'IPL/International': 75,
-  'Rugby Union': 68,
-  'Formula 1': 85,
-  'Esports': 60,
-  'PLL': 50,
+  'Bellator': 60,
+  // Tennis
+  'ATP': 70,
+  'WTA': 65,
+  'Grand Slam': 85,
+  // Golf
+  'PGA': 65,
+  'LPGA': 55,
+  // Cricket
+  'IPL': 80,
+  'Test Cricket': 70,
+  'T20': 75,
+  // Rugby
+  'Six Nations': 70,
+  'Rugby World Cup': 85,
+  'Super Rugby': 60,
+  // Motorsport
+  'F1': 88,
+  'Formula 1': 88,
+  'NASCAR': 75,
+  'IndyCar': 60,
+  // Esports
+  'LoL': 65,
+  'CS2': 60,
+  'Dota 2': 55,
+  'Valorant': 60,
 };
-
-// Popular teams for scoring
-const POPULAR_TEAMS = new Set([
-  // NFL
-  'cowboys', 'dallas cowboys', 'patriots', 'new england patriots', 'packers', 'green bay packers',
-  '49ers', 'san francisco 49ers', 'chiefs', 'kansas city chiefs', 'eagles', 'philadelphia eagles',
-  'ravens', 'baltimore ravens', 'bills', 'buffalo bills', 'rams', 'los angeles rams',
-  'broncos', 'denver broncos', 'dolphins', 'miami dolphins', 'giants', 'new york giants',
-  'jets', 'new york jets', 'bears', 'chicago bears', 'steelers', 'pittsburgh steelers',
-  'raiders', 'las vegas raiders', 'lions', 'detroit lions', 'texans', 'houston texans',
-  // NBA
-  'lakers', 'los angeles lakers', 'celtics', 'boston celtics', 'warriors', 'golden state warriors',
-  'bulls', 'chicago bulls', 'heat', 'miami heat', 'nets', 'brooklyn nets', 'knicks', 'new york knicks',
-  'mavericks', 'dallas mavericks', 'suns', 'phoenix suns', 'bucks', 'milwaukee bucks',
-  'nuggets', 'denver nuggets', 'clippers', 'la clippers', 'spurs', 'san antonio spurs',
-  'rockets', 'houston rockets', 'sixers', '76ers', 'philadelphia 76ers',
-  // MLB
-  'yankees', 'new york yankees', 'dodgers', 'los angeles dodgers', 'red sox', 'boston red sox',
-  'cubs', 'chicago cubs', 'astros', 'houston astros', 'braves', 'atlanta braves',
-  'phillies', 'philadelphia phillies', 'mets', 'new york mets', 'cardinals', 'st. louis cardinals',
-  // NHL
-  'bruins', 'boston bruins', 'rangers', 'new york rangers', 'blackhawks', 'chicago blackhawks',
-  'penguins', 'pittsburgh penguins', 'maple leafs', 'toronto maple leafs', 'canadiens', 'montreal canadiens',
-  'red wings', 'detroit red wings', 'oilers', 'edmonton oilers', 'knights', 'vegas golden knights',
-  // Soccer
-  'manchester united', 'man united', 'real madrid', 'barcelona', 'liverpool', 'chelsea', 'arsenal',
-  'man city', 'manchester city', 'bayern', 'bayern munich', 'juventus', 'psg', 'paris saint-germain',
-  'inter milan', 'ac milan', 'tottenham', 'dortmund', 'borussia dortmund',
-  // UFC fighters
-  'mcgregor', 'conor mcgregor', 'jones', 'jon jones', 'adesanya', 'israel adesanya',
-  'makhachev', 'islam makhachev', 'pereira', 'alex pereira', 'chimaev', 'khamzat chimaev',
-]);
-
-// High-importance event keywords
-const IMPORTANCE_KEYWORDS = [
-  'playoff', 'playoffs', 'final', 'finals', 'championship', 'super bowl',
-  'world series', 'stanley cup', 'conference', 'semi-final', 'semifinal',
-  'derby', 'rivalry', 'prime time', 'primetime', 'main event', 'title fight',
-  'main card', 'ppv', 'fight night', 'ufc', 'wild card', 'division'
-];
-
-function calculatePopularityScore(game: { sport: string; league: string; homeTeam: string; awayTeam: string; context?: string }): number {
-  let score = 50;
-
-  // League popularity bonus
-  const leagueScore = LEAGUE_POPULARITY[game.league] || 40;
-  score += leagueScore;
-
-  // Team popularity bonus
-  const homeLower = game.homeTeam.toLowerCase();
-  const awayLower = game.awayTeam.toLowerCase();
-  
-  for (const team of POPULAR_TEAMS) {
-    if (homeLower.includes(team) || team.includes(homeLower.split(' ').pop() || '')) score += 15;
-    if (awayLower.includes(team) || team.includes(awayLower.split(' ').pop() || '')) score += 15;
-  }
-
-  // UFC/MMA gets extra boost
-  if (game.sport === 'MMA' || game.league === 'UFC') {
-    score += 10;
-  }
-
-  // Importance keywords
-  const context = (game.context || '').toLowerCase();
-  for (const keyword of IMPORTANCE_KEYWORDS) {
-    if (context.includes(keyword)) {
-      score += 20;
-      break;
-    }
-  }
-
-  return Math.min(score, 200);
-}
 
 function isCacheValid(): boolean {
   if (cachedGames.length === 0) return false;
-  const now = Date.now();
-  return (now - cacheTimestamp) < CACHE_TTL_MS;
+  return (Date.now() - cacheTimestamp) < CACHE_TTL_MS;
 }
 
-async function scrapeESPNSchedule(apiKey: string, config: { sport: string; url: string; league: string }): Promise<ScheduledGame[]> {
+// Fetch from RapidAPI - API-Football for soccer
+async function fetchSoccerGames(apiKey: string): Promise<ScheduledGame[]> {
   const games: ScheduledGame[] = [];
   
   try {
-    console.log(`[Scraper] Fetching: ${config.league} from ESPN`);
+    // Get today and tomorrow's date
+    const today = new Date().toISOString().split('T')[0];
     
-    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: config.url,
-        formats: ['markdown'],
-        onlyMainContent: true,
-        waitFor: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      console.warn(`[Scraper] Failed ${config.league}: HTTP ${response.status}`);
-      return games;
-    }
-
-    const data = await response.json();
-    const markdown = data.data?.markdown || data.markdown || '';
+    // Top leagues: EPL(39), La Liga(140), Champions League(2), Bundesliga(78), Serie A(135), MLS(253)
+    const leagueIds = [39, 140, 2, 78, 135, 253, 61, 94]; // Added Ligue 1(61), Liga Portugal(94)
     
-    if (!markdown || markdown.length < 100) {
-      console.warn(`[Scraper] Empty content for ${config.league}`);
-      return games;
-    }
-    
-    // Parse ESPN schedule format
-    const extractedGames = parseESPNSchedule(markdown, config);
-    console.log(`[Scraper] Found ${extractedGames.length} games in ${config.league}`);
-    
-    games.push(...extractedGames);
-    
-  } catch (error) {
-    console.warn(`[Scraper] Error fetching ${config.league}:`, error);
-  }
-  
-  return games;
-}
-
-function parseESPNSchedule(content: string, config: { sport: string; league: string }): ScheduledGame[] {
-  const games: ScheduledGame[] = [];
-  const lines = content.split('\n');
-  
-  // ESPN patterns for matching games
-  const teamVsPatterns = [
-    // "Team A vs Team B" or "Team A @ Team B"
-    /([A-Z][A-Za-z\s\.\-']+?)\s+(?:vs\.?|v\.?|@|at)\s+([A-Z][A-Za-z\s\.\-']+?)(?:\s*\||\s*-|\s*$)/gi,
-    // "Team A - Team B" format
-    /([A-Z][A-Za-z\s\.\-']{2,30})\s+[-–]\s+([A-Z][A-Za-z\s\.\-']{2,30})/gi,
-    // Links format [Team Name](url)
-    /\[([A-Z][A-Za-z\s\.\-']+)\]\([^)]+\)\s*(?:vs\.?|@|at|-)\s*\[([A-Z][A-Za-z\s\.\-']+)\]/gi,
-  ];
-  
-  // Date patterns
-  const datePattern = /(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)[,\s]+(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[.\s]+\d{1,2}/gi;
-  const shortDatePattern = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}/gi;
-  
-  // Time pattern
-  const timePattern = /\d{1,2}:\d{2}\s*(?:AM|PM|ET|PT|CT|MT|EST|PST|CST)?/gi;
-  
-  let currentDate = '';
-  const seenGames = new Set<string>();
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line || line.length < 5) continue;
-    
-    // Update current date
-    const longDateMatch = line.match(datePattern);
-    if (longDateMatch) {
-      currentDate = longDateMatch[0];
-    } else {
-      const shortDateMatch = line.match(shortDatePattern);
-      if (shortDateMatch) {
-        currentDate = shortDateMatch[0];
-      }
-    }
-    
-    // Try to extract games
-    for (const pattern of teamVsPatterns) {
-      pattern.lastIndex = 0;
-      let match;
-      
-      while ((match = pattern.exec(line)) !== null) {
-        let homeTeam = cleanTeamName(match[2]); // ESPN shows away @ home
-        let awayTeam = cleanTeamName(match[1]);
-        
-        // Swap if "vs" pattern (home vs away)
-        if (line.includes(' vs')) {
-          [homeTeam, awayTeam] = [awayTeam, homeTeam];
-        }
-        
-        // Validate team names
-        if (!isValidTeamName(homeTeam) || !isValidTeamName(awayTeam)) continue;
-        if (homeTeam.toLowerCase() === awayTeam.toLowerCase()) continue;
-        
-        // Deduplicate
-        const gameKey = `${homeTeam.toLowerCase()}-${awayTeam.toLowerCase()}`;
-        const reverseKey = `${awayTeam.toLowerCase()}-${homeTeam.toLowerCase()}`;
-        if (seenGames.has(gameKey) || seenGames.has(reverseKey)) continue;
-        seenGames.add(gameKey);
-        
-        // Extract time
-        let gameTime = '';
-        const timeMatches = line.match(timePattern);
-        if (timeMatches) {
-          gameTime = timeMatches[0];
-        }
-        
-        const startTime = parseGameDateTime(currentDate, gameTime);
-        
-        const game: ScheduledGame = {
-          id: `${config.league}_${homeTeam}_${awayTeam}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`.replace(/\s/g, '_'),
-          sport: config.sport,
-          league: config.league,
-          homeTeam,
-          awayTeam,
-          startTime,
-          popularityScore: 0,
-          status: 'scheduled',
-        };
-        
-        game.popularityScore = calculatePopularityScore({
-          sport: config.sport,
-          league: config.league,
-          homeTeam,
-          awayTeam,
-          context: line + ' ' + currentDate,
-        });
-        
-        games.push(game);
-      }
-    }
-  }
-
-  return games;
-}
-
-function cleanTeamName(name: string): string {
-  return name
-    .trim()
-    .replace(/^\d+[\.\)]\s*/, '') // Remove leading numbers
-    .replace(/\[.*?\]/g, '') // Remove markdown links
-    .replace(/\(.*?\)/g, '') // Remove parentheses
-    .replace(/^\W+/, '') // Remove leading special chars
-    .replace(/\W+$/, '') // Remove trailing special chars
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 35);
-}
-
-function isValidTeamName(name: string): boolean {
-  if (!name || name.length < 2 || name.length > 35) return false;
-  
-  // Must start with a letter
-  if (!/^[A-Za-z]/.test(name)) return false;
-  
-  // Skip common non-team words
-  const skipWords = ['time', 'date', 'schedule', 'game', 'match', 'live', 'watch', 'stream', 'espn', 'tv', 'network'];
-  const nameLower = name.toLowerCase();
-  for (const skip of skipWords) {
-    if (nameLower === skip) return false;
-  }
-  
-  return true;
-}
-
-function parseGameDateTime(dateStr: string, timeStr: string): string {
-  const now = new Date();
-  
-  try {
-    if (dateStr) {
-      // Clean up the date string
-      const cleanDate = dateStr.replace(/(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)[,\s]*/i, '');
-      const parsedDate = new Date(cleanDate + `, ${now.getFullYear()}`);
-      
-      if (!isNaN(parsedDate.getTime())) {
-        // If the date is in the past, assume next year
-        if (parsedDate < now && parsedDate.getMonth() < now.getMonth()) {
-          parsedDate.setFullYear(now.getFullYear() + 1);
-        }
-        
-        if (timeStr) {
-          const timeParts = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM|ET|EST|PT|PST|CT|CST)?/i);
-          if (timeParts) {
-            let hours = parseInt(timeParts[1]);
-            const minutes = parseInt(timeParts[2]);
-            const period = timeParts[3]?.toUpperCase();
-            
-            if (period && period.includes('PM') && hours < 12) hours += 12;
-            if (period && period.includes('AM') && hours === 12) hours = 0;
-            
-            parsedDate.setHours(hours, minutes, 0, 0);
-          }
-        }
-        
-        return parsedDate.toISOString();
-      }
-    }
-  } catch {}
-  
-  // Default to today or tomorrow
-  const defaultDate = new Date();
-  defaultDate.setHours(defaultDate.getHours() + 6); // Assume 6 hours from now
-  return defaultDate.toISOString();
-}
-
-async function fetchInjuryInfo(apiKey: string, teams: string[]): Promise<Record<string, string[]>> {
-  const injuries: Record<string, string[]> = {};
-  
-  try {
-    // Search for injury news on top teams (limit to avoid too many requests)
-    const topTeams = [...new Set(teams)].slice(0, 6);
-    
-    for (const team of topTeams) {
-      const query = `${team} injury report latest news`;
-      
+    for (const leagueId of leagueIds) {
       try {
-        const response = await fetch('https://api.firecrawl.dev/v1/search', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query,
-            limit: 2,
-            tbs: 'qdr:d', // Last 24 hours
-          }),
-        });
+        const response = await fetch(
+          `https://api-football-v1.p.rapidapi.com/v3/fixtures?date=${today}&league=${leagueId}&season=2024`,
+          {
+            headers: {
+              'X-RapidAPI-Key': apiKey,
+              'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
-          const results = data.data || [];
+          const fixtures = data.response || [];
           
-          const teamInjuries: string[] = [];
-          for (const result of results) {
-            const desc = result.description || '';
-            const injuryMatch = desc.match(/([A-Z][a-z]+ [A-Z][a-z]+)\s+(out|questionable|doubtful|injured|injury|GTD)/gi);
-            if (injuryMatch) {
-              teamInjuries.push(...injuryMatch.slice(0, 2));
-            }
-          }
-          
-          if (teamInjuries.length > 0) {
-            injuries[team] = teamInjuries;
+          for (const fixture of fixtures) {
+            const leagueName = fixture.league?.name || 'Soccer';
+            games.push({
+              id: `soccer_${fixture.fixture?.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              sport: 'Soccer',
+              league: leagueName,
+              homeTeam: fixture.teams?.home?.name || 'Home Team',
+              awayTeam: fixture.teams?.away?.name || 'Away Team',
+              startTime: fixture.fixture?.date || new Date().toISOString(),
+              popularityScore: LEAGUE_POPULARITY[leagueName] || 70,
+              status: fixture.fixture?.status?.short === 'NS' ? 'scheduled' : 
+                      fixture.fixture?.status?.short === 'FT' ? 'completed' : 'live',
+            });
           }
         }
+        
+        await new Promise(r => setTimeout(r, 200)); // Rate limiting
       } catch (e) {
-        // Ignore individual injury search errors
+        console.warn(`[API] Error fetching league ${leagueId}:`, e);
       }
-      
-      await new Promise(r => setTimeout(r, 300));
     }
   } catch (error) {
-    console.warn('[Scraper] Error fetching injuries:', error);
+    console.error('[API] Soccer fetch error:', error);
   }
   
-  return injuries;
+  return games;
+}
+
+// Fetch NBA games
+async function fetchNBAGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(
+      `https://api-nba-v1.p.rapidapi.com/games?date=${today}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-nba-v1.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const nbaGames = data.response || [];
+      
+      for (const game of nbaGames) {
+        games.push({
+          id: `nba_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Basketball',
+          league: 'NBA',
+          homeTeam: game.teams?.home?.name || 'Home Team',
+          awayTeam: game.teams?.visitors?.name || 'Away Team',
+          startTime: game.date?.start || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['NBA'],
+          status: game.status?.short === 1 ? 'scheduled' : 
+                  game.status?.short === 3 ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] NBA fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch NFL games
+async function fetchNFLGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const response = await fetch(
+      `https://api-american-football.p.rapidapi.com/games?league=1&season=2024`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-american-football.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const nflGames = data.response || [];
+      
+      // Filter to upcoming games only
+      const now = new Date();
+      const upcoming = nflGames.filter((g: any) => {
+        const gameDate = new Date(g.game?.date?.date || g.date);
+        return gameDate >= now;
+      }).slice(0, 20);
+      
+      for (const game of upcoming) {
+        games.push({
+          id: `nfl_${game.game?.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Football',
+          league: 'NFL',
+          homeTeam: game.teams?.home?.name || 'Home Team',
+          awayTeam: game.teams?.away?.name || 'Away Team',
+          startTime: game.game?.date?.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['NFL'],
+          status: 'scheduled',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] NFL fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch NHL games
+async function fetchNHLGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(
+      `https://api-hockey.p.rapidapi.com/games?date=${today}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-hockey.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const hockeyGames = data.response || [];
+      
+      // Filter for NHL (league id 57)
+      const nhlGames = hockeyGames.filter((g: any) => g.league?.id === 57);
+      
+      for (const game of nhlGames) {
+        games.push({
+          id: `nhl_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Hockey',
+          league: 'NHL',
+          homeTeam: game.teams?.home?.name || 'Home Team',
+          awayTeam: game.teams?.away?.name || 'Away Team',
+          startTime: game.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['NHL'],
+          status: game.status?.short === 'NS' ? 'scheduled' : 
+                  game.status?.short === 'FT' ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] NHL fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch MLB games
+async function fetchMLBGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(
+      `https://api-baseball.p.rapidapi.com/games?date=${today}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-baseball.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const baseballGames = data.response || [];
+      
+      // Filter for MLB (league id 1)
+      const mlbGames = baseballGames.filter((g: any) => g.league?.id === 1);
+      
+      for (const game of mlbGames) {
+        games.push({
+          id: `mlb_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Baseball',
+          league: 'MLB',
+          homeTeam: game.teams?.home?.name || 'Home Team',
+          awayTeam: game.teams?.away?.name || 'Away Team',
+          startTime: game.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['MLB'],
+          status: game.status?.short === 'NS' ? 'scheduled' : 
+                  game.status?.short === 'FT' ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] MLB fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch UFC/MMA events
+async function fetchMMAGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const response = await fetch(
+      `https://api-mma.p.rapidapi.com/fights`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-mma.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const fights = data.response || [];
+      
+      // Get upcoming fights
+      const now = new Date();
+      const upcoming = fights.filter((f: any) => {
+        const fightDate = new Date(f.date || 0);
+        return fightDate >= now;
+      }).slice(0, 15);
+      
+      for (const fight of upcoming) {
+        const league = fight.league?.name || 'UFC';
+        games.push({
+          id: `mma_${fight.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'MMA',
+          league: league.includes('UFC') ? 'UFC' : league,
+          homeTeam: fight.fighters?.first?.name || 'Fighter 1',
+          awayTeam: fight.fighters?.second?.name || 'Fighter 2',
+          startTime: fight.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY[league.includes('UFC') ? 'UFC' : 'MMA'] || 75,
+          status: 'scheduled',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] MMA fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch Tennis tournaments
+async function fetchTennisGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(
+      `https://api-tennis.p.rapidapi.com/games?date=${today}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-tennis.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const matches = data.response || [];
+      
+      for (const match of matches.slice(0, 20)) {
+        const tournament = match.league?.name || 'ATP/WTA';
+        games.push({
+          id: `tennis_${match.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Tennis',
+          league: tournament.includes('Grand Slam') ? 'Grand Slam' : 
+                  tournament.includes('ATP') ? 'ATP' : 'WTA',
+          homeTeam: match.players?.home?.name || 'Player 1',
+          awayTeam: match.players?.away?.name || 'Player 2',
+          startTime: match.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['ATP'] || 70,
+          status: match.status?.short === 'NS' ? 'scheduled' : 
+                  match.status?.short === 'FT' ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] Tennis fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch Rugby games
+async function fetchRugbyGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const response = await fetch(
+      `https://api-rugby.p.rapidapi.com/games?date=${today}`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-rugby.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const rugbyGames = data.response || [];
+      
+      for (const game of rugbyGames.slice(0, 15)) {
+        const league = game.league?.name || 'Rugby Union';
+        games.push({
+          id: `rugby_${game.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Rugby',
+          league: league,
+          homeTeam: game.teams?.home?.name || 'Home Team',
+          awayTeam: game.teams?.away?.name || 'Away Team',
+          startTime: game.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['Super Rugby'] || 60,
+          status: game.status?.short === 'NS' ? 'scheduled' : 
+                  game.status?.short === 'FT' ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] Rugby fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch Formula 1 races
+async function fetchF1Games(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const response = await fetch(
+      `https://api-formula-1.p.rapidapi.com/races?season=2024`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-formula-1.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const races = data.response || [];
+      
+      // Get upcoming races
+      const now = new Date();
+      const upcoming = races.filter((r: any) => {
+        const raceDate = new Date(r.date || 0);
+        return raceDate >= now;
+      }).slice(0, 5);
+      
+      for (const race of upcoming) {
+        games.push({
+          id: `f1_${race.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Motorsport',
+          league: 'Formula 1',
+          homeTeam: race.competition?.name || 'Grand Prix',
+          awayTeam: race.circuit?.name || 'Circuit',
+          startTime: race.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['F1'],
+          status: 'scheduled',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] F1 fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch Cricket matches
+async function fetchCricketGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const response = await fetch(
+      `https://api-cricket.p.rapidapi.com/games`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-cricket.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const matches = data.response || [];
+      
+      // Get upcoming matches
+      const now = new Date();
+      const upcoming = matches.filter((m: any) => {
+        const matchDate = new Date(m.date || 0);
+        return matchDate >= now;
+      }).slice(0, 15);
+      
+      for (const match of upcoming) {
+        const league = match.league?.name || 'International';
+        games.push({
+          id: `cricket_${match.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Cricket',
+          league: league.includes('IPL') ? 'IPL' : 
+                  league.includes('T20') ? 'T20' : 'Test Cricket',
+          homeTeam: match.teams?.home?.name || 'Team 1',
+          awayTeam: match.teams?.away?.name || 'Team 2',
+          startTime: match.date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['IPL'] || 75,
+          status: match.status?.short === 'NS' ? 'scheduled' : 
+                  match.status?.short === 'FT' ? 'completed' : 'live',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] Cricket fetch error:', error);
+  }
+  
+  return games;
+}
+
+// Fetch Golf tournaments
+async function fetchGolfGames(apiKey: string): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const response = await fetch(
+      `https://api-golf.p.rapidapi.com/tournaments?season=2024`,
+      {
+        headers: {
+          'X-RapidAPI-Key': apiKey,
+          'X-RapidAPI-Host': 'api-golf.p.rapidapi.com',
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const tournaments = data.response || [];
+      
+      // Get upcoming tournaments
+      const now = new Date();
+      const upcoming = tournaments.filter((t: any) => {
+        const startDate = new Date(t.start_date || 0);
+        return startDate >= now;
+      }).slice(0, 5);
+      
+      for (const tournament of upcoming) {
+        games.push({
+          id: `golf_${tournament.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Golf',
+          league: 'PGA',
+          homeTeam: tournament.name || 'Tournament',
+          awayTeam: tournament.venue?.name || 'Venue',
+          startTime: tournament.start_date || new Date().toISOString(),
+          popularityScore: LEAGUE_POPULARITY['PGA'],
+          status: 'scheduled',
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[API] Golf fetch error:', error);
+  }
+  
+  return games;
 }
 
 function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
@@ -445,18 +604,11 @@ function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
     
     if (!seen.has(key) && !seen.has(reverseKey)) {
       seen.set(key, game);
-    } else {
-      const existing = seen.get(key) || seen.get(reverseKey);
-      if (existing && game.popularityScore > existing.popularityScore) {
-        seen.delete(key);
-        seen.delete(reverseKey);
-        seen.set(key, game);
-      }
     }
   }
   
   return Array.from(seen.values())
-    .sort((a, b) => b.popularityScore - a.popularityScore); // No cap - let frontend handle plan limits
+    .sort((a, b) => b.popularityScore - a.popularityScore);
 }
 
 // ============================================================================
@@ -475,7 +627,7 @@ Deno.serve(async (req) => {
     
     // Check cache first (unless force refresh)
     if (!forceRefresh && isCacheValid()) {
-      console.log('[Scraper] Returning cached games');
+      console.log('[API] Returning cached games:', cachedGames.length);
       return new Response(
         JSON.stringify({
           success: true,
@@ -486,77 +638,84 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     if (forceRefresh) {
-      console.log('[Scraper] Force refresh requested - bypassing cache');
+      console.log('[API] Force refresh requested - bypassing cache');
     }
 
-    const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    const apiKey = Deno.env.get('RAPIDAPI_KEY');
     if (!apiKey) {
-      console.error('[Scraper] FIRECRAWL_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Service not configured', 
-          games: [] 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      throw new Error('RAPIDAPI_KEY not configured');
     }
 
-    console.log('[Scraper] Fetching fresh data from ESPN schedules');
+    console.log('[API] Fetching games from RapidAPI...');
     
-    // Scrape schedules from ESPN (limit concurrent to avoid rate limits)
-    const allGames: ScheduledGame[] = [];
-    
-    for (const config of SPORTS_CONFIG) {
-      const games = await scrapeESPNSchedule(apiKey, config);
-      allGames.push(...games);
-      
-      // Polite delay between requests
-      await new Promise(r => setTimeout(r, 1000));
-    }
-    
-    console.log(`[Scraper] Total games found: ${allGames.length}`);
-    
-    // Get top 15 games
-    let topGames = deduplicateAndRank(allGames);
-    
-    // Fetch injury info for top games
-    if (topGames.length > 0) {
-      const teamNames = topGames.flatMap(g => [g.homeTeam, g.awayTeam]);
-      const injuries = await fetchInjuryInfo(apiKey, teamNames);
-      
-      // Attach injuries to games
-      topGames = topGames.map(game => ({
-        ...game,
-        injuries: [
-          ...(injuries[game.homeTeam] || []),
-          ...(injuries[game.awayTeam] || []),
-        ].slice(0, 4),
-      }));
-    }
+    // Fetch from all sports APIs in parallel
+    const [
+      soccerGames,
+      nbaGames,
+      nflGames,
+      nhlGames,
+      mlbGames,
+      mmaGames,
+      tennisGames,
+      rugbyGames,
+      f1Games,
+      cricketGames,
+      golfGames,
+    ] = await Promise.all([
+      fetchSoccerGames(apiKey),
+      fetchNBAGames(apiKey),
+      fetchNFLGames(apiKey),
+      fetchNHLGames(apiKey),
+      fetchMLBGames(apiKey),
+      fetchMMAGames(apiKey),
+      fetchTennisGames(apiKey),
+      fetchRugbyGames(apiKey),
+      fetchF1Games(apiKey),
+      fetchCricketGames(apiKey),
+      fetchGolfGames(apiKey),
+    ]);
+
+    // Combine all games
+    const allGames = [
+      ...soccerGames,
+      ...nbaGames,
+      ...nflGames,
+      ...nhlGames,
+      ...mlbGames,
+      ...mmaGames,
+      ...tennisGames,
+      ...rugbyGames,
+      ...f1Games,
+      ...cricketGames,
+      ...golfGames,
+    ];
+
+    console.log(`[API] Total games fetched: ${allGames.length}`);
+    console.log(`[API] By sport: Soccer=${soccerGames.length}, NBA=${nbaGames.length}, NFL=${nflGames.length}, NHL=${nhlGames.length}, MLB=${mlbGames.length}, MMA=${mmaGames.length}, Tennis=${tennisGames.length}, Rugby=${rugbyGames.length}, F1=${f1Games.length}, Cricket=${cricketGames.length}, Golf=${golfGames.length}`);
+
+    // Deduplicate and rank
+    const rankedGames = deduplicateAndRank(allGames);
     
     // Update cache
-    cachedGames = topGames;
+    cachedGames = rankedGames;
     cacheTimestamp = Date.now();
-    
-    console.log(`[Scraper] Returning ${topGames.length} high-interest games`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        games: topGames,
+        games: rankedGames,
         source: 'fresh',
         lastUpdated: new Date().toISOString(),
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-    
+
   } catch (error) {
-    console.error('[Scraper] Error:', error);
+    console.error('[API] Error:', error);
     
-    // Return stale cache if available
+    // Return cached data if available
     if (cachedGames.length > 0) {
       return new Response(
         JSON.stringify({
@@ -564,6 +723,7 @@ Deno.serve(async (req) => {
           games: cachedGames,
           source: 'stale-cache',
           lastUpdated: new Date(cacheTimestamp).toISOString(),
+          error: 'Using cached data due to API error',
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -572,8 +732,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Failed to fetch games',
         games: [],
+        error: error instanceof Error ? error.message : 'Failed to fetch games',
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
