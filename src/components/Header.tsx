@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info } from 'lucide-react';
-import { useState, forwardRef } from 'react';
+import { useState } from 'react';
 
-export const Header = forwardRef<HTMLElement>((_, ref) => {
+export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header ref={ref} className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent">
@@ -123,6 +123,4 @@ export const Header = forwardRef<HTMLElement>((_, ref) => {
       )}
     </header>
   );
-});
-
-Header.displayName = 'Header';
+};
