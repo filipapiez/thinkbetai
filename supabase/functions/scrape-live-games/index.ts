@@ -695,9 +695,22 @@ Deno.serve(async (req) => {
     console.log(`[API] Total games fetched: ${allGames.length}`);
     console.log(`[API] By sport: Soccer=${soccerGames.length}, NBA=${nbaGames.length}, NFL=${nflGames.length}, NHL=${nhlGames.length}, MLB=${mlbGames.length}, MMA=${mmaGames.length}, Tennis=${tennisGames.length}, Rugby=${rugbyGames.length}, F1=${f1Games.length}, Cricket=${cricketGames.length}, Golf=${golfGames.length}`);
 
+    // If everything is empty, it's almost always a RapidAPI subscription/host issue.
+    if (allGames.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          games: [],
+          error:
+            'RapidAPI returned 0 games. This usually means your key is not subscribed to one or more of these APIs/hosts (api-football-v1, api-nba-v1, api-american-football, api-hockey, api-baseball, api-mma, api-tennis, api-rugby, api-formula-1, api-cricket, api-golf) or the endpoints differ. Tell me which RapidAPI API you subscribed to (its host), and I will wire it correctly.',
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Deduplicate and rank
     const rankedGames = deduplicateAndRank(allGames);
-    
+
     // Update cache
     cachedGames = rankedGames;
     cacheTimestamp = Date.now();
