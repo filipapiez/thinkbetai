@@ -7,8 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const VALID_PROMO_CODE = "GETIT";
-
 interface SignupRequest {
   email: string;
   password: string;
@@ -35,18 +33,44 @@ const handler = async (req: Request): Promise<Response> => {
     // Normalize promo code
     const normalizedPromo = (promoCode || "").trim().toUpperCase();
 
-    // Validate promo code if provided
-    if (normalizedPromo && normalizedPromo !== VALID_PROMO_CODE) {
-      return new Response(
-        JSON.stringify({ error: "Invalid promo code" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Create Supabase admin client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Validate promo code against the access_codes table if provided
+    let isValidPromo = false;
+    if (normalizedPromo) {
+      const { data: codeData, error: codeError } = await supabase
+        .from("access_codes")
+        .select("id, code, is_active, max_uses, current_uses")
+        .eq("code", normalizedPromo)
+        .eq("is_active", true)
+        .single();
+
+      if (codeError || !codeData) {
+        return new Response(
+          JSON.stringify({ error: "Invalid promo code" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Check if max uses exceeded
+      if (codeData.max_uses !== null && codeData.current_uses >= codeData.max_uses) {
+        return new Response(
+          JSON.stringify({ error: "This promo code has reached its maximum uses" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      isValidPromo = true;
+
+      // Increment current_uses for the code
+      await supabase
+        .from("access_codes")
+        .update({ current_uses: codeData.current_uses + 1 })
+        .eq("id", codeData.id);
+    }
 
     // Create the auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -70,8 +94,8 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const userId = authData.user.id;
-    const isPro = normalizedPromo === VALID_PROMO_CODE;
-    const promoUsed = isPro ? VALID_PROMO_CODE : null;
+    const isPro = isValidPromo;
+    const promoUsed = isPro ? normalizedPromo : null;
 
     // Update the profile (created by trigger) with promo status
     const { error: profileError } = await supabase
