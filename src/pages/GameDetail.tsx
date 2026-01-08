@@ -83,12 +83,26 @@ interface RiskAnalysis {
 }
 
 function analyzeRisk(game: LiveGame): RiskAnalysis {
-  // Scraped games may not have odds
+  // Scraped games may not have odds - use popularity-based assessment
   if (!game.odds) {
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 85) {
+      return {
+        level: 'Low',
+        score: 35,
+        factors: ['High-profile matchup with strong betting interest', 'Major market game with reliable trends'],
+      };
+    } else if (popularity >= 70) {
+      return {
+        level: 'Medium',
+        score: 50,
+        factors: ['Moderate betting interest', 'Standard matchup volatility'],
+      };
+    }
     return {
-      level: 'High',
-      score: 75,
-      factors: ['Odds not available for this game'],
+      level: 'Medium',
+      score: 55,
+      factors: ['Lower profile matchup', 'Consider waiting for more data'],
     };
   }
 
@@ -145,15 +159,36 @@ interface ValueAnalysis {
   awayValue: number;
   recommendation: string;
   confidence: number;
+  isPopularityBased?: boolean;
 }
 
 function analyzeValue(game: LiveGame): ValueAnalysis {
+  // Use popularity-based value when odds aren't available
   if (!game.odds) {
+    const popularity = game.popularityScore || 50;
+    if (popularity >= 85) {
+      return {
+        homeValue: 55,
+        awayValue: 45,
+        recommendation: 'High-profile matchup - home team slight favorite based on market interest',
+        confidence: 60,
+        isPopularityBased: true,
+      };
+    } else if (popularity >= 70) {
+      return {
+        homeValue: 50,
+        awayValue: 50,
+        recommendation: 'Evenly matched based on betting interest - look for situational edges',
+        confidence: 50,
+        isPopularityBased: true,
+      };
+    }
     return {
-      homeValue: 0,
-      awayValue: 0,
-      recommendation: 'Insufficient odds data for value analysis',
-      confidence: 0,
+      homeValue: 50,
+      awayValue: 50,
+      recommendation: 'Limited market data - wait for odds or use caution',
+      confidence: 40,
+      isPopularityBased: true,
     };
   }
 
@@ -161,11 +196,13 @@ function analyzeValue(game: LiveGame): ValueAnalysis {
   const awayML = game.odds.moneyline.away;
 
   if (homeML === 0 || awayML === 0) {
+    const popularity = game.popularityScore || 50;
     return {
-      homeValue: 0,
-      awayValue: 0,
-      recommendation: 'Insufficient odds data for value analysis',
-      confidence: 0,
+      homeValue: popularity >= 70 ? 52 : 50,
+      awayValue: popularity >= 70 ? 48 : 50,
+      recommendation: popularity >= 70 ? 'Partial odds data - lean home based on interest' : 'Awaiting full odds data',
+      confidence: popularity >= 70 ? 45 : 35,
+      isPopularityBased: true,
     };
   }
 
@@ -625,6 +662,9 @@ const GameDetail = () => {
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-primary" />
                     Value Analysis
+                    {value.isPopularityBased && (
+                      <Badge variant="outline" className="text-xs ml-2">Based on popularity</Badge>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
