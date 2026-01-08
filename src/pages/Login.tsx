@@ -108,18 +108,15 @@ const Login = () => {
         },
       });
       
-      if (error) {
-        toast.error('Sign up failed. Please try again.');
-        return;
-      }
-      
-      if (data?.error) {
-        if (data.error === 'Invalid promo code') {
+      // Handle errors - edge function returns error in data when status is 400
+      const errorMessage = error?.message || data?.error;
+      if (errorMessage) {
+        if (errorMessage === 'Invalid promo code') {
           setPromoError('Invalid promo code');
-        } else if (data.error.includes('already registered')) {
-          toast.error('This email is already registered. Please log in.');
+        } else if (errorMessage.includes('already registered')) {
+          toast.error('This email is already registered. Please log in instead.');
         } else {
-          toast.error(data.error);
+          toast.error(errorMessage);
         }
         return;
       }
