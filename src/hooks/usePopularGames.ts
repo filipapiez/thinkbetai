@@ -10,6 +10,7 @@ export interface PopularGame {
   startTime: string;
   popularityScore: number;
   status: 'scheduled';
+  injuries?: string[];
 }
 
 interface PopularGamesResponse {
@@ -17,7 +18,6 @@ interface PopularGamesResponse {
   games: PopularGame[];
   source: 'cached' | 'fresh' | 'stale-cache';
   lastUpdated: string;
-  disclaimer: string;
   error?: string;
 }
 
