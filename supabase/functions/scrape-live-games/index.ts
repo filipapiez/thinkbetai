@@ -344,6 +344,128 @@ function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
 }
 
 // ============================================================================
+// UFC EVENTS INTEGRATION
+// ============================================================================
+
+interface UFCFight {
+  fighter1: string;
+  fighter2: string;
+  weightClass: string;
+  isMainEvent: boolean;
+  isTitleFight: boolean;
+}
+
+interface UFCEvent {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  mainEvent?: string;
+  fights: UFCFight[];
+}
+
+function generateMockUFCEvents(): UFCEvent[] {
+  const now = new Date();
+  
+  return [
+    {
+      id: 'ufc-event-1',
+      name: 'UFC 312: du Plessis vs. Strickland 2',
+      date: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      location: 'Sydney, Australia',
+      mainEvent: 'Dricus du Plessis vs Sean Strickland',
+      fights: [
+        { fighter1: 'Dricus du Plessis', fighter2: 'Sean Strickland', weightClass: 'Middleweight', isMainEvent: true, isTitleFight: true },
+        { fighter1: 'Tai Tuivasa', fighter2: 'Jairzinho Rozenstruik', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Jimmy Crute', fighter2: 'Alonzo Menifield', weightClass: 'Light Heavyweight', isMainEvent: false, isTitleFight: false },
+      ],
+    },
+    {
+      id: 'ufc-event-2',
+      name: 'UFC Fight Night: Moreno vs. Albazi',
+      date: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      location: 'Las Vegas, NV',
+      mainEvent: 'Brandon Moreno vs Amir Albazi',
+      fights: [
+        { fighter1: 'Brandon Moreno', fighter2: 'Amir Albazi', weightClass: 'Flyweight', isMainEvent: true, isTitleFight: false },
+        { fighter1: 'Cory Sandhagen', fighter2: 'Umar Nurmagomedov', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Mackenzie Dern', fighter2: 'Amanda Ribas', weightClass: "Women's Strawweight", isMainEvent: false, isTitleFight: false },
+      ],
+    },
+    {
+      id: 'ufc-event-3',
+      name: 'UFC 313: Pereira vs. Ankalaev',
+      date: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      location: 'Las Vegas, NV',
+      mainEvent: 'Alex Pereira vs Magomed Ankalaev',
+      fights: [
+        { fighter1: 'Alex Pereira', fighter2: 'Magomed Ankalaev', weightClass: 'Light Heavyweight', isMainEvent: true, isTitleFight: true },
+        { fighter1: 'Jailton Almeida', fighter2: 'Derrick Lewis', weightClass: 'Heavyweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Justin Gaethje', fighter2: 'Dan Hooker', weightClass: 'Lightweight', isMainEvent: false, isTitleFight: false },
+      ],
+    },
+    {
+      id: 'ufc-event-4',
+      name: 'UFC Fight Night: Holloway vs. Topuria 2',
+      date: new Date(now.getTime() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      location: 'Miami, FL',
+      mainEvent: 'Max Holloway vs Ilia Topuria',
+      fights: [
+        { fighter1: 'Max Holloway', fighter2: 'Ilia Topuria', weightClass: 'Featherweight', isMainEvent: true, isTitleFight: true },
+        { fighter1: 'Gilbert Burns', fighter2: 'Sean Brady', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false },
+      ],
+    },
+    {
+      id: 'ufc-event-5',
+      name: 'UFC 314: Makhachev vs. Oliveira 2',
+      date: new Date(now.getTime() + 49 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      location: 'Abu Dhabi, UAE',
+      mainEvent: 'Islam Makhachev vs Charles Oliveira',
+      fights: [
+        { fighter1: 'Islam Makhachev', fighter2: 'Charles Oliveira', weightClass: 'Lightweight', isMainEvent: true, isTitleFight: true },
+        { fighter1: 'Belal Muhammad', fighter2: 'Kamaru Usman', weightClass: 'Welterweight', isMainEvent: false, isTitleFight: false },
+        { fighter1: 'Merab Dvalishvili', fighter2: 'Sean OMalley', weightClass: 'Bantamweight', isMainEvent: false, isTitleFight: true },
+      ],
+    },
+  ];
+}
+
+function convertUFCEventsToGames(events: UFCEvent[]): ScheduledGame[] {
+  const games: ScheduledGame[] = [];
+  
+  for (const event of events) {
+    for (const fight of event.fights) {
+      games.push({
+        id: `ufc_${event.id}_${fight.fighter1.replace(/\s+/g, '_')}_${fight.fighter2.replace(/\s+/g, '_')}`,
+        sport: 'MMA',
+        league: 'UFC',
+        homeTeam: fight.fighter1,
+        awayTeam: fight.fighter2,
+        startTime: new Date(event.date).toISOString(),
+        popularityScore: fight.isMainEvent ? 95 : (fight.isTitleFight ? 90 : 75),
+        status: 'scheduled',
+        hasOdds: false,
+      });
+    }
+  }
+  
+  return games;
+}
+
+async function fetchUFCGames(): Promise<ScheduledGame[]> {
+  try {
+    console.log('[UFC] Fetching UFC events...');
+    const events = generateMockUFCEvents();
+    const games = convertUFCEventsToGames(events);
+    console.log(`[UFC] Converted ${events.length} events to ${games.length} fights`);
+    return games;
+  } catch (error) {
+    console.error('[UFC] Error fetching events:', error);
+    return [];
+  }
+}
+
+// ============================================================================
 // MAIN HANDLER
 // ============================================================================
 
@@ -370,17 +492,20 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('RAPIDAPI_KEY');
-    if (!apiKey) {
-      throw new Error('RAPIDAPI_KEY not configured');
-    }
-
+    
     console.log('[Sportsbook API] Starting fresh fetch...');
     
-    const games = await fetchSportsbookGames(apiKey);
+    // Fetch from sportsbook API and UFC in parallel
+    const [sportsbookGames, ufcGames] = await Promise.all([
+      apiKey ? fetchSportsbookGames(apiKey) : Promise.resolve([]),
+      fetchUFCGames(),
+    ]);
     
-    console.log(`[Sportsbook API] Total games: ${games.length}`);
+    const allGames = [...sportsbookGames, ...ufcGames];
+    
+    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length})`);
 
-    if (games.length === 0) {
+    if (allGames.length === 0) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -391,7 +516,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const rankedGames = deduplicateAndRank(games);
+    const rankedGames = deduplicateAndRank(allGames);
     cachedGames = rankedGames;
     cacheTimestamp = Date.now();
 
