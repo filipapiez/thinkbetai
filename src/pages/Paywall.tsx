@@ -46,11 +46,6 @@ const Paywall = () => {
       return;
     }
     
-    // Validate promo code client-side first
-    if (trimmedCode !== 'GETIT') {
-      setPromoError('Invalid promo code');
-      return;
-    }
     
     setIsRedeemingCode(true);
     try {
