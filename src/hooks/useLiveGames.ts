@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LiveGame, LiveTeam } from '@/lib/liveTypes';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface APIGame {
   id: string;
@@ -228,11 +229,17 @@ export function useLiveGames() {
       // 2. Supplement with scraped games from Google (via Firecrawl)
       try {
         console.log('Fetching scraped games from Google...');
+        // Get user session for auth header
+        const { data: { session } } = await supabase.auth.getSession();
+        const authHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (session?.access_token) {
+          authHeaders['Authorization'] = `Bearer ${session.access_token}`;
+        }
         const scrapedResponse = await fetch(
           `${baseUrl}/functions/v1/scrape-live-games?sport=all`,
           {
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            headers: authHeaders,
           }
         );
 
