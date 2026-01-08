@@ -71,6 +71,7 @@ function popularGameToLiveGame(pg: PopularGame): LiveGame {
         }
       : undefined,
     hasOdds: Boolean(pg.hasOdds && pg.odds),
+    popularityScore: pg.popularityScore, // Pass popularity for signal fallback
   };
 }
 
