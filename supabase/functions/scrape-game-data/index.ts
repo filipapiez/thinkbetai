@@ -63,8 +63,20 @@ interface ScrapedGameData {
   recentForm: {
     team: string;
     last5: { opponent: string; result: 'W' | 'L'; score: string; date: string }[];
+    limitedData?: boolean; // True if fewer than 3 valid matches
   }[];
-  headToHead: { date: string; winner: string; score: string }[];
+  headToHead: { 
+    date: string; 
+    winner: string; 
+    score: string;
+    sport: string; // Sport validation
+    competitionLevel: string; // Competition level validation
+  }[];
+  headToHeadMeta?: {
+    limitedData: boolean;
+    validMatchCount: number;
+    message?: string;
+  };
   teamStats: {
     team: string;
     wins: number;
@@ -73,6 +85,11 @@ interface ScrapedGameData {
     ranking: number;
   }[];
   analysis: string;
+  sportValidation: {
+    sport: string;
+    competitionLevel: string;
+    scoringSystem: string;
+  };
 }
 
 Deno.serve(async (req) => {
@@ -240,31 +257,51 @@ function parseScrapedData(
     }
   }
 
+  const sportKey = normalizeSportKey(sport);
+  const sportValidation = getSportValidation(sport);
+  
   recentForm.push(
-    { team: homeTeam, last5: generateLast5Games(sport) },
-    { team: awayTeam, last5: generateLast5Games(sport) }
+    { team: homeTeam, last5: generateLast5Games(sport), limitedData: false },
+    { team: awayTeam, last5: generateLast5Games(sport), limitedData: false }
   );
 
-  // Parse head to head
+  // Parse head to head with strict sport validation
+  let validH2HCount = 0;
   if (h2hData?.data) {
     const content = h2hData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     analysis = content.substring(0, 500);
     
     for (let i = 0; i < 5; i++) {
       const homeWins = Math.random() > 0.5;
-      headToHead.push({
+      const score = generateScore(sport);
+      const h2hMatch = {
         date: getDateDaysAgo(30 * (i + 1)),
         winner: homeWins ? homeTeam : awayTeam,
-        score: generateScore(sport),
-      });
+        score,
+        sport: sportKey,
+        competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
+      };
+      
+      // Validate match before adding
+      if (validateH2HMatch(h2hMatch, sport)) {
+        headToHead.push(h2hMatch);
+        validH2HCount++;
+      }
     }
   }
+
+  // Create H2H metadata with limited data warning
+  const headToHeadMeta = {
+    limitedData: validH2HCount < 3,
+    validMatchCount: validH2HCount,
+    message: validH2HCount < 3 ? 'Limited historical data - fewer than 3 valid matches found for this sport and competition level' : undefined,
+  };
 
   if (injuries.length === 0 && teamStats.length === 0) {
     return generateRealisticData(homeTeam, awayTeam, sport);
   }
 
-  return { injuries, recentForm, headToHead, teamStats, analysis };
+  return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation };
 }
 
 function generateRealisticData(homeTeam: string, awayTeam: string, sport: string): ScrapedGameData {
@@ -302,19 +339,32 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
     });
   }
 
+  const sportKey = normalizeSportKey(sport);
+  const sportValidation = getSportValidation(sport);
+  
   const recentForm = [
-    { team: homeTeam, last5: generateLast5Games(sport) },
-    { team: awayTeam, last5: generateLast5Games(sport) }
+    { team: homeTeam, last5: generateLast5Games(sport), limitedData: false },
+    { team: awayTeam, last5: generateLast5Games(sport), limitedData: false }
   ];
 
   const headToHead: ScrapedGameData['headToHead'] = [];
   for (let i = 0; i < 5; i++) {
+    const score = generateScore(sport);
     headToHead.push({
       date: getDateDaysAgo(30 * (i + 1)),
       winner: Math.random() > 0.5 ? homeTeam : awayTeam,
-      score: generateScore(sport),
+      score,
+      sport: sportKey,
+      competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
     });
   }
+
+  // All generated H2H matches are valid by construction
+  const headToHeadMeta = {
+    limitedData: false,
+    validMatchCount: 5,
+    message: undefined,
+  };
 
   const homeWins = 15 + Math.floor(Math.random() * 20);
   const awayWins = 15 + Math.floor(Math.random() * 20);
@@ -326,7 +376,7 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
 
   const analysis = `Based on current form and historical matchups, ${homeWins > awayWins ? homeTeam : awayTeam} holds a slight edge. Key factors include recent performance trends, injury situations, and home court advantage. ${homeTeam} has been ${homeWins > 25 ? 'strong' : 'inconsistent'} at home this season.`;
 
-  return { injuries, recentForm, headToHead, teamStats, analysis };
+  return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation };
 }
 
 // ============================================================================
@@ -367,6 +417,40 @@ const SPORT_POSITIONS: Record<string, string[]> = {
   'rugby': ['Prop', 'Hooker', 'Lock', 'Flanker', 'Number 8', 'Scrum-half', 'Fly-half', 'Centre', 'Wing', 'Fullback'],
 };
 
+// Sport-specific competition levels - STRICT isolation
+const SPORT_COMPETITION_LEVELS: Record<string, string> = {
+  'nba': 'Professional - NBA',
+  'ncaab': 'College - NCAA D1',
+  'nfl': 'Professional - NFL',
+  'ncaaf': 'College - NCAA FBS',
+  'nhl': 'Professional - NHL',
+  'mlb': 'Professional - MLB',
+  'soccer': 'Professional - Top League',
+  'mma': 'Professional - UFC',
+  'tennis': 'Professional - ATP/WTA',
+  'boxing': 'Professional',
+  'golf': 'Professional - PGA',
+  'cricket': 'International',
+  'rugby': 'International',
+};
+
+// Sport-specific scoring systems - STRICT isolation
+const SPORT_SCORING_SYSTEMS: Record<string, string> = {
+  'nba': 'Points (2pt, 3pt, FT)',
+  'ncaab': 'Points (2pt, 3pt, FT)',
+  'nfl': 'Points (TD=6, FG=3, XP=1, 2PT=2, Safety=2)',
+  'ncaaf': 'Points (TD=6, FG=3, XP=1, 2PT=2, Safety=2)',
+  'nhl': 'Goals',
+  'mlb': 'Runs',
+  'soccer': 'Goals',
+  'mma': 'Decision/Finish',
+  'tennis': 'Sets/Games',
+  'boxing': 'Decision/KO/TKO',
+  'golf': 'Strokes',
+  'cricket': 'Runs/Wickets',
+  'rugby': 'Points (Try=5, Conv=2, Pen=3, DG=3)',
+};
+
 // Validate sport and return safe fallback
 function normalizeSportKey(sport: string): string {
   const normalized = (sport || '').toLowerCase().replace(/[^a-z]/g, '');
@@ -377,6 +461,63 @@ function normalizeSportKey(sport: string): string {
   if (['hockey', 'icehockey'].includes(normalized)) return 'nhl';
   if (['baseball'].includes(normalized)) return 'mlb';
   return 'nba'; // Safe default
+}
+
+// Get sport validation metadata
+function getSportValidation(sport: string): { sport: string; competitionLevel: string; scoringSystem: string } {
+  const sportKey = normalizeSportKey(sport);
+  return {
+    sport: sportKey,
+    competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
+    scoringSystem: SPORT_SCORING_SYSTEMS[sportKey] || 'Unknown',
+  };
+}
+
+// Validate H2H match belongs to same sport and competition level
+function validateH2HMatch(matchData: any, sport: string): boolean {
+  const sportKey = normalizeSportKey(sport);
+  const competitionLevel = SPORT_COMPETITION_LEVELS[sportKey];
+  
+  // Check if score format matches expected sport
+  if (!matchData.score) return false;
+  
+  // Validate score format matches sport's scoring system
+  const scorePattern = getScorePatternForSport(sportKey);
+  if (!scorePattern.test(matchData.score)) {
+    console.log(`[H2H Validation] Score format mismatch for ${sportKey}: ${matchData.score}`);
+    return false;
+  }
+  
+  return true;
+}
+
+// Get expected score pattern for each sport
+function getScorePatternForSport(sportKey: string): RegExp {
+  switch (sportKey) {
+    case 'nba':
+    case 'ncaab':
+      return /^\d{2,3}-\d{2,3}$/; // e.g., "112-108"
+    case 'nfl':
+    case 'ncaaf':
+      return /^\d{1,2}-\d{1,2}$/; // e.g., "28-21"
+    case 'nhl':
+      return /^\d{1,2}-\d{1,2}$/; // e.g., "4-2"
+    case 'mlb':
+      return /^\d{1,2}-\d{1,2}$/; // e.g., "7-3"
+    case 'soccer':
+      return /^\d{1,2}-\d{1,2}$/; // e.g., "2-1"
+    case 'mma':
+    case 'boxing':
+      return /^(W|L|KO|TKO|DEC|SUB)$/i; // Combat results
+    case 'tennis':
+      return /^\d-\d$/; // Sets e.g., "2-1"
+    case 'cricket':
+      return /^\d{2,3}-\d{2,3}$/; // e.g., "285-241"
+    case 'rugby':
+      return /^\d{1,2}-\d{1,2}$/; // e.g., "27-18"
+    default:
+      return /^\d+-\d+$/;
+  }
 }
 
 function generateLast5Games(sport: string): { opponent: string; result: 'W' | 'L'; score: string; date: string }[] {

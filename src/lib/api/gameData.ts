@@ -18,12 +18,21 @@ export interface ScrapedGameResult {
 export interface ScrapedRecentForm {
   team: string;
   last5: ScrapedGameResult[];
+  limitedData?: boolean;
 }
 
 export interface ScrapedH2H {
   date: string;
   winner: string;
   score: string;
+  sport: string;
+  competitionLevel: string;
+}
+
+export interface ScrapedH2HMeta {
+  limitedData: boolean;
+  validMatchCount: number;
+  message?: string;
 }
 
 export interface ScrapedTeamStats {
@@ -34,12 +43,20 @@ export interface ScrapedTeamStats {
   ranking: number;
 }
 
+export interface SportValidation {
+  sport: string;
+  competitionLevel: string;
+  scoringSystem: string;
+}
+
 export interface ScrapedGameData {
   injuries: ScrapedInjury[];
   recentForm: ScrapedRecentForm[];
   headToHead: ScrapedH2H[];
+  headToHeadMeta?: ScrapedH2HMeta;
   teamStats: ScrapedTeamStats[];
   analysis: string;
+  sportValidation?: SportValidation;
 }
 
 export interface GameDataResponse {

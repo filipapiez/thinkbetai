@@ -702,6 +702,7 @@ const GameDetail = () => {
               <ScrapedFormCard 
                 recentForm={scrapedData.recentForm}
                 headToHead={scrapedData.headToHead}
+                headToHeadMeta={scrapedData.headToHeadMeta}
                 homeTeam={game.homeTeam.name}
                 awayTeam={game.awayTeam.name}
               />
