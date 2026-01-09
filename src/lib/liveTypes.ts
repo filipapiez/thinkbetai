@@ -214,7 +214,7 @@ export function calculateLiveBetQualification(game: LiveGame): LiveBetQualificat
   let signal: 'GOOD' | 'BORDERLINE' | 'PASS';
   let reason: string;
   
-  if (confidenceScore >= 60 && riskScore <= 50) {
+  if (confidenceScore >= 70 && riskScore <= 50) {
     signal = 'GOOD';
     reason = reasons[0] || 'Strong value identified';
   } else if (riskScore > 60 || confidenceScore < 40) {
