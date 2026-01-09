@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Users, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, AlertTriangle, FlaskConical } from 'lucide-react';
 import { ScrapedRecentForm, ScrapedH2H, ScrapedH2HMeta } from '@/lib/api/gameData';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,11 @@ interface ScrapedFormCardProps {
 export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTeam, awayTeam }: ScrapedFormCardProps) => {
   const homeForm = recentForm.find(f => f.team === homeTeam);
   const awayForm = recentForm.find(f => f.team === awayTeam);
+
+  // Check if data is simulated
+  const isFormSimulated = homeForm?.isGenerated || awayForm?.isGenerated;
+  const isH2HSimulated = headToHeadMeta?.isGenerated;
+  const isAnySimulated = isFormSimulated || isH2HSimulated;
 
   const getRecord = (games: { result: 'W' | 'L' }[] | undefined) => {
     if (!games) return { wins: 0, losses: 0 };
@@ -31,6 +36,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
   const FormDisplay = ({ form, teamName }: { form: ScrapedRecentForm | undefined; teamName: string }) => {
     const record = getRecord(form?.last5);
     const isGood = record.wins >= 3;
+    const isSimulated = form?.isGenerated;
     
     return (
       <div className="space-y-3">
@@ -42,6 +48,12 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
               <TrendingDown className="h-4 w-4 text-rose-400" />
             )}
             {teamName}
+            {isSimulated && (
+              <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/40 text-[10px] px-1">
+                <FlaskConical className="h-2.5 w-2.5 mr-0.5" />
+                SIM
+              </Badge>
+            )}
           </h4>
           <Badge variant="outline" className={cn(
             "text-xs",
@@ -123,12 +135,31 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
   };
 
   return (
-    <Card>
+    <Card className={cn(isAnySimulated && "border-purple-500/30")}>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
-          Recent Form & Head-to-Head
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            Recent Form & Head-to-Head
+          </div>
+          {isAnySimulated && (
+            <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/40 text-xs">
+              <FlaskConical className="h-3 w-3 mr-1" />
+              Contains Simulated Data
+            </Badge>
+          )}
         </CardTitle>
+        {isAnySimulated && (
+          <div className="p-2 mt-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+            <p className="text-xs text-purple-400 flex items-start gap-2">
+              <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              <span>
+                <strong>Warning:</strong> Real historical data not available for this matchup. 
+                Displayed stats are simulated for demonstration. Do not use for betting decisions.
+              </span>
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -137,17 +168,31 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
         </div>
         
         {/* Form Conclusion */}
-        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+        <div className={cn(
+          "p-3 rounded-lg border",
+          isFormSimulated 
+            ? "bg-purple-500/5 border-purple-500/20" 
+            : "bg-primary/5 border-primary/20"
+        )}>
           <p className="text-sm text-foreground/80">
             <span className="font-medium">Takeaway: </span>
+            {isFormSimulated && <span className="text-purple-400 text-xs">(Based on simulated data) </span>}
             {getFormConclusion()}
           </p>
         </div>
 
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold">Head-to-Head (Last 5)</h4>
-            {headToHeadMeta?.limitedData && (
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              Head-to-Head (Last 5)
+              {isH2HSimulated && (
+                <Badge variant="outline" className="bg-purple-500/20 text-purple-400 border-purple-500/40 text-[10px] px-1">
+                  <FlaskConical className="h-2.5 w-2.5 mr-0.5" />
+                  SIM
+                </Badge>
+              )}
+            </h4>
+            {headToHeadMeta?.limitedData && !isH2HSimulated && (
               <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Limited Data

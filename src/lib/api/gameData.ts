@@ -19,6 +19,7 @@ export interface ScrapedRecentForm {
   team: string;
   last5: ScrapedGameResult[];
   limitedData?: boolean;
+  isGenerated?: boolean;
 }
 
 export interface ScrapedH2H {
@@ -33,6 +34,7 @@ export interface ScrapedH2HMeta {
   limitedData: boolean;
   validMatchCount: number;
   message?: string;
+  isGenerated?: boolean;
 }
 
 export interface ScrapedTeamStats {
@@ -57,6 +59,7 @@ export interface ScrapedGameData {
   teamStats: ScrapedTeamStats[];
   analysis: string;
   sportValidation?: SportValidation;
+  dataSource?: 'real' | 'simulated' | 'partial';
 }
 
 export interface GameDataResponse {

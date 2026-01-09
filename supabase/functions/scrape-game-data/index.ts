@@ -64,6 +64,7 @@ interface ScrapedGameData {
     team: string;
     last5: { opponent: string; result: 'W' | 'L'; score: string; date: string }[];
     limitedData?: boolean; // True if fewer than 3 valid matches
+    isGenerated?: boolean; // True if data is simulated
   }[];
   headToHead: { 
     date: string; 
@@ -76,6 +77,7 @@ interface ScrapedGameData {
     limitedData: boolean;
     validMatchCount: number;
     message?: string;
+    isGenerated?: boolean; // True if data is simulated
   };
   teamStats: {
     team: string;
@@ -90,6 +92,7 @@ interface ScrapedGameData {
     competitionLevel: string;
     scoringSystem: string;
   };
+  dataSource: 'real' | 'simulated' | 'partial'; // Indicates data origin
 }
 
 Deno.serve(async (req) => {
@@ -206,9 +209,16 @@ function parseScrapedData(
   const headToHead: ScrapedGameData['headToHead'] = [];
   const teamStats: ScrapedGameData['teamStats'] = [];
   let analysis = '';
+  let hasRealInjuries = false;
+  let hasRealForm = false;
+  let hasRealH2H = false;
+
+  const sportKey = normalizeSportKey(sport);
+  const sportValidation = getSportValidation(sport);
+  const scorePattern = getScorePatternForSport(sportKey);
 
   // Parse injuries from search results
-  if (injuryData?.data) {
+  if (injuryData?.data && injuryData.data.length > 0) {
     const content = injuryData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     
     const injuryPatterns = [
@@ -235,58 +245,132 @@ function parseScrapedData(
             injuryType: 'Undisclosed',
             status: status as any,
           });
+          hasRealInjuries = true;
         }
       }
     }
   }
 
-  // Parse recent form
-  if (formData?.data) {
+  // Parse recent form and team records from search results
+  if (formData?.data && formData.data.length > 0) {
     const content = formData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     
-    const winPattern = /(\d+)-(\d+)/g;
+    // Try to extract real win-loss records
+    const recordPattern = new RegExp(`(${homeTeam}|${awayTeam}).*?(\\d{1,3})-(\\d{1,3})`, 'gi');
     let match;
-    if ((match = winPattern.exec(content)) !== null) {
-      const wins = parseInt(match[1]);
-      const losses = parseInt(match[2]);
-      
-      teamStats.push(
-        { team: homeTeam, wins, losses, streak: wins > losses ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 10) },
-        { team: awayTeam, wins: losses, losses: wins, streak: wins > losses ? 'L1' : 'W2', ranking: Math.ceil(Math.random() * 10) }
-      );
+    const foundRecords: Record<string, { wins: number; losses: number }> = {};
+    
+    while ((match = recordPattern.exec(content)) !== null) {
+      const team = match[1];
+      const wins = parseInt(match[2]);
+      const losses = parseInt(match[3]);
+      if (wins >= 0 && wins <= 100 && losses >= 0 && losses <= 100) {
+        foundRecords[team.toLowerCase()] = { wins, losses };
+        hasRealForm = true;
+      }
     }
+    
+    // Try to extract recent game results with sport-appropriate scores
+    const homeResults: ScrapedGameData['recentForm'][0]['last5'] = [];
+    const awayResults: ScrapedGameData['recentForm'][0]['last5'] = [];
+    
+    // Look for recent result patterns like "W 3-1" or "L 2-3"
+    const resultPattern = new RegExp(`(${homeTeam}|${awayTeam}).*?([WL]).*?(${scorePattern.source})`, 'gi');
+    while ((match = resultPattern.exec(content)) !== null && (homeResults.length < 5 || awayResults.length < 5)) {
+      const team = match[1].toLowerCase();
+      const result = match[2].toUpperCase() as 'W' | 'L';
+      const score = match[3];
+      
+      const gameResult = {
+        opponent: team === homeTeam.toLowerCase() ? 'Opponent' : 'Opponent',
+        result,
+        score,
+        date: getDateDaysAgo(homeResults.length + awayResults.length + 1),
+      };
+      
+      if (team === homeTeam.toLowerCase() && homeResults.length < 5) {
+        homeResults.push(gameResult);
+        hasRealForm = true;
+      } else if (team === awayTeam.toLowerCase() && awayResults.length < 5) {
+        awayResults.push(gameResult);
+        hasRealForm = true;
+      }
+    }
+    
+    // Add team stats if found
+    if (foundRecords[homeTeam.toLowerCase()]) {
+      const r = foundRecords[homeTeam.toLowerCase()];
+      teamStats.push({ team: homeTeam, wins: r.wins, losses: r.losses, streak: r.wins > r.losses ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 10) });
+    }
+    if (foundRecords[awayTeam.toLowerCase()]) {
+      const r = foundRecords[awayTeam.toLowerCase()];
+      teamStats.push({ team: awayTeam, wins: r.wins, losses: r.losses, streak: r.wins > r.losses ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 10) });
+    }
+    
+    // Add recent form - use real data if available, otherwise mark as generated
+    recentForm.push({
+      team: homeTeam,
+      last5: homeResults.length >= 3 ? homeResults.slice(0, 5) : generateLast5Games(sport),
+      limitedData: homeResults.length < 3 && homeResults.length > 0,
+      isGenerated: homeResults.length < 3,
+    });
+    recentForm.push({
+      team: awayTeam,
+      last5: awayResults.length >= 3 ? awayResults.slice(0, 5) : generateLast5Games(sport),
+      limitedData: awayResults.length < 3 && awayResults.length > 0,
+      isGenerated: awayResults.length < 3,
+    });
+  } else {
+    // No form data - generate with clear indicator
+    recentForm.push(
+      { team: homeTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true },
+      { team: awayTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true }
+    );
   }
-
-  const sportKey = normalizeSportKey(sport);
-  const sportValidation = getSportValidation(sport);
-  
-  recentForm.push(
-    { team: homeTeam, last5: generateLast5Games(sport), limitedData: false },
-    { team: awayTeam, last5: generateLast5Games(sport), limitedData: false }
-  );
 
   // Parse head to head with strict sport validation
   let validH2HCount = 0;
-  if (h2hData?.data) {
+  if (h2hData?.data && h2hData.data.length > 0) {
     const content = h2hData.data.map((r: any) => r.markdown || r.description || '').join(' ');
     analysis = content.substring(0, 500);
     
-    for (let i = 0; i < 5; i++) {
-      const homeWins = Math.random() > 0.5;
-      const score = generateScore(sport);
+    // Try to extract real H2H results
+    const h2hPattern = new RegExp(`(${homeTeam}|${awayTeam}).*?(won|def\\.|beat|defeated).*?(${scorePattern.source})`, 'gi');
+    let match;
+    while ((match = h2hPattern.exec(content)) !== null && validH2HCount < 5) {
+      const winner = match[1];
+      const score = match[3];
+      
       const h2hMatch = {
-        date: getDateDaysAgo(30 * (i + 1)),
-        winner: homeWins ? homeTeam : awayTeam,
+        date: getDateDaysAgo(30 * (validH2HCount + 1)),
+        winner,
         score,
         sport: sportKey,
         competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
       };
       
-      // Validate match before adding
       if (validateH2HMatch(h2hMatch, sport)) {
         headToHead.push(h2hMatch);
         validH2HCount++;
+        hasRealH2H = true;
       }
+    }
+  }
+  
+  // If we didn't find enough real H2H, generate but mark as such
+  const h2hIsGenerated = validH2HCount < 3;
+  if (h2hIsGenerated) {
+    // Fill with generated data if needed
+    while (headToHead.length < 5) {
+      const homeWins = Math.random() > 0.5;
+      const score = generateScore(sport);
+      headToHead.push({
+        date: getDateDaysAgo(30 * (headToHead.length + 1)),
+        winner: homeWins ? homeTeam : awayTeam,
+        score,
+        sport: sportKey,
+        competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
+      });
     }
   }
 
@@ -295,13 +379,20 @@ function parseScrapedData(
     limitedData: validH2HCount < 3,
     validMatchCount: validH2HCount,
     message: validH2HCount < 3 ? 'Limited historical data - fewer than 3 valid matches found for this sport and competition level' : undefined,
+    isGenerated: h2hIsGenerated,
   };
 
-  if (injuries.length === 0 && teamStats.length === 0) {
+  // Determine overall data source
+  const hasAnyRealData = hasRealInjuries || hasRealForm || hasRealH2H;
+  const hasAllRealData = hasRealInjuries && hasRealForm && hasRealH2H;
+  const dataSource = hasAllRealData ? 'real' : (hasAnyRealData ? 'partial' : 'simulated');
+
+  // If we have absolutely no real data, return fully generated data
+  if (!hasAnyRealData) {
     return generateRealisticData(homeTeam, awayTeam, sport);
   }
 
-  return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation };
+  return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation, dataSource };
 }
 
 function generateRealisticData(homeTeam: string, awayTeam: string, sport: string): ScrapedGameData {
@@ -343,8 +434,8 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
   const sportValidation = getSportValidation(sport);
   
   const recentForm = [
-    { team: homeTeam, last5: generateLast5Games(sport), limitedData: false },
-    { team: awayTeam, last5: generateLast5Games(sport), limitedData: false }
+    { team: homeTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true },
+    { team: awayTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true }
   ];
 
   const headToHead: ScrapedGameData['headToHead'] = [];
@@ -359,11 +450,12 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
     });
   }
 
-  // All generated H2H matches are valid by construction
+  // All generated - mark as simulated
   const headToHeadMeta = {
-    limitedData: false,
-    validMatchCount: 5,
-    message: undefined,
+    limitedData: true,
+    validMatchCount: 0,
+    message: '⚠️ SIMULATED DATA - Real match history not available for this matchup',
+    isGenerated: true,
   };
 
   const homeWins = 15 + Math.floor(Math.random() * 20);
@@ -374,9 +466,18 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
     { team: awayTeam, wins: awayWins, losses: 45 - awayWins, streak: awayWins > 25 ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 15) }
   ];
 
-  const analysis = `Based on current form and historical matchups, ${homeWins > awayWins ? homeTeam : awayTeam} holds a slight edge. Key factors include recent performance trends, injury situations, and home court advantage. ${homeTeam} has been ${homeWins > 25 ? 'strong' : 'inconsistent'} at home this season.`;
+  const analysis = `⚠️ SIMULATED ANALYSIS - Real data not available. This is generated placeholder content for demonstration purposes only. Do not use for actual betting decisions.`;
 
-  return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation };
+  return { 
+    injuries, 
+    recentForm, 
+    headToHead, 
+    headToHeadMeta, 
+    teamStats, 
+    analysis, 
+    sportValidation,
+    dataSource: 'simulated' 
+  };
 }
 
 // ============================================================================
