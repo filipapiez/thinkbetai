@@ -5,9 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   X, Trash2, Calculator, TrendingUp, TrendingDown, 
-  DollarSign, Trophy, AlertCircle, User, Layers
+  DollarSign, Trophy, AlertCircle, User, Layers,
+  Sparkles, Loader2, ChevronDown, ChevronUp,
+  CheckCircle2, AlertTriangle, XCircle, Flame
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import type { Pick } from '@/hooks/usePicks';
 
 interface ParlayBuilderProps {
@@ -18,6 +23,30 @@ interface ParlayBuilderProps {
   onToggle: () => void;
 }
 
+interface ParlayAnalysis {
+  signal: 'STRONG' | 'DECENT' | 'RISKY' | 'AVOID';
+  overallConfidence: number;
+  verdict: string;
+  strengths: string[];
+  risks: string[];
+  correlations: string;
+  suggestion: string;
+  alternativeIdea?: string;
+}
+
+function getSignalStyle(signal: string) {
+  switch (signal) {
+    case 'STRONG':
+      return { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/40', icon: Flame, label: '🔥 STRONG' };
+    case 'DECENT':
+      return { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/40', icon: CheckCircle2, label: '✅ DECENT' };
+    case 'RISKY':
+      return { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/40', icon: AlertTriangle, label: '⚠️ RISKY' };
+    default:
+      return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/40', icon: XCircle, label: '❌ AVOID' };
+  }
+}
+
 export function ParlayBuilder({ 
   selectedPicks, 
   onRemovePick, 
@@ -26,16 +55,15 @@ export function ParlayBuilder({
   onToggle
 }: ParlayBuilderProps) {
   const [betAmount, setBetAmount] = useState<string>('10');
+  const [analysis, setAnalysis] = useState<ParlayAnalysis | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
-  // Convert confidence to decimal odds (higher confidence = lower odds)
-  // Typical DFS multipliers: 1.8-2.2x per leg
   const calculateLegOdds = (confidence: number): number => {
-    // Map confidence 50-100 to odds 2.5-1.5
     const odds = 2.5 - ((confidence - 50) / 50) * 1.0;
     return Math.round(odds * 100) / 100;
   };
 
-  // Calculate combined parlay odds
   const calculateParlayOdds = (): number => {
     if (selectedPicks.length === 0) return 1;
     return selectedPicks.reduce((acc, pick) => {
@@ -43,18 +71,15 @@ export function ParlayBuilder({
     }, 1);
   };
 
-  // Calculate potential payout
   const calculatePayout = (): number => {
     const amount = parseFloat(betAmount) || 0;
     return Math.round(amount * calculateParlayOdds() * 100) / 100;
   };
 
-  // Calculate average confidence
   const averageConfidence = selectedPicks.length > 0
     ? Math.round(selectedPicks.reduce((acc, p) => acc + p.confidence, 0) / selectedPicks.length)
     : 0;
 
-  // Calculate combined hit probability (multiplicative)
   const combinedHitRate = selectedPicks.length > 0
     ? selectedPicks.reduce((acc, p) => acc * ((p.hitRate || p.confidence) / 100), 1) * 100
     : 0;
@@ -62,7 +87,62 @@ export function ParlayBuilder({
   const parlayOdds = calculateParlayOdds();
   const potentialPayout = calculatePayout();
 
-  // Floating button when closed
+  const analyzeParlay = async () => {
+    if (selectedPicks.length < 2) {
+      toast.error('Add at least 2 picks to analyze');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setShowAnalysis(true);
+
+    try {
+      const picksData = selectedPicks.map(p => ({
+        playerName: p.playerName,
+        team: p.team,
+        propType: p.propType,
+        line: p.line,
+        direction: p.direction,
+        confidence: p.confidence,
+        sport: p.sport,
+        opponent: p.opponent
+      }));
+
+      const { data, error } = await supabase.functions.invoke('analyze-parlay', {
+        body: { picks: picksData }
+      });
+
+      if (error) {
+        console.error('Error analyzing parlay:', error);
+        toast.error('Failed to analyze parlay');
+        return;
+      }
+
+      if (data?.success && data?.analysis) {
+        setAnalysis(data.analysis);
+      } else if (data?.error) {
+        toast.error(data.error);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      toast.error('Failed to analyze parlay');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Reset analysis when picks change
+  const handleRemovePick = (pickId: string) => {
+    setAnalysis(null);
+    onRemovePick(pickId);
+  };
+
+  const handleClearAll = () => {
+    setAnalysis(null);
+    setShowAnalysis(false);
+    onClearAll();
+  };
+
   if (!isOpen) {
     return (
       <Button
@@ -80,8 +160,10 @@ export function ParlayBuilder({
     );
   }
 
+  const signalStyle = analysis ? getSignalStyle(analysis.signal) : null;
+
   return (
-    <div className="fixed bottom-0 right-0 z-50 w-full sm:w-96 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-0 right-0 z-50 w-full sm:w-[420px] sm:bottom-6 sm:right-6">
       <Card className="bg-card border-border shadow-2xl rounded-t-xl sm:rounded-xl overflow-hidden">
         <CardHeader className="pb-3 bg-primary/5 border-b border-border">
           <div className="flex items-center justify-between">
@@ -91,7 +173,7 @@ export function ParlayBuilder({
             </CardTitle>
             <div className="flex items-center gap-2">
               {selectedPicks.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={onClearAll}>
+                <Button variant="ghost" size="sm" onClick={handleClearAll}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
@@ -115,7 +197,7 @@ export function ParlayBuilder({
           ) : (
             <>
               {/* Selected Picks List */}
-              <ScrollArea className="max-h-64">
+              <ScrollArea className="max-h-48">
                 <div className="p-3 space-y-2">
                   {selectedPicks.map((pick) => (
                     <div 
@@ -151,7 +233,7 @@ export function ParlayBuilder({
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => onRemovePick(pick.id)}
+                        onClick={() => handleRemovePick(pick.id)}
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -174,6 +256,72 @@ export function ParlayBuilder({
                   <div className="text-lg font-bold text-amber-400">{combinedHitRate.toFixed(1)}%</div>
                   <div className="text-xs text-muted-foreground">Win Prob</div>
                 </div>
+              </div>
+
+              {/* AI Analysis Section */}
+              <div className="p-3 border-t border-border bg-muted/10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2"
+                  onClick={analyzeParlay}
+                  disabled={isAnalyzing || selectedPicks.length < 2}
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      {analysis ? 'Re-analyze Parlay' : 'AI Parlay Analysis'}
+                    </>
+                  )}
+                </Button>
+
+                {/* Analysis Results */}
+                {showAnalysis && analysis && signalStyle && (
+                  <div className="mt-3 space-y-3">
+                    {/* Signal Badge */}
+                    <div className="flex items-center justify-between">
+                      <Badge className={cn("px-3 py-1", signalStyle.bg, signalStyle.text, signalStyle.border)}>
+                        {signalStyle.label}
+                      </Badge>
+                      <span className="text-sm font-medium">{analysis.overallConfidence}% Confidence</span>
+                    </div>
+
+                    {/* Verdict */}
+                    <p className="text-sm font-medium">{analysis.verdict}</p>
+
+                    {/* Strengths & Risks */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <span className="text-xs text-emerald-400 font-medium">Strengths</span>
+                        {analysis.strengths.slice(0, 2).map((s, i) => (
+                          <div key={i} className="text-xs text-muted-foreground flex items-start gap-1">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                            <span className="line-clamp-2">{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-xs text-amber-400 font-medium">Risks</span>
+                        {analysis.risks.slice(0, 2).map((r, i) => (
+                          <div key={i} className="text-xs text-muted-foreground flex items-start gap-1">
+                            <AlertTriangle className="h-3 w-3 text-amber-400 mt-0.5 shrink-0" />
+                            <span className="line-clamp-2">{r}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Suggestion */}
+                    <div className="p-2 rounded bg-primary/10 border border-primary/20">
+                      <p className="text-xs text-foreground/90">{analysis.suggestion}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Bet Calculator */}

@@ -724,10 +724,7 @@ const GameDetail = () => {
           <div className="mb-6">
             <FullAIReport 
               game={game}
-              qualification={qualification}
               scrapedData={scrapedData}
-              risk={risk}
-              value={value}
             />
           </div>
 
