@@ -63,8 +63,6 @@ export const Footer = () => {
         <div className="mt-8 pt-6 border-t border-border/40">
           <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mb-6">
             <p className="text-xs text-warning/90 leading-relaxed">
-              <strong>DISCLAIMER:</strong> This platform is for informational and educational purposes only. 
-              We do not provide betting advice, tips, or recommendations. No guarantees are made about outcomes. 
               If you or someone you know has a gambling problem, please seek help at{' '}
               <a href="https://www.ncpgambling.org/" target="_blank" rel="noopener noreferrer" className="underline">
                 ncpgambling.org
