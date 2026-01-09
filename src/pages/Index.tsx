@@ -37,8 +37,14 @@ const Index = () => {
   
   useEffect(() => {
     const interval = setInterval(() => {
-      setViewerCount(Math.floor(Math.random() * (1200 - 500 + 1)) + 500);
-    }, 3000);
+      setViewerCount(prev => {
+        const change = Math.floor(Math.random() * 5) + 1; // 1-5
+        const direction = Math.random() > 0.5 ? 1 : -1;
+        const newCount = prev + (change * direction);
+        // Keep within 500-1200 range
+        return Math.max(500, Math.min(1200, newCount));
+      });
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
 
