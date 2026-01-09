@@ -124,50 +124,243 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
-    if (!apiKey) {
-      console.log('FIRECRAWL_API_KEY not configured, returning generated data');
-      const generatedData = generateRealisticData(homeTeam, awayTeam, sport);
-      return new Response(
-        JSON.stringify({ success: true, data: generatedData, source: 'generated' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    
+    console.log(`Fetching game data: ${homeTeam} vs ${awayTeam} (${sport})`);
+
+    // Try Gemini AI for real historical data first (always available via Lovable AI)
+    if (lovableApiKey) {
+      try {
+        const aiData = await fetchHistoricalDataWithAI(lovableApiKey, homeTeam, awayTeam, sport);
+        if (aiData && aiData.dataSource !== 'simulated') {
+          console.log('Successfully fetched real data via Gemini AI');
+          return new Response(
+            JSON.stringify({ success: true, data: aiData, source: 'ai-research' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (aiError) {
+        console.error('AI data fetch failed, falling back to Firecrawl:', aiError);
+      }
     }
 
-    console.log(`Scraping game data: ${homeTeam} vs ${awayTeam} (${sport})`);
+    // Fallback to Firecrawl if available
+    if (firecrawlApiKey) {
+      const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
+      const injuryResponse = await searchFirecrawl(firecrawlApiKey, injuryQuery);
+      
+      const formQuery = `${homeTeam} ${awayTeam} recent results ${sport} 2026`;
+      const formResponse = await searchFirecrawl(firecrawlApiKey, formQuery);
+      
+      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history ${sport}`;
+      const h2hResponse = await searchFirecrawl(firecrawlApiKey, h2hQuery);
 
-    // Build safe search queries with sanitized inputs
-    const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
-    const injuryResponse = await searchFirecrawl(apiKey, injuryQuery);
-    
-    const formQuery = `${homeTeam} ${awayTeam} recent results ${sport} 2026`;
-    const formResponse = await searchFirecrawl(apiKey, formQuery);
-    
-    const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history ${sport}`;
-    const h2hResponse = await searchFirecrawl(apiKey, h2hQuery);
+      const scrapedData = parseScrapedData(
+        injuryResponse,
+        formResponse,
+        h2hResponse,
+        homeTeam,
+        awayTeam,
+        sport
+      );
 
-    // Parse the scraped data
-    const scrapedData = parseScrapedData(
-      injuryResponse,
-      formResponse,
-      h2hResponse,
-      homeTeam,
-      awayTeam,
-      sport
-    );
+      if (scrapedData.dataSource !== 'simulated') {
+        return new Response(
+          JSON.stringify({ success: true, data: scrapedData, source: 'scraped' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
+    // No real data available - return generated with clear warning
+    console.log('No real data sources available, returning generated data');
+    const generatedData = generateRealisticData(homeTeam, awayTeam, sport);
     return new Response(
-      JSON.stringify({ success: true, data: scrapedData, source: 'scraped' }),
+      JSON.stringify({ success: true, data: generatedData, source: 'generated' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('[Internal] Error scraping game data');
+    console.error('[Internal] Error fetching game data:', error);
     return new Response(
       JSON.stringify({ success: false, error: 'Service temporarily unavailable' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
+async function fetchHistoricalDataWithAI(
+  apiKey: string, 
+  homeTeam: string, 
+  awayTeam: string, 
+  sport: string
+): Promise<ScrapedGameData | null> {
+  const sportKey = normalizeSportKey(sport);
+  const sportValidation = getSportValidation(sport);
+  
+  const prompt = `You are a sports data expert. Provide REAL, ACCURATE historical data for the following matchup. Only include information you are confident is true. If you don't have accurate data, say so.
+
+MATCHUP: ${homeTeam} vs ${awayTeam}
+SPORT: ${sport} (${sportValidation.competitionLevel})
+
+Provide the following in JSON format:
+
+1. **Recent Form** (last 5 games for each team with REAL opponents, scores, and dates):
+   - Use actual ${sport} score formats (e.g., ${sportValidation.scoringSystem})
+   - Include real opponent names from the same league/competition
+   
+2. **Head-to-Head History** (last 5 meetings between these exact teams):
+   - Only include matches between ${homeTeam} and ${awayTeam}
+   - Include actual dates, winners, and scores
+   
+3. **Current Injuries** (known injured players):
+   - Only include confirmed injuries you're aware of
+   - Include player name, position, injury type, and status
+
+4. **Team Stats** (current season records if known):
+   - Wins, losses, current streak, ranking
+
+IMPORTANT: 
+- If you don't have real data for any section, return an empty array for that section
+- Never make up fake data - only report what you actually know
+- Use proper ${sport} terminology and score formats
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "recentForm": [
+    {"team": "Team Name", "last5": [{"opponent": "Real Opponent", "result": "W" or "L", "score": "X-Y", "date": "YYYY-MM-DD"}], "isGenerated": false}
+  ],
+  "headToHead": [
+    {"date": "YYYY-MM-DD", "winner": "Team Name", "score": "X-Y"}
+  ],
+  "injuries": [
+    {"team": "Team Name", "player": "Player Name", "position": "POS", "injuryType": "Type", "status": "Out/Questionable/Probable/Day-to-Day"}
+  ],
+  "teamStats": [
+    {"team": "Team Name", "wins": 0, "losses": 0, "streak": "W0", "ranking": 0}
+  ],
+  "hasRealData": true/false,
+  "confidence": "high/medium/low",
+  "dataNote": "Any notes about data accuracy or recency"
+}`;
+
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-3-flash-preview',
+        messages: [
+          { role: 'system', content: 'You are a sports data expert. Only provide accurate, real historical data. Never fabricate statistics.' },
+          { role: 'user', content: prompt }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI gateway error:', response.status, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error('No content in AI response');
+      return null;
+    }
+
+    // Parse the JSON response
+    let parsed;
+    try {
+      // Extract JSON from the response (handle markdown code blocks)
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
+      const jsonStr = jsonMatch[1] || content;
+      parsed = JSON.parse(jsonStr.trim());
+    } catch (parseError) {
+      console.error('Failed to parse AI response as JSON:', parseError);
+      return null;
+    }
+
+    // Check if AI indicated it has real data
+    if (!parsed.hasRealData || parsed.confidence === 'low') {
+      console.log('AI indicated low confidence or no real data');
+      return null;
+    }
+
+    // Transform AI response to our format
+    const injuries: ScrapedGameData['injuries'] = (parsed.injuries || []).map((i: any) => ({
+      team: i.team,
+      player: i.player,
+      position: i.position || getPositionForSport(sport),
+      injuryType: i.injuryType || 'Undisclosed',
+      status: i.status || 'Questionable',
+    }));
+
+    const recentForm: ScrapedGameData['recentForm'] = (parsed.recentForm || []).map((rf: any) => ({
+      team: rf.team,
+      last5: (rf.last5 || []).slice(0, 5).map((g: any) => ({
+        opponent: g.opponent || 'Unknown',
+        result: g.result === 'W' ? 'W' : 'L',
+        score: g.score || '0-0',
+        date: g.date || getDateDaysAgo(1),
+      })),
+      limitedData: (rf.last5?.length || 0) < 3,
+      isGenerated: rf.isGenerated ?? false,
+    }));
+
+    const headToHead: ScrapedGameData['headToHead'] = (parsed.headToHead || []).slice(0, 5).map((h2h: any) => ({
+      date: h2h.date || getDateDaysAgo(30),
+      winner: h2h.winner || homeTeam,
+      score: h2h.score || '0-0',
+      sport: sportKey,
+      competitionLevel: sportValidation.competitionLevel,
+    }));
+
+    const teamStats: ScrapedGameData['teamStats'] = (parsed.teamStats || []).map((ts: any) => ({
+      team: ts.team,
+      wins: ts.wins || 0,
+      losses: ts.losses || 0,
+      streak: ts.streak || 'N/A',
+      ranking: ts.ranking || 0,
+    }));
+
+    // Determine data source quality
+    const hasRealForm = recentForm.some(rf => !rf.isGenerated && rf.last5.length >= 3);
+    const hasRealH2H = headToHead.length >= 2;
+    const hasRealInjuries = injuries.length > 0;
+    
+    const dataSource = (hasRealForm && hasRealH2H) ? 'real' : 
+                       (hasRealForm || hasRealH2H || hasRealInjuries) ? 'partial' : 'simulated';
+
+    const headToHeadMeta = {
+      limitedData: headToHead.length < 3,
+      validMatchCount: headToHead.length,
+      message: parsed.dataNote || (headToHead.length >= 3 ? undefined : 'Limited head-to-head data available'),
+      isGenerated: false,
+    };
+
+    const analysis = parsed.dataNote || `Real historical data retrieved via AI research. Confidence: ${parsed.confidence || 'medium'}`;
+
+    return {
+      injuries,
+      recentForm,
+      headToHead,
+      headToHeadMeta,
+      teamStats,
+      analysis,
+      sportValidation,
+      dataSource,
+    };
+  } catch (error) {
+    console.error('Error fetching data with AI:', error);
+    return null;
+  }
+}
 
 async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
   try {
