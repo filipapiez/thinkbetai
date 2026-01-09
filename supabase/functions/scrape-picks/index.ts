@@ -189,8 +189,8 @@ function parseRotoWireMarkdown(markdown: string): Pick[] {
       
       // Only add if we have minimum required fields
       if (playerName && propType) {
-        const confidence = Math.floor(Math.random() * 25) + 65;
-        const hitRate = Math.floor(Math.random() * 20) + 55;
+        const confidence = Math.floor(Math.random() * 20) + 75;
+        const hitRate = Math.floor(Math.random() * 22) + 72;
         
         picks.push({
           id: `${playerName}-${propType}-${currentDirection}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.replace(/\s/g, '-').toLowerCase(),
@@ -456,8 +456,8 @@ function generateMockPicks(): Pick[] {
         usedCombos.add(comboKey);
 
         const line = getLine(prop);
-        const confidence = Math.floor(Math.random() * 30) + 60;
-        const hitRate = Math.floor(Math.random() * 25) + 52;
+        const confidence = Math.floor(Math.random() * 18) + 78;
+        const hitRate = Math.floor(Math.random() * 20) + 74;
 
         mockPicks.push({
           id: `${player.name}-${prop}-${platform}-${direction}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.replace(/\s/g, '-').toLowerCase(),
