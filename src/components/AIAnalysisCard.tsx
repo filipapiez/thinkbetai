@@ -115,6 +115,12 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
         homeTeam: game.homeTeam.name,
         awayTeam: game.awayTeam.name,
         sport: game.sport,
+        // Pass the initial qualification so AI aligns with header signal
+        initialQualification: qualification ? {
+          signal: qualification.signal,
+          confidenceScore: qualification.confidenceScore,
+          pick: qualification.pick,
+        } : undefined,
         odds: game.odds ? {
           moneyline: game.odds.moneyline,
           spread: game.odds.spread,

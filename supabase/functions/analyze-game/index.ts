@@ -9,6 +9,11 @@ interface GameData {
   homeTeam: string;
   awayTeam: string;
   sport: string;
+  initialQualification?: {
+    signal: 'GOOD' | 'BORDERLINE' | 'PASS';
+    confidenceScore: number;
+    pick?: 'home' | 'away';
+  };
   odds?: {
     moneyline?: { home: number; away: number };
     spread?: { home: number; away: number };
@@ -64,6 +69,18 @@ serve(async (req) => {
     const context = buildGameContext(gameData);
     const sportTerminology = getSportTerminology(validatedSport);
     
+    // Extract initial qualification signal if provided
+    const initialSignal = gameData.initialQualification?.signal || null;
+    const initialConfidence = gameData.initialQualification?.confidenceScore || null;
+    
+    const signalGuidance = initialSignal 
+      ? `\nINITIAL ODDS-BASED SIGNAL: ${initialSignal} (${initialConfidence}% confidence)
+- You should generally ALIGN with this signal unless you find STRONG evidence to downgrade
+- Downgrade from GOOD to AVOID only if: major injury to star player, terrible recent form (0-5 or 1-4), or lopsided H2H against the pick
+- If initial signal is GOOD and data supports it, use STRONG_VALUE or QUALIFIED
+- If initial signal is PASS, you may upgrade to RISKY if you see value, but never to QUALIFIED/STRONG_VALUE without strong evidence`
+      : '';
+
     const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
 
 CRITICAL SPORT ISOLATION RULES:
@@ -74,6 +91,7 @@ CRITICAL SPORT ISOLATION RULES:
 - NEVER reference other sports, their teams, players, or terminology
 - NEVER use basketball terms for football or vice versa
 - If data seems inconsistent with ${validatedSport}, flag it as questionable
+${signalGuidance}
 
 GENERAL RULES:
 - Never mention "scraping", "APIs", or data sources
@@ -82,6 +100,11 @@ GENERAL RULES:
 - Focus on what matters: injuries, form, matchup factors
 - Use bullet points for clarity
 - Keep explanations short but insightful
+
+SIGNAL CONSISTENCY:
+- Your signal should generally match the header signal unless you have strong contrary evidence
+- Map signals: GOOD → STRONG_VALUE or QUALIFIED, BORDERLINE → RISKY, PASS → AVOID
+- Only contradict the header signal if injuries/form clearly warrant it
 
 OUTPUT FORMAT (JSON):
 {
