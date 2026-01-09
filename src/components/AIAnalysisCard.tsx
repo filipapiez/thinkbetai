@@ -155,13 +155,9 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
     return (
       <Card className="col-span-full">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             AI Match Analysis
-            <Badge variant="outline" className="ml-2 text-xs bg-primary/10 text-primary border-primary/30">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Powered by Gemini
-            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center py-8">
@@ -177,7 +173,7 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Analyzing with Gemini...
+                Analyzing...
               </>
             ) : (
               <>
@@ -202,10 +198,6 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
           <span className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
             AI Match Analysis
-            <Badge variant="outline" className="ml-2 text-xs bg-primary/10 text-primary border-primary/30">
-              <Sparkles className="h-3 w-3 mr-1" />
-              Gemini
-            </Badge>
           </span>
           <Badge variant="outline" className={cn("text-sm px-3 py-1", style.bg, style.text, style.border)}>
             {style.label}
