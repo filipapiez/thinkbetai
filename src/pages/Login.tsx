@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SEO } from '@/components/SEO';
 import { User as UserIcon, Mail, Lock, LogIn, Loader2, Ticket } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -146,6 +147,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Login - Access AI Betting Predictions"
+        description="Sign in to ThinkBetAI to access AI-powered sports betting predictions, real-time analysis, and expert picks for all major sports."
+        keywords="ThinkBetAI login, sports betting login, AI predictions access"
+        url="/login"
+      />
       <Header />
       
       <main className="flex-1 py-8 md:py-16">

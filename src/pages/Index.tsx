@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
+import { SEO } from '@/components/SEO';
 import { platformStats } from '@/lib/mockData';
 import { 
   Search, 
@@ -173,6 +174,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO />
       <Header />
       
       <main className="flex-1">

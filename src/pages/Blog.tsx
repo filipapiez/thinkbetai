@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SEO } from '@/components/SEO';
 import { Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react';
 import { blogPosts } from '@/lib/blogData';
 
@@ -13,6 +14,12 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="AI Betting Blog - Expert Insights & Strategies"
+        description="Expert AI betting guides, sports predictions strategies, and machine learning insights. Learn how to use artificial intelligence for smarter sports betting."
+        keywords="AI betting blog, sports betting strategies, betting tips, AI predictions guide, machine learning betting"
+        url="/blog"
+      />
       <Header />
       
       <main className="container py-12">

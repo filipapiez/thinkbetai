@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SEO } from '@/components/SEO';
 import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -117,6 +118,12 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Pricing - AI Betting Plans"
+        description="Choose the perfect ThinkBetAI plan for your betting strategy. Get AI-powered predictions, real-time analysis, and expert insights starting at $49/month."
+        keywords="AI betting subscription, sports betting plans, betting software pricing, AI predictions cost"
+        url="/pricing"
+      />
       <Header />
       
       <main className="flex-1 py-16">

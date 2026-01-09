@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SEO } from '@/components/SEO';
 import { Sparkles, Send, Loader2, MessageCircle, TrendingUp, HelpCircle, DollarSign, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -158,6 +159,12 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO 
+        title="AI Betting Chat - Ask Any Sports Question"
+        description="Chat with ThinkBetAI's intelligent assistant. Get instant answers about odds, injuries, game predictions, and betting strategies powered by AI."
+        keywords="AI betting chat, sports betting assistant, betting questions, AI sports advisor"
+        url="/chat"
+      />
       <Header />
       
       <main className="flex-1 container py-8 flex flex-col max-w-4xl">
