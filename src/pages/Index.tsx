@@ -17,12 +17,19 @@ import {
   Target,
   Zap,
   CheckCircle2,
-  Star
+  Star,
+  Layers,
+  Dumbbell
 } from 'lucide-react';
 
 const Index = () => {
 
   const features = [
+    {
+      icon: Layers,
+      title: 'Parlay Builder',
+      description: 'Build smarter parlays with AI-calculated odds, win probability, and optimal leg combinations.',
+    },
     {
       icon: TrendingUp,
       title: 'Odds Explained',
@@ -32,11 +39,6 @@ const Index = () => {
       icon: UserX,
       title: 'Injury Context',
       description: 'See key injuries, status updates, and how absences might impact game dynamics.',
-    },
-    {
-      icon: History,
-      title: 'Historical Trends',
-      description: 'Review recent form, head-to-head records, and home/away performance patterns.',
     },
     {
       icon: Gauge,
@@ -49,7 +51,26 @@ const Index = () => {
     { value: `${platformStats.qualifiedWinRate}%`, label: 'Win Rate', sublabel: 'on qualified picks' },
     { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
     { value: `${platformStats.streakCurrent}`, label: 'Current Streak', sublabel: 'consecutive wins' },
-    { value: '10+', label: 'Sports Covered', sublabel: 'major leagues' },
+    { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
+  ];
+
+  const allSports = [
+    { name: 'NFL', emoji: '🏈' },
+    { name: 'NBA', emoji: '🏀' },
+    { name: 'MLB', emoji: '⚾' },
+    { name: 'NHL', emoji: '🏒' },
+    { name: 'NCAAF', emoji: '🏈' },
+    { name: 'NCAAB', emoji: '🏀' },
+    { name: 'WNBA', emoji: '🏀' },
+    { name: 'EPL', emoji: '⚽' },
+    { name: 'La Liga', emoji: '⚽' },
+    { name: 'Champions League', emoji: '⚽' },
+    { name: 'Bundesliga', emoji: '⚽' },
+    { name: 'MLS', emoji: '⚽' },
+    { name: 'UFC', emoji: '🥊' },
+    { name: 'Boxing', emoji: '🥊' },
+    { name: 'Tennis', emoji: '🎾' },
+    { name: 'Golf', emoji: '⛳' },
   ];
 
   const testimonials = [
@@ -96,14 +117,14 @@ const Index = () => {
 
               {/* Headline */}
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 animate-slide-up">
-                Stop Gambling.{' '}
-                <span className="text-gradient">Start Winning.</span>
+                Build Smarter Parlays.{' '}
+                <span className="text-gradient">Win More Bets.</span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '100ms' }}>
-                Our AI analyzes odds, injuries, and matchup data to identify high-confidence betting opportunities. 
-                Join thousands who turned their betting from a gamble into a strategy.
+                AI-powered picks across 15+ sports including NFL, NBA, UFC, Soccer & more. 
+                Build winning parlays with confidence scores, real-time odds, and smart leg combinations.
               </p>
 
               {/* CTAs */}
@@ -166,15 +187,49 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Sports Coverage Section */}
+        <section className="py-12 border-t border-border/40">
+          <div className="container">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+                <Dumbbell className="h-3 w-3" />
+                Full Coverage
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold mb-2">
+                15+ Sports. Unlimited Opportunities.
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                From the NFL to UFC, we've got every major league covered.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+              {allSports.map((sport, index) => (
+                <div 
+                  key={sport.name}
+                  className="flex items-center gap-2 px-4 py-2 bg-background/50 border border-border/40 rounded-full text-sm font-medium hover:border-primary/40 hover:bg-primary/5 transition-colors animate-slide-up"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <span>{sport.emoji}</span>
+                  <span>{sport.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section className="py-16 md:py-24 border-t border-border/40">
           <div className="container">
             <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
+                <Layers className="h-3 w-3" />
+                Parlay Power
+              </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Everything You Need to Bet Smarter
+                Build Parlays Like a Pro
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Powered by AI that analyzes millions of data points to give you an edge.
+                Select high-confidence picks, combine them into parlays, and see real-time odds & expected payouts.
               </p>
             </div>
 
