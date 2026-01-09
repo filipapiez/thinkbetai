@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -25,10 +26,44 @@ import {
   Users,
   DollarSign,
   TrendingDown,
-  Play
+  Play,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const Index = () => {
+  // Animated live viewer count
+  const [viewerCount, setViewerCount] = useState(847);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setViewerCount(Math.floor(Math.random() * (1200 - 500 + 1)) + 500);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Testimonial carousel
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollButtons = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const scrollTestimonials = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 320;
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const features = [
     {
@@ -81,22 +116,52 @@ const Index = () => {
 
   const testimonials = [
     {
-      quote: "Finally, a tool that explains odds in a way I can actually understand. The injury context is invaluable.",
-      author: "Mike R.",
-      role: "Sports Enthusiast",
+      quote: "lowkey this app is fire. hit 3 parlays last weekend 🔥",
+      author: "Marcus D.",
+      role: "NBA Fan",
       rating: 5
     },
     {
-      quote: "The risk meter saved me from so many bad bets. I only take GOOD signals now and my bankroll thanks me.",
-      author: "Sarah K.",
-      role: "Casual Bettor",
+      quote: "been using it for a month now, my friends think i'm psychic lol",
+      author: "Taylor S.",
+      role: "Weekend Bettor",
       rating: 5
     },
     {
-      quote: "I used to bet blind. Now I actually understand why lines move and what injuries really mean for a game.",
-      author: "James T.",
-      role: "Fantasy Player",
+      quote: "finally something that actually makes sense. no more random guesses",
+      author: "Chris M.",
+      role: "Football Guy",
       rating: 5
+    },
+    {
+      quote: "the injury updates alone are worth it. caught me slipping on a bad bet twice",
+      author: "Jordan P.",
+      role: "Fantasy League Champ",
+      rating: 5
+    },
+    {
+      quote: "my bankroll went from 😬 to 😎 real quick",
+      author: "Alex K.",
+      role: "Sports Junkie",
+      rating: 5
+    },
+    {
+      quote: "bruh the parlay builder is addicting. in a good way tho",
+      author: "Devon R.",
+      role: "Parlay King",
+      rating: 5
+    },
+    {
+      quote: "started following the GOOD signals only and i'm up 40% this month",
+      author: "Sam W.",
+      role: "Smart Bettor",
+      rating: 5
+    },
+    {
+      quote: "wish i found this sooner honestly. simple and it just works",
+      author: "Riley T.",
+      role: "Casual Fan",
+      rating: 4
     },
   ];
 
@@ -193,7 +258,7 @@ const Index = () => {
                       </div>
                     ))}
                   </div>
-                  <span><span className="font-semibold text-foreground">5,247</span> bettors joined this week</span>
+                  <span><span className="font-semibold text-foreground">1,247</span> bettors joined this week</span>
                 </div>
                 <div className="hidden md:block w-px h-5 bg-border" />
                 <div className="flex items-center gap-1.5">
@@ -243,8 +308,13 @@ const Index = () => {
               </div>
               <div className="hidden md:block w-px h-4 bg-primary/30" />
               <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <span className="text-xs font-semibold text-red-400 uppercase">Live</span>
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground"><span className="font-semibold text-foreground">847</span> users viewing picks right now</span>
+                <span className="text-muted-foreground"><span className="font-semibold text-foreground transition-all duration-300">{viewerCount.toLocaleString()}</span> users viewing picks right now</span>
               </div>
               <div className="hidden md:block w-px h-4 bg-primary/30" />
               <Link to="/picks" className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold transition-colors">
@@ -405,28 +475,54 @@ const Index = () => {
         {/* Testimonials */}
         <section className="py-16 md:py-24 bg-card/30 border-t border-border/40">
           <div className="container">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Trusted by Smart Bettors
-              </h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                See what our users say about transforming their betting strategy.
-              </p>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                  What People Are Saying
+                </h2>
+                <p className="text-muted-foreground">
+                  Real users, real results
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => scrollTestimonials('left')}
+                  disabled={!canScrollLeft}
+                  className="h-10 w-10 rounded-full"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => scrollTestimonials('right')}
+                  disabled={!canScrollRight}
+                  className="h-10 w-10 rounded-full"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div 
+              ref={scrollRef}
+              onScroll={updateScrollButtons}
+              className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {testimonials.map((testimonial, index) => (
                 <div 
                   key={testimonial.author} 
-                  className="bg-background/50 border border-border/40 rounded-xl p-6 animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="flex-shrink-0 w-[300px] bg-background/50 border border-border/40 rounded-xl p-5 snap-start"
                 >
-                  <div className="flex gap-1 mb-4">
+                  <div className="flex gap-1 mb-3">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <p className="text-sm text-foreground mb-4">"{testimonial.quote}"</p>
+                  <p className="text-sm text-foreground mb-4 leading-relaxed">"{testimonial.quote}"</p>
                   <div>
                     <div className="font-medium text-sm">{testimonial.author}</div>
                     <div className="text-xs text-muted-foreground">{testimonial.role}</div>
