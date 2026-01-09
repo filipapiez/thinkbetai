@@ -41,3 +41,9 @@ verify_jwt = false
 
 [functions.get-ufc-events]
 verify_jwt = false
+
+[functions.notify-new-signup]
+verify_jwt = false
+
+[functions.analyze-game]
+verify_jwt = false
