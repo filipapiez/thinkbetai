@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import Index from "./pages/Index";
 import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
@@ -23,8 +24,13 @@ import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
-
 const queryClient = new QueryClient();
+
+// Analytics wrapper component
+const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
+  useGoogleAnalytics();
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -33,60 +39,61 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/paywall" element={<Paywall />} />
-            <Route path="/payment-success" element={<PaymentSuccess />} />
-            
-            {/* Protected routes - require auth + subscription */}
-            <Route path="/games" element={
-              <ProtectedRoute requireSubscription>
-                <Games />
-              </ProtectedRoute>
-            } />
-            <Route path="/games/:gameId" element={
-              <ProtectedRoute requireSubscription>
-                <GameDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/chat" element={
-              <ProtectedRoute requireSubscription>
-                <Chat />
-              </ProtectedRoute>
-            } />
-            
-            {/* Protected routes - require auth only */}
-            <Route path="/account" element={
-              <ProtectedRoute>
-                <Account />
-              </ProtectedRoute>
-            } />
-            <Route path="/subscription" element={
-              <ProtectedRoute>
-                <Subscription />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          
+          <AnalyticsWrapper>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/paywall" element={<Paywall />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              
+              {/* Protected routes - require auth + subscription */}
+              <Route path="/games" element={
+                <ProtectedRoute requireSubscription>
+                  <Games />
+                </ProtectedRoute>
+              } />
+              <Route path="/games/:gameId" element={
+                <ProtectedRoute requireSubscription>
+                  <GameDetail />
+                </ProtectedRoute>
+              } />
+              <Route path="/chat" element={
+                <ProtectedRoute requireSubscription>
+                  <Chat />
+                </ProtectedRoute>
+              } />
+              
+              {/* Protected routes - require auth only */}
+              <Route path="/account" element={
+                <ProtectedRoute>
+                  <Account />
+                </ProtectedRoute>
+              } />
+              <Route path="/subscription" element={
+                <ProtectedRoute>
+                  <Subscription />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AnalyticsWrapper>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
