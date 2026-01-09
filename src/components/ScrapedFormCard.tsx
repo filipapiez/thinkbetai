@@ -1,17 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Users } from 'lucide-react';
-import { ScrapedRecentForm, ScrapedH2H } from '@/lib/api/gameData';
+import { TrendingUp, TrendingDown, Users, AlertTriangle } from 'lucide-react';
+import { ScrapedRecentForm, ScrapedH2H, ScrapedH2HMeta } from '@/lib/api/gameData';
 import { cn } from '@/lib/utils';
 
 interface ScrapedFormCardProps {
   recentForm: ScrapedRecentForm[];
   headToHead: ScrapedH2H[];
+  headToHeadMeta?: ScrapedH2HMeta;
   homeTeam: string;
   awayTeam: string;
 }
 
-export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: ScrapedFormCardProps) => {
+export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTeam, awayTeam }: ScrapedFormCardProps) => {
   const homeForm = recentForm.find(f => f.team === homeTeam);
   const awayForm = recentForm.find(f => f.team === awayTeam);
 
@@ -144,7 +145,24 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
         </div>
 
         <div className="border-t border-border pt-4">
-          <h4 className="text-sm font-semibold mb-3">Head-to-Head (Last 5)</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold">Head-to-Head (Last 5)</h4>
+            {headToHeadMeta?.limitedData && (
+              <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs">
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Limited Data
+              </Badge>
+            )}
+          </div>
+          
+          {headToHeadMeta?.limitedData && headToHeadMeta.message && (
+            <div className="p-2 mb-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-xs text-amber-400">
+                {headToHeadMeta.message}
+              </p>
+            </div>
+          )}
+          
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-400">{h2hHomeWins}</div>
@@ -157,18 +175,24 @@ export const ScrapedFormCard = ({ recentForm, headToHead, homeTeam, awayTeam }: 
             </div>
           </div>
           
-          <div className="space-y-1 mb-3">
-            {headToHead.slice(0, 3).map((match, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{match.date}</span>
-                <span className={cn(
-                  match.winner === homeTeam ? "text-emerald-400" : "text-rose-400"
-                )}>
-                  {match.winner} ({match.score})
-                </span>
-              </div>
-            ))}
-          </div>
+          {headToHead.length > 0 ? (
+            <div className="space-y-1 mb-3">
+              {headToHead.slice(0, 3).map((match, idx) => (
+                <div key={idx} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">{match.date}</span>
+                  <span className={cn(
+                    match.winner === homeTeam ? "text-emerald-400" : "text-rose-400"
+                  )}>
+                    {match.winner} ({match.score})
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-3 rounded-lg bg-muted/50 text-center mb-3">
+              <p className="text-xs text-muted-foreground">No validated head-to-head matches available</p>
+            </div>
+          )}
           
           {/* H2H Conclusion */}
           <p className="text-xs text-muted-foreground italic">
