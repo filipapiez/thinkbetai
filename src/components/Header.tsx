@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Target } from 'lucide-react';
 import { useState } from 'react';
 
 export const Header = () => {
@@ -22,6 +22,10 @@ export const Header = () => {
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Games
+          </Link>
+          <Link to="/picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <Target className="h-4 w-4" />
+            Picks
           </Link>
           <Link to="/chat" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
@@ -81,6 +85,14 @@ export const Header = () => {
             >
               <Search className="h-4 w-4" />
               Search Games
+            </Link>
+            <Link 
+              to="/picks" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Target className="h-4 w-4" />
+              Picks
             </Link>
             <Link 
               to="/chat" 
