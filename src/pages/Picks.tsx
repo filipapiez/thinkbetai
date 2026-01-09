@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Search, Filter, X, TrendingUp, TrendingDown, RefreshCw, 
-  Loader2, Clock, Target, ChevronDown 
+  Loader2, Clock, Target, ChevronDown, Calendar, Flame
 } from 'lucide-react';
 import { usePicks, type Pick } from '@/hooks/usePicks';
 import {
@@ -67,6 +67,11 @@ const Picks = () => {
   }, []);
 
   const selectedPickIds = useMemo(() => new Set(parlayPicks.map(p => p.id)), [parlayPicks]);
+
+  // Get today's picks
+  const todaysPicks = useMemo(() => {
+    return picks.filter(p => p.gameDate === 'Today').sort((a, b) => b.confidence - a.confidence);
+  }, [picks]);
 
   // Calculate signal counts
   const signalCounts = useMemo(() => {
@@ -243,6 +248,94 @@ const Picks = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Games Today Section */}
+          {todaysPicks.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-lg px-3 py-1.5">
+                  <Flame className="h-5 w-5 text-orange-400" />
+                  <h2 className="text-lg font-bold">Games Today</h2>
+                </div>
+                <Badge variant="secondary" className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                  {todaysPicks.length} picks
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                {todaysPicks.slice(0, 8).map((pick) => (
+                  <Card 
+                    key={pick.id} 
+                    className="bg-gradient-to-br from-orange-500/5 to-red-500/5 border-orange-500/20 hover:border-orange-500/40 transition-colors cursor-pointer"
+                    onClick={() => handleSelectPick(pick)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <img 
+                          src={pick.playerImage} 
+                          alt={pick.playerName}
+                          className="h-10 w-10 rounded-full object-cover bg-muted"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.svg';
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{pick.playerName}</p>
+                          <p className="text-xs text-muted-foreground">{pick.team} {pick.opponent}</p>
+                        </div>
+                        {selectedPickIds.has(pick.id) && (
+                          <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                            <span className="text-xs text-primary-foreground">✓</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs px-1.5 py-0 ${
+                              pick.direction === 'MORE' 
+                                ? 'border-emerald-500/50 text-emerald-400' 
+                                : 'border-red-500/50 text-red-400'
+                            }`}
+                          >
+                            {pick.direction === 'MORE' ? <TrendingUp className="h-3 w-3 mr-0.5" /> : <TrendingDown className="h-3 w-3 mr-0.5" />}
+                            {pick.direction}
+                          </Badge>
+                          <span className="text-xs font-medium">{pick.line} {pick.propType}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">{pick.gameTime}</span>
+                          {pick.hitRate && (
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0 bg-emerald-500/20 text-emerald-400">
+                              {pick.hitRate}%
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {todaysPicks.length > 8 && (
+                <div className="text-center mt-3">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedPlatform(null);
+                      setSelectedSport(null);
+                      setSelectedPropType(null);
+                      setSelectedDirection(null);
+                    }}
+                    className="text-orange-400 hover:text-orange-300"
+                  >
+                    View all {todaysPicks.length} picks for today
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Search & Filters */}
           <div className="space-y-4 mb-8">
