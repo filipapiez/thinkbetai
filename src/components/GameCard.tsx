@@ -64,26 +64,30 @@ const BetSignalBadge = ({ qualification }: { qualification: BetQualification }) 
 
 export const GameCard = ({ game }: GameCardProps) => {
   const qualification = useMemo(() => {
+    // Try to get enriched game facts for mock games
     const facts = getGameFacts(game.id);
-    if (!facts) {
-      return {
-        signal: 'PASS' as BetSignal,
-        confidenceScore: 0,
-        riskScore: 50,
-        volatility: 'Medium' as const,
-        injuryUncertainty: 'Low' as const,
-        reason: 'Data unavailable',
-      };
+    
+    // If we have enriched facts, use them
+    if (facts) {
+      return calculateBetQualification({
+        game: facts.game,
+        injuries: facts.injuries,
+        risk: facts.risk,
+        homeLast5: facts.recentForm.homeLast5,
+        awayLast5: facts.recentForm.awayLast5,
+      });
     }
     
+    // Otherwise, calculate qualification from the game data directly
+    // This ensures games from live data sources still get proper signals
     return calculateBetQualification({
-      game: facts.game,
-      injuries: facts.injuries,
-      risk: facts.risk,
-      homeLast5: facts.recentForm.homeLast5,
-      awayLast5: facts.recentForm.awayLast5,
+      game,
+      injuries: undefined,
+      risk: undefined,
+      homeLast5: undefined,
+      awayLast5: undefined,
     });
-  }, [game.id]);
+  }, [game]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
