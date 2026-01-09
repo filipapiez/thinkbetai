@@ -3,6 +3,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SEO } from '@/components/SEO';
 import { Link } from 'react-router-dom';
 import { 
   Heart, 
@@ -20,6 +21,12 @@ import {
 const AboutPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="About Us - Our AI Betting Story"
+        description="Learn how ThinkBetAI is revolutionizing sports betting with artificial intelligence. Discover our mission, values, and the technology behind our 67% accuracy rate."
+        keywords="about ThinkBetAI, AI betting company, sports betting technology, betting predictions team"
+        url="/about"
+      />
       <Header />
       
       <main className="flex-1">

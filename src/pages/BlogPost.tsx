@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SEO } from '@/components/SEO';
 import { Calendar, Clock, ArrowLeft, ArrowRight, User, Share2 } from 'lucide-react';
 import { getBlogPostBySlug, getRelatedPosts } from '@/lib/blogData';
 
@@ -30,6 +31,16 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={post.title}
+        description={post.excerpt}
+        keywords={post.tags.join(', ')}
+        url={`/blog/${post.slug}`}
+        type="article"
+        author={post.author}
+        publishedTime={post.publishedAt}
+        image={post.image}
+      />
       <Header />
       
       <main className="container py-8 md:py-12">

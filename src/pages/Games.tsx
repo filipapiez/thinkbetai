@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { SEO } from '@/components/SEO';
 import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Clock } from 'lucide-react';
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 
@@ -106,6 +107,12 @@ const Games = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Games - AI Sports Betting Predictions"
+        description="Browse upcoming games with AI-powered betting predictions. Get real-time odds analysis, injury reports, and smart picks for NFL, NBA, MLB, NHL and more."
+        keywords="sports betting picks, AI game predictions, betting odds, sports analysis, today's games betting"
+        url="/games"
+      />
       <Header />
       
       <main className="flex-1 py-8">
