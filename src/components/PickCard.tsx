@@ -1,13 +1,16 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Target, BarChart3, User } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, BarChart3, User, Check } from 'lucide-react';
 import type { Pick } from '@/hooks/usePicks';
+import { cn } from '@/lib/utils';
 
 interface PickCardProps {
   pick: Pick;
+  isSelected?: boolean;
+  onSelect?: (pick: Pick) => void;
 }
 
-export function PickCard({ pick }: PickCardProps) {
+export function PickCard({ pick, isSelected = false, onSelect }: PickCardProps) {
   const isMore = pick.direction === 'MORE';
   
   // Calculate signal based on confidence and hit rate
@@ -33,24 +36,46 @@ export function PickCard({ pick }: PickCardProps) {
     'Caesars': 'bg-yellow-500/20 text-yellow-300',
   };
 
+  const handleClick = () => {
+    if (onSelect) {
+      onSelect(pick);
+    }
+  };
+
   return (
-    <Card className="bg-card border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
-      <CardContent className="p-4">
+    <Card 
+      className={cn(
+        "bg-card border-border transition-all duration-300 hover:shadow-lg hover:shadow-primary/5",
+        onSelect && "cursor-pointer",
+        isSelected 
+          ? "border-primary ring-2 ring-primary/20" 
+          : "hover:border-primary/50"
+      )}
+      onClick={handleClick}
+    >
+      <CardContent className="p-4 relative">
+        {/* Selection Indicator */}
+        {isSelected && (
+          <div className="absolute top-3 right-3 h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+            <Check className="h-4 w-4 text-primary-foreground" />
+          </div>
+        )}
+
         {/* Header: Platform + Signal */}
         <div className="flex items-center justify-between mb-3">
           <Badge className={platformColors[pick.platform] || 'bg-muted text-muted-foreground'}>
             {pick.platform}
           </Badge>
-          <Badge variant="outline" className={signalColors[signal]}>
+          <Badge variant="outline" className={cn(signalColors[signal], isSelected && "mr-8")}>
             {signal}
           </Badge>
         </div>
 
         {/* Player Info */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             {pick.playerImage ? (
-              <img src={pick.playerImage} alt={pick.playerName} className="h-full w-full rounded-full object-cover" />
+              <img src={pick.playerImage} alt={pick.playerName} className="h-full w-full object-cover" />
             ) : (
               <User className="h-6 w-6 text-muted-foreground" />
             )}
