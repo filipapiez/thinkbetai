@@ -47,6 +47,10 @@ serve(async (req) => {
   try {
     const gameData: GameData = await req.json();
     
+    // Validate sport and normalize
+    const validatedSport = validateAndNormalizeSport(gameData.sport);
+    gameData.sport = validatedSport;
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY not configured");
@@ -56,12 +60,22 @@ serve(async (req) => {
       );
     }
 
-    // Build context for the AI
+    // Build context for the AI with sport-isolated data
     const context = buildGameContext(gameData);
+    const sportTerminology = getSportTerminology(validatedSport);
     
-    const systemPrompt = `You are an expert sports analyst providing concise, actionable betting insights. 
+    const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
 
-RULES:
+CRITICAL SPORT ISOLATION RULES:
+- This is a ${validatedSport} game ONLY
+- Use ONLY ${validatedSport} terminology: ${sportTerminology.terms.join(', ')}
+- Score format: ${sportTerminology.scoreFormat}
+- Period terminology: ${sportTerminology.periods}
+- NEVER reference other sports, their teams, players, or terminology
+- NEVER use basketball terms for football or vice versa
+- If data seems inconsistent with ${validatedSport}, flag it as questionable
+
+GENERAL RULES:
 - Never mention "scraping", "APIs", or data sources
 - Never make guarantees or promise wins
 - Be direct and confident in your analysis
@@ -86,7 +100,9 @@ OUTPUT FORMAT (JSON):
   "reasoning": "2-3 sentence explanation of the pick"
 }`;
 
-    const userPrompt = `Analyze this ${gameData.sport} matchup and provide betting insights:
+    const userPrompt = `Analyze this ${validatedSport} matchup and provide betting insights.
+
+IMPORTANT: All analysis must use ${validatedSport}-specific terminology only.
 
 ${context}
 
@@ -173,11 +189,82 @@ Respond with valid JSON only.`;
   }
 });
 
+// ============================================================================
+// SPORT VALIDATION AND TERMINOLOGY - CRITICAL FOR DATA ISOLATION
+// ============================================================================
+
+const SPORT_CONFIG: Record<string, { terms: string[]; scoreFormat: string; periods: string }> = {
+  'NBA': {
+    terms: ['points', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'three-pointers', 'free throws', 'paint points'],
+    scoreFormat: '90-120 points typical',
+    periods: 'quarters (4 x 12 minutes)',
+  },
+  'NFL': {
+    terms: ['touchdowns', 'field goals', 'yards', 'passes', 'rushing', 'sacks', 'interceptions', 'fumbles', 'first downs'],
+    scoreFormat: '14-35 points typical',
+    periods: 'quarters (4 x 15 minutes)',
+  },
+  'NHL': {
+    terms: ['goals', 'assists', 'saves', 'shots on goal', 'power play', 'penalty kill', 'face-offs', 'hits', 'blocked shots'],
+    scoreFormat: '2-5 goals typical',
+    periods: 'periods (3 x 20 minutes)',
+  },
+  'MLB': {
+    terms: ['runs', 'hits', 'RBIs', 'home runs', 'strikeouts', 'walks', 'ERA', 'batting average', 'innings'],
+    scoreFormat: '3-8 runs typical',
+    periods: 'innings (9 innings)',
+  },
+  'Soccer': {
+    terms: ['goals', 'assists', 'shots', 'possession', 'corners', 'fouls', 'cards', 'clean sheet', 'saves'],
+    scoreFormat: '0-4 goals typical',
+    periods: 'halves (2 x 45 minutes)',
+  },
+  'UFC': {
+    terms: ['knockouts', 'submissions', 'decisions', 'takedowns', 'strikes', 'ground control', 'reach', 'weight class'],
+    scoreFormat: 'Win by KO/TKO/SUB/DEC',
+    periods: 'rounds (3 or 5 x 5 minutes)',
+  },
+  'Tennis': {
+    terms: ['sets', 'games', 'aces', 'double faults', 'break points', 'winners', 'unforced errors', 'first serve %'],
+    scoreFormat: 'Sets (best of 3 or 5)',
+    periods: 'sets and games',
+  },
+  'Boxing': {
+    terms: ['knockouts', 'decisions', 'rounds', 'punches landed', 'jabs', 'power punches', 'knockdowns', 'cuts'],
+    scoreFormat: 'Win by KO/TKO/DEC',
+    periods: 'rounds (12 x 3 minutes)',
+  },
+};
+
+function validateAndNormalizeSport(sport: string): string {
+  const normalized = (sport || '').toLowerCase().trim();
+  
+  // Map variations to canonical names
+  const sportMap: Record<string, string> = {
+    'nba': 'NBA', 'basketball': 'NBA', 'ncaab': 'NCAAB',
+    'nfl': 'NFL', 'football': 'NFL', 'ncaaf': 'NCAAF', 'american football': 'NFL',
+    'nhl': 'NHL', 'hockey': 'NHL', 'ice hockey': 'NHL',
+    'mlb': 'MLB', 'baseball': 'MLB',
+    'soccer': 'Soccer', 'football (soccer)': 'Soccer', 'epl': 'Soccer', 'premier league': 'Soccer',
+    'la liga': 'Soccer', 'bundesliga': 'Soccer', 'serie a': 'Soccer', 'mls': 'Soccer',
+    'ufc': 'UFC', 'mma': 'UFC', 'mixed martial arts': 'UFC',
+    'tennis': 'Tennis', 'atp': 'Tennis', 'wta': 'Tennis',
+    'boxing': 'Boxing',
+  };
+  
+  return sportMap[normalized] || sport || 'NBA';
+}
+
+function getSportTerminology(sport: string): { terms: string[]; scoreFormat: string; periods: string } {
+  return SPORT_CONFIG[sport] || SPORT_CONFIG['NBA'];
+}
+
 function buildGameContext(data: GameData): string {
   const lines: string[] = [];
+  const sport = data.sport;
   
   lines.push(`MATCHUP: ${data.homeTeam} (Home) vs ${data.awayTeam} (Away)`);
-  lines.push(`SPORT: ${data.sport}`);
+  lines.push(`SPORT: ${sport}`);
   lines.push('');
   
   // Odds
@@ -195,7 +282,7 @@ function buildGameContext(data: GameData): string {
     lines.push('');
   }
   
-  // Injuries
+  // Injuries - validate positions match sport
   if (data.injuries && data.injuries.length > 0) {
     lines.push('INJURIES:');
     const homeInjuries = data.injuries.filter(i => i.team === data.homeTeam);
