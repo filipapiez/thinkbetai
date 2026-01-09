@@ -241,8 +241,8 @@ function parseScrapedData(
   }
 
   recentForm.push(
-    { team: homeTeam, last5: generateLast5Games() },
-    { team: awayTeam, last5: generateLast5Games() }
+    { team: homeTeam, last5: generateLast5Games(sport) },
+    { team: awayTeam, last5: generateLast5Games(sport) }
   );
 
   // Parse head to head
@@ -303,8 +303,8 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
   }
 
   const recentForm = [
-    { team: homeTeam, last5: generateLast5Games() },
-    { team: awayTeam, last5: generateLast5Games() }
+    { team: homeTeam, last5: generateLast5Games(sport) },
+    { team: awayTeam, last5: generateLast5Games(sport) }
   ];
 
   const headToHead: ScrapedGameData['headToHead'] = [];
@@ -329,17 +329,68 @@ function generateRealisticData(homeTeam: string, awayTeam: string, sport: string
   return { injuries, recentForm, headToHead, teamStats, analysis };
 }
 
-function generateLast5Games(): { opponent: string; result: 'W' | 'L'; score: string; date: string }[] {
-  const opponents = ['Lakers', 'Celtics', 'Warriors', 'Heat', 'Nuggets', 'Bucks', 'Suns', 'Nets', '76ers', 'Clippers'];
+// ============================================================================
+// SPORT-ISOLATED DATA - CRITICAL: Never mix sport data
+// ============================================================================
+
+// Sport-specific team names - NEVER use across sports
+const SPORT_TEAMS: Record<string, string[]> = {
+  'nba': ['Lakers', 'Celtics', 'Warriors', 'Heat', 'Nuggets', 'Bucks', 'Suns', 'Nets', '76ers', 'Clippers'],
+  'ncaab': ['Duke', 'Kentucky', 'Kansas', 'UNC', 'Gonzaga', 'UCLA', 'Villanova', 'Purdue', 'Houston', 'UConn'],
+  'nfl': ['Chiefs', 'Eagles', '49ers', 'Bills', 'Cowboys', 'Ravens', 'Bengals', 'Lions', 'Dolphins', 'Packers'],
+  'ncaaf': ['Alabama', 'Georgia', 'Ohio State', 'Michigan', 'Texas', 'Clemson', 'Oklahoma', 'LSU', 'Penn State', 'Oregon'],
+  'nhl': ['Bruins', 'Avalanche', 'Rangers', 'Oilers', 'Panthers', 'Stars', 'Lightning', 'Maple Leafs', 'Devils', 'Golden Knights'],
+  'mlb': ['Yankees', 'Dodgers', 'Braves', 'Astros', 'Mets', 'Phillies', 'Cardinals', 'Rangers', 'Orioles', 'Cubs'],
+  'soccer': ['Arsenal', 'Man City', 'Liverpool', 'Chelsea', 'Real Madrid', 'Barcelona', 'Bayern', 'PSG', 'Inter', 'Juventus'],
+  'mma': ['Fighter A', 'Fighter B', 'Fighter C', 'Fighter D', 'Fighter E', 'Fighter F', 'Fighter G', 'Fighter H', 'Fighter I', 'Fighter J'],
+  'tennis': ['Djokovic', 'Alcaraz', 'Sinner', 'Medvedev', 'Rune', 'Ruud', 'Tsitsipas', 'Zverev', 'Fritz', 'Tiafoe'],
+  'boxing': ['Fighter A', 'Fighter B', 'Fighter C', 'Fighter D', 'Fighter E', 'Fighter F', 'Fighter G', 'Fighter H', 'Fighter I', 'Fighter J'],
+  'golf': ['Player A', 'Player B', 'Player C', 'Player D', 'Player E', 'Player F', 'Player G', 'Player H', 'Player I', 'Player J'],
+  'cricket': ['India', 'Australia', 'England', 'South Africa', 'New Zealand', 'Pakistan', 'West Indies', 'Sri Lanka', 'Bangladesh', 'Afghanistan'],
+  'rugby': ['All Blacks', 'Springboks', 'Wallabies', 'England', 'Ireland', 'France', 'Wales', 'Scotland', 'Argentina', 'Japan'],
+};
+
+// Sport-specific positions - NEVER use across sports
+const SPORT_POSITIONS: Record<string, string[]> = {
+  'nba': ['PG', 'SG', 'SF', 'PF', 'C'],
+  'ncaab': ['G', 'F', 'C'],
+  'nfl': ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S'],
+  'ncaaf': ['QB', 'RB', 'WR', 'OL', 'DL', 'LB', 'DB'],
+  'nhl': ['C', 'LW', 'RW', 'D', 'G'],
+  'mlb': ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'],
+  'soccer': ['GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST'],
+  'mma': ['Fighter'],
+  'tennis': ['Player'],
+  'boxing': ['Fighter'],
+  'golf': ['Golfer'],
+  'cricket': ['Batsman', 'Bowler', 'Wicketkeeper', 'All-rounder'],
+  'rugby': ['Prop', 'Hooker', 'Lock', 'Flanker', 'Number 8', 'Scrum-half', 'Fly-half', 'Centre', 'Wing', 'Fullback'],
+};
+
+// Validate sport and return safe fallback
+function normalizeSportKey(sport: string): string {
+  const normalized = (sport || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (SPORT_TEAMS[normalized]) return normalized;
+  // Fallback mappings
+  if (['basketball'].includes(normalized)) return 'nba';
+  if (['football', 'americanfootball'].includes(normalized)) return 'nfl';
+  if (['hockey', 'icehockey'].includes(normalized)) return 'nhl';
+  if (['baseball'].includes(normalized)) return 'mlb';
+  return 'nba'; // Safe default
+}
+
+function generateLast5Games(sport: string): { opponent: string; result: 'W' | 'L'; score: string; date: string }[] {
+  const sportKey = normalizeSportKey(sport);
+  const opponents = SPORT_TEAMS[sportKey] || SPORT_TEAMS['nba'];
   const games = [];
   
   for (let i = 0; i < 5; i++) {
     const isWin = Math.random() > 0.4;
+    const score = generateScoreForSport(sportKey, isWin);
     games.push({
       opponent: opponents[Math.floor(Math.random() * opponents.length)],
       result: isWin ? 'W' as const : 'L' as const,
-      score: isWin ? `${105 + Math.floor(Math.random() * 25)}-${95 + Math.floor(Math.random() * 15)}` 
-                   : `${95 + Math.floor(Math.random() * 15)}-${105 + Math.floor(Math.random() * 25)}`,
+      score,
       date: getDateDaysAgo(i * 3 + 1),
     });
   }
@@ -347,34 +398,61 @@ function generateLast5Games(): { opponent: string; result: 'W' | 'L'; score: str
   return games;
 }
 
-function generateScore(sport: string): string {
-  switch (sport?.toUpperCase()) {
-    case 'NBA':
-    case 'NCAAB':
-      return `${100 + Math.floor(Math.random() * 30)}-${95 + Math.floor(Math.random() * 25)}`;
-    case 'NFL':
-    case 'NCAAF':
-      return `${21 + Math.floor(Math.random() * 21)}-${14 + Math.floor(Math.random() * 21)}`;
-    case 'NHL':
-      return `${2 + Math.floor(Math.random() * 4)}-${1 + Math.floor(Math.random() * 3)}`;
-    case 'MLB':
-      return `${3 + Math.floor(Math.random() * 7)}-${2 + Math.floor(Math.random() * 5)}`;
+function generateScoreForSport(sportKey: string, isWin: boolean): string {
+  const winnerScore = (base: number, variance: number) => base + Math.floor(Math.random() * variance);
+  const loserScore = (base: number, variance: number) => base + Math.floor(Math.random() * variance);
+
+  switch (sportKey) {
+    case 'nba':
+    case 'ncaab':
+      return isWin 
+        ? `${winnerScore(105, 25)}-${loserScore(95, 15)}`
+        : `${loserScore(95, 15)}-${winnerScore(105, 25)}`;
+    case 'nfl':
+    case 'ncaaf':
+      return isWin 
+        ? `${winnerScore(24, 17)}-${loserScore(14, 14)}`
+        : `${loserScore(14, 14)}-${winnerScore(24, 17)}`;
+    case 'nhl':
+      return isWin 
+        ? `${winnerScore(3, 3)}-${loserScore(1, 2)}`
+        : `${loserScore(1, 2)}-${winnerScore(3, 3)}`;
+    case 'mlb':
+      return isWin 
+        ? `${winnerScore(5, 5)}-${loserScore(2, 4)}`
+        : `${loserScore(2, 4)}-${winnerScore(5, 5)}`;
+    case 'soccer':
+      return isWin 
+        ? `${winnerScore(2, 3)}-${loserScore(0, 2)}`
+        : `${loserScore(0, 2)}-${winnerScore(2, 3)}`;
+    case 'mma':
+    case 'boxing':
+      return isWin ? 'W' : 'L'; // Combat sports don't have traditional scores
+    case 'tennis':
+      return isWin ? '2-0' : '0-2'; // Sets
+    case 'cricket':
+      return isWin 
+        ? `${winnerScore(280, 70)}-${loserScore(200, 60)}`
+        : `${loserScore(200, 60)}-${winnerScore(280, 70)}`;
+    case 'rugby':
+      return isWin 
+        ? `${winnerScore(24, 20)}-${loserScore(14, 14)}`
+        : `${loserScore(14, 14)}-${winnerScore(24, 20)}`;
     default:
-      return `${100 + Math.floor(Math.random() * 20)}-${95 + Math.floor(Math.random() * 15)}`;
+      return isWin ? '1-0' : '0-1';
   }
 }
 
+function generateScore(sport: string): string {
+  const sportKey = normalizeSportKey(sport);
+  const isWin = Math.random() > 0.5;
+  return generateScoreForSport(sportKey, isWin);
+}
+
 function getPositionForSport(sport: string): string {
-  const positions: Record<string, string[]> = {
-    'nba': ['PG', 'SG', 'SF', 'PF', 'C'],
-    'ncaab': ['G', 'F', 'C'],
-    'nfl': ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S'],
-    'ncaaf': ['QB', 'RB', 'WR', 'OL', 'DL', 'LB', 'DB'],
-    'nhl': ['C', 'LW', 'RW', 'D', 'G'],
-    'mlb': ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'],
-  };
-  const sportPositions = positions[sport?.toLowerCase()] || positions['nba'];
-  return sportPositions[Math.floor(Math.random() * sportPositions.length)];
+  const sportKey = normalizeSportKey(sport);
+  const positions = SPORT_POSITIONS[sportKey] || ['Player'];
+  return positions[Math.floor(Math.random() * positions.length)];
 }
 
 function getDateDaysAgo(days: number): string {
