@@ -31,6 +31,7 @@ interface AIAnalysisCardProps {
   game: LiveGame;
   qualification: LiveBetQualification | null;
   scrapedData: ScrapedGameData | null;
+  riskAssessment?: { level: 'Low' | 'Medium' | 'High'; score: number } | null;
 }
 
 type TieredSignal = 'STRONG_VALUE' | 'QUALIFIED' | 'RISKY' | 'AVOID';
@@ -102,7 +103,7 @@ function getFactorIcon(label: string, positive: boolean) {
   return positive ? CheckCircle2 : AlertTriangle;
 }
 
-export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisCardProps) => {
+export const AIAnalysisCard = ({ game, qualification, scrapedData, riskAssessment }: AIAnalysisCardProps) => {
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -120,6 +121,11 @@ export const AIAnalysisCard = ({ game, qualification, scrapedData }: AIAnalysisC
           signal: qualification.signal,
           confidenceScore: qualification.confidenceScore,
           pick: qualification.pick,
+        } : undefined,
+        // Pass the initial risk so AI aligns with risk assessment
+        initialRisk: riskAssessment ? {
+          level: riskAssessment.level,
+          score: riskAssessment.score,
         } : undefined,
         odds: game.odds ? {
           moneyline: game.odds.moneyline,

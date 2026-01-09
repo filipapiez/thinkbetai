@@ -14,6 +14,10 @@ interface GameData {
     confidenceScore: number;
     pick?: 'home' | 'away';
   };
+  initialRisk?: {
+    level: 'Low' | 'Medium' | 'High';
+    score: number;
+  };
   odds?: {
     moneyline?: { home: number; away: number };
     spread?: { home: number; away: number };
@@ -72,6 +76,7 @@ serve(async (req) => {
     // Extract initial qualification signal if provided
     const initialSignal = gameData.initialQualification?.signal || null;
     const initialConfidence = gameData.initialQualification?.confidenceScore || null;
+    const initialRisk = gameData.initialRisk?.level || null;
     
     const signalGuidance = initialSignal 
       ? `\nINITIAL ODDS-BASED SIGNAL: ${initialSignal} (${initialConfidence}% confidence)
@@ -79,6 +84,12 @@ serve(async (req) => {
 - Downgrade from GOOD to AVOID only if: major injury to star player, terrible recent form (0-5 or 1-4), or lopsided H2H against the pick
 - If initial signal is GOOD and data supports it, use STRONG_VALUE or QUALIFIED
 - If initial signal is PASS, you may upgrade to RISKY if you see value, but never to QUALIFIED/STRONG_VALUE without strong evidence`
+      : '';
+    
+    const riskGuidance = initialRisk
+      ? `\nINITIAL RISK LEVEL: ${initialRisk}
+- You MUST use this same risk level (${initialRisk}) in your output unless there's a critical reason to differ
+- Only deviate if you find major new risk factors not captured in the odds analysis`
       : '';
 
     const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
@@ -92,6 +103,7 @@ CRITICAL SPORT ISOLATION RULES:
 - NEVER use basketball terms for football or vice versa
 - If data seems inconsistent with ${validatedSport}, flag it as questionable
 ${signalGuidance}
+${riskGuidance}
 
 GENERAL RULES:
 - Never mention "scraping", "APIs", or data sources

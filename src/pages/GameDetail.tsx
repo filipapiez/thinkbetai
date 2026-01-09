@@ -646,6 +646,7 @@ const GameDetail = () => {
               game={game}
               qualification={qualification}
               scrapedData={scrapedData}
+              riskAssessment={risk}
             />
           </div>
           
