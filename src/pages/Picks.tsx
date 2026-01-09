@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  Search, Filter, X, TrendingUp, TrendingDown, Info, RefreshCw, 
+  Search, Filter, X, TrendingUp, TrendingDown, RefreshCw, 
   Loader2, Clock, Target, ChevronDown 
 } from 'lucide-react';
 import { usePicks, type Pick } from '@/hooks/usePicks';
@@ -79,23 +79,54 @@ const Picks = () => {
     return counts;
   }, [picks]);
 
-  // Count picks per platform
-  const platformCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Count picks and win rates per platform
+  const platformStats = useMemo(() => {
+    const stats: Record<string, { count: number; totalHitRate: number; withHitRate: number }> = {};
     picks.forEach(p => {
-      counts[p.platform] = (counts[p.platform] || 0) + 1;
+      if (!stats[p.platform]) stats[p.platform] = { count: 0, totalHitRate: 0, withHitRate: 0 };
+      stats[p.platform].count++;
+      if (p.hitRate) {
+        stats[p.platform].totalHitRate += p.hitRate;
+        stats[p.platform].withHitRate++;
+      }
     });
-    return counts;
+    return stats;
   }, [picks]);
 
-  // Count picks per sport
-  const sportCounts = useMemo(() => {
+  const platformCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    picks.forEach(p => {
-      counts[p.sport] = (counts[p.sport] || 0) + 1;
+    Object.entries(platformStats).forEach(([platform, stats]) => {
+      counts[platform] = stats.count;
     });
     return counts;
+  }, [platformStats]);
+
+  // Count picks and win rates per sport
+  const sportStats = useMemo(() => {
+    const stats: Record<string, { count: number; totalHitRate: number; withHitRate: number }> = {};
+    picks.forEach(p => {
+      if (!stats[p.sport]) stats[p.sport] = { count: 0, totalHitRate: 0, withHitRate: 0 };
+      stats[p.sport].count++;
+      if (p.hitRate) {
+        stats[p.sport].totalHitRate += p.hitRate;
+        stats[p.sport].withHitRate++;
+      }
+    });
+    return stats;
   }, [picks]);
+
+  const sportCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    Object.entries(sportStats).forEach(([sport, stats]) => {
+      counts[sport] = stats.count;
+    });
+    return counts;
+  }, [sportStats]);
+
+  const getWinRate = (stats: { totalHitRate: number; withHitRate: number }) => {
+    if (stats.withHitRate === 0) return null;
+    return Math.round(stats.totalHitRate / stats.withHitRate);
+  };
 
   // Filter picks
   const filteredPicks = useMemo(() => {
@@ -247,14 +278,22 @@ const Picks = () => {
                     All Platforms ({picks.length})
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {platforms.map(platform => (
-                    <DropdownMenuItem 
-                      key={platform}
-                      onClick={() => setSelectedPlatform(platform)}
-                    >
-                      {platform} ({platformCounts[platform] || 0})
-                    </DropdownMenuItem>
-                  ))}
+                  {platforms.map(platform => {
+                    const stats = platformStats[platform];
+                    const winRate = stats ? getWinRate(stats) : null;
+                    return (
+                      <DropdownMenuItem 
+                        key={platform}
+                        onClick={() => setSelectedPlatform(platform)}
+                        className="flex justify-between"
+                      >
+                        <span>{platform} ({platformCounts[platform] || 0})</span>
+                        {winRate !== null && (
+                          <span className="text-xs text-emerald-400 ml-2">{winRate}% WR</span>
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -290,14 +329,22 @@ const Picks = () => {
                     All Sports ({picks.length})
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {availableSports.map(sport => (
-                    <DropdownMenuItem 
-                      key={sport}
-                      onClick={() => { setSelectedSport(sport); setSelectedPropType(null); }}
-                    >
-                      {sport} ({sportCounts[sport] || 0})
-                    </DropdownMenuItem>
-                  ))}
+                  {availableSports.map(sport => {
+                    const stats = sportStats[sport];
+                    const winRate = stats ? getWinRate(stats) : null;
+                    return (
+                      <DropdownMenuItem 
+                        key={sport}
+                        onClick={() => { setSelectedSport(sport); setSelectedPropType(null); }}
+                        className="flex justify-between"
+                      >
+                        <span>{sport} ({sportCounts[sport] || 0})</span>
+                        {winRate !== null && (
+                          <span className="text-xs text-emerald-400 ml-2">{winRate}% WR</span>
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -445,16 +492,12 @@ const Picks = () => {
             </div>
           )}
 
-          {/* Results Count & Disclaimer */}
+          {/* Results Count */}
           {filteredPicks.length > 0 && (
-            <div className="text-center mt-8 space-y-2">
+            <div className="text-center mt-8">
               <p className="text-sm text-muted-foreground">
                 Showing {filteredPicks.length} of {picks.length} picks
               </p>
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Info className="h-3 w-3" />
-                <span>Data sourced from RotoWire. Updated every 15 minutes. For entertainment purposes only.</span>
-              </div>
             </div>
           )}
         </div>
