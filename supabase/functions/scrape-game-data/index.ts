@@ -48,8 +48,54 @@ function sanitizeTeamName(name: unknown): string | null {
 
 function validateSport(sport: unknown): string {
   if (typeof sport !== 'string') return 'nba';
-  const normalized = sport.toLowerCase().replace(/[^a-z]/g, '');
+  const raw = sport.toLowerCase().trim();
+  const normalized = raw.replace(/[^a-z]/g, '');
+
+  // Soccer vs American football
+  if (raw.includes('soccer')) return 'soccer';
+  if (raw.includes('football')) {
+    if (raw.includes('nfl') || raw.includes('american')) return 'nfl';
+    // In most international contexts "Football" = soccer
+    return 'soccer';
+  }
+
+  if (raw.includes('nba') || raw.includes('basketball')) return 'nba';
+  if ((raw.includes('ncaa') || raw.includes('ncaab')) && raw.includes('basketball')) return 'ncaab';
+  if ((raw.includes('ncaa') || raw.includes('ncaaf')) && raw.includes('football')) return 'ncaaf';
+
+  if (raw.includes('mlb') || raw.includes('baseball')) return 'mlb';
+  if (raw.includes('nhl') || raw.includes('hockey')) return 'nhl';
+  if (raw.includes('mma') || raw.includes('ufc')) return 'mma';
+  if (raw.includes('tennis')) return 'tennis';
+  if (raw.includes('boxing')) return 'boxing';
+  if (raw.includes('golf')) return 'golf';
+  if (raw.includes('cricket')) return 'cricket';
+  if (raw.includes('rugby')) return 'rugby';
+
   return ALLOWED_SPORTS.includes(normalized) ? normalized : 'nba';
+}
+
+function buildNoDataGameData(homeTeam: string, awayTeam: string, sport: string): ScrapedGameData {
+  const sportValidation = getSportValidation(sport);
+
+  return {
+    injuries: [],
+    recentForm: [
+      { team: homeTeam, last5: [], limitedData: true, isGenerated: false },
+      { team: awayTeam, last5: [], limitedData: true, isGenerated: false },
+    ],
+    headToHead: [],
+    headToHeadMeta: {
+      limitedData: true,
+      validMatchCount: 0,
+      message: 'No verified historical data found for this matchup.',
+      isGenerated: false,
+    },
+    teamStats: [],
+    analysis: 'No verified historical results available from sources. We do not simulate or guess results.',
+    sportValidation,
+    dataSource: 'partial',
+  };
 }
 
 interface ScrapedGameData {
