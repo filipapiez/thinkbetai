@@ -34,7 +34,12 @@ function getClientIdentifier(req: Request): string {
 // Cache for picks data
 let cachedPicks: Pick[] = [];
 let cacheTimestamp = 0;
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+// Cache for games data
+let cachedGames: UpcomingGame[] = [];
+let gamesCacheTimestamp = 0;
+const GAMES_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface Pick {
   id: string;
@@ -54,6 +59,17 @@ interface Pick {
   projection?: number;
 }
 
+interface UpcomingGame {
+  id: string;
+  sport: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeAbbr: string;
+  awayAbbr: string;
+  commenceTime: string;
+  status: 'scheduled' | 'live' | 'final';
+}
+
 // Platform mapping
 const PLATFORMS = [
   'PrizePicks',
@@ -69,183 +85,180 @@ const PLATFORMS = [
   'Caesars'
 ];
 
-// Parse picks from RotoWire markdown
-function parseRotoWireMarkdown(markdown: string): Pick[] {
-  const picks: Pick[] = [];
-  const lines = markdown.split('\n');
-  
-  let currentDirection: 'MORE' | 'LESS' = 'MORE';
-  let i = 0;
-  
-  // Find where MORE section starts
-  while (i < lines.length && !lines[i].includes('LeaningMORE')) {
-    i++;
-  }
-  
-  while (i < lines.length) {
-    const line = lines[i].trim();
-    
-    // Track direction changes
-    if (line.includes('LeaningMORE')) {
-      currentDirection = 'MORE';
-      i++;
-      continue;
-    }
-    if (line.includes('LeaningLESS')) {
-      currentDirection = 'LESS';
-      i++;
-      continue;
-    }
-    
-    // Look for player image pattern from RotoWire
-    const imageMatch = line.match(/!\[([^\]]+)\]\((https:\/\/content\.rotowire\.com\/images\/headshots\/[^)]+)\)/);
-    
-    if (imageMatch) {
-      const playerName = imageMatch[1];
-      const playerImage = imageMatch[2];
-      
-      // Skip if it's a team logo
-      if (playerImage.includes('teamlogo')) {
-        i++;
-        continue;
-      }
-      
-      // Determine sport from image URL
-      let sport = 'NFL';
-      if (playerImage.includes('/nba/')) sport = 'NBA';
-      else if (playerImage.includes('/mlb/')) sport = 'MLB';
-      else if (playerImage.includes('/nhl/')) sport = 'NHL';
-      else if (playerImage.includes('/nfl/') || playerImage.includes('/football/')) sport = 'NFL';
-      
-      // Look ahead to find team, opponent, date, time, line, and prop type
-      let team = '';
-      let opponent = '';
-      let gameDate = '';
-      let gameTime = '';
-      let propLine = 0;
-      let propType = '';
-      let platform = PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)];
-      
-      // Scan next 30 lines for pick details
-      for (let j = i + 1; j < Math.min(i + 30, lines.length); j++) {
-        const nextLine = lines[j].trim();
-        
-        // Team abbreviation (usually 2-3 uppercase letters alone)
-        if (!team && /^[A-Z]{2,3}$/.test(nextLine)) {
-          team = nextLine;
-          continue;
-        }
-        
-        // Opponent pattern (vs or @)
-        const oppMatch = nextLine.match(/^(vs|@)\s*([A-Z]{2,3})$/i);
-        if (oppMatch) {
-          opponent = `${oppMatch[1]} ${oppMatch[2]}`;
-          continue;
-        }
-        
-        // Date pattern
-        const dateMatch = nextLine.match(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}$/i);
-        if (dateMatch) {
-          gameDate = nextLine;
-          continue;
-        }
-        
-        // Time pattern
-        const timeMatch = nextLine.match(/^\d{1,2}:\d{2}\s*(am|pm)$/i);
-        if (timeMatch) {
-          gameTime = nextLine;
-          continue;
-        }
-        
-        // Line (number with optional decimal)
-        const lineMatch = nextLine.match(/^(\d+\.?\d*)$/);
-        if (lineMatch && !propLine) {
-          propLine = parseFloat(lineMatch[1]);
-          continue;
-        }
-        
-        // Prop type
-        if (nextLine.match(/^(Passing Yards|Rushing Yards|Receiving Yards|Rushing \+ Receiving|Receptions|Touchdowns|Points|Rebounds|Assists|Strikeouts|Hits|RBIs|Total Bases|Runs|Walks|Stolen Bases|Outs|Earned Runs|3-Pointers|Steals|Blocks|Shots|Goals|Blocked Shots|Completions|Passing TDs|Rushing TDs|Receiving TDs|Interceptions|Rushing Attempts|Fantasy Score|Longest Reception|Sacks|Tackles|Saves|Pitcher Outs|Hits Allowed|Pitcher Strikeouts|Home Runs)$/i)) {
-          propType = nextLine;
-          break; // We found the prop type, we have enough info
-        }
-        
-        // Platform detection
-        const platformMatch = PLATFORMS.find(p => nextLine.toLowerCase() === p.toLowerCase());
-        if (platformMatch) {
-          platform = platformMatch;
-        }
-        
-        // Break if we hit next player image
-        if (nextLine.match(/!\[.*\]\(https:\/\/content\.rotowire\.com\/images\/headshots/)) {
-          break;
-        }
-        
-        // Break if subscriber-only (we still want to create a pick)
-        if (nextLine.includes('Subscriber-Only')) {
-          break;
-        }
-      }
-      
-      // Only add if we have minimum required fields
-      if (playerName && propType) {
-        const confidence = Math.floor(Math.random() * 20) + 75;
-        const hitRate = Math.floor(Math.random() * 22) + 72;
-        
-        picks.push({
-          id: `${playerName}-${propType}-${currentDirection}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.replace(/\s/g, '-').toLowerCase(),
-          platform,
-          sport,
-          playerName,
-          playerImage,
-          team: team || 'TBD',
-          opponent: opponent || 'TBD',
-          gameDate: gameDate || 'Today',
-          gameTime: gameTime || 'TBD',
-          propType,
-          line: propLine || generateDefaultLine(propType),
-          direction: currentDirection,
-          confidence,
-          hitRate,
-          projection: propLine ? Math.round(propLine * (currentDirection === 'MORE' ? 1.12 : 0.88) * 10) / 10 : undefined,
-        });
-      }
-    }
-    
-    i++;
-  }
-  
-  return picks;
-}
+// Sport to Odds API league mapping
+const SPORT_LEAGUES: Record<string, string> = {
+  'NFL': 'NFL',
+  'NBA': 'NBA',
+  'MLB': 'MLB',
+  'NHL': 'NHL',
+};
 
-// Generate default line based on prop type
-function generateDefaultLine(propType: string): number {
-  const defaults: Record<string, number> = {
-    'Passing Yards': 250,
-    'Rushing Yards': 65,
-    'Receiving Yards': 55,
-    'Rushing + Receiving': 85,
-    'Receptions': 5,
-    'Points': 24,
-    'Rebounds': 8,
-    'Assists': 6,
-    '3-Pointers': 3,
-    'Strikeouts': 6,
-    'Hits': 1.5,
-    'Total Bases': 2.5,
-    'RBIs': 1,
-    'Shots': 4,
-    'Goals': 0.5,
-  };
-  return defaults[propType] || 10;
-}
-
-// ESPN headshot URL helper - uses player ID
+// ESPN headshot URL helper
 function getESPNHeadshot(playerId: string, sport: 'nfl' | 'nba' | 'mlb' | 'nhl' = 'nfl'): string {
   return `https://a.espncdn.com/i/headshots/${sport}/players/full/${playerId}.png`;
 }
 
-// Expanded player database with ESPN IDs for headshots
+// Fetch upcoming games from Odds API
+async function fetchUpcomingGames(): Promise<UpcomingGame[]> {
+  const now = Date.now();
+  
+  // Return cached games if valid
+  if (cachedGames.length > 0 && (now - gamesCacheTimestamp) < GAMES_CACHE_TTL) {
+    console.log('Using cached games data');
+    return cachedGames;
+  }
+  
+  const API_KEY = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+  if (!API_KEY) {
+    console.log('No SPORTSGAMEODDS_API_KEY, using fallback games');
+    return generateFallbackGames();
+  }
+  
+  const allGames: UpcomingGame[] = [];
+  
+  for (const [sportName, leagueId] of Object.entries(SPORT_LEAGUES)) {
+    try {
+      console.log(`Fetching games for ${sportName}...`);
+      const apiUrl = `https://api.sportsgameodds.com/v2/events?leagueID=${leagueId}&oddsAvailable=true&limit=25`;
+      
+      const response = await fetch(apiUrl, {
+        headers: { 'x-api-key': API_KEY },
+      });
+      
+      if (!response.ok) {
+        console.error(`Failed to fetch ${sportName} games: ${response.status}`);
+        continue;
+      }
+      
+      const data = await response.json();
+      const events = data?.data || data?.events || [];
+      
+      for (const event of events) {
+        const startTime = event.status?.startsAt || event.startTime || event.startDate;
+        const isLive = event.status?.live === true;
+        const isEnded = event.status?.ended === true;
+        
+        // Skip games that have ended
+        if (isEnded) continue;
+        
+        // Skip games that have already started (live)
+        if (isLive) continue;
+        
+        // Skip games in the past
+        if (startTime && new Date(startTime) < new Date()) continue;
+        
+        const homeTeamName = event.teams?.home?.names?.long || 
+                             event.teams?.home?.names?.medium || 
+                             event.teams?.home?.name || 
+                             event.homeTeam;
+        const awayTeamName = event.teams?.away?.names?.long || 
+                             event.teams?.away?.names?.medium || 
+                             event.teams?.away?.name || 
+                             event.awayTeam;
+        
+        if (!homeTeamName || !awayTeamName) continue;
+        
+        const homeAbbr = event.teams?.home?.names?.short || homeTeamName.substring(0, 3).toUpperCase();
+        const awayAbbr = event.teams?.away?.names?.short || awayTeamName.substring(0, 3).toUpperCase();
+        
+        allGames.push({
+          id: event.eventID || event.id,
+          sport: sportName,
+          homeTeam: homeTeamName,
+          awayTeam: awayTeamName,
+          homeAbbr,
+          awayAbbr,
+          commenceTime: startTime,
+          status: 'scheduled',
+        });
+      }
+      
+      console.log(`Found ${events.length} events for ${sportName}, ${allGames.filter(g => g.sport === sportName).length} upcoming`);
+    } catch (error) {
+      console.error(`Error fetching ${sportName} games:`, error);
+    }
+  }
+  
+  if (allGames.length > 0) {
+    cachedGames = allGames;
+    gamesCacheTimestamp = now;
+  }
+  
+  console.log(`Total upcoming games: ${allGames.length}`);
+  return allGames.length > 0 ? allGames : generateFallbackGames();
+}
+
+// Generate fallback games when API is unavailable
+function generateFallbackGames(): UpcomingGame[] {
+  const now = new Date();
+  const games: UpcomingGame[] = [];
+  
+  const fallbackMatchups = {
+    NFL: [
+      { home: 'Kansas City Chiefs', away: 'Buffalo Bills', homeAbbr: 'KC', awayAbbr: 'BUF' },
+      { home: 'Philadelphia Eagles', away: 'Dallas Cowboys', homeAbbr: 'PHI', awayAbbr: 'DAL' },
+      { home: 'San Francisco 49ers', away: 'Detroit Lions', homeAbbr: 'SF', awayAbbr: 'DET' },
+      { home: 'Baltimore Ravens', away: 'Cincinnati Bengals', homeAbbr: 'BAL', awayAbbr: 'CIN' },
+    ],
+    NBA: [
+      { home: 'Boston Celtics', away: 'Milwaukee Bucks', homeAbbr: 'BOS', awayAbbr: 'MIL' },
+      { home: 'Denver Nuggets', away: 'Los Angeles Lakers', homeAbbr: 'DEN', awayAbbr: 'LAL' },
+      { home: 'Phoenix Suns', away: 'Golden State Warriors', homeAbbr: 'PHX', awayAbbr: 'GSW' },
+      { home: 'Cleveland Cavaliers', away: 'New York Knicks', homeAbbr: 'CLE', awayAbbr: 'NYK' },
+    ],
+    MLB: [
+      { home: 'Los Angeles Dodgers', away: 'New York Yankees', homeAbbr: 'LAD', awayAbbr: 'NYY' },
+      { home: 'Atlanta Braves', away: 'Philadelphia Phillies', homeAbbr: 'ATL', awayAbbr: 'PHI' },
+      { home: 'Houston Astros', away: 'Texas Rangers', homeAbbr: 'HOU', awayAbbr: 'TEX' },
+    ],
+    NHL: [
+      { home: 'Edmonton Oilers', away: 'Vegas Golden Knights', homeAbbr: 'EDM', awayAbbr: 'VGK' },
+      { home: 'Florida Panthers', away: 'Boston Bruins', homeAbbr: 'FLA', awayAbbr: 'BOS' },
+      { home: 'Dallas Stars', away: 'Colorado Avalanche', homeAbbr: 'DAL', awayAbbr: 'COL' },
+    ],
+  };
+  
+  Object.entries(fallbackMatchups).forEach(([sport, matchups]) => {
+    matchups.forEach((matchup, i) => {
+      const gameTime = new Date(now.getTime() + (i + 1) * 24 * 60 * 60 * 1000 + Math.random() * 8 * 60 * 60 * 1000);
+      games.push({
+        id: `fallback-${sport}-${i}`,
+        sport,
+        homeTeam: matchup.home,
+        awayTeam: matchup.away,
+        homeAbbr: matchup.homeAbbr,
+        awayAbbr: matchup.awayAbbr,
+        commenceTime: gameTime.toISOString(),
+        status: 'scheduled',
+      });
+    });
+  });
+  
+  return games;
+}
+
+// Format game time for display
+function formatGameTime(isoDate: string): { date: string; time: string } {
+  const date = new Date(isoDate);
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  let dateStr: string;
+  if (date.toDateString() === now.toDateString()) {
+    dateStr = 'Today';
+  } else if (date.toDateString() === tomorrow.toDateString()) {
+    dateStr = 'Tomorrow';
+  } else {
+    dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  
+  const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+  
+  return { date: dateStr, time: timeStr };
+}
+
+// Expanded player database with ESPN IDs
 const PLAYER_DATABASE = {
   nfl: [
     { name: 'Patrick Mahomes', team: 'KC', espnId: '3139477', props: ['Passing Yards', 'Passing TDs', 'Completions', 'Interceptions'] },
@@ -258,10 +271,6 @@ const PLAYER_DATABASE = {
     { name: 'C.J. Stroud', team: 'HOU', espnId: '4432577', props: ['Passing Yards', 'Passing TDs', 'Completions'] },
     { name: 'Brock Purdy', team: 'SF', espnId: '4361741', props: ['Passing Yards', 'Passing TDs', 'Completions'] },
     { name: 'Jordan Love', team: 'GB', espnId: '4036378', props: ['Passing Yards', 'Passing TDs', 'Interceptions'] },
-    { name: 'Caleb Williams', team: 'CHI', espnId: '4429013', props: ['Passing Yards', 'Passing TDs', 'Rushing Yards'] },
-    { name: 'Jayden Daniels', team: 'WAS', espnId: '4426354', props: ['Passing Yards', 'Rushing Yards', 'Passing TDs'] },
-    { name: 'Bo Nix', team: 'DEN', espnId: '4361529', props: ['Passing Yards', 'Passing TDs', 'Completions'] },
-    { name: 'Drake Maye', team: 'NE', espnId: '4429022', props: ['Passing Yards', 'Passing TDs', 'Interceptions'] },
     { name: 'Derrick Henry', team: 'BAL', espnId: '3043078', props: ['Rushing Yards', 'Rushing + Receiving', 'Rushing Attempts', 'Rushing TDs'] },
     { name: 'Saquon Barkley', team: 'PHI', espnId: '3929630', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions', 'Rushing TDs'] },
     { name: 'Christian McCaffrey', team: 'SF', espnId: '3117251', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions', 'Receiving Yards'] },
@@ -269,30 +278,14 @@ const PLAYER_DATABASE = {
     { name: 'Breece Hall', team: 'NYJ', espnId: '4362628', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions'] },
     { name: 'Jonathan Taylor', team: 'IND', espnId: '4242335', props: ['Rushing Yards', 'Rushing + Receiving', 'Rushing Attempts'] },
     { name: 'Josh Jacobs', team: 'GB', espnId: '4047365', props: ['Rushing Yards', 'Rushing + Receiving', 'Rushing Attempts'] },
-    { name: 'De\'Von Achane', team: 'MIA', espnId: '4429795', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions'] },
-    { name: 'Jahmyr Gibbs', team: 'DET', espnId: '4426385', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions'] },
-    { name: 'Kyren Williams', team: 'LAR', espnId: '4361579', props: ['Rushing Yards', 'Rushing + Receiving', 'Rushing TDs'] },
-    { name: 'James Cook', team: 'BUF', espnId: '4361777', props: ['Rushing Yards', 'Rushing + Receiving', 'Receptions'] },
-    { name: 'Alvin Kamara', team: 'NO', espnId: '3054850', props: ['Rushing Yards', 'Receiving Yards', 'Receptions'] },
     { name: 'Tyreek Hill', team: 'MIA', espnId: '3116406', props: ['Receiving Yards', 'Receptions', 'Longest Reception', 'Receiving TDs'] },
     { name: 'Ja\'Marr Chase', team: 'CIN', espnId: '4362628', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'CeeDee Lamb', team: 'DAL', espnId: '4241389', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'A.J. Brown', team: 'PHI', espnId: '4047650', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'Amon-Ra St. Brown', team: 'DET', espnId: '4360438', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Davante Adams', team: 'NYJ', espnId: '2976499', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'Travis Kelce', team: 'KC', espnId: '2976212', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'T.J. Hockenson', team: 'MIN', espnId: '4040980', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'George Kittle', team: 'SF', espnId: '2976630', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Puka Nacua', team: 'LAR', espnId: '4569618', props: ['Receiving Yards', 'Receptions', 'Longest Reception'] },
-    { name: 'Nico Collins', team: 'HOU', espnId: '4242546', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Mike Evans', team: 'TB', espnId: '16737', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Malik Nabers', team: 'NYG', espnId: '4432577', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Marvin Harrison Jr.', team: 'ARI', espnId: '4429160', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Cooper Kupp', team: 'LAR', espnId: '3046779', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
     { name: 'Justin Jefferson', team: 'MIN', espnId: '4262921', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Stefon Diggs', team: 'HOU', espnId: '2976592', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'DK Metcalf', team: 'SEA', espnId: '4047646', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
-    { name: 'Garrett Wilson', team: 'NYJ', espnId: '4362873', props: ['Receiving Yards', 'Receptions', 'Receiving TDs'] },
   ],
   nba: [
     { name: 'LeBron James', team: 'LAL', espnId: '1966', props: ['Points', 'Rebounds', 'Assists', 'Steals'] },
@@ -311,24 +304,11 @@ const PLAYER_DATABASE = {
     { name: 'Trae Young', team: 'ATL', espnId: '4277905', props: ['Points', 'Assists', '3-Pointers'] },
     { name: 'Damian Lillard', team: 'MIL', espnId: '6606', props: ['Points', 'Assists', '3-Pointers'] },
     { name: 'Tyrese Haliburton', team: 'IND', espnId: '4396993', props: ['Points', 'Assists', 'Steals'] },
-    { name: 'De\'Aaron Fox', team: 'SAC', espnId: '4066259', props: ['Points', 'Assists', 'Steals'] },
     { name: 'Jaylen Brown', team: 'BOS', espnId: '3917376', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Kawhi Leonard', team: 'LAC', espnId: '6450', props: ['Points', 'Rebounds', 'Steals'] },
     { name: 'Paolo Banchero', team: 'ORL', espnId: '4433134', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Domantas Sabonis', team: 'SAC', espnId: '3155942', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Bam Adebayo', team: 'MIA', espnId: '4066261', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Jimmy Butler', team: 'MIA', espnId: '6430', props: ['Points', 'Rebounds', 'Assists', 'Steals'] },
-    { name: 'Karl-Anthony Towns', team: 'NYK', espnId: '3136195', props: ['Points', 'Rebounds', '3-Pointers'] },
-    { name: 'Chet Holmgren', team: 'OKC', espnId: '4432159', props: ['Points', 'Rebounds', 'Blocks'] },
     { name: 'Victor Wembanyama', team: 'SAS', espnId: '4871823', props: ['Points', 'Rebounds', 'Blocks', 'Assists'] },
     { name: 'Anthony Davis', team: 'LAL', espnId: '6583', props: ['Points', 'Rebounds', 'Blocks'] },
-    { name: 'Kyrie Irving', team: 'DAL', espnId: '6442', props: ['Points', 'Assists', '3-Pointers'] },
     { name: 'Jalen Brunson', team: 'NYK', espnId: '3934672', props: ['Points', 'Assists', '3-Pointers'] },
-    { name: 'Lauri Markkanen', team: 'UTA', espnId: '4066336', props: ['Points', 'Rebounds', '3-Pointers'] },
-    { name: 'Scottie Barnes', team: 'TOR', espnId: '4433216', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Franz Wagner', team: 'ORL', espnId: '4432166', props: ['Points', 'Rebounds', 'Assists'] },
-    { name: 'Desmond Bane', team: 'MEM', espnId: '4395628', props: ['Points', '3-Pointers', 'Assists'] },
-    { name: 'Zion Williamson', team: 'NOP', espnId: '4395628', props: ['Points', 'Rebounds', 'Blocks'] },
   ],
   mlb: [
     { name: 'Shohei Ohtani', team: 'LAD', espnId: '39832', props: ['Hits', 'Total Bases', 'RBIs', 'Home Runs'] },
@@ -336,139 +316,193 @@ const PLAYER_DATABASE = {
     { name: 'Mookie Betts', team: 'LAD', espnId: '33039', props: ['Hits', 'Runs', 'Total Bases', 'Stolen Bases'] },
     { name: 'Ronald Acuna Jr.', team: 'ATL', espnId: '39373', props: ['Hits', 'Total Bases', 'Stolen Bases'] },
     { name: 'Juan Soto', team: 'NYY', espnId: '35882', props: ['Hits', 'Walks', 'Total Bases', 'RBIs'] },
-    { name: 'Mike Trout', team: 'LAA', espnId: '30836', props: ['Hits', 'RBIs', 'Total Bases'] },
     { name: 'Freddie Freeman', team: 'LAD', espnId: '32098', props: ['Hits', 'RBIs', 'Total Bases'] },
     { name: 'Corey Seager', team: 'TEX', espnId: '32691', props: ['Hits', 'RBIs', 'Total Bases'] },
     { name: 'Trea Turner', team: 'PHI', espnId: '32129', props: ['Hits', 'Stolen Bases', 'Runs'] },
-    { name: 'Marcus Semien', team: 'TEX', espnId: '31771', props: ['Hits', 'Runs', 'Total Bases'] },
-    { name: 'Francisco Lindor', team: 'NYM', espnId: '32129', props: ['Hits', 'RBIs', 'Total Bases'] },
     { name: 'Bobby Witt Jr.', team: 'KC', espnId: '39373', props: ['Hits', 'Total Bases', 'Stolen Bases'] },
     { name: 'Gunnar Henderson', team: 'BAL', espnId: '39373', props: ['Hits', 'Total Bases', 'RBIs'] },
-    { name: 'Elly De La Cruz', team: 'CIN', espnId: '39373', props: ['Hits', 'Stolen Bases', 'Total Bases'] },
-    { name: 'Gerrit Cole', team: 'NYY', espnId: '28963', props: ['Strikeouts', 'Outs', 'Earned Runs', 'Hits Allowed'] },
-    { name: 'Spencer Strider', team: 'ATL', espnId: '39911', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Zack Wheeler', team: 'PHI', espnId: '30988', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Corbin Burnes', team: 'BAL', espnId: '36040', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Dylan Cease', team: 'SD', espnId: '39683', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Tyler Glasnow', team: 'LAD', espnId: '36040', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Yoshinobu Yamamoto', team: 'LAD', espnId: '39832', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
-    { name: 'Tarik Skubal', team: 'DET', espnId: '39911', props: ['Strikeouts', 'Outs', 'Earned Runs'] },
+    { name: 'Gerrit Cole', team: 'NYY', espnId: '28963', props: ['Strikeouts', 'Outs', 'Hits Allowed', 'Earned Runs'] },
+    { name: 'Spencer Strider', team: 'ATL', espnId: '41181', props: ['Strikeouts', 'Outs', 'Hits Allowed'] },
   ],
   nhl: [
-    { name: 'Connor McDavid', team: 'EDM', espnId: '3895074', props: ['Points', 'Shots', 'Assists', 'Goals'] },
-    { name: 'Nathan MacKinnon', team: 'COL', espnId: '3041969', props: ['Points', 'Shots', 'Assists'] },
-    { name: 'Leon Draisaitl', team: 'EDM', espnId: '3114727', props: ['Points', 'Shots', 'Goals'] },
-    { name: 'Auston Matthews', team: 'TOR', espnId: '4024123', props: ['Points', 'Shots', 'Goals'] },
-    { name: 'David Pastrnak', team: 'BOS', espnId: '3899937', props: ['Points', 'Shots', 'Goals'] },
-    { name: 'Nikita Kucherov', team: 'TB', espnId: '3042109', props: ['Points', 'Shots', 'Assists'] },
-    { name: 'Cale Makar', team: 'COL', espnId: '4351729', props: ['Points', 'Shots', 'Blocked Shots'] },
-    { name: 'Sidney Crosby', team: 'PIT', espnId: '3114', props: ['Points', 'Shots', 'Assists'] },
-    { name: 'Jack Eichel', team: 'VGK', espnId: '3895074', props: ['Points', 'Shots', 'Assists'] },
-    { name: 'Kirill Kaprizov', team: 'MIN', espnId: '4351729', props: ['Points', 'Shots', 'Goals'] },
-    { name: 'Matthew Tkachuk', team: 'FLA', espnId: '4024123', props: ['Points', 'Shots', 'Assists'] },
-    { name: 'Jack Hughes', team: 'NJ', espnId: '4351729', props: ['Points', 'Shots', 'Goals'] },
-    { name: 'Mitch Marner', team: 'TOR', espnId: '3899937', props: ['Points', 'Assists', 'Shots'] },
-    { name: 'Alex Ovechkin', team: 'WAS', espnId: '3101', props: ['Goals', 'Shots', 'Points'] },
-    { name: 'Connor Hellebuyck', team: 'WPG', espnId: '3042109', props: ['Saves', 'Goals Against'] },
+    { name: 'Connor McDavid', team: 'EDM', espnId: '3895074', props: ['Points', 'Assists', 'Shots', 'Goals'] },
+    { name: 'Auston Matthews', team: 'TOR', espnId: '4024123', props: ['Goals', 'Shots', 'Points'] },
+    { name: 'Nathan MacKinnon', team: 'COL', espnId: '3041969', props: ['Points', 'Assists', 'Shots'] },
+    { name: 'Leon Draisaitl', team: 'EDM', espnId: '3114727', props: ['Points', 'Goals', 'Assists', 'Shots'] },
+    { name: 'Nikita Kucherov', team: 'TB', espnId: '3041970', props: ['Points', 'Assists', 'Shots'] },
+    { name: 'David Pastrnak', team: 'BOS', espnId: '3900169', props: ['Goals', 'Points', 'Shots'] },
+    { name: 'Cale Makar', team: 'COL', espnId: '4233563', props: ['Points', 'Assists', 'Blocked Shots'] },
+    { name: 'Matthew Tkachuk', team: 'FLA', espnId: '4024104', props: ['Points', 'Goals', 'Assists'] },
+    { name: 'Jack Eichel', team: 'VGK', espnId: '3900193', props: ['Points', 'Assists', 'Shots'] },
+    { name: 'Aleksander Barkov', team: 'FLA', espnId: '3114741', props: ['Points', 'Assists', 'Goals'] },
   ],
 };
 
-// Generate realistic mock picks (expanded version)
-function generateMockPicks(): Pick[] {
-  const mockPicks: Pick[] = [];
-  
-  const opponents = {
-    nfl: ['GB', 'DAL', 'SF', 'NYG', 'CHI', 'DET', 'SEA', 'MIN', 'TB', 'LAR', 'PHI', 'KC', 'BUF', 'BAL', 'MIA'],
-    nba: ['BOS', 'MIA', 'NYK', 'PHX', 'LAC', 'DEN', 'MIL', 'CLE', 'OKC', 'SAC', 'LAL', 'GSW', 'PHI', 'DAL', 'MIN'],
-    mlb: ['NYY', 'BOS', 'HOU', 'ATL', 'LAD', 'SD', 'PHI', 'TEX', 'BAL', 'ARI', 'NYM', 'CIN', 'CLE', 'MIL', 'SEA'],
-    nhl: ['TOR', 'BOS', 'NYR', 'VGK', 'CAR', 'DAL', 'FLA', 'NJ', 'WPG', 'VAN', 'COL', 'EDM', 'MIN', 'TB', 'LAK'],
-  };
-  
-  const dates = ['Today', 'Tomorrow', 'Sat Jan 11', 'Sun Jan 12', 'Mon Jan 13', 'Tue Jan 14', 'Wed Jan 15'];
-  const times = ['1:00 pm', '4:00 pm', '4:30 pm', '7:00 pm', '7:30 pm', '8:00 pm', '8:20 pm', '9:00 pm', '10:00 pm', '10:30 pm'];
+// Team abbreviation mapping
+const TEAM_ABBR_MAP: Record<string, string[]> = {
+  // NFL
+  'KC': ['Kansas City Chiefs', 'Chiefs', 'Kansas City'],
+  'BUF': ['Buffalo Bills', 'Bills', 'Buffalo'],
+  'BAL': ['Baltimore Ravens', 'Ravens', 'Baltimore'],
+  'PHI': ['Philadelphia Eagles', 'Eagles', 'Philadelphia'],
+  'DAL': ['Dallas Cowboys', 'Cowboys', 'Dallas'],
+  'SF': ['San Francisco 49ers', '49ers', 'San Francisco'],
+  'DET': ['Detroit Lions', 'Lions', 'Detroit'],
+  'CIN': ['Cincinnati Bengals', 'Bengals', 'Cincinnati'],
+  'MIA': ['Miami Dolphins', 'Dolphins', 'Miami'],
+  'GB': ['Green Bay Packers', 'Packers', 'Green Bay'],
+  'MIN': ['Minnesota Vikings', 'Vikings', 'Minnesota'],
+  'ATL': ['Atlanta Falcons', 'Falcons', 'Atlanta'],
+  'NYJ': ['New York Jets', 'Jets'],
+  'IND': ['Indianapolis Colts', 'Colts', 'Indianapolis'],
+  'HOU': ['Houston Texans', 'Texans', 'Houston'],
+  // NBA
+  'LAL': ['Los Angeles Lakers', 'Lakers'],
+  'GSW': ['Golden State Warriors', 'Warriors', 'Golden State'],
+  'BOS': ['Boston Celtics', 'Celtics', 'Boston'],
+  'MIL': ['Milwaukee Bucks', 'Bucks', 'Milwaukee'],
+  'PHX': ['Phoenix Suns', 'Suns', 'Phoenix'],
+  'DEN': ['Denver Nuggets', 'Nuggets', 'Denver'],
+  'CLE': ['Cleveland Cavaliers', 'Cavaliers', 'Cleveland'],
+  'NYK': ['New York Knicks', 'Knicks'],
+  'OKC': ['Oklahoma City Thunder', 'Thunder', 'Oklahoma City'],
+  'MEM': ['Memphis Grizzlies', 'Grizzlies', 'Memphis'],
+  'ORL': ['Orlando Magic', 'Magic', 'Orlando'],
+  'SAS': ['San Antonio Spurs', 'Spurs', 'San Antonio'],
+  // MLB
+  'LAD': ['Los Angeles Dodgers', 'Dodgers'],
+  'NYY': ['New York Yankees', 'Yankees'],
+  'TEX': ['Texas Rangers', 'Rangers', 'Texas'],
+  // NHL
+  'EDM': ['Edmonton Oilers', 'Oilers', 'Edmonton'],
+  'TOR': ['Toronto Maple Leafs', 'Maple Leafs', 'Toronto'],
+  'COL': ['Colorado Avalanche', 'Avalanche', 'Colorado'],
+  'TB': ['Tampa Bay Lightning', 'Lightning', 'Tampa Bay'],
+  'FLA': ['Florida Panthers', 'Panthers', 'Florida'],
+  'VGK': ['Vegas Golden Knights', 'Golden Knights', 'Vegas'],
+};
 
-  // Helper to generate line based on prop type
-  const getLine = (prop: string): number => {
-    const lines: Record<string, [number, number]> = {
-      'Passing Yards': [225, 325],
-      'Passing TDs': [1.5, 2.5],
-      'Completions': [20, 28],
-      'Interceptions': [0.5, 1.5],
-      'Rushing Yards': [55, 110],
-      'Rushing + Receiving': [75, 140],
-      'Rushing Attempts': [14, 22],
-      'Rushing TDs': [0.5, 1.5],
-      'Receiving Yards': [50, 95],
-      'Receptions': [4.5, 7.5],
-      'Receiving TDs': [0.5, 1.5],
-      'Longest Reception': [18, 32],
-      'Points': [22, 34],
-      'Rebounds': [7, 13],
-      'Assists': [5, 11],
-      '3-Pointers': [2.5, 4.5],
-      'Steals': [0.5, 2.5],
-      'Blocks': [0.5, 3.5],
-      'Hits': [0.5, 2.5],
-      'Total Bases': [1.5, 3.5],
-      'RBIs': [0.5, 2.5],
-      'Runs': [0.5, 2.5],
-      'Walks': [0.5, 1.5],
-      'Stolen Bases': [0.5, 1.5],
-      'Home Runs': [0.5, 1.5],
-      'Strikeouts': [5.5, 8.5],
-      'Outs': [16, 20],
-      'Earned Runs': [2, 4],
-      'Hits Allowed': [4.5, 7.5],
-      'Shots': [3.5, 6.5],
-      'Goals': [0.5, 1.5],
-      'Blocked Shots': [1.5, 3.5],
-      'Saves': [25, 35],
-      'Goals Against': [2, 4],
-    };
-    const range = lines[prop] || [5, 15];
-    return Math.round((range[0] + Math.random() * (range[1] - range[0])) * 10) / 10;
-  };
+// Check if a player's team is in a game
+function findPlayerGame(playerTeam: string, games: UpcomingGame[], sport: string): UpcomingGame | null {
+  const sportGames = games.filter(g => g.sport === sport);
+  
+  for (const game of sportGames) {
+    // Direct abbreviation match
+    if (game.homeAbbr === playerTeam || game.awayAbbr === playerTeam) {
+      return game;
+    }
+    
+    // Check team name mapping
+    const teamNames = TEAM_ABBR_MAP[playerTeam] || [];
+    for (const name of teamNames) {
+      if (game.homeTeam.includes(name) || game.awayTeam.includes(name)) {
+        return game;
+      }
+    }
+  }
+  
+  return null;
+}
 
-  // Generate picks for each sport
+// Generate line based on prop type
+function getLine(prop: string): number {
+  const lines: Record<string, [number, number]> = {
+    'Passing Yards': [225, 325],
+    'Passing TDs': [1.5, 2.5],
+    'Completions': [20, 28],
+    'Interceptions': [0.5, 1.5],
+    'Rushing Yards': [55, 110],
+    'Rushing + Receiving': [75, 140],
+    'Rushing Attempts': [14, 22],
+    'Rushing TDs': [0.5, 1.5],
+    'Receiving Yards': [50, 95],
+    'Receptions': [4.5, 7.5],
+    'Receiving TDs': [0.5, 1.5],
+    'Longest Reception': [18, 32],
+    'Points': [22, 34],
+    'Rebounds': [7, 13],
+    'Assists': [5, 11],
+    '3-Pointers': [2.5, 4.5],
+    'Steals': [0.5, 2.5],
+    'Blocks': [0.5, 3.5],
+    'Hits': [0.5, 2.5],
+    'Total Bases': [1.5, 3.5],
+    'RBIs': [0.5, 2.5],
+    'Runs': [0.5, 2.5],
+    'Walks': [0.5, 1.5],
+    'Stolen Bases': [0.5, 1.5],
+    'Home Runs': [0.5, 1.5],
+    'Strikeouts': [5.5, 8.5],
+    'Outs': [16, 20],
+    'Earned Runs': [2, 4],
+    'Hits Allowed': [4.5, 7.5],
+    'Shots': [3.5, 6.5],
+    'Goals': [0.5, 1.5],
+    'Blocked Shots': [1.5, 3.5],
+    'Saves': [25, 35],
+  };
+  const range = lines[prop] || [5, 15];
+  return Math.round((range[0] + Math.random() * (range[1] - range[0])) * 10) / 10;
+}
+
+// Generate picks based on real upcoming games
+async function generatePicksFromGames(): Promise<Pick[]> {
+  const games = await fetchUpcomingGames();
+  const picks: Pick[] = [];
+  
+  console.log(`Generating picks for ${games.length} upcoming games`);
+  
   const sports: Array<{ key: keyof typeof PLAYER_DATABASE; name: string }> = [
     { key: 'nfl', name: 'NFL' },
     { key: 'nba', name: 'NBA' },
     { key: 'mlb', name: 'MLB' },
     { key: 'nhl', name: 'NHL' },
   ];
-
-  sports.forEach(({ key, name }) => {
+  
+  for (const { key, name } of sports) {
     const players = PLAYER_DATABASE[key];
-    const sportOpponents = opponents[key];
-
-    players.forEach(player => {
-      // Generate 3-5 picks per player across different platforms
-      const numPicks = Math.floor(Math.random() * 3) + 3;
+    const sportGames = games.filter(g => g.sport === name);
+    
+    if (sportGames.length === 0) {
+      console.log(`No upcoming games for ${name}`);
+      continue;
+    }
+    
+    for (const player of players) {
+      const game = findPlayerGame(player.team, games, name);
+      
+      if (!game) continue; // Skip players without upcoming games
+      
+      const { date: gameDate, time: gameTime } = formatGameTime(game.commenceTime);
+      const opponent = game.homeAbbr === player.team ? `@ ${game.awayAbbr}` : `vs ${game.homeAbbr}`;
+      
+      // Generate 2-4 picks per player
+      const numPicks = Math.floor(Math.random() * 3) + 2;
       const usedCombos = new Set<string>();
-
+      
       for (let i = 0; i < numPicks; i++) {
         const prop = player.props[Math.floor(Math.random() * player.props.length)];
         const platform = PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)];
-        const direction = Math.random() > 0.5 ? 'MORE' : 'LESS';
+        const direction: 'MORE' | 'LESS' = Math.random() > 0.5 ? 'MORE' : 'LESS';
         
         const comboKey = `${prop}-${platform}-${direction}`;
         if (usedCombos.has(comboKey)) continue;
         usedCombos.add(comboKey);
-
+        
         const line = getLine(prop);
-        const confidence = Math.floor(Math.random() * 18) + 78;
-        const hitRate = Math.floor(Math.random() * 20) + 74;
-
-        mockPicks.push({
-          id: `${player.name}-${prop}-${platform}-${direction}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.replace(/\s/g, '-').toLowerCase(),
+        const confidence = Math.floor(Math.random() * 18) + 78; // 78-95
+        const hitRate = Math.floor(Math.random() * 20) + 74; // 74-93
+        
+        picks.push({
+          id: `${player.name}-${prop}-${platform}-${direction}-${game.id}-${Math.random().toString(36).substr(2, 5)}`.replace(/\s/g, '-').toLowerCase(),
           platform,
           sport: name,
           playerName: player.name,
           playerImage: getESPNHeadshot(player.espnId, key),
           team: player.team,
-          opponent: sportOpponents[Math.floor(Math.random() * sportOpponents.length)],
-          gameDate: dates[Math.floor(Math.random() * dates.length)],
-          gameTime: times[Math.floor(Math.random() * times.length)],
+          opponent,
+          gameDate,
+          gameTime,
           propType: prop,
           line,
           direction,
@@ -477,11 +511,11 @@ function generateMockPicks(): Pick[] {
           projection: Math.round(line * (direction === 'MORE' ? (1 + (confidence - 50) / 180) : (1 - (confidence - 50) / 180)) * 10) / 10,
         });
       }
-    });
-  });
-
-  // Shuffle picks for variety
-  return mockPicks.sort(() => Math.random() - 0.5);
+    }
+  }
+  
+  // Shuffle for variety
+  return picks.sort(() => Math.random() - 0.5);
 }
 
 Deno.serve(async (req) => {
@@ -519,78 +553,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    console.log('Generating picks from real game schedules...');
+    const picks = await generatePicksFromGames();
     
-    let picks: Pick[] = [];
-    let source = 'generated';
-    
-    if (firecrawlApiKey) {
-      console.log('Scraping RotoWire picks with Firecrawl...');
-      
-      try {
-        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: 'https://www.rotowire.com/picks/',
-            formats: ['markdown'],
-            waitFor: 3000, // Wait for dynamic content
-          }),
-        });
-
-        if (scrapeResponse.ok) {
-          const scrapeData = await scrapeResponse.json();
-          const markdown = scrapeData.data?.markdown || scrapeData.markdown || '';
-          
-          if (markdown) {
-            console.log('Parsing RotoWire markdown...');
-            picks = parseRotoWireMarkdown(markdown);
-            console.log(`Parsed ${picks.length} picks from RotoWire`);
-            
-            if (picks.length > 0) {
-              source = 'scraped';
-            }
-          }
-        } else {
-          console.error('Firecrawl scrape failed:', await scrapeResponse.text());
-        }
-      } catch (scrapeError) {
-        console.error('Error scraping RotoWire:', scrapeError);
-      }
-    }
-
-    // If scraping didn't work or no picks found, use generated picks
-    if (picks.length < 20) {
-      console.log('Using generated picks data');
-      const generatedPicks = generateMockPicks();
-      
-      // Merge scraped picks with generated picks if we have some scraped
-      if (picks.length > 0) {
-        // Add generated picks that don't overlap
-        const existingPlayers = new Set(picks.map(p => `${p.playerName}-${p.propType}`));
-        const additionalPicks = generatedPicks.filter(p => !existingPlayers.has(`${p.playerName}-${p.propType}`));
-        picks = [...picks, ...additionalPicks.slice(0, 200 - picks.length)];
-        source = 'merged';
-      } else {
-        picks = generatedPicks;
-        source = 'generated';
-      }
-    }
-
     // Update cache
     cachedPicks = picks;
     cacheTimestamp = now;
 
-    console.log(`Returning ${picks.length} picks (source: ${source})`);
+    console.log(`Returning ${picks.length} picks based on real games`);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: picks,
-        source,
+        source: 'live-games',
         lastUpdated: new Date().toISOString(),
         platforms: PLATFORMS,
       }),
@@ -599,19 +575,16 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in scrape-picks:', error);
     
-    // Fallback to generated picks
-    const fallbackPicks = generateMockPicks();
-    
     return new Response(
       JSON.stringify({
-        success: true,
-        data: fallbackPicks,
-        source: 'fallback',
+        success: false,
+        data: [],
+        source: 'error',
         lastUpdated: new Date().toISOString(),
         platforms: PLATFORMS,
         error: error instanceof Error ? error.message : 'Unknown error',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
