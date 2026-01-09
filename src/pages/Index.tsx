@@ -32,24 +32,24 @@ const Index = () => {
 
   const features = [
     {
-      icon: Layers,
-      title: 'Parlay Builder',
-      description: 'Build smarter parlays with AI-calculated odds, win probability, and optimal leg combinations.',
+      icon: Target,
+      title: 'AI-Powered Picks',
+      description: 'Get moneyline, spread, and player prop picks backed by real-time data analysis and confidence scores.',
     },
     {
-      icon: TrendingUp,
-      title: 'Odds Explained',
-      description: 'Understand what the numbers mean with implied probability breakdowns and line movement tracking.',
+      icon: Layers,
+      title: 'Parlay Builder',
+      description: 'Combine multiple picks into parlays with calculated odds and win probability.',
     },
     {
       icon: UserX,
-      title: 'Injury Context',
-      description: 'See key injuries, status updates, and how absences might impact game dynamics.',
+      title: 'Injury Reports',
+      description: 'Real-time injury updates and how player absences impact game outcomes.',
     },
     {
       icon: Gauge,
-      title: 'Risk Meter',
-      description: 'Visual volatility assessment based on injuries, line movement, and recent performance.',
+      title: 'Risk Analysis',
+      description: 'Visual risk meters based on line movement, matchup history, and recent form.',
     },
   ];
 
@@ -137,9 +137,9 @@ const Index = () => {
 
               {/* Headline */}
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
-                Turn $50 Parlays Into{' '}
+                Smarter Picks.{' '}
                 <span className="relative">
-                  <span className="text-gradient">$500+ Payouts</span>
+                  <span className="text-gradient">Bigger Wins.</span>
                   <Sparkles className="absolute -top-2 -right-6 h-6 w-6 text-primary animate-pulse" />
                 </span>
               </h1>
@@ -147,7 +147,7 @@ const Index = () => {
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-slide-up leading-relaxed" style={{ animationDelay: '100ms' }}>
                 AI analyzes <span className="text-foreground font-semibold">10,000+ data points</span> across NFL, NBA, UFC & 15+ sports 
-                to find <span className="text-primary font-semibold">high-value parlays</span> you'd never spot on your own.
+                to find <span className="text-primary font-semibold">high-value picks</span> — spreads, props, and parlays you'd never spot alone.
               </p>
 
               {/* Quick Value Props */}
@@ -244,7 +244,7 @@ const Index = () => {
               <div className="hidden md:block w-px h-4 bg-primary/30" />
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground"><span className="font-semibold text-foreground">847</span> users building parlays right now</span>
+                <span className="text-muted-foreground"><span className="font-semibold text-foreground">847</span> users viewing picks right now</span>
               </div>
               <div className="hidden md:block w-px h-4 bg-primary/30" />
               <Link to="/picks" className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold transition-colors">
@@ -290,14 +290,14 @@ const Index = () => {
           <div className="container">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
-                <Layers className="h-3 w-3" />
-                Parlay Power
+                <BarChart3 className="h-3 w-3" />
+                Full Toolkit
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Build Parlays Like a Pro
+                Everything You Need to Bet Smarter
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                Select high-confidence picks, combine them into parlays, and see real-time odds & expected payouts.
+                From single-game picks to multi-leg parlays — get AI-powered insights for every bet type.
               </p>
             </div>
 
