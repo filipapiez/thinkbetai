@@ -394,10 +394,17 @@ const SPORT_TEAMS: Record<string, string[]> = {
   'soccer': ['Arsenal', 'Man City', 'Liverpool', 'Chelsea', 'Real Madrid', 'Barcelona', 'Bayern', 'PSG', 'Inter', 'Juventus'],
   'mma': ['Fighter A', 'Fighter B', 'Fighter C', 'Fighter D', 'Fighter E', 'Fighter F', 'Fighter G', 'Fighter H', 'Fighter I', 'Fighter J'],
   'tennis': ['Djokovic', 'Alcaraz', 'Sinner', 'Medvedev', 'Rune', 'Ruud', 'Tsitsipas', 'Zverev', 'Fritz', 'Tiafoe'],
+  'tabletennis': ['Ma Long', 'Fan Zhendong', 'Wang Chuqin', 'Tomokazu Harimoto', 'Hugo Calderano', 'Lin Gaoyuan', 'Liang Jingkun', 'Truls Moregard', 'Felix Lebrun', 'Jang Woojin'],
+  'wtt': ['Ma Long', 'Fan Zhendong', 'Wang Chuqin', 'Tomokazu Harimoto', 'Hugo Calderano', 'Lin Gaoyuan', 'Liang Jingkun', 'Truls Moregard', 'Felix Lebrun', 'Jang Woojin'],
+  'pingpong': ['Ma Long', 'Fan Zhendong', 'Wang Chuqin', 'Tomokazu Harimoto', 'Hugo Calderano', 'Lin Gaoyuan', 'Liang Jingkun', 'Truls Moregard', 'Felix Lebrun', 'Jang Woojin'],
   'boxing': ['Fighter A', 'Fighter B', 'Fighter C', 'Fighter D', 'Fighter E', 'Fighter F', 'Fighter G', 'Fighter H', 'Fighter I', 'Fighter J'],
   'golf': ['Player A', 'Player B', 'Player C', 'Player D', 'Player E', 'Player F', 'Player G', 'Player H', 'Player I', 'Player J'],
   'cricket': ['India', 'Australia', 'England', 'South Africa', 'New Zealand', 'Pakistan', 'West Indies', 'Sri Lanka', 'Bangladesh', 'Afghanistan'],
   'rugby': ['All Blacks', 'Springboks', 'Wallabies', 'England', 'Ireland', 'France', 'Wales', 'Scotland', 'Argentina', 'Japan'],
+  'esports': ['T1', 'Gen.G', 'Cloud9', 'Fnatic', 'G2', 'Team Liquid', 'NRG', 'Vitality', 'BLG', 'JDG'],
+  'darts': ['Luke Littler', 'Luke Humphries', 'Michael van Gerwen', 'Gerwyn Price', 'Rob Cross', 'Peter Wright', 'Gary Anderson', 'Jonny Clayton', 'Dave Chisnall', 'Nathan Aspinall'],
+  'snooker': ['Ronnie O\'Sullivan', 'Judd Trump', 'Mark Selby', 'John Higgins', 'Neil Robertson', 'Mark Williams', 'Kyren Wilson', 'Zhao Xintong', 'Luca Brecel', 'Mark Allen'],
+  'badminton': ['Viktor Axelsen', 'Shi Yuqi', 'Kodai Naraoka', 'Kunlavut Vitidsarn', 'Li Shifeng', 'Jonatan Christie', 'Anthony Ginting', 'Chou Tien Chen', 'Anders Antonsen', 'Loh Kean Yew'],
 };
 
 // Sport-specific positions - NEVER use across sports
@@ -411,10 +418,17 @@ const SPORT_POSITIONS: Record<string, string[]> = {
   'soccer': ['GK', 'CB', 'LB', 'RB', 'CDM', 'CM', 'CAM', 'LW', 'RW', 'ST'],
   'mma': ['Fighter'],
   'tennis': ['Player'],
+  'tabletennis': ['Player'],
+  'wtt': ['Player'],
+  'pingpong': ['Player'],
   'boxing': ['Fighter'],
   'golf': ['Golfer'],
   'cricket': ['Batsman', 'Bowler', 'Wicketkeeper', 'All-rounder'],
   'rugby': ['Prop', 'Hooker', 'Lock', 'Flanker', 'Number 8', 'Scrum-half', 'Fly-half', 'Centre', 'Wing', 'Fullback'],
+  'esports': ['Player'],
+  'darts': ['Player'],
+  'snooker': ['Player'],
+  'badminton': ['Player'],
 };
 
 // Sport-specific competition levels - STRICT isolation
@@ -428,10 +442,17 @@ const SPORT_COMPETITION_LEVELS: Record<string, string> = {
   'soccer': 'Professional - Top League',
   'mma': 'Professional - UFC',
   'tennis': 'Professional - ATP/WTA',
+  'tabletennis': 'Professional - WTT',
+  'wtt': 'Professional - WTT',
+  'pingpong': 'Professional - WTT',
   'boxing': 'Professional',
   'golf': 'Professional - PGA',
   'cricket': 'International',
   'rugby': 'International',
+  'esports': 'Professional - Esports',
+  'darts': 'Professional - PDC',
+  'snooker': 'Professional - World Snooker',
+  'badminton': 'Professional - BWF',
 };
 
 // Sport-specific scoring systems - STRICT isolation
@@ -444,23 +465,40 @@ const SPORT_SCORING_SYSTEMS: Record<string, string> = {
   'mlb': 'Runs',
   'soccer': 'Goals',
   'mma': 'Decision/Finish',
-  'tennis': 'Sets/Games',
+  'tennis': 'Sets/Games (Best of 3 or 5)',
+  'tabletennis': 'Games to 11 (Best of 5 or 7)',
+  'wtt': 'Games to 11 (Best of 5 or 7)',
+  'pingpong': 'Games to 11 (Best of 5 or 7)',
   'boxing': 'Decision/KO/TKO',
   'golf': 'Strokes',
   'cricket': 'Runs/Wickets',
   'rugby': 'Points (Try=5, Conv=2, Pen=3, DG=3)',
+  'esports': 'Maps/Rounds',
+  'darts': 'Sets/Legs',
+  'snooker': 'Frames',
+  'badminton': 'Games to 21 (Best of 3)',
 };
 
 // Validate sport and return safe fallback
 function normalizeSportKey(sport: string): string {
-  const normalized = (sport || '').toLowerCase().replace(/[^a-z]/g, '');
+  const normalized = (sport || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   if (SPORT_TEAMS[normalized]) return normalized;
-  // Fallback mappings
+  
+  // Fallback mappings for common variations
   if (['basketball'].includes(normalized)) return 'nba';
   if (['football', 'americanfootball'].includes(normalized)) return 'nfl';
   if (['hockey', 'icehockey'].includes(normalized)) return 'nhl';
   if (['baseball'].includes(normalized)) return 'mlb';
-  return 'nba'; // Safe default
+  if (['tabletennis', 'pingpong', 'wtt'].includes(normalized)) return 'tabletennis';
+  if (['esport', 'gaming', 'lol', 'csgo', 'valorant', 'dota2'].includes(normalized)) return 'esports';
+  if (['ufc', 'mma', 'mixedmartialarts'].includes(normalized)) return 'mma';
+  
+  // Check if sport key exists with common prefixes removed
+  const withoutPrefix = normalized.replace(/^(pro|professional|world|international)/, '');
+  if (SPORT_TEAMS[withoutPrefix]) return withoutPrefix;
+  
+  console.log(`[Sport Normalization] Unknown sport: ${sport} -> defaulting to generic`);
+  return 'tennis'; // Default to something generic rather than NBA
 }
 
 // Get sport validation metadata
@@ -510,7 +548,19 @@ function getScorePatternForSport(sportKey: string): RegExp {
     case 'boxing':
       return /^(W|L|KO|TKO|DEC|SUB)$/i; // Combat results
     case 'tennis':
-      return /^\d-\d$/; // Sets e.g., "2-1"
+      return /^\d-\d$/; // Sets e.g., "2-1" or "3-0"
+    case 'tabletennis':
+    case 'wtt':
+    case 'pingpong':
+      return /^\d-\d$/; // Games e.g., "3-1" or "4-2" (best of 5 or 7)
+    case 'badminton':
+      return /^\d-\d$/; // Games e.g., "2-0" or "2-1" (best of 3)
+    case 'snooker':
+      return /^\d{1,2}-\d{1,2}$/; // Frames e.g., "10-6"
+    case 'darts':
+      return /^\d-\d$/; // Sets e.g., "7-5"
+    case 'esports':
+      return /^\d-\d$/; // Maps e.g., "3-1"
     case 'cricket':
       return /^\d{2,3}-\d{2,3}$/; // e.g., "285-241"
     case 'rugby':
@@ -540,45 +590,85 @@ function generateLast5Games(sport: string): { opponent: string; result: 'W' | 'L
 }
 
 function generateScoreForSport(sportKey: string, isWin: boolean): string {
-  const winnerScore = (base: number, variance: number) => base + Math.floor(Math.random() * variance);
-  const loserScore = (base: number, variance: number) => base + Math.floor(Math.random() * variance);
-
+  // Table tennis / ping pong - games to 11, best of 5 or 7
+  if (['tabletennis', 'wtt', 'pingpong'].includes(sportKey)) {
+    const winSets = Math.random() > 0.5 ? 4 : 3; // Best of 7 or 5
+    const loseSets = Math.floor(Math.random() * winSets);
+    return isWin ? `${winSets}-${loseSets}` : `${loseSets}-${winSets}`;
+  }
+  
   switch (sportKey) {
     case 'nba':
-    case 'ncaab':
-      return isWin 
-        ? `${winnerScore(105, 25)}-${loserScore(95, 15)}`
-        : `${loserScore(95, 15)}-${winnerScore(105, 25)}`;
+    case 'ncaab': {
+      const high = 105 + Math.floor(Math.random() * 25);
+      const low = 95 + Math.floor(Math.random() * 15);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
     case 'nfl':
-    case 'ncaaf':
-      return isWin 
-        ? `${winnerScore(24, 17)}-${loserScore(14, 14)}`
-        : `${loserScore(14, 14)}-${winnerScore(24, 17)}`;
-    case 'nhl':
-      return isWin 
-        ? `${winnerScore(3, 3)}-${loserScore(1, 2)}`
-        : `${loserScore(1, 2)}-${winnerScore(3, 3)}`;
-    case 'mlb':
-      return isWin 
-        ? `${winnerScore(5, 5)}-${loserScore(2, 4)}`
-        : `${loserScore(2, 4)}-${winnerScore(5, 5)}`;
-    case 'soccer':
-      return isWin 
-        ? `${winnerScore(2, 3)}-${loserScore(0, 2)}`
-        : `${loserScore(0, 2)}-${winnerScore(2, 3)}`;
+    case 'ncaaf': {
+      const high = 24 + Math.floor(Math.random() * 17);
+      const low = 14 + Math.floor(Math.random() * 14);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'nhl': {
+      const high = 3 + Math.floor(Math.random() * 3);
+      const low = 1 + Math.floor(Math.random() * 2);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'mlb': {
+      const high = 5 + Math.floor(Math.random() * 5);
+      const low = 2 + Math.floor(Math.random() * 4);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'soccer': {
+      const high = 2 + Math.floor(Math.random() * 3);
+      const low = Math.floor(Math.random() * 2);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
     case 'mma':
     case 'boxing':
       return isWin ? 'W' : 'L'; // Combat sports don't have traditional scores
-    case 'tennis':
-      return isWin ? '2-0' : '0-2'; // Sets
-    case 'cricket':
-      return isWin 
-        ? `${winnerScore(280, 70)}-${loserScore(200, 60)}`
-        : `${loserScore(200, 60)}-${winnerScore(280, 70)}`;
-    case 'rugby':
-      return isWin 
-        ? `${winnerScore(24, 20)}-${loserScore(14, 14)}`
-        : `${loserScore(14, 14)}-${winnerScore(24, 20)}`;
+    case 'tennis': {
+      // Best of 3 or 5 sets
+      const bestOf = Math.random() > 0.5 ? 3 : 5;
+      const winSets = bestOf === 3 ? 2 : 3;
+      const loseSets = Math.floor(Math.random() * winSets);
+      return isWin ? `${winSets}-${loseSets}` : `${loseSets}-${winSets}`;
+    }
+    case 'badminton': {
+      // Best of 3 games
+      const loseSets = Math.floor(Math.random() * 2);
+      return isWin ? `2-${loseSets}` : `${loseSets}-2`;
+    }
+    case 'snooker': {
+      // Frames - varies by tournament
+      const high = 6 + Math.floor(Math.random() * 7);
+      const low = Math.floor(Math.random() * high);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'darts': {
+      // Sets (best of 7 or similar)
+      const high = 4 + Math.floor(Math.random() * 4);
+      const low = Math.floor(Math.random() * high);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'esports': {
+      // Maps - typically best of 3 or 5
+      const bestOf = Math.random() > 0.5 ? 3 : 5;
+      const winMaps = bestOf === 3 ? 2 : 3;
+      const loseMaps = Math.floor(Math.random() * winMaps);
+      return isWin ? `${winMaps}-${loseMaps}` : `${loseMaps}-${winMaps}`;
+    }
+    case 'cricket': {
+      const high = 280 + Math.floor(Math.random() * 70);
+      const low = 200 + Math.floor(Math.random() * 60);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
+    case 'rugby': {
+      const high = 24 + Math.floor(Math.random() * 20);
+      const low = 14 + Math.floor(Math.random() * 14);
+      return isWin ? `${high}-${low}` : `${low}-${high}`;
+    }
     default:
       return isWin ? '1-0' : '0-1';
   }
