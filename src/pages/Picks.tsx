@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PickCard } from '@/components/PickCard';
+import { ParlayBuilder } from '@/components/ParlayBuilder';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ import {
   Search, Filter, X, TrendingUp, TrendingDown, Info, RefreshCw, 
   Loader2, Clock, Target, ChevronDown 
 } from 'lucide-react';
-import { usePicks } from '@/hooks/usePicks';
+import { usePicks, type Pick } from '@/hooks/usePicks';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,10 @@ const Picks = () => {
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedPropType, setSelectedPropType] = useState<string | null>(null);
   const [selectedDirection, setSelectedDirection] = useState<'MORE' | 'LESS' | null>(null);
+  
+  // Parlay builder state
+  const [parlayPicks, setParlayPicks] = useState<Pick[]>([]);
+  const [isParlayOpen, setIsParlayOpen] = useState(false);
 
   const { 
     picks, 
@@ -38,6 +43,30 @@ const Picks = () => {
     source,
     refetch 
   } = usePicks();
+
+  // Parlay handlers
+  const handleSelectPick = useCallback((pick: Pick) => {
+    setParlayPicks(prev => {
+      const isAlreadySelected = prev.some(p => p.id === pick.id);
+      if (isAlreadySelected) {
+        return prev.filter(p => p.id !== pick.id);
+      }
+      // Max 10 picks in parlay
+      if (prev.length >= 10) return prev;
+      setIsParlayOpen(true);
+      return [...prev, pick];
+    });
+  }, []);
+
+  const handleRemovePick = useCallback((pickId: string) => {
+    setParlayPicks(prev => prev.filter(p => p.id !== pickId));
+  }, []);
+
+  const handleClearParlay = useCallback(() => {
+    setParlayPicks([]);
+  }, []);
+
+  const selectedPickIds = useMemo(() => new Set(parlayPicks.map(p => p.id)), [parlayPicks]);
 
   // Calculate signal counts
   const signalCounts = useMemo(() => {
@@ -406,7 +435,11 @@ const Picks = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPicks.map((pick, index) => (
                 <div key={pick.id} className="animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
-                  <PickCard pick={pick} />
+                  <PickCard 
+                    pick={pick} 
+                    isSelected={selectedPickIds.has(pick.id)}
+                    onSelect={handleSelectPick}
+                  />
                 </div>
               ))}
             </div>
@@ -428,6 +461,15 @@ const Picks = () => {
       </main>
 
       <Footer />
+
+      {/* Parlay Builder */}
+      <ParlayBuilder
+        selectedPicks={parlayPicks}
+        onRemovePick={handleRemovePick}
+        onClearAll={handleClearParlay}
+        isOpen={isParlayOpen}
+        onToggle={() => setIsParlayOpen(!isParlayOpen)}
+      />
     </div>
   );
 };
