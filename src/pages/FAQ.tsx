@@ -182,9 +182,12 @@ const FAQ = () => {
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
                 Frequently Asked <span className="text-gradient">Questions</span>
               </h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Everything you need to know about AI betting predictions, our platform, and how to get started.
-              </p>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to know about AI betting predictions, our platform, and how to get started.
+            </p>
+            <p className="mt-4 text-muted-foreground">
+              Popular: <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline font-medium">Is there an AI betting platform?</Link>
+            </p>
             </div>
 
             {/* Quick Stats */}
