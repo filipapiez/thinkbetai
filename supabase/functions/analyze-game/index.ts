@@ -56,9 +56,10 @@ serve(async (req) => {
   try {
     const gameData: GameData = await req.json();
     
-    // Validate sport and normalize
-    const validatedSport = validateAndNormalizeSport(gameData.sport);
+    // Validate sport and normalize - pass team names for better detection
+    const validatedSport = validateAndNormalizeSport(gameData.sport, gameData.homeTeam, gameData.awayTeam);
     gameData.sport = validatedSport;
+    console.log(`Sport normalized: "${gameData.sport}" -> "${validatedSport}" for ${gameData.homeTeam} vs ${gameData.awayTeam}`);
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -271,21 +272,52 @@ const SPORT_CONFIG: Record<string, { terms: string[]; scoreFormat: string; perio
   },
 };
 
-function validateAndNormalizeSport(sport: string): string {
+function validateAndNormalizeSport(sport: string, homeTeam?: string, awayTeam?: string): string {
   const normalized = (sport || '').toLowerCase().trim();
+  
+  // Known soccer team names/keywords to detect soccer even when labeled as "Football"
+  const soccerTeamIndicators = [
+    'fc', 'united', 'city', 'rovers', 'athletic', 'wanderers', 'albion', 'villa',
+    'hotspur', 'palace', 'forest', 'county', 'town', 'rangers', 'celtic',
+    'real', 'barcelona', 'madrid', 'bayern', 'borussia', 'juventus', 'inter', 'milan',
+    'psg', 'paris', 'lyon', 'marseille', 'monaco', 'ajax', 'feyenoord', 'psv',
+    'porto', 'benfica', 'sporting', 'stoke', 'middlesbrough', 'sunderland', 'leeds',
+    'everton', 'newcastle', 'aston', 'wolves', 'brighton', 'brentford', 'fulham',
+    'burnley', 'watford', 'norwich', 'swansea', 'cardiff', 'hull', 'reading',
+    'sheffield', 'bristol', 'ipswich', 'blackburn', 'bolton', 'wigan', 'millwall',
+    'coventry', 'birmingham', 'derby', 'nottingham', 'leicester', 'preston', 'plymouth',
+    'luton', 'huddersfield', 'rotherham', 'qpr', 'queens park'
+  ];
+  
+  // Check if team names suggest soccer
+  const teamCheck = ((homeTeam || '') + ' ' + (awayTeam || '')).toLowerCase();
+  const isSoccerTeam = soccerTeamIndicators.some(indicator => teamCheck.includes(indicator));
+  
+  // If sport is "football" but teams look like soccer teams, it's Soccer
+  if ((normalized === 'football' || normalized === 'soccer_efl_championship' || 
+       normalized.includes('efl') || normalized.includes('championship')) && isSoccerTeam) {
+    return 'Soccer';
+  }
   
   // Map variations to canonical names
   const sportMap: Record<string, string> = {
     'nba': 'NBA', 'basketball': 'NBA', 'ncaab': 'NCAAB',
-    'nfl': 'NFL', 'football': 'NFL', 'ncaaf': 'NCAAF', 'american football': 'NFL',
+    'nfl': 'NFL', 'american football': 'NFL', 'ncaaf': 'NCAAF',
     'nhl': 'NHL', 'hockey': 'NHL', 'ice hockey': 'NHL',
     'mlb': 'MLB', 'baseball': 'MLB',
     'soccer': 'Soccer', 'football (soccer)': 'Soccer', 'epl': 'Soccer', 'premier league': 'Soccer',
     'la liga': 'Soccer', 'bundesliga': 'Soccer', 'serie a': 'Soccer', 'mls': 'Soccer',
+    'efl championship': 'Soccer', 'soccer_efl_championship': 'Soccer', 'championship': 'Soccer',
+    'ligue 1': 'Soccer', 'eredivisie': 'Soccer', 'primeira liga': 'Soccer',
     'ufc': 'UFC', 'mma': 'UFC', 'mixed martial arts': 'UFC',
     'tennis': 'Tennis', 'atp': 'Tennis', 'wta': 'Tennis',
     'boxing': 'Boxing',
   };
+  
+  // Special handling: "football" defaults to NFL only if no soccer indicators found
+  if (normalized === 'football') {
+    return isSoccerTeam ? 'Soccer' : 'NFL';
+  }
   
   return sportMap[normalized] || sport || 'NBA';
 }
