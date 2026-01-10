@@ -6,13 +6,15 @@ interface SEOProps {
   keywords?: string;
   image?: string;
   url?: string;
+  canonical?: string;
   type?: 'website' | 'article';
   author?: string;
   publishedTime?: string;
+  structuredData?: Record<string, unknown>;
 }
 
 const defaultTitle = 'ThinkBetAI - #1 AI Betting Platform | AI Sports Predictions';
-const defaultDescription = 'Get AI-powered betting predictions with 67% accuracy. ThinkBetAI uses advanced machine learning to analyze sports data and provide winning picks for NFL, NBA, MLB, NHL & more.';
+const defaultDescription = 'Get AI-powered betting predictions with 83% accuracy. ThinkBetAI uses advanced machine learning to analyze sports data and provide winning picks for NFL, NBA, MLB, NHL & more.';
 const defaultKeywords = 'AI betting, AI sports predictions, betting AI, AI picks, sports betting AI, machine learning betting, AI betting predictions, best AI betting site';
 const defaultImage = 'https://thinkbetai.com/og-image.png';
 const siteUrl = 'https://thinkbetai.com';
@@ -23,12 +25,15 @@ export const SEO = ({
   keywords = defaultKeywords,
   image = defaultImage,
   url,
+  canonical,
   type = 'website',
   author,
   publishedTime,
+  structuredData,
 }: SEOProps) => {
-  const fullTitle = title ? `${title} | ThinkBetAI` : defaultTitle;
+  const fullTitle = title ? (title.includes('ThinkBetAI') ? title : `${title} | ThinkBetAI`) : defaultTitle;
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
+  const canonicalUrl = canonical || fullUrl;
 
   return (
     <Helmet>
@@ -62,7 +67,14 @@ export const SEO = ({
       )}
       
       {/* Canonical URL */}
-      <link rel="canonical" href={fullUrl} />
+      <link rel="canonical" href={canonicalUrl} />
+      
+      {/* Structured Data */}
+      {structuredData && (
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      )}
     </Helmet>
   );
 };

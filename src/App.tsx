@@ -20,6 +20,7 @@ import About from "./pages/About";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import WhatIsAISportsBetting from "./pages/WhatIsAISportsBetting";
+import AISportsPicks from "./pages/AISportsPicks";
 import FAQ from "./pages/FAQ";
 import Login from "./pages/Login";
 import Paywall from "./pages/Paywall";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
+              <Route path="/ai-sports-picks" element={<AISportsPicks />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
