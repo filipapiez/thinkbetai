@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -230,6 +230,13 @@ const Pricing = () => {
                 <h3 className="font-semibold mb-2">What sports do you cover?</h3>
                 <p className="text-muted-foreground text-sm">
                   We cover NBA, NFL, MLB, NHL, Tennis, Table Tennis, and Soccer with more sports being added regularly.
+                </p>
+              </div>
+              <div className="glass-card p-6">
+                <h3 className="font-semibold mb-2">Is there an AI betting platform?</h3>
+                <p className="text-muted-foreground text-sm">
+                  Yes! ThinkBetAI is a leading AI betting platform. Learn more in our detailed{' '}
+                  <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline">AI betting FAQ</Link>.
                 </p>
               </div>
             </div>

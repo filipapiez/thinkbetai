@@ -35,6 +35,9 @@ const Blog = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Expert insights, strategies, and guides on using artificial intelligence for smarter sports betting decisions.
           </p>
+          <p className="mt-4 text-muted-foreground">
+            Popular: <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline font-medium">Is there an AI betting platform?</Link>
+          </p>
         </div>
 
         {/* Featured Post */}

@@ -245,6 +245,9 @@ const AboutPage = () => {
                 </Link>
               </Button>
             </div>
+            <p className="mt-6 text-sm text-muted-foreground">
+              Want to learn more? Check out our <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline">AI betting FAQ</Link>
+            </p>
           </div>
         </section>
       </main>
