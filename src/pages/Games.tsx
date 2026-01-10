@@ -6,36 +6,80 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SEO } from '@/components/SEO';
-import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Clock } from 'lucide-react';
+import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Clock, Radio } from 'lucide-react';
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 
-
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
+type TimePeriod = 'live' | 'today' | 'week' | 'month';
 
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('today');
 
   // Fetch popular games from scraper
   const { games, isLoading, error, lastUpdated, source, refetch } = usePopularGames();
 
-  // Calculate signals for all games
+  // Filter games by time period
+  const filterByPeriod = useCallback((game: PopularGame, period: TimePeriod): boolean => {
+    const now = new Date();
+    const gameTime = new Date(game.startTime);
+    
+    switch (period) {
+      case 'live':
+        // Live games: status is 'live' or games starting within 2 hours
+        const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+        return game.status === 'live' || 
+               (gameTime >= twoHoursAgo && gameTime <= twoHoursFromNow && game.status !== 'completed');
+      case 'today':
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+        return gameTime >= todayStart && gameTime < todayEnd;
+      case 'week':
+        const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        return gameTime >= now && gameTime < weekEnd;
+      case 'month':
+        const monthEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+        return gameTime >= now && gameTime < monthEnd;
+      default:
+        return true;
+    }
+  }, []);
+
+  // Games filtered by time period
+  const periodFilteredGames = useMemo(() => {
+    return games.filter(game => filterByPeriod(game, selectedPeriod));
+  }, [games, selectedPeriod, filterByPeriod]);
+
+  // Calculate signals for period-filtered games
   const gamesWithSignals = useMemo(() => {
-    return games.map(game => ({
+    return periodFilteredGames.map(game => ({
       game,
       ...calculateBetSignal(game)
     }));
-  }, [games]);
+  }, [periodFilteredGames]);
 
-  // Signal counts
+  // Signal counts for current period
   const signalCounts = useMemo(() => {
     const counts = { GOOD: 0, BORDERLINE: 0, PASS: 0 };
     gamesWithSignals.forEach(g => counts[g.signal]++);
     return counts;
   }, [gamesWithSignals]);
+
+  // Period counts
+  const periodCounts = useMemo(() => {
+    return {
+      live: games.filter(g => filterByPeriod(g, 'live')).length,
+      today: games.filter(g => filterByPeriod(g, 'today')).length,
+      week: games.filter(g => filterByPeriod(g, 'week')).length,
+      month: games.filter(g => filterByPeriod(g, 'month')).length,
+    };
+  }, [games, filterByPeriod]);
 
   // Get unique sports from data
   const availableSports = useMemo(() => {
@@ -96,6 +140,15 @@ const Games = () => {
 
   const hasActiveFilters = searchQuery || selectedSport || selectedLeague || selectedSignal;
 
+  const getPeriodLabel = (period: TimePeriod) => {
+    switch (period) {
+      case 'live': return 'Live Now';
+      case 'today': return 'Today';
+      case 'week': return 'This Week';
+      case 'month': return 'This Month';
+    }
+  };
+
   const formatLastUpdated = (dateStr: string | null) => {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleTimeString('en-US', { 
@@ -143,6 +196,37 @@ const Games = () => {
             </div>
           </div>
 
+          {/* Time Period Tabs */}
+          <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as TimePeriod)} className="mb-6">
+            <TabsList className="grid w-full grid-cols-4 h-12 bg-muted/50">
+              <TabsTrigger value="live" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+                <Radio className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Live</span>
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {periodCounts.live}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="today" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+                <span>Today</span>
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {periodCounts.today}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="week" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+                <span className="hidden sm:inline">This </span>Week
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {periodCounts.week}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="month" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+                <span className="hidden sm:inline">This </span>Month
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {periodCounts.month}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Bet Signal Summary Card */}
           <Card className="mb-6 bg-card border-border">
             <CardContent className="p-5">
@@ -152,7 +236,7 @@ const Games = () => {
                   <h3 className="font-semibold">Bet Signal Summary</h3>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {selectedSport || 'All Sports'} • All Time
+                  {selectedSport || 'All Sports'} • {getPeriodLabel(selectedPeriod)}
                 </span>
               </div>
               
@@ -198,7 +282,7 @@ const Games = () => {
                 
                 {/* TOTAL */}
                 <div className="p-4 rounded-lg text-center bg-muted/30 border border-border">
-                  <div className="text-2xl font-bold">{games.length}</div>
+                  <div className="text-2xl font-bold">{periodFilteredGames.length}</div>
                   <div className="text-xs text-muted-foreground font-medium">TOTAL</div>
                 </div>
               </div>
@@ -236,7 +320,7 @@ const Games = () => {
                 className="cursor-pointer hover:bg-primary/20 transition-colors"
                 onClick={() => { setSelectedSport(null); setSelectedLeague(null); }}
               >
-                All Sports ({games.length})
+                All Sports ({periodFilteredGames.length})
               </Badge>
 
               {availableSports.map(sport => {
