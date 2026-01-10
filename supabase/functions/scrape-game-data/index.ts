@@ -219,11 +219,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // No real data available - return generated with clear warning
-    console.log('No real data sources available, returning generated data');
-    const generatedData = generateRealisticData(homeTeam, awayTeam, sport);
+    // No real data available - return empty data with clear message (NO SIMULATION)
+    console.log('No real data sources available, returning empty data with notice');
+    const noData = buildNoDataGameData(homeTeam, awayTeam, sport);
     return new Response(
-      JSON.stringify({ success: true, data: generatedData, source: 'generated' }),
+      JSON.stringify({ success: true, data: noData, source: 'no-data' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
@@ -597,126 +597,25 @@ function parseScrapedData(
   }
   
   // If we didn't find enough real H2H, generate but mark as such
-  const h2hIsGenerated = validH2HCount < 3;
-  if (h2hIsGenerated) {
-    // Fill with generated data if needed
-    while (headToHead.length < 5) {
-      const homeWins = Math.random() > 0.5;
-      const score = generateScore(sport);
-      headToHead.push({
-        date: getDateDaysAgo(30 * (headToHead.length + 1)),
-        winner: homeWins ? homeTeam : awayTeam,
-        score,
-        sport: sportKey,
-        competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
-      });
-    }
-  }
-
-  // Create H2H metadata with limited data warning
+  // Create H2H metadata with limited data warning - NO SIMULATION, just mark as limited
   const headToHeadMeta = {
     limitedData: validH2HCount < 3,
     validMatchCount: validH2HCount,
     message: validH2HCount < 3 ? 'Limited historical data - fewer than 3 valid matches found for this sport and competition level' : undefined,
-    isGenerated: h2hIsGenerated,
+    isGenerated: false, // Never generate fake data
   };
 
   // Determine overall data source
   const hasAnyRealData = hasRealInjuries || hasRealForm || hasRealH2H;
   const hasAllRealData = hasRealInjuries && hasRealForm && hasRealH2H;
-  const dataSource = hasAllRealData ? 'real' : (hasAnyRealData ? 'partial' : 'simulated');
+  const dataSource = hasAllRealData ? 'real' : (hasAnyRealData ? 'partial' : 'partial');
 
-  // If we have absolutely no real data, return fully generated data
+  // If we have absolutely no real data, return empty data structure (NO SIMULATION)
   if (!hasAnyRealData) {
-    return generateRealisticData(homeTeam, awayTeam, sport);
+    return buildNoDataGameData(homeTeam, awayTeam, sport);
   }
 
   return { injuries, recentForm, headToHead, headToHeadMeta, teamStats, analysis, sportValidation, dataSource };
-}
-
-function generateRealisticData(homeTeam: string, awayTeam: string, sport: string): ScrapedGameData {
-  const injuries: ScrapedGameData['injuries'] = [];
-  
-  const homeInjuryCount = 2 + Math.floor(Math.random() * 3);
-  const awayInjuryCount = 2 + Math.floor(Math.random() * 3);
-  
-  const injuryTypes = ['Ankle', 'Knee', 'Hamstring', 'Back', 'Shoulder', 'Calf', 'Groin', 'Concussion'];
-  const statuses: ('Out' | 'Questionable' | 'Probable' | 'Day-to-Day')[] = ['Out', 'Questionable', 'Probable', 'Day-to-Day'];
-  
-  const generateName = () => {
-    const firstNames = ['James', 'Michael', 'Marcus', 'Anthony', 'Jaylen', 'Kevin', 'Stephen', 'LeBron', 'Giannis', 'Luka', 'Joel', 'Tyrese', 'Jalen', 'Damian', 'Bradley', 'Devin', 'Ja', 'Trae', 'Donovan', 'Zion'];
-    const lastNames = ['Johnson', 'Williams', 'Smith', 'Brown', 'Davis', 'Miller', 'Wilson', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Robinson', 'Clark', 'Lewis', 'Walker', 'Hall'];
-    return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
-  };
-
-  for (let i = 0; i < homeInjuryCount; i++) {
-    injuries.push({
-      team: homeTeam,
-      player: generateName(),
-      position: getPositionForSport(sport),
-      injuryType: injuryTypes[Math.floor(Math.random() * injuryTypes.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-    });
-  }
-
-  for (let i = 0; i < awayInjuryCount; i++) {
-    injuries.push({
-      team: awayTeam,
-      player: generateName(),
-      position: getPositionForSport(sport),
-      injuryType: injuryTypes[Math.floor(Math.random() * injuryTypes.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-    });
-  }
-
-  const sportKey = normalizeSportKey(sport);
-  const sportValidation = getSportValidation(sport);
-  
-  const recentForm = [
-    { team: homeTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true },
-    { team: awayTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true }
-  ];
-
-  const headToHead: ScrapedGameData['headToHead'] = [];
-  for (let i = 0; i < 5; i++) {
-    const score = generateScore(sport);
-    headToHead.push({
-      date: getDateDaysAgo(30 * (i + 1)),
-      winner: Math.random() > 0.5 ? homeTeam : awayTeam,
-      score,
-      sport: sportKey,
-      competitionLevel: SPORT_COMPETITION_LEVELS[sportKey] || 'Unknown',
-    });
-  }
-
-  // All generated - mark as simulated
-  const headToHeadMeta = {
-    limitedData: true,
-    validMatchCount: 0,
-    message: '⚠️ SIMULATED DATA - Real match history not available for this matchup',
-    isGenerated: true,
-  };
-
-  const homeWins = 15 + Math.floor(Math.random() * 20);
-  const awayWins = 15 + Math.floor(Math.random() * 20);
-
-  const teamStats = [
-    { team: homeTeam, wins: homeWins, losses: 45 - homeWins, streak: homeWins > 25 ? 'W3' : 'L2', ranking: Math.ceil(Math.random() * 15) },
-    { team: awayTeam, wins: awayWins, losses: 45 - awayWins, streak: awayWins > 25 ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 15) }
-  ];
-
-  const analysis = `⚠️ SIMULATED ANALYSIS - Real data not available. This is generated placeholder content for demonstration purposes only. Do not use for actual betting decisions.`;
-
-  return { 
-    injuries, 
-    recentForm, 
-    headToHead, 
-    headToHeadMeta, 
-    teamStats, 
-    analysis, 
-    sportValidation,
-    dataSource: 'simulated' 
-  };
 }
 
 // ============================================================================
