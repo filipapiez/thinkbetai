@@ -43,6 +43,7 @@ const pricingPlans = [
       'Line movement tracking',
       'Head-to-head history',
       'Performance charts',
+      'AI Parlay analysis',
       'Priority support',
     ],
     cta: 'Go Pro',
