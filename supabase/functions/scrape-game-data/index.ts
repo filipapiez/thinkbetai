@@ -492,15 +492,15 @@ async function extractHistoricalDataWithAIFromSources({
     return null;
   }
 
-  const normalizeRF = (teamName: string, arr: any[]) => {
-    const cleaned = clampArray(arr || [], 5)
+  const normalizeRF = (teamName: string, arr: any[]): ScrapedGameData['recentForm'][0] => {
+    const cleaned: { opponent: string; result: 'W' | 'L'; score: string; date: string }[] = clampArray(arr || [], 5)
       .map((g: any) => ({
         opponent: typeof g?.opponent === 'string' ? g.opponent : 'Unknown',
-        result: g?.result === 'W' ? 'W' : 'L',
+        result: (g?.result === 'W' ? 'W' : 'L') as 'W' | 'L',
         score: typeof g?.score === 'string' ? g.score : '',
         date: typeof g?.date === 'string' ? g.date : '',
       }))
-      .filter((g: any) => isIsoDate(g.date) && scorePattern.test(g.score));
+      .filter((g) => isIsoDate(g.date) && scorePattern.test(g.score));
 
     return {
       team: teamName,
