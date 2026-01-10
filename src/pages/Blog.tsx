@@ -37,6 +37,8 @@ const Blog = () => {
           </p>
           <p className="mt-4 text-muted-foreground">
             Popular: <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline font-medium">Is there an AI betting platform?</Link>
+            {' • '}
+            <Link to="/ai-sports-picks" className="text-primary hover:underline font-medium">AI Sports Picks</Link>
           </p>
         </div>
 
