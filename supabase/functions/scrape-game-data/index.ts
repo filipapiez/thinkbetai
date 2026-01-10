@@ -34,8 +34,30 @@ function getClientIdentifier(req: Request): string {
   return req.headers.get('x-real-ip') || 'unknown';
 }
 
-// Allowed sports whitelist
-const ALLOWED_SPORTS = ['nba', 'nfl', 'mlb', 'nhl', 'ncaab', 'ncaaf', 'soccer', 'mma', 'tennis', 'boxing', 'golf', 'cricket', 'rugby'];
+// Allowed sports whitelist (normalized keys)
+// NOTE: This list is intentionally broad to support "every sport" surfaced in the UI.
+const ALLOWED_SPORTS = [
+  'nba',
+  'nfl',
+  'mlb',
+  'nhl',
+  'ncaab',
+  'ncaaf',
+  'soccer',
+  'mma',
+  'tennis',
+  'tabletennis',
+  'wtt',
+  'pingpong',
+  'boxing',
+  'golf',
+  'cricket',
+  'rugby',
+  'esports',
+  'darts',
+  'snooker',
+  'badminton',
+];
 
 // Input validation
 function sanitizeTeamName(name: unknown): string | null {
@@ -48,8 +70,15 @@ function sanitizeTeamName(name: unknown): string | null {
 
 function validateSport(sport: unknown): string {
   if (typeof sport !== 'string') return 'nba';
+
   const raw = sport.toLowerCase().trim();
-  const normalized = raw.replace(/[^a-z]/g, '');
+  const normalized = raw.replace(/[^a-z0-9]/g, '');
+
+  // IMPORTANT: Handle "table tennis" BEFORE the generic "tennis" check.
+  if ((raw.includes('table') && raw.includes('tennis')) || raw.includes('ping pong') || raw.includes('pingpong')) {
+    return 'tabletennis';
+  }
+  if (raw.includes('wtt')) return 'wtt';
 
   // Soccer vs American football
   if (raw.includes('soccer')) return 'soccer';
@@ -71,6 +100,10 @@ function validateSport(sport: unknown): string {
   if (raw.includes('golf')) return 'golf';
   if (raw.includes('cricket')) return 'cricket';
   if (raw.includes('rugby')) return 'rugby';
+  if (raw.includes('esports') || raw.includes('e-sports') || raw.includes('esport')) return 'esports';
+  if (raw.includes('darts')) return 'darts';
+  if (raw.includes('snooker')) return 'snooker';
+  if (raw.includes('badminton')) return 'badminton';
 
   return ALLOWED_SPORTS.includes(normalized) ? normalized : 'nba';
 }
@@ -172,55 +205,73 @@ Deno.serve(async (req) => {
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
-    
+
     console.log(`Fetching game data: ${homeTeam} vs ${awayTeam} (${sport})`);
 
-    // Try Gemini AI for real historical data first (always available via Lovable AI)
-    if (lovableApiKey) {
-      try {
-        const aiData = await fetchHistoricalDataWithAI(lovableApiKey, homeTeam, awayTeam, sport);
-        if (aiData && aiData.dataSource !== 'simulated') {
-          console.log('Successfully fetched real data via Gemini AI');
+    // We only return verified (source-grounded) data.
+    // Strategy:
+    // 1) Retrieve sources via Firecrawl (web search)
+    // 2) Use Gemini to extract structured data ONLY from those sources
+    // 3) If we can't verify, return empty/limited data (no simulation)
+
+    if (firecrawlApiKey) {
+      const sportValidation = getSportValidation(sport);
+
+      const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} ${sportValidation.competitionLevel}`;
+      const formQuery = `${homeTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
+      const awayFormQuery = `${awayTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
+      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head ${sport} ${sportValidation.competitionLevel}`;
+
+      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse] = await Promise.all([
+        searchFirecrawl(firecrawlApiKey, injuryQuery),
+        searchFirecrawl(firecrawlApiKey, formQuery),
+        searchFirecrawl(firecrawlApiKey, awayFormQuery),
+        searchFirecrawl(firecrawlApiKey, h2hQuery),
+      ]);
+
+      // Prefer Gemini extraction from sources when available
+      if (lovableApiKey) {
+        const extracted = await extractHistoricalDataWithAIFromSources({
+          apiKey: lovableApiKey,
+          homeTeam,
+          awayTeam,
+          sport,
+          sources: {
+            injuries: injuryResponse,
+            homeRecentForm: formHomeResponse,
+            awayRecentForm: formAwayResponse,
+            headToHead: h2hResponse,
+          },
+        });
+
+        if (extracted) {
+          console.log('Successfully extracted matchup data via Gemini (source-grounded)');
           return new Response(
-            JSON.stringify({ success: true, data: aiData, source: 'ai-research' }),
+            JSON.stringify({ success: true, data: extracted, source: 'ai-research' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-      } catch (aiError) {
-        console.error('AI data fetch failed, falling back to Firecrawl:', aiError);
       }
-    }
 
-    // Fallback to Firecrawl if available
-    if (firecrawlApiKey) {
-      const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} 2026`;
-      const injuryResponse = await searchFirecrawl(firecrawlApiKey, injuryQuery);
-      
-      const formQuery = `${homeTeam} ${awayTeam} recent results ${sport} 2026`;
-      const formResponse = await searchFirecrawl(firecrawlApiKey, formQuery);
-      
-      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history ${sport}`;
-      const h2hResponse = await searchFirecrawl(firecrawlApiKey, h2hQuery);
-
+      // Fallback: deterministic parsing (still NO simulation)
       const scrapedData = parseScrapedData(
         injuryResponse,
-        formResponse,
+        // Merge home+away form responses into a single "formData" bucket for the legacy parser
+        { data: [...(formHomeResponse?.data || []), ...(formAwayResponse?.data || [])] },
         h2hResponse,
         homeTeam,
         awayTeam,
         sport
       );
 
-      if (scrapedData.dataSource !== 'simulated') {
-        return new Response(
-          JSON.stringify({ success: true, data: scrapedData, source: 'scraped' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      return new Response(
+        JSON.stringify({ success: true, data: scrapedData, source: 'scraped' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // No real data available - return empty data with clear message (NO SIMULATION)
-    console.log('No real data sources available, returning empty data with notice');
+    // No source retrieval available - return empty data with clear message (NO SIMULATION)
+    console.log('No retrieval source configured, returning empty data with notice');
     const noData = buildNoDataGameData(homeTeam, awayTeam, sport);
     return new Response(
       JSON.stringify({ success: true, data: noData, source: 'no-data' }),
@@ -235,177 +286,304 @@ Deno.serve(async (req) => {
   }
 });
 
-async function fetchHistoricalDataWithAI(
-  apiKey: string, 
-  homeTeam: string, 
-  awayTeam: string, 
-  sport: string
-): Promise<ScrapedGameData | null> {
-  const sportKey = normalizeSportKey(sport);
-  const sportValidation = getSportValidation(sport);
-  
-  const prompt = `You are a sports data expert. Provide REAL, ACCURATE historical data for the following matchup. Only include information you are confident is true. If you don't have accurate data, say so.
+type FirecrawlSearchResponse = any;
 
-MATCHUP: ${homeTeam} vs ${awayTeam}
-SPORT: ${sport} (${sportValidation.competitionLevel})
+function compactFirecrawlResults(resp: FirecrawlSearchResponse, maxItems = 5, maxCharsPerItem = 2400) {
+  const list = Array.isArray(resp?.data) ? resp.data.slice(0, maxItems) : [];
+  return list
+    .map((r: any) => {
+      const url = r?.url || r?.metadata?.sourceURL || r?.metadata?.url;
+      const title = r?.title || r?.metadata?.title;
+      const md = (r?.markdown || r?.description || '').toString();
+      const snippet = md.length > maxCharsPerItem ? md.slice(0, maxCharsPerItem) + '…' : md;
+      return {
+        url: typeof url === 'string' ? url : undefined,
+        title: typeof title === 'string' ? title : undefined,
+        snippet,
+      };
+    })
+    .filter((x: any) => x.snippet && x.snippet.trim().length > 0);
+}
 
-Provide the following in JSON format:
-
-1. **Recent Form** (last 5 games for each team with REAL opponents, scores, and dates):
-   - Use actual ${sport} score formats (e.g., ${sportValidation.scoringSystem})
-   - Include real opponent names from the same league/competition
-   
-2. **Head-to-Head History** (last 5 meetings between these exact teams):
-   - Only include matches between ${homeTeam} and ${awayTeam}
-   - Include actual dates, winners, and scores
-   
-3. **Current Injuries** (known injured players):
-   - Only include confirmed injuries you're aware of
-   - Include player name, position, injury type, and status
-
-4. **Team Stats** (current season records if known):
-   - Wins, losses, current streak, ranking
-
-IMPORTANT: 
-- If you don't have real data for any section, return an empty array for that section
-- Never make up fake data - only report what you actually know
-- Use proper ${sport} terminology and score formats
-
-Respond ONLY with valid JSON in this exact format:
-{
-  "recentForm": [
-    {"team": "Team Name", "last5": [{"opponent": "Real Opponent", "result": "W" or "L", "score": "X-Y", "date": "YYYY-MM-DD"}], "isGenerated": false}
-  ],
-  "headToHead": [
-    {"date": "YYYY-MM-DD", "winner": "Team Name", "score": "X-Y"}
-  ],
-  "injuries": [
-    {"team": "Team Name", "player": "Player Name", "position": "POS", "injuryType": "Type", "status": "Out/Questionable/Probable/Day-to-Day"}
-  ],
-  "teamStats": [
-    {"team": "Team Name", "wins": 0, "losses": 0, "streak": "W0", "ranking": 0}
-  ],
-  "hasRealData": true/false,
-  "confidence": "high/medium/low",
-  "dataNote": "Any notes about data accuracy or recency"
-}`;
-
+function safeParseToolArgs(raw: unknown): any | null {
+  if (!raw) return null;
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: 'You are a sports data expert. Only provide accurate, real historical data. Never fabricate statistics.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      return null;
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    
-    if (!content) {
-      console.error('No content in AI response');
-      return null;
-    }
-
-    // Parse the JSON response
-    let parsed;
-    try {
-      // Extract JSON from the response (handle markdown code blocks)
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
-      const jsonStr = jsonMatch[1] || content;
-      parsed = JSON.parse(jsonStr.trim());
-    } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', parseError);
-      return null;
-    }
-
-    // Check if AI indicated it has real data
-    if (!parsed.hasRealData || parsed.confidence === 'low') {
-      console.log('AI indicated low confidence or no real data');
-      return null;
-    }
-
-    // Transform AI response to our format
-    const injuries: ScrapedGameData['injuries'] = (parsed.injuries || []).map((i: any) => ({
-      team: i.team,
-      player: i.player,
-      position: i.position || getPositionForSport(sport),
-      injuryType: i.injuryType || 'Undisclosed',
-      status: i.status || 'Questionable',
-    }));
-
-    const recentForm: ScrapedGameData['recentForm'] = (parsed.recentForm || []).map((rf: any) => ({
-      team: rf.team,
-      last5: (rf.last5 || []).slice(0, 5).map((g: any) => ({
-        opponent: g.opponent || 'Unknown',
-        result: g.result === 'W' ? 'W' : 'L',
-        score: g.score || '0-0',
-        date: g.date || getDateDaysAgo(1),
-      })),
-      limitedData: (rf.last5?.length || 0) < 3,
-      isGenerated: rf.isGenerated ?? false,
-    }));
-
-    const headToHead: ScrapedGameData['headToHead'] = (parsed.headToHead || []).slice(0, 5).map((h2h: any) => ({
-      date: h2h.date || getDateDaysAgo(30),
-      winner: h2h.winner || homeTeam,
-      score: h2h.score || '0-0',
-      sport: sportKey,
-      competitionLevel: sportValidation.competitionLevel,
-    }));
-
-    const teamStats: ScrapedGameData['teamStats'] = (parsed.teamStats || []).map((ts: any) => ({
-      team: ts.team,
-      wins: ts.wins || 0,
-      losses: ts.losses || 0,
-      streak: ts.streak || 'N/A',
-      ranking: ts.ranking || 0,
-    }));
-
-    // Determine data source quality
-    const hasRealForm = recentForm.some(rf => !rf.isGenerated && rf.last5.length >= 3);
-    const hasRealH2H = headToHead.length >= 2;
-    const hasRealInjuries = injuries.length > 0;
-    
-    const dataSource = (hasRealForm && hasRealH2H) ? 'real' : 
-                       (hasRealForm || hasRealH2H || hasRealInjuries) ? 'partial' : 'simulated';
-
-    const headToHeadMeta = {
-      limitedData: headToHead.length < 3,
-      validMatchCount: headToHead.length,
-      message: parsed.dataNote || (headToHead.length >= 3 ? undefined : 'Limited head-to-head data available'),
-      isGenerated: false,
-    };
-
-    const analysis = parsed.dataNote || `Real historical data retrieved via AI research. Confidence: ${parsed.confidence || 'medium'}`;
-
-    return {
-      injuries,
-      recentForm,
-      headToHead,
-      headToHeadMeta,
-      teamStats,
-      analysis,
-      sportValidation,
-      dataSource,
-    };
-  } catch (error) {
-    console.error('Error fetching data with AI:', error);
+    if (typeof raw === 'string') return JSON.parse(raw);
+    return raw;
+  } catch {
     return null;
   }
+}
+
+function isIsoDate(value: unknown): value is string {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function clampArray<T>(arr: T[], max: number) {
+  return Array.isArray(arr) ? arr.slice(0, max) : [];
+}
+
+async function extractHistoricalDataWithAIFromSources({
+  apiKey,
+  homeTeam,
+  awayTeam,
+  sport,
+  sources,
+}: {
+  apiKey: string;
+  homeTeam: string;
+  awayTeam: string;
+  sport: string;
+  sources: {
+    injuries: FirecrawlSearchResponse;
+    homeRecentForm: FirecrawlSearchResponse;
+    awayRecentForm: FirecrawlSearchResponse;
+    headToHead: FirecrawlSearchResponse;
+  };
+}): Promise<ScrapedGameData | null> {
+  const sportValidation = getSportValidation(sport);
+  const sportKey = normalizeSportKey(sport);
+  const scorePattern = getScorePatternForSport(sportKey);
+
+  const compact = {
+    injuries: compactFirecrawlResults(sources.injuries),
+    homeRecentForm: compactFirecrawlResults(sources.homeRecentForm),
+    awayRecentForm: compactFirecrawlResults(sources.awayRecentForm),
+    headToHead: compactFirecrawlResults(sources.headToHead),
+  };
+
+  const anySources =
+    compact.injuries.length +
+      compact.homeRecentForm.length +
+      compact.awayRecentForm.length +
+      compact.headToHead.length >
+    0;
+
+  if (!anySources) return null;
+
+  const system =
+    'You extract SPORTS HISTORY from provided source snippets. ' +
+    'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess.';
+
+  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nReturn structured data via the tool. Dates MUST be YYYY-MM-DD. Scores MUST match the sport scoring format when applicable.`;
+
+  const body: any = {
+    model: 'google/gemini-3-flash-preview',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    tools: [
+      {
+        type: 'function',
+        function: {
+          name: 'extract_matchup_history',
+          description: 'Extract verified matchup history and injuries from the provided source snippets.',
+          parameters: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['recentForm', 'headToHead', 'injuries', 'teamStats', 'sourcesUsed', 'notes'],
+            properties: {
+              recentForm: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['team', 'last5'],
+                  properties: {
+                    team: { type: 'string' },
+                    last5: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        additionalProperties: false,
+                        required: ['opponent', 'result', 'score', 'date'],
+                        properties: {
+                          opponent: { type: 'string' },
+                          result: { type: 'string', enum: ['W', 'L'] },
+                          score: { type: 'string' },
+                          date: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              headToHead: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['date', 'winner', 'score'],
+                  properties: {
+                    date: { type: 'string' },
+                    winner: { type: 'string' },
+                    score: { type: 'string' },
+                  },
+                },
+              },
+              injuries: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['team', 'player', 'position', 'injuryType', 'status'],
+                  properties: {
+                    team: { type: 'string' },
+                    player: { type: 'string' },
+                    position: { type: 'string' },
+                    injuryType: { type: 'string' },
+                    status: { type: 'string', enum: ['Out', 'Questionable', 'Probable', 'Day-to-Day'] },
+                  },
+                },
+              },
+              teamStats: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['team', 'wins', 'losses', 'streak', 'ranking'],
+                  properties: {
+                    team: { type: 'string' },
+                    wins: { type: 'number' },
+                    losses: { type: 'number' },
+                    streak: { type: 'string' },
+                    ranking: { type: 'number' },
+                  },
+                },
+              },
+              sourcesUsed: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+              notes: { type: 'string' },
+            },
+          },
+        },
+      },
+    ],
+    tool_choice: { type: 'function', function: { name: 'extract_matchup_history' } },
+  };
+
+  const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text();
+    console.error('AI gateway error (extract):', resp.status, t);
+    return null;
+  }
+
+  const payload = await resp.json();
+
+  const toolArgsRaw =
+    payload?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments ??
+    payload?.choices?.[0]?.message?.tool_call?.arguments;
+
+  const extracted = safeParseToolArgs(toolArgsRaw);
+  if (!extracted) {
+    console.error('AI extraction missing tool arguments');
+    return null;
+  }
+
+  const normalizeRF = (teamName: string, arr: any[]) => {
+    const cleaned = clampArray(arr || [], 5)
+      .map((g: any) => ({
+        opponent: typeof g?.opponent === 'string' ? g.opponent : 'Unknown',
+        result: g?.result === 'W' ? 'W' : 'L',
+        score: typeof g?.score === 'string' ? g.score : '',
+        date: typeof g?.date === 'string' ? g.date : '',
+      }))
+      .filter((g: any) => isIsoDate(g.date) && scorePattern.test(g.score));
+
+    return {
+      team: teamName,
+      last5: cleaned,
+      limitedData: cleaned.length < 3,
+      isGenerated: false,
+    };
+  };
+
+  const rfRaw = Array.isArray(extracted.recentForm) ? extracted.recentForm : [];
+  const homeRaw = rfRaw.find((x: any) => (x?.team || '').toLowerCase().includes(homeTeam.toLowerCase()))?.last5;
+  const awayRaw = rfRaw.find((x: any) => (x?.team || '').toLowerCase().includes(awayTeam.toLowerCase()))?.last5;
+
+  const recentForm: ScrapedGameData['recentForm'] = [
+    normalizeRF(homeTeam, Array.isArray(homeRaw) ? homeRaw : []),
+    normalizeRF(awayTeam, Array.isArray(awayRaw) ? awayRaw : []),
+  ];
+
+  const headToHead: ScrapedGameData['headToHead'] = clampArray(extracted.headToHead || [], 5)
+    .map((h: any) => ({
+      date: typeof h?.date === 'string' ? h.date : '',
+      winner: typeof h?.winner === 'string' ? h.winner : '',
+      score: typeof h?.score === 'string' ? h.score : '',
+      sport: sportKey,
+      competitionLevel: sportValidation.competitionLevel,
+    }))
+    .filter((h: any) => isIsoDate(h.date) && scorePattern.test(h.score) && (h.winner === homeTeam || h.winner === awayTeam));
+
+  const injuries: ScrapedGameData['injuries'] = clampArray(extracted.injuries || [], 30)
+    .map((i: any) => ({
+      team: typeof i?.team === 'string' ? i.team : '',
+      player: typeof i?.player === 'string' ? i.player : '',
+      position: typeof i?.position === 'string' ? i.position : getPositionForSport(sport),
+      injuryType: typeof i?.injuryType === 'string' ? i.injuryType : 'Undisclosed',
+      status: i?.status === 'Out' || i?.status === 'Questionable' || i?.status === 'Probable' || i?.status === 'Day-to-Day'
+        ? i.status
+        : 'Questionable',
+    }))
+    .filter((i: any) => i.team && i.player);
+
+  const teamStats: ScrapedGameData['teamStats'] = clampArray(extracted.teamStats || [], 10)
+    .map((ts: any) => ({
+      team: typeof ts?.team === 'string' ? ts.team : '',
+      wins: Number.isFinite(ts?.wins) ? ts.wins : 0,
+      losses: Number.isFinite(ts?.losses) ? ts.losses : 0,
+      streak: typeof ts?.streak === 'string' ? ts.streak : 'N/A',
+      ranking: Number.isFinite(ts?.ranking) ? ts.ranking : 0,
+    }))
+    .filter((ts: any) => ts.team);
+
+  const validMatchCount = headToHead.length;
+  const headToHeadMeta = {
+    limitedData: validMatchCount < 3,
+    validMatchCount,
+    message: validMatchCount < 3 ? 'Limited historical data - fewer than 3 validated matches found.' : undefined,
+    isGenerated: false,
+  };
+
+  const sourcesUsed: string[] = clampArray(extracted.sourcesUsed || [], 20).filter((u: any) => typeof u === 'string');
+
+  const analysisLines = [
+    extracted?.notes ? String(extracted.notes) : 'Verified data extracted from sources.',
+    sourcesUsed.length ? `\nSources:\n${sourcesUsed.map((u) => `- ${u}`).join('\n')}` : '',
+  ].filter(Boolean);
+
+  const hasAnyRealData =
+    recentForm.some((rf) => rf.last5.length > 0) || headToHead.length > 0 || injuries.length > 0 || teamStats.length > 0;
+
+  if (!hasAnyRealData) return null;
+
+  const dataSource: ScrapedGameData['dataSource'] =
+    recentForm.every((rf) => rf.last5.length >= 3) && headToHead.length >= 3 ? 'real' : 'partial';
+
+  return {
+    injuries,
+    recentForm,
+    headToHead,
+    headToHeadMeta,
+    teamStats,
+    analysis: analysisLines.join('\n'),
+    sportValidation,
+    dataSource,
+  };
 }
 
 async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
@@ -536,34 +714,46 @@ function parseScrapedData(
       }
     }
     
-    // Add team stats if found
+    // Add team stats if found (no guessing)
     if (foundRecords[homeTeam.toLowerCase()]) {
       const r = foundRecords[homeTeam.toLowerCase()];
-      teamStats.push({ team: homeTeam, wins: r.wins, losses: r.losses, streak: r.wins > r.losses ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 10) });
+      teamStats.push({
+        team: homeTeam,
+        wins: r.wins,
+        losses: r.losses,
+        streak: r.wins > r.losses ? 'W' : 'L',
+        ranking: 0,
+      });
     }
     if (foundRecords[awayTeam.toLowerCase()]) {
       const r = foundRecords[awayTeam.toLowerCase()];
-      teamStats.push({ team: awayTeam, wins: r.wins, losses: r.losses, streak: r.wins > r.losses ? 'W2' : 'L1', ranking: Math.ceil(Math.random() * 10) });
+      teamStats.push({
+        team: awayTeam,
+        wins: r.wins,
+        losses: r.losses,
+        streak: r.wins > r.losses ? 'W' : 'L',
+        ranking: 0,
+      });
     }
-    
-    // Add recent form - use real data if available, otherwise mark as generated
+
+    // Add recent form (NO SIMULATION)
     recentForm.push({
       team: homeTeam,
-      last5: homeResults.length >= 3 ? homeResults.slice(0, 5) : generateLast5Games(sport),
-      limitedData: homeResults.length < 3 && homeResults.length > 0,
-      isGenerated: homeResults.length < 3,
+      last5: homeResults.slice(0, 5),
+      limitedData: homeResults.length < 3,
+      isGenerated: false,
     });
     recentForm.push({
       team: awayTeam,
-      last5: awayResults.length >= 3 ? awayResults.slice(0, 5) : generateLast5Games(sport),
-      limitedData: awayResults.length < 3 && awayResults.length > 0,
-      isGenerated: awayResults.length < 3,
+      last5: awayResults.slice(0, 5),
+      limitedData: awayResults.length < 3,
+      isGenerated: false,
     });
   } else {
-    // No form data - generate with clear indicator
+    // No form data - return empty (NO SIMULATION)
     recentForm.push(
-      { team: homeTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true },
-      { team: awayTeam, last5: generateLast5Games(sport), limitedData: true, isGenerated: true }
+      { team: homeTeam, last5: [], limitedData: true, isGenerated: false },
+      { team: awayTeam, last5: [], limitedData: true, isGenerated: false }
     );
   }
 
@@ -809,120 +999,16 @@ function getScorePatternForSport(sportKey: string): RegExp {
   }
 }
 
-function generateLast5Games(sport: string): { opponent: string; result: 'W' | 'L'; score: string; date: string }[] {
-  const sportKey = normalizeSportKey(sport);
-  const opponents = SPORT_TEAMS[sportKey] || SPORT_TEAMS['nba'];
-  const games = [];
-  
-  for (let i = 0; i < 5; i++) {
-    const isWin = Math.random() > 0.4;
-    const score = generateScoreForSport(sportKey, isWin);
-    games.push({
-      opponent: opponents[Math.floor(Math.random() * opponents.length)],
-      result: isWin ? 'W' as const : 'L' as const,
-      score,
-      date: getDateDaysAgo(i * 3 + 1),
-    });
-  }
-  
-  return games;
-}
+// (Simulation helpers removed)
+// We do not generate "last 5" results or scores. If sources don't contain verified history,
+// we return empty arrays with a limited-data notice.
 
-function generateScoreForSport(sportKey: string, isWin: boolean): string {
-  // Table tennis / ping pong - games to 11, best of 5 or 7
-  if (['tabletennis', 'wtt', 'pingpong'].includes(sportKey)) {
-    const winSets = Math.random() > 0.5 ? 4 : 3; // Best of 7 or 5
-    const loseSets = Math.floor(Math.random() * winSets);
-    return isWin ? `${winSets}-${loseSets}` : `${loseSets}-${winSets}`;
-  }
-  
-  switch (sportKey) {
-    case 'nba':
-    case 'ncaab': {
-      const high = 105 + Math.floor(Math.random() * 25);
-      const low = 95 + Math.floor(Math.random() * 15);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'nfl':
-    case 'ncaaf': {
-      const high = 24 + Math.floor(Math.random() * 17);
-      const low = 14 + Math.floor(Math.random() * 14);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'nhl': {
-      const high = 3 + Math.floor(Math.random() * 3);
-      const low = 1 + Math.floor(Math.random() * 2);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'mlb': {
-      const high = 5 + Math.floor(Math.random() * 5);
-      const low = 2 + Math.floor(Math.random() * 4);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'soccer': {
-      const high = 2 + Math.floor(Math.random() * 3);
-      const low = Math.floor(Math.random() * 2);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'mma':
-    case 'boxing':
-      return isWin ? 'W' : 'L'; // Combat sports don't have traditional scores
-    case 'tennis': {
-      // Best of 3 or 5 sets
-      const bestOf = Math.random() > 0.5 ? 3 : 5;
-      const winSets = bestOf === 3 ? 2 : 3;
-      const loseSets = Math.floor(Math.random() * winSets);
-      return isWin ? `${winSets}-${loseSets}` : `${loseSets}-${winSets}`;
-    }
-    case 'badminton': {
-      // Best of 3 games
-      const loseSets = Math.floor(Math.random() * 2);
-      return isWin ? `2-${loseSets}` : `${loseSets}-2`;
-    }
-    case 'snooker': {
-      // Frames - varies by tournament
-      const high = 6 + Math.floor(Math.random() * 7);
-      const low = Math.floor(Math.random() * high);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'darts': {
-      // Sets (best of 7 or similar)
-      const high = 4 + Math.floor(Math.random() * 4);
-      const low = Math.floor(Math.random() * high);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'esports': {
-      // Maps - typically best of 3 or 5
-      const bestOf = Math.random() > 0.5 ? 3 : 5;
-      const winMaps = bestOf === 3 ? 2 : 3;
-      const loseMaps = Math.floor(Math.random() * winMaps);
-      return isWin ? `${winMaps}-${loseMaps}` : `${loseMaps}-${winMaps}`;
-    }
-    case 'cricket': {
-      const high = 280 + Math.floor(Math.random() * 70);
-      const low = 200 + Math.floor(Math.random() * 60);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    case 'rugby': {
-      const high = 24 + Math.floor(Math.random() * 20);
-      const low = 14 + Math.floor(Math.random() * 14);
-      return isWin ? `${high}-${low}` : `${low}-${high}`;
-    }
-    default:
-      return isWin ? '1-0' : '0-1';
-  }
-}
-
-function generateScore(sport: string): string {
-  const sportKey = normalizeSportKey(sport);
-  const isWin = Math.random() > 0.5;
-  return generateScoreForSport(sportKey, isWin);
-}
 
 function getPositionForSport(sport: string): string {
   const sportKey = normalizeSportKey(sport);
   const positions = SPORT_POSITIONS[sportKey] || ['Player'];
-  return positions[Math.floor(Math.random() * positions.length)];
+  // Deterministic fallback (avoid any generated randomness)
+  return positions[0] || 'Player';
 }
 
 function getDateDaysAgo(days: number): string {
