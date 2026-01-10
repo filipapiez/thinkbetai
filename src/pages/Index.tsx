@@ -584,6 +584,9 @@ const Index = () => {
               <p className="mt-6 text-sm text-muted-foreground">
                 No credit card required • Cancel anytime • 100% money-back guarantee
               </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                New to AI betting? Read our guide: <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline">Is there an AI betting platform?</Link>
+              </p>
             </div>
           </div>
         </section>
