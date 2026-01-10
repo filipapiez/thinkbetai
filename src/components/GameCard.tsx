@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Game, getGameFacts } from '@/lib/mockData';
+import { Game, getGameFacts, Team } from '@/lib/mockData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap, Trophy } from 'lucide-react';
 import { calculateBetQualification, BetSignal, BetQualification } from '@/lib/betQualification';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -83,6 +83,45 @@ const getPositionLabel = (sport: string, isHome: boolean): string | null => {
   
   // Team sports use home/away
   return isHome ? 'Home' : 'Away';
+};
+
+// Check if sport is individual (non-team) sport
+const isIndividualSport = (sport: string): boolean => {
+  const sportLower = sport.toLowerCase();
+  const individualSports = [
+    'tennis', 'table tennis', 'atp', 'wta', 'wtt',
+    'golf', 'pga', 'lpga',
+    'esports', 'darts', 'snooker', 'badminton', 'pool',
+    'ufc', 'mma', 'boxing'
+  ];
+  return individualSports.some(s => sportLower.includes(s));
+};
+
+// Player ranking badge for individual sports
+const PlayerRankingBadge = ({ team }: { team: Team }) => {
+  const ranking = team.stats?.ranking;
+  if (!ranking) return null;
+  
+  // Style based on ranking
+  const getRankColor = (rank: number) => {
+    if (rank === 1) return 'text-amber-400 bg-amber-500/20 border-amber-500/40';
+    if (rank <= 3) return 'text-slate-300 bg-slate-500/20 border-slate-500/40';
+    if (rank <= 10) return 'text-orange-400 bg-orange-500/20 border-orange-500/40';
+    return 'text-muted-foreground bg-muted/30 border-border';
+  };
+  
+  return (
+    <Badge 
+      variant="outline" 
+      className={cn(
+        "text-[10px] px-1.5 py-0 flex items-center gap-0.5 font-semibold",
+        getRankColor(ranking)
+      )}
+    >
+      <Trophy className="h-2.5 w-2.5" />
+      #{ranking}
+    </Badge>
+  );
 };
 
 export const GameCard = ({ game }: GameCardProps) => {
@@ -168,7 +207,10 @@ export const GameCard = ({ game }: GameCardProps) => {
                 {game.homeTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.homeTeam.name}</p>
-              {homeLabel && <p className="text-xs text-muted-foreground">{homeLabel}</p>}
+              <div className="flex flex-col items-center gap-1 mt-1">
+                {homeLabel && <p className="text-xs text-muted-foreground">{homeLabel}</p>}
+                {isIndividualSport(game.sport) && <PlayerRankingBadge team={game.homeTeam} />}
+              </div>
             </div>
 
             {/* VS */}
@@ -188,7 +230,10 @@ export const GameCard = ({ game }: GameCardProps) => {
                 {game.awayTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.awayTeam.name}</p>
-              {awayLabel && <p className="text-xs text-muted-foreground">{awayLabel}</p>}
+              <div className="flex flex-col items-center gap-1 mt-1">
+                {awayLabel && <p className="text-xs text-muted-foreground">{awayLabel}</p>}
+                {isIndividualSport(game.sport) && <PlayerRankingBadge team={game.awayTeam} />}
+              </div>
             </div>
           </div>
 
