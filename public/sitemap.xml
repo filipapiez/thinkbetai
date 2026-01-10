@@ -105,8 +105,13 @@
   <url>
     <loc>https://thinkbetai.com/ai-sports-picks</loc>
     <lastmod>2026-01-10</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.95</priority>
+    <changefreq>hourly</changefreq>
+    <priority>0.98</priority>
+    <image:image>
+      <image:loc>https://thinkbetai.com/og-image.png</image:loc>
+      <image:title>AI Sports Picks - Free Daily AI Predictions</image:title>
+      <image:caption>Get AI-powered sports betting picks with 83%+ accuracy for NFL, NBA, MLB, NHL, UFC and more</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://thinkbetai.com/blog/is-ai-betting-legal</loc>
