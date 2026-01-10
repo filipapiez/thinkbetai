@@ -1,4 +1,5 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -8,10 +9,37 @@ import { SEO } from '@/components/SEO';
 import { Calendar, Clock, ArrowLeft, ArrowRight, User, Share2 } from 'lucide-react';
 import { getBlogPostBySlug, getRelatedPosts } from '@/lib/blogData';
 
+// FAQ data for specific blog posts
+const blogFAQs: Record<string, { question: string; answer: string }[]> = {
+  'is-there-an-ai-betting-platform': [
+    {
+      question: 'Is there any AI betting platform?',
+      answer: 'Yes, there are AI betting platforms that help analyze sports data, odds, and trends to support betting decisions. These platforms use machine learning algorithms to process vast amounts of historical data, player statistics, and real-time information to generate predictions. ThinkBetAI is a leading example, offering AI-powered analysis for NFL, NBA, MLB, NHL, UFC, and more.'
+    },
+    {
+      question: 'How accurate are AI betting predictions?',
+      answer: 'Top AI betting platforms achieve 60-75% accuracy on certain bet types. While no system can guarantee wins, AI significantly outperforms random chance by analyzing millions of data points including team statistics, player performance, injuries, weather conditions, and historical betting patterns.'
+    },
+    {
+      question: 'Is using AI for betting legal?',
+      answer: 'Yes, using AI analysis tools for betting decisions is completely legal. AI betting platforms provide information, analysis, and predictions to help users make informed decisions. They are analytical tools, not gambling services themselves.'
+    },
+    {
+      question: 'What sports do AI betting platforms cover?',
+      answer: 'Most comprehensive AI betting platforms cover major sports including NFL football, NBA basketball, MLB baseball, NHL hockey, UFC/MMA, soccer, tennis, and golf. The best platforms provide real-time analysis and predictions across multiple leagues and sports.'
+    },
+    {
+      question: 'Do I need technical knowledge to use AI betting platforms?',
+      answer: 'No technical knowledge is required. Modern AI betting platforms present complex analysis in user-friendly formats with clear predictions, confidence ratings, and explanations. Users simply review the AI recommendations and make their own betting decisions.'
+    }
+  ]
+};
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPostBySlug(slug) : undefined;
   const relatedPosts = slug ? getRelatedPosts(slug, 3) : [];
+  const faqs = slug ? blogFAQs[slug] : undefined;
 
   if (!post) {
     return <Navigate to="/blog" replace />;
@@ -29,6 +57,20 @@ const BlogPost = () => {
     }
   };
 
+  // Generate FAQ structured data
+  const faqStructuredData = faqs ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  } : null;
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -41,6 +83,13 @@ const BlogPost = () => {
         publishedTime={post.publishedAt}
         image={post.image}
       />
+      {faqStructuredData && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(faqStructuredData)}
+          </script>
+        </Helmet>
+      )}
       <Header />
       
       <main className="container py-8 md:py-12">
