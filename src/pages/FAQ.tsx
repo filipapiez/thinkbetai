@@ -185,9 +185,12 @@ const FAQ = () => {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Everything you need to know about AI betting predictions, our platform, and how to get started.
             </p>
-            <p className="mt-4 text-muted-foreground">
-              Popular: <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline font-medium">Is there an AI betting platform?</Link>
-            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link to="/blog/is-there-an-ai-betting-platform" className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors">Is there an AI betting platform?</Link>
+              <Link to="/blog/is-ai-betting-legal" className="px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm font-medium hover:text-foreground transition-colors">Is AI betting legal?</Link>
+              <Link to="/blog/can-ai-predict-sports-outcomes" className="px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm font-medium hover:text-foreground transition-colors">Can AI predict sports?</Link>
+              <Link to="/blog/ai-betting-myths-vs-reality" className="px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm font-medium hover:text-foreground transition-colors">AI betting myths vs reality</Link>
+            </div>
             </div>
 
             {/* Quick Stats */}

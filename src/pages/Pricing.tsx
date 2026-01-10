@@ -240,6 +240,17 @@ const Pricing = () => {
                 </p>
               </div>
             </div>
+            
+            {/* Educational Links */}
+            <div className="mt-8 text-center">
+              <p className="text-sm text-muted-foreground mb-3">Learn more about AI betting:</p>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <Link to="/blog/is-ai-betting-legal" className="text-primary hover:underline">Is AI betting legal?</Link>
+                <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-primary hover:underline">How AI is used in betting</Link>
+                <Link to="/blog/can-ai-predict-sports-outcomes" className="text-primary hover:underline">Can AI predict sports?</Link>
+                <Link to="/blog/ai-betting-myths-vs-reality" className="text-primary hover:underline">Myths vs reality</Link>
+              </div>
+            </div>
           </div>
         </div>
       </main>
