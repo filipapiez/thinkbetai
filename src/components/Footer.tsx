@@ -27,8 +27,19 @@ export const Footer = () => {
               <li><Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
-              <li><Link to="/blog/is-there-an-ai-betting-platform" className="hover:text-foreground transition-colors">Is there an AI betting platform?</Link></li>
               <li><Link to="/account" className="hover:text-foreground transition-colors">Account</Link></li>
+            </ul>
+          </div>
+
+          {/* Learn */}
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Learn</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/blog/is-there-an-ai-betting-platform" className="hover:text-foreground transition-colors">Is there an AI betting platform?</Link></li>
+              <li><Link to="/blog/is-ai-betting-legal" className="hover:text-foreground transition-colors">Is AI betting legal?</Link></li>
+              <li><Link to="/blog/how-ai-is-used-in-sports-betting" className="hover:text-foreground transition-colors">How AI is used in betting</Link></li>
+              <li><Link to="/blog/can-ai-predict-sports-outcomes" className="hover:text-foreground transition-colors">Can AI predict sports?</Link></li>
+              <li><Link to="/blog/ai-betting-myths-vs-reality" className="hover:text-foreground transition-colors">AI betting myths vs reality</Link></li>
             </ul>
           </div>
 

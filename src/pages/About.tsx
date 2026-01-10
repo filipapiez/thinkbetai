@@ -245,9 +245,15 @@ const AboutPage = () => {
                 </Link>
               </Button>
             </div>
-            <p className="mt-6 text-sm text-muted-foreground">
-              Want to learn more? Check out our <Link to="/blog/is-there-an-ai-betting-platform" className="text-primary hover:underline">AI betting FAQ</Link>
-            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
+              <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
+              <span className="text-border">•</span>
+              <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>
+              <span className="text-border">•</span>
+              <Link to="/blog/can-ai-predict-sports-outcomes" className="text-muted-foreground hover:text-primary transition-colors">Can AI predict sports?</Link>
+              <span className="text-border">•</span>
+              <Link to="/blog/ai-betting-myths-vs-reality" className="text-muted-foreground hover:text-primary transition-colors">AI betting myths vs reality</Link>
+            </div>
           </div>
         </section>
       </main>
