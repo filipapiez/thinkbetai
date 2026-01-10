@@ -182,10 +182,11 @@ const AISportsPicks = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO 
-        title="AI Sports Picks | Free Daily AI Sports Predictions - ThinkBetAI"
-        description="Get AI-powered sports betting picks with 83%+ accuracy. Free daily predictions for NFL, NBA, MLB, NHL, UFC, Soccer & more. Advanced machine learning analysis with detailed explanations."
-        keywords="AI sports picks, AI sports predictions, AI betting picks, machine learning sports betting, AI NFL picks, AI NBA picks, free sports predictions, AI betting algorithm, sports betting AI"
+        title="AI Sports Picks | #1 Free AI Betting Predictions 2026 - ThinkBetAI"
+        description="🏆 Get winning AI sports picks with 83.8% accuracy. Free daily NFL, NBA, MLB, NHL & UFC predictions powered by machine learning. Join 10,000+ bettors using AI-powered sports betting analysis."
+        keywords="AI sports picks, AI sports predictions, AI betting picks, machine learning sports betting, AI NFL picks, AI NBA picks, free sports predictions, AI betting algorithm, sports betting AI, best AI sports picks, AI betting predictions 2026"
         url="/ai-sports-picks"
+        canonical="https://thinkbetai.com/ai-sports-picks"
         structuredData={structuredData}
       />
       
