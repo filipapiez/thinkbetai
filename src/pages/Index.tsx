@@ -585,6 +585,7 @@ const Index = () => {
                 No credit card required • Cancel anytime • 100% money-back guarantee
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
+                <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
                 <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
                 <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>
                 <Link to="/blog/can-ai-predict-sports-outcomes" className="text-muted-foreground hover:text-primary transition-colors">Can AI predict sports?</Link>

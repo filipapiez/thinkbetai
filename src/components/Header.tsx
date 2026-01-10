@@ -23,9 +23,9 @@ export const Header = () => {
           <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Games
           </Link>
-          <Link to="/picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+          <Link to="/ai-sports-picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Target className="h-4 w-4" />
-            Picks
+            AI Picks
           </Link>
           <Link to="/chat" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
@@ -87,12 +87,12 @@ export const Header = () => {
               Search Games
             </Link>
             <Link 
-              to="/picks" 
+              to="/ai-sports-picks" 
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Target className="h-4 w-4" />
-              Picks
+              AI Picks
             </Link>
             <Link 
               to="/chat" 
