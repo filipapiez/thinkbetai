@@ -23,6 +23,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 text-sm">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/ai-sports-picks" className="hover:text-foreground transition-colors">AI Sports Picks</Link></li>
               <li><Link to="/games" className="hover:text-foreground transition-colors">Search Games</Link></li>
               <li><Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>

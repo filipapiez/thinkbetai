@@ -103,6 +103,12 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://thinkbetai.com/ai-sports-picks</loc>
+    <lastmod>2026-01-10</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
     <loc>https://thinkbetai.com/blog/is-ai-betting-legal</loc>
     <lastmod>2026-01-10</lastmod>
     <changefreq>monthly</changefreq>
