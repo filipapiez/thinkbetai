@@ -46,9 +46,8 @@ const Paywall = () => {
     
     setIsRedeemingCode(true);
     try {
-      const { data, error } = await supabase.rpc('redeem_access_code', {
-        code_text: trimmedCode,
-        requesting_user_id: user.id,
+      const { data, error } = await supabase.functions.invoke('redeem-access-code', {
+        body: { code: trimmedCode },
       });
       
       if (error) {
@@ -56,8 +55,8 @@ const Paywall = () => {
         return;
       }
       
-      if (!data) {
-        setPromoError('Invalid promo code');
+      if (!data?.success) {
+        setPromoError(data?.error || 'Invalid promo code');
         return;
       }
       
