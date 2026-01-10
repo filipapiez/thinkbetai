@@ -62,6 +62,29 @@ const BetSignalBadge = ({ qualification }: { qualification: BetQualification }) 
   );
 };
 
+// Get position label based on sport - returns null for individual sports
+const getPositionLabel = (sport: string, isHome: boolean): string | null => {
+  const sportLower = sport.toLowerCase();
+  
+  // Combat sports use corners
+  if (['ufc', 'mma', 'boxing'].includes(sportLower)) {
+    return isHome ? 'Red Corner' : 'Blue Corner';
+  }
+  
+  // Individual sports don't have home/away
+  const individualSports = [
+    'tennis', 'table tennis', 'atp', 'wta', 'wtt',
+    'golf', 'pga', 'lpga',
+    'esports', 'darts', 'snooker', 'badminton', 'pool'
+  ];
+  if (individualSports.some(s => sportLower.includes(s))) {
+    return null;
+  }
+  
+  // Team sports use home/away
+  return isHome ? 'Home' : 'Away';
+};
+
 export const GameCard = ({ game }: GameCardProps) => {
   const qualification = useMemo(() => {
     // Try to get enriched game facts for mock games
@@ -108,6 +131,8 @@ export const GameCard = ({ game }: GameCardProps) => {
   };
 
   const isLive = game.status === 'live';
+  const homeLabel = getPositionLabel(game.sport, true);
+  const awayLabel = getPositionLabel(game.sport, false);
 
   return (
     <Link to={`/games/${game.id}`}>
@@ -134,7 +159,7 @@ export const GameCard = ({ game }: GameCardProps) => {
           </div>
 
           <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Home Team */}
+            {/* Player/Team 1 */}
             <div className="flex-1 text-center">
               <div className={cn(
                 "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
@@ -143,7 +168,7 @@ export const GameCard = ({ game }: GameCardProps) => {
                 {game.homeTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.homeTeam.name}</p>
-              <p className="text-xs text-muted-foreground">Home</p>
+              {homeLabel && <p className="text-xs text-muted-foreground">{homeLabel}</p>}
             </div>
 
             {/* VS */}
@@ -154,7 +179,7 @@ export const GameCard = ({ game }: GameCardProps) => {
               </div>
             </div>
 
-            {/* Away Team */}
+            {/* Player/Team 2 */}
             <div className="flex-1 text-center">
               <div className={cn(
                 "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
@@ -163,7 +188,7 @@ export const GameCard = ({ game }: GameCardProps) => {
                 {game.awayTeam.abbreviation}
               </div>
               <p className="text-sm font-medium truncate">{game.awayTeam.name}</p>
-              <p className="text-xs text-muted-foreground">Away</p>
+              {awayLabel && <p className="text-xs text-muted-foreground">{awayLabel}</p>}
             </div>
           </div>
 

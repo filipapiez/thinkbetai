@@ -120,15 +120,26 @@ const PlayerStatsBadge = ({ team }: { team: LiveTeam }) => {
   );
 };
 
-// Get position label based on sport
+// Get position label based on sport - returns null for individual sports
 const getPositionLabel = (sport: string, isHome: boolean): string | null => {
   const sportLower = sport.toLowerCase();
+  
+  // Combat sports use corners
   if (['ufc', 'mma', 'boxing'].includes(sportLower)) {
     return isHome ? 'Red Corner' : 'Blue Corner';
   }
-  if (['tennis', 'table tennis', 'atp', 'wta', 'wtt'].includes(sportLower)) {
-    return null; // No position labels for racket sports
+  
+  // Individual sports don't have home/away
+  const individualSports = [
+    'tennis', 'table tennis', 'atp', 'wta', 'wtt',
+    'golf', 'pga', 'lpga',
+    'esports', 'darts', 'snooker', 'badminton', 'pool'
+  ];
+  if (individualSports.some(s => sportLower.includes(s))) {
+    return null;
   }
+  
+  // Team sports use home/away
   return isHome ? 'Home' : 'Away';
 };
 
@@ -137,9 +148,15 @@ const isCombatSport = (sport: string): boolean => {
   return ['ufc', 'mma', 'boxing'].includes(sport.toLowerCase());
 };
 
-// Check if sport is a racket sport (tennis/table tennis)
-const isRacketSport = (sport: string): boolean => {
-  return ['tennis', 'table tennis', 'atp', 'wta', 'wtt'].includes(sport.toLowerCase());
+// Check if sport is a racket/individual sport (tennis/table tennis/golf/etc.)
+const isIndividualSport = (sport: string): boolean => {
+  const sportLower = sport.toLowerCase();
+  const individualSports = [
+    'tennis', 'table tennis', 'atp', 'wta', 'wtt',
+    'golf', 'pga', 'lpga',
+    'esports', 'darts', 'snooker', 'badminton', 'pool'
+  ];
+  return individualSports.some(s => sportLower.includes(s));
 };
 
 export const LiveGameCard = ({ game }: LiveGameCardProps) => {
@@ -206,7 +223,7 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
                 )}
                 {isCombatSport(game.sport) ? (
                   <FighterStatsBadge team={game.homeTeam} position="red" />
-                ) : isRacketSport(game.sport) ? (
+                ) : isIndividualSport(game.sport) ? (
                   <PlayerStatsBadge team={game.homeTeam} />
                 ) : (
                   <WinRateBadge winPct={game.homeTeam.stats?.winPct} />
@@ -238,7 +255,7 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
                 )}
                 {isCombatSport(game.sport) ? (
                   <FighterStatsBadge team={game.awayTeam} position="blue" />
-                ) : isRacketSport(game.sport) ? (
+                ) : isIndividualSport(game.sport) ? (
                   <PlayerStatsBadge team={game.awayTeam} />
                 ) : (
                   <WinRateBadge winPct={game.awayTeam.stats?.winPct} />
