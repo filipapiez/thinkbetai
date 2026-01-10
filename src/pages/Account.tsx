@@ -60,9 +60,8 @@ const Account = () => {
     
     setIsRedeemingCode(true);
     try {
-      const { data, error } = await supabase.rpc('redeem_access_code', {
-        code_text: accessCode.trim().toUpperCase(),
-        requesting_user_id: user.id,
+      const { data, error } = await supabase.functions.invoke('redeem-access-code', {
+        body: { code: accessCode.trim().toUpperCase() },
       });
       
       if (error) {
@@ -70,8 +69,8 @@ const Account = () => {
         return;
       }
       
-      if (!data) {
-        toast.error('Invalid or expired access code.');
+      if (!data?.success) {
+        toast.error(data?.error || 'Invalid or expired access code.');
         return;
       }
       

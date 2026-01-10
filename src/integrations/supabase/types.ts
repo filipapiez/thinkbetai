@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_code_redemption_attempts: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          success?: boolean
+          user_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       access_codes: {
         Row: {
           code: string
@@ -174,10 +201,6 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
-        Returns: boolean
-      }
-      redeem_access_code: {
-        Args: { code_text: string; requesting_user_id: string }
         Returns: boolean
       }
     }
