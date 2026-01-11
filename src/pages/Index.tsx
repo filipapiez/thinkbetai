@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
+import { ChatWidget } from '@/components/ChatWidget';
 import { platformStats } from '@/lib/mockData';
 import { 
   Search, 
@@ -597,6 +598,7 @@ const Index = () => {
       </main>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 };
