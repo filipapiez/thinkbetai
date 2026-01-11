@@ -22,7 +22,6 @@ import {
   Activity,
   Target,
   Zap,
-  FlaskConical,
 } from 'lucide-react';
 import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@/lib/liveTypes';
 import { useLiveGames } from '@/hooks/useLiveGames';
@@ -585,39 +584,6 @@ const GameDetail = () => {
               <CardContent className="p-6 flex items-center gap-3 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
                 Odds currently unavailable. Analysis based on schedule, form, and market interest.
-              </CardContent>
-            </Card>
-          )}
-
-          {/* === SIMULATED DATA WARNING BANNER === */}
-          {scrapedData?.dataSource === 'simulated' && (
-            <Card className="mb-6 border-purple-500/50 bg-purple-500/10">
-              <CardContent className="p-4 flex items-start gap-3">
-                <FlaskConical className="h-6 w-6 text-purple-400 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-purple-300 mb-1">⚠️ Simulated Data Only</h3>
-                  <p className="text-sm text-purple-400/80">
-                    Real match data is not available for this matchup. All injury reports, recent form, 
-                    and head-to-head statistics shown below are <strong>simulated for demonstration purposes only</strong>. 
-                    Do not use this information for actual betting decisions.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {scrapedData?.dataSource === 'partial' && (
-            <Card className="mb-6 border-amber-500/50 bg-amber-500/10">
-              <CardContent className="p-4 flex items-start gap-3">
-                <AlertTriangle className="h-6 w-6 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold text-amber-300 mb-1">⚠️ Partial Data Available</h3>
-                  <p className="text-sm text-amber-400/80">
-                    Some data for this matchup is real, but gaps have been filled with simulated data. 
-                    Sections marked with <FlaskConical className="h-3 w-3 inline mx-0.5" /> "SIM" are simulated.
-                    Always verify information from official sources before betting.
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}
