@@ -1,9 +1,11 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate limiting (per IP, per minute)
+// Rate limiting (per user, per minute)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 30; // 30 requests per minute
 const RATE_WINDOW_MS = 60 * 1000;
@@ -23,15 +25,6 @@ function checkRateLimit(identifier: string): boolean {
   
   record.count++;
   return true;
-}
-
-// Get client identifier for rate limiting (IP-based for unauthenticated)
-function getClientIdentifier(req: Request): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.headers.get('x-real-ip') || 'unknown';
 }
 
 // Allowed sports whitelist (normalized keys)
@@ -177,9 +170,37 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Rate limiting by client IP
-    const clientId = getClientIdentifier(req);
-    if (!checkRateLimit(clientId)) {
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error("No authorization header provided");
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      console.error("Authentication failed:", claimsError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub as string;
+    console.log(`Authenticated user: ${userId}`);
+
+    // Rate limiting by user ID
+    if (!checkRateLimit(userId)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
