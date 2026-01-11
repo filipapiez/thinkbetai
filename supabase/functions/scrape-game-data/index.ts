@@ -114,18 +114,17 @@ function buildNoDataGameData(homeTeam: string, awayTeam: string, sport: string):
   return {
     injuries: [],
     recentForm: [
-      { team: homeTeam, last5: [], limitedData: true, isGenerated: false },
-      { team: awayTeam, last5: [], limitedData: true, isGenerated: false },
+      { team: homeTeam, last5: [], limitedData: true },
+      { team: awayTeam, last5: [], limitedData: true },
     ],
     headToHead: [],
     headToHeadMeta: {
       limitedData: true,
       validMatchCount: 0,
       message: 'No verified historical data found for this matchup.',
-      isGenerated: false,
     },
     teamStats: [],
-    analysis: 'No verified historical results available from sources. We do not simulate or guess results.',
+    analysis: 'No verified historical results available from sources.',
     sportValidation,
     dataSource: 'partial',
   };
@@ -143,7 +142,6 @@ interface ScrapedGameData {
     team: string;
     last5: { opponent: string; result: 'W' | 'L'; score: string; date: string }[];
     limitedData?: boolean; // True if fewer than 3 valid matches
-    isGenerated?: boolean; // True if data is simulated
   }[];
   headToHead: { 
     date: string; 
@@ -156,7 +154,6 @@ interface ScrapedGameData {
     limitedData: boolean;
     validMatchCount: number;
     message?: string;
-    isGenerated?: boolean; // True if data is simulated
   };
   teamStats: {
     team: string;
@@ -171,7 +168,7 @@ interface ScrapedGameData {
     competitionLevel: string;
     scoringSystem: string;
   };
-  dataSource: 'real' | 'simulated' | 'partial'; // Indicates data origin
+  dataSource: 'real' | 'partial'; // Indicates data origin
 }
 
 Deno.serve(async (req) => {
@@ -506,7 +503,6 @@ async function extractHistoricalDataWithAIFromSources({
       team: teamName,
       last5: cleaned,
       limitedData: cleaned.length < 3,
-      isGenerated: false,
     };
   };
 
@@ -556,7 +552,6 @@ async function extractHistoricalDataWithAIFromSources({
     limitedData: validMatchCount < 3,
     validMatchCount,
     message: validMatchCount < 3 ? 'Limited historical data - fewer than 3 validated matches found.' : undefined,
-    isGenerated: false,
   };
 
   const sourcesUsed: string[] = clampArray(extracted.sourcesUsed || [], 20).filter((u: any) => typeof u === 'string');
@@ -736,24 +731,22 @@ function parseScrapedData(
       });
     }
 
-    // Add recent form (NO SIMULATION)
+    // Add recent form
     recentForm.push({
       team: homeTeam,
       last5: homeResults.slice(0, 5),
       limitedData: homeResults.length < 3,
-      isGenerated: false,
     });
     recentForm.push({
       team: awayTeam,
       last5: awayResults.slice(0, 5),
       limitedData: awayResults.length < 3,
-      isGenerated: false,
     });
   } else {
-    // No form data - return empty (NO SIMULATION)
+    // No form data - return empty
     recentForm.push(
-      { team: homeTeam, last5: [], limitedData: true, isGenerated: false },
-      { team: awayTeam, last5: [], limitedData: true, isGenerated: false }
+      { team: homeTeam, last5: [], limitedData: true },
+      { team: awayTeam, last5: [], limitedData: true }
     );
   }
 

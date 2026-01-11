@@ -184,7 +184,7 @@ export const calculateBetQualification = (input: QualificationInput): BetQualifi
     whyPass.push('High-variance sport');
   }
   
-  // 2. Unknown Lineups (simulated check)
+  // 2. Unknown Lineups
   const hasLineupUncertainty = injuryData.level === 'High';
   if (hasLineupUncertainty) {
     riskScore += 20;
