@@ -67,9 +67,9 @@ export const ChatWidget = () => {
   };
 
   const quickQuestions = [
-    "How does BetEdge AI work?",
+    "How does ThinkBetAI work?",
     "What sports do you cover?",
-    "What's your win rate?"
+    "How do I build a parlay?"
   ];
 
   return (
@@ -100,7 +100,7 @@ export const ChatWidget = () => {
                 </span>
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-foreground">BetEdge Assistant</h3>
+                <h3 className="font-semibold text-sm text-foreground">ThinkBetAI Assistant</h3>
                 <p className="text-xs text-muted-foreground">Ask me anything</p>
               </div>
             </div>
@@ -119,7 +119,7 @@ export const ChatWidget = () => {
               <div className="space-y-4">
                 <div className="bg-muted/50 rounded-2xl rounded-tl-sm p-3 max-w-[85%]">
                   <p className="text-sm text-foreground">
-                    Hey! 👋 I'm here to help you learn about our AI-powered sports betting picks. What would you like to know?
+                    Hey! 👋 I'm ThinkBetAI Assistant. Ask me anything about our platform, features, or how to get started with AI-powered betting picks!
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
