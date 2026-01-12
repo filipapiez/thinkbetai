@@ -100,19 +100,25 @@ function transformGame(apiGame: APIGame): LiveGame {
   };
 }
 
-// Sports to fetch from API (only valid SportsGameOdds league IDs)
-// Reduced list to avoid rate limits - API supports: NBA, NFL, MLB, NHL, NCAAB, NCAAF, EPL, LALIGA, BUNDESLIGA, SERIEA, MLS, UFC, ATP, WTA
+// Sports to fetch from API - comprehensive coverage
 const SPORTS_TO_FETCH = [
   // Major US Sports (high priority)
-  'nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb',
+  'nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb', 'wnba', 'cfl',
   // Soccer (top leagues)
-  'epl', 'laliga', 'bundesliga', 'seriea', 'mls',
-  // Combat & Tennis
-  'ufc', 'atp', 'wta',
+  'epl', 'laliga', 'bundesliga', 'seriea', 'mls', 'ligue1', 'ucl', 'uel', 'eredivisie', 'liga-mx',
+  // Combat Sports
+  'ufc', 'boxing', 'pfl',
+  // Tennis
+  'atp', 'wta',
+  // Golf
+  'pga', 'lpga',
+  // Racing
+  'f1', 'nascar', 'indycar',
+  // Other Sports
+  'tabletennis', 'cricket', 'ipl', 'rugby', 'afl', 'nrl',
+  // Esports
+  'csgo', 'lol', 'dota2', 'valorant',
 ];
-
-// Additional sports covered by scraping only (no API support)
-// These are: boxing, tabletennis, pga, cricket, esports, rugby, f1, nascar, ligue1, ucl, wnba
 
 // Store for game lookup by ID
 let gamesCache: Map<string, LiveGame> = new Map();
