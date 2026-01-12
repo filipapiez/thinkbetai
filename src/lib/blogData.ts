@@ -1157,7 +1157,7 @@ Machine learning models improve over time, becoming more accurate as they proces
 
 ThinkBetAI represents the cutting edge of AI-powered sports betting analysis. Our platform offers:
 
-- **73% Win Rate** on qualified predictions
+- **84% Win Rate** on qualified predictions
 - **Real-Time Updates** during live games
 - **Multi-Sport Coverage** across major leagues
 - **Detailed Analysis** explaining each prediction
