@@ -85,12 +85,41 @@ const PLATFORMS = [
   'Caesars'
 ];
 
-// Sport to Odds API league mapping
+// Sport to Odds API league mapping - comprehensive coverage
 const SPORT_LEAGUES: Record<string, string> = {
+  // Major US Sports
   'NFL': 'NFL',
   'NBA': 'NBA',
   'MLB': 'MLB',
   'NHL': 'NHL',
+  'NCAAB': 'NCAAB',
+  'NCAAF': 'NCAAF',
+  'WNBA': 'WNBA',
+  'CFL': 'CFL',
+  // Soccer
+  'EPL': 'EPL',
+  'LaLiga': 'LALIGA',
+  'Bundesliga': 'BUNDESLIGA',
+  'SerieA': 'SERIEA',
+  'MLS': 'MLS',
+  'Ligue1': 'LIGUE1',
+  'UCL': 'UCL',
+  // Combat
+  'UFC': 'UFC',
+  'Boxing': 'BOXING',
+  // Tennis
+  'ATP': 'ATP',
+  'WTA': 'WTA',
+  // Golf
+  'PGA': 'PGA',
+  // Racing
+  'F1': 'F1',
+  'NASCAR': 'NASCAR',
+  // Other
+  'Cricket': 'CRICKET',
+  'Rugby': 'RUGBY',
+  'TableTennis': 'TABLETENNIS',
+  'Esports': 'ESPORTS',
 };
 
 // ESPN headshot URL helper

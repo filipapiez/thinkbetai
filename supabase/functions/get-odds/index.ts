@@ -35,7 +35,7 @@ function getClientIP(req: Request): string {
          'unknown';
 }
 
-// Allowed sports (whitelist)
+// Allowed sports (whitelist) - Comprehensive coverage
 const leagueIdMap: Record<string, string> = {
   // Major US Sports
   'nba': 'NBA',
@@ -45,6 +45,9 @@ const leagueIdMap: Record<string, string> = {
   'ncaab': 'NCAAB',
   'ncaaf': 'NCAAF',
   'wnba': 'WNBA',
+  'cfl': 'CFL',
+  'xfl': 'XFL',
+  'usfl': 'USFL',
   // Soccer Leagues
   'epl': 'EPL',
   'laliga': 'LALIGA',
@@ -53,20 +56,60 @@ const leagueIdMap: Record<string, string> = {
   'mls': 'MLS',
   'ligue1': 'LIGUE1',
   'ucl': 'UCL',
+  'uel': 'UEL',
+  'eredivisie': 'EREDIVISIE',
+  'liga-mx': 'LIGA-MX',
+  'ligamx': 'LIGA-MX',
+  'primeira': 'PRIMEIRA',
+  'scottish': 'SCOTTISH',
+  'copa': 'COPA',
+  'concacaf': 'CONCACAF',
+  'worldcup': 'WORLDCUP',
+  'euros': 'EUROS',
+  'afcon': 'AFCON',
   // Combat Sports
   'ufc': 'UFC',
+  'mma': 'UFC',
   'boxing': 'BOXING',
+  'pfl': 'PFL',
+  'bellator': 'BELLATOR',
   // Tennis
   'atp': 'ATP',
   'wta': 'WTA',
-  // Other Popular Sports
-  'tabletennis': 'TABLETENNIS',
+  'itf': 'ITF',
+  // Golf
   'pga': 'PGA',
-  'cricket': 'CRICKET',
-  'esports': 'ESPORTS',
-  'rugby': 'RUGBY',
+  'lpga': 'LPGA',
+  'liv': 'LIV',
+  'dpworld': 'DPWORLD',
+  // Racing
   'f1': 'F1',
   'nascar': 'NASCAR',
+  'indycar': 'INDYCAR',
+  'motogp': 'MOTOGP',
+  // Other Popular Sports
+  'tabletennis': 'TABLETENNIS',
+  'cricket': 'CRICKET',
+  'ipl': 'IPL',
+  'esports': 'ESPORTS',
+  'csgo': 'CSGO',
+  'lol': 'LOL',
+  'dota2': 'DOTA2',
+  'valorant': 'VALORANT',
+  'rugby': 'RUGBY',
+  'rugbyunion': 'RUGBYUNION',
+  'rugbyleague': 'RUGBYLEAGUE',
+  'afl': 'AFL',
+  'nrl': 'NRL',
+  'snooker': 'SNOOKER',
+  'darts': 'DARTS',
+  'handball': 'HANDBALL',
+  'volleyball': 'VOLLEYBALL',
+  'badminton': 'BADMINTON',
+  'cycling': 'CYCLING',
+  'lacrosse': 'LACROSSE',
+  'pll': 'PLL',
+  'nll': 'NLL',
 };
 
 // Validate sport parameter
