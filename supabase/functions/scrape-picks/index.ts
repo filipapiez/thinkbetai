@@ -96,6 +96,9 @@ const SPORT_LEAGUES: Record<string, string> = {
   'NCAAF': 'NCAAF',
   'WNBA': 'WNBA',
   'CFL': 'CFL',
+  'XFL': 'XFL',
+  'PLL': 'PLL',
+  'NLL': 'NLL',
   // Soccer
   'EPL': 'EPL',
   'LaLiga': 'LALIGA',
@@ -104,22 +107,76 @@ const SPORT_LEAGUES: Record<string, string> = {
   'MLS': 'MLS',
   'Ligue1': 'LIGUE1',
   'UCL': 'UCL',
+  'UEL': 'UEL',
+  'Eredivisie': 'EREDIVISIE',
+  'LigaMX': 'LIGA-MX',
+  'JLeague': 'JLEAGUE',
+  'KLeague': 'KLEAGUE',
+  'ALeague': 'ALEAGUE',
+  'Saudi': 'SAUDI',
+  'Brazil': 'BRAZIL',
+  'Argentina': 'ARGENTINA',
+  'Libertadores': 'LIBERTADORES',
   // Combat
   'UFC': 'UFC',
   'Boxing': 'BOXING',
+  'PFL': 'PFL',
+  'Bellator': 'BELLATOR',
+  'ONE': 'ONE',
+  'Kickboxing': 'KICKBOXING',
   // Tennis
   'ATP': 'ATP',
   'WTA': 'WTA',
+  'ITF': 'ITF',
   // Golf
   'PGA': 'PGA',
+  'LPGA': 'LPGA',
+  'LIV': 'LIV',
+  'DPWorld': 'DPWORLD',
   // Racing
   'F1': 'F1',
   'NASCAR': 'NASCAR',
-  // Other
+  'IndyCar': 'INDYCAR',
+  'MotoGP': 'MOTOGP',
+  'WRC': 'WRC',
+  'Supercars': 'SUPERCARS',
+  // Australian Sports
+  'AFL': 'AFL',
+  'NRL': 'NRL',
+  'BBL': 'BBL',
+  // Cricket
   'Cricket': 'CRICKET',
+  'IPL': 'IPL',
+  'T20WC': 'T20WC',
+  'PSL': 'PSL',
+  'CPL': 'CPL',
+  // Rugby
   'Rugby': 'RUGBY',
+  'SixNations': 'SIXNATIONS',
+  'SuperRugby': 'SUPERRUGBY',
+  // Other
   'TableTennis': 'TABLETENNIS',
+  'Badminton': 'BADMINTON',
+  'Snooker': 'SNOOKER',
+  'Darts': 'DARTS',
+  'Handball': 'HANDBALL',
+  'Volleyball': 'VOLLEYBALL',
+  'HorseRacing': 'HORSERACING',
+  'Cycling': 'CYCLING',
+  // Esports
   'Esports': 'ESPORTS',
+  'CSGO': 'CSGO',
+  'CS2': 'CS2',
+  'LoL': 'LOL',
+  'Dota2': 'DOTA2',
+  'Valorant': 'VALORANT',
+  'Overwatch': 'OVERWATCH',
+  'RocketLeague': 'ROCKETLEAGUE',
+  'COD': 'COD',
+  // Winter Sports
+  'Skiing': 'SKIING',
+  'Biathlon': 'BIATHLON',
+  'Curling': 'CURLING',
 };
 
 // ESPN headshot URL helper

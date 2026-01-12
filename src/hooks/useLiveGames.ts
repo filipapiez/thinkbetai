@@ -103,21 +103,31 @@ function transformGame(apiGame: APIGame): LiveGame {
 // Sports to fetch from API - comprehensive coverage
 const SPORTS_TO_FETCH = [
   // Major US Sports (high priority)
-  'nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb', 'wnba', 'cfl',
+  'nba', 'nfl', 'nhl', 'ncaab', 'ncaaf', 'mlb', 'wnba', 'cfl', 'xfl', 'pll', 'nll',
   // Soccer (top leagues)
   'epl', 'laliga', 'bundesliga', 'seriea', 'mls', 'ligue1', 'ucl', 'uel', 'eredivisie', 'liga-mx',
+  'jleague', 'kleague', 'aleague', 'saudi', 'brazil', 'argentina', 'libertadores',
   // Combat Sports
-  'ufc', 'boxing', 'pfl',
+  'ufc', 'boxing', 'pfl', 'bellator', 'one', 'kickboxing',
   // Tennis
-  'atp', 'wta',
+  'atp', 'wta', 'itf',
   // Golf
-  'pga', 'lpga',
+  'pga', 'lpga', 'liv', 'dpworld',
   // Racing
-  'f1', 'nascar', 'indycar',
+  'f1', 'nascar', 'indycar', 'motogp', 'wrc', 'supercars',
+  // Australian Sports
+  'afl', 'nrl', 'bbl',
+  // Cricket
+  'cricket', 'ipl', 't20wc', 'psl', 'cpl',
+  // Rugby
+  'rugby', 'sixnations', 'superrugby',
   // Other Sports
-  'tabletennis', 'cricket', 'ipl', 'rugby', 'afl', 'nrl',
+  'tabletennis', 'badminton', 'snooker', 'darts', 'handball', 'volleyball',
+  'horseracing', 'cycling',
   // Esports
-  'csgo', 'lol', 'dota2', 'valorant',
+  'csgo', 'cs2', 'lol', 'dota2', 'valorant', 'overwatch', 'rocketleague', 'cod',
+  // Winter Sports
+  'skiing', 'biathlon', 'curling',
 ];
 
 // Store for game lookup by ID
