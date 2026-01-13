@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Target } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Target, Layers } from 'lucide-react';
 import { useState } from 'react';
 
 export const Header = () => {
@@ -26,6 +26,10 @@ export const Header = () => {
           <Link to="/ai-sports-picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Target className="h-4 w-4" />
             AI Picks
+          </Link>
+          <Link to="/parlays" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <Layers className="h-4 w-4" />
+            Parlays
           </Link>
           <Link to="/chat" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
@@ -93,6 +97,14 @@ export const Header = () => {
             >
               <Target className="h-4 w-4" />
               AI Picks
+            </Link>
+            <Link 
+              to="/parlays" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Layers className="h-4 w-4" />
+              Parlays
             </Link>
             <Link 
               to="/chat" 
