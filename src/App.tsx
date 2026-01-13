@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Games from "./pages/Games";
 import GameDetail from "./pages/GameDetail";
 import Picks from "./pages/Picks";
+import Parlays from "./pages/Parlays";
 import Pricing from "./pages/Pricing";
 import Account from "./pages/Account";
 import Subscription from "./pages/Subscription";
@@ -73,6 +74,11 @@ const App = () => (
               <Route path="/picks" element={
                 <ProtectedRoute requireSubscription>
                   <Picks />
+                </ProtectedRoute>
+              } />
+              <Route path="/parlays" element={
+                <ProtectedRoute requireSubscription>
+                  <Parlays />
                 </ProtectedRoute>
               } />
               <Route path="/chat" element={
