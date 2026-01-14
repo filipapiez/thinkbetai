@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -6,17 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
+import { Check, Zap, Crown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 // Stripe price IDs for each plan
 const pricingPlans = [
   {
     id: 'basic',
-    priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
+    paymentLink: 'https://buy.stripe.com/14AdRbfrUeI49kF4AH3840K',
     name: 'Basic',
-    price: 49,
+    price: 4.99,
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -33,9 +30,9 @@ const pricingPlans = [
   },
   {
     id: 'pro',
-    priceId: 'price_1Sn2EBQrqKHReEDtxXgWQBQL',
+    paymentLink: 'https://buy.stripe.com/14AdRbfrUeI49kF4AH3840K',
     name: 'Pro',
-    price: 89,
+    price: 14.99,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -53,80 +50,27 @@ const pricingPlans = [
     cta: 'Go Pro',
     popular: true,
   },
-  {
-    id: 'insider',
-    priceId: 'price_1Sn2DhQrqKHReEDtr8LCdEXA',
-    name: 'Insider',
-    price: 299,
-    description: 'The ultimate package for dedicated analysts',
-    icon: Trophy,
-    features: [
-      'Everything in Pro',
-      'Real-time odds updates',
-      'Advanced statistical models',
-      'Custom alerts & notifications',
-      'Exclusive Discord community',
-      'One-on-one consultation',
-      'AI Parlay Builder & analysis',
-      'Early access to upgraded features',
-      'Multi-leg parlay optimization',
-    ],
-    cta: 'Become an Insider',
-    popular: false,
-  },
 ];
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user, isSubscribed, session } = useAuth();
-  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const { user, isSubscribed } = useAuth();
 
-  const handleSelectPlan = async (plan: typeof pricingPlans[0]) => {
+  const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
     if (!user) {
       navigate('/login', { state: { from: { pathname: '/pricing' } } });
       return;
     }
 
-    if (!session?.access_token) {
-      toast.error('Please log in to continue');
-      return;
-    }
-
-    setLoadingPlanId(plan.id);
-
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: plan.priceId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) {
-        console.error('Checkout error:', error);
-        toast.error('Failed to start checkout. Please try again.');
-        return;
-      }
-
-      if (data?.url) {
-        // Open Stripe Checkout in new tab
-        window.open(data.url, '_blank');
-      } else {
-        toast.error('No checkout URL received');
-      }
-    } catch (err) {
-      console.error('Checkout exception:', err);
-      toast.error('An unexpected error occurred');
-    } finally {
-      setLoadingPlanId(null);
-    }
+    // Open the Stripe payment link directly
+    window.open(plan.paymentLink, '_blank');
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
         title="Pricing - AI Betting Plans"
-        description="Choose the perfect ThinkBetAI plan for your betting strategy. Get AI-powered predictions, real-time analysis, and expert insights starting at $49/month."
+        description="Choose the perfect ThinkBetAI plan for your betting strategy. Get AI-powered predictions, real-time analysis, and expert insights starting at $4.99/month."
         keywords="AI betting subscription, sports betting plans, betting software pricing, AI predictions cost"
         url="/pricing"
       />
@@ -147,7 +91,7 @@ const Pricing = () => {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {pricingPlans.map((plan) => {
               const Icon = plan.icon;
               return (
@@ -197,18 +141,9 @@ const Pricing = () => {
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
-                      disabled={isSubscribed || loadingPlanId === plan.id}
+                      disabled={isSubscribed}
                     >
-                      {loadingPlanId === plan.id ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Loading...
-                        </>
-                      ) : isSubscribed ? (
-                        'Already Subscribed'
-                      ) : (
-                        plan.cta
-                      )}
+                      {isSubscribed ? 'Already Subscribed' : plan.cta}
                     </Button>
                   </CardContent>
                 </Card>
