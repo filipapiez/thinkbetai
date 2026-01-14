@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { Check, Zap, Crown } from 'lucide-react';
+import { Check, Zap, Crown, Trophy } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 // Stripe price IDs for each plan
 const pricingPlans = [
@@ -50,6 +50,27 @@ const pricingPlans = [
     cta: 'Go Pro',
     popular: true,
   },
+  {
+    id: 'insider',
+    paymentLink: 'https://buy.stripe.com/aFa7sNcfIbvS2Wh8QX3840I',
+    name: 'Insider',
+    price: 49,
+    description: 'The ultimate package for dedicated analysts',
+    icon: Trophy,
+    features: [
+      'Everything in Pro',
+      'Real-time odds updates',
+      'Advanced statistical models',
+      'Custom alerts & notifications',
+      'Exclusive Discord community',
+      'One-on-one consultation',
+      'AI Parlay Builder & analysis',
+      'Early access to upgraded features',
+      'Multi-leg parlay optimization',
+    ],
+    cta: 'Become an Insider',
+    popular: false,
+  },
 ];
 
 const Pricing = () => {
@@ -91,7 +112,7 @@ const Pricing = () => {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingPlans.map((plan) => {
               const Icon = plan.icon;
               return (
