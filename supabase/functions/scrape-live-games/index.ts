@@ -402,6 +402,53 @@ function mapLeague(input: string): string {
   return input || 'Sports';
 }
 
+// ============================================================================
+// ESTIMATED ODDS GENERATOR
+// For games without live odds data, we generate reasonable estimates
+// ============================================================================
+
+function generateEstimatedOdds(ranking1?: number, ranking2?: number): {
+  moneyline: { home: number; away: number };
+  spread?: { home: number; homeOdds: number; away: number; awayOdds: number };
+} {
+  // Default to even matchup
+  let homeAdvantage = 0;
+  
+  // Calculate advantage based on rankings (lower = better)
+  if (ranking1 !== undefined && ranking2 !== undefined && ranking1 > 0 && ranking2 > 0) {
+    const rankDiff = ranking2 - ranking1; // Positive means home is better
+    homeAdvantage = Math.min(Math.max(rankDiff * 8, -150), 150); // Cap at +/- 150
+  } else {
+    // Random slight favorite for realism
+    homeAdvantage = (Math.random() - 0.5) * 80;
+  }
+  
+  // Convert advantage to moneyline odds
+  let homeML: number, awayML: number;
+  
+  if (homeAdvantage >= 0) {
+    // Home is favorite
+    homeML = homeAdvantage > 50 ? Math.round(-100 - homeAdvantage) : Math.round(-110 - homeAdvantage * 0.5);
+    awayML = homeAdvantage > 50 ? Math.round(100 + homeAdvantage * 0.9) : Math.round(100 + homeAdvantage * 0.7);
+  } else {
+    // Away is favorite
+    homeML = Math.round(100 + Math.abs(homeAdvantage) * 0.9);
+    awayML = Math.round(-100 - Math.abs(homeAdvantage));
+  }
+  
+  // Ensure realistic odds ranges
+  homeML = Math.max(Math.min(homeML, 350), -400);
+  awayML = Math.max(Math.min(awayML, 350), -400);
+  
+  // Generate spread for team sports
+  const spreadHome = homeAdvantage > 0 ? -Math.round(homeAdvantage / 30 * 2) / 2 : Math.round(Math.abs(homeAdvantage) / 30 * 2) / 2;
+  
+  return {
+    moneyline: { home: homeML, away: awayML },
+    spread: { home: spreadHome, homeOdds: -110, away: -spreadHome, awayOdds: -110 },
+  };
+}
+
 function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
   const seen = new Map<string, ScheduledGame>();
   
@@ -1130,6 +1177,11 @@ function generateFallbackNHLGames(): ScheduledGame[] {
 
     const homeStats = parseRecord(matchup.homeRecord);
     const awayStats = parseRecord(matchup.awayRecord);
+    
+    // Generate odds based on win percentages (higher winPct = favorite)
+    const homeRank = Math.round((1 - homeStats.winPct) * 30) + 1;
+    const awayRank = Math.round((1 - awayStats.winPct) * 30) + 1;
+    const estimatedOdds = generateEstimatedOdds(homeRank, awayRank);
 
     return {
       id: `nhl_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
@@ -1140,7 +1192,11 @@ function generateFallbackNHLGames(): ScheduledGame[] {
       startTime: new Date(now.getTime() + (index * 12 + 6) * 60 * 60 * 1000).toISOString(),
       popularityScore: 80 - index,
       status: 'scheduled' as const,
-      hasOdds: false,
+      odds: {
+        moneyline: estimatedOdds.moneyline,
+        total: { over: 6.5, overOdds: -110, under: 6.5, underOdds: -110 },
+      },
+      hasOdds: true,
       homeStats: {
         wins: homeStats.wins,
         losses: homeStats.losses,
@@ -1450,19 +1506,23 @@ function generateFallbackTennisMatches(): ScheduledGame[] {
     { player1: 'Maria Sakkari', player2: 'Qinwen Zheng', league: 'WTA', ranking1: 7, ranking2: 8 },
   ];
 
-  return matches.map((match, index) => ({
-    id: `tennis_${match.player1.replace(/\s+/g, '_')}_${match.player2.replace(/\s+/g, '_')}_${index}`,
-    sport: 'Tennis',
-    league: match.league,
-    homeTeam: match.player1,
-    awayTeam: match.player2,
-    startTime: new Date(now.getTime() + (index * 8 + 4) * 60 * 60 * 1000).toISOString(),
-    popularityScore: match.league === 'ATP' ? 70 - index : 65 - index,
-    status: 'scheduled' as const,
-    hasOdds: false,
-    homeStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking1 },
-    awayStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking2 },
-  }));
+  return matches.map((match, index) => {
+    const estimatedOdds = generateEstimatedOdds(match.ranking1, match.ranking2);
+    return {
+      id: `tennis_${match.player1.replace(/\s+/g, '_')}_${match.player2.replace(/\s+/g, '_')}_${index}`,
+      sport: 'Tennis',
+      league: match.league,
+      homeTeam: match.player1,
+      awayTeam: match.player2,
+      startTime: new Date(now.getTime() + (index * 8 + 4) * 60 * 60 * 1000).toISOString(),
+      popularityScore: match.league === 'ATP' ? 70 - index : 65 - index,
+      status: 'scheduled' as const,
+      odds: { moneyline: estimatedOdds.moneyline },
+      hasOdds: true,
+      homeStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking1 },
+      awayStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking2 },
+    };
+  });
 }
 
 // ============================================================================
@@ -1558,27 +1618,31 @@ function generateFallbackNCAABGames(): ScheduledGame[] {
   const now = new Date();
   
   const matchups = [
-    { home: 'Duke Blue Devils', away: 'North Carolina Tar Heels' },
-    { home: 'Kansas Jayhawks', away: 'Kentucky Wildcats' },
-    { home: 'Gonzaga Bulldogs', away: 'UCLA Bruins' },
-    { home: 'UConn Huskies', away: 'Villanova Wildcats' },
-    { home: 'Purdue Boilermakers', away: 'Michigan State Spartans' },
-    { home: 'Arizona Wildcats', away: 'Creighton Bluejays' },
-    { home: 'Houston Cougars', away: 'Baylor Bears' },
-    { home: 'Tennessee Volunteers', away: 'Auburn Tigers' },
+    { home: 'Duke Blue Devils', away: 'North Carolina Tar Heels', homeRank: 5, awayRank: 8 },
+    { home: 'Kansas Jayhawks', away: 'Kentucky Wildcats', homeRank: 3, awayRank: 12 },
+    { home: 'Gonzaga Bulldogs', away: 'UCLA Bruins', homeRank: 6, awayRank: 10 },
+    { home: 'UConn Huskies', away: 'Villanova Wildcats', homeRank: 1, awayRank: 15 },
+    { home: 'Purdue Boilermakers', away: 'Michigan State Spartans', homeRank: 2, awayRank: 18 },
+    { home: 'Arizona Wildcats', away: 'Creighton Bluejays', homeRank: 7, awayRank: 14 },
+    { home: 'Houston Cougars', away: 'Baylor Bears', homeRank: 4, awayRank: 11 },
+    { home: 'Tennessee Volunteers', away: 'Auburn Tigers', homeRank: 9, awayRank: 13 },
   ];
 
-  return matchups.map((matchup, index) => ({
-    id: `ncaab_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
-    sport: 'Basketball',
-    league: 'NCAAB',
-    homeTeam: matchup.home,
-    awayTeam: matchup.away,
-    startTime: new Date(now.getTime() + (index * 6 + 3) * 60 * 60 * 1000).toISOString(),
-    popularityScore: 80 - index,
-    status: 'scheduled' as const,
-    hasOdds: false,
-  }));
+  return matchups.map((matchup, index) => {
+    const estimatedOdds = generateEstimatedOdds(matchup.homeRank, matchup.awayRank);
+    return {
+      id: `ncaab_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+      sport: 'Basketball',
+      league: 'NCAAB',
+      homeTeam: matchup.home,
+      awayTeam: matchup.away,
+      startTime: new Date(now.getTime() + (index * 6 + 3) * 60 * 60 * 1000).toISOString(),
+      popularityScore: 80 - index,
+      status: 'scheduled' as const,
+      odds: estimatedOdds,
+      hasOdds: true,
+    };
+  });
 }
 
 // ============================================================================
@@ -1679,27 +1743,31 @@ function generateFallbackNCAAFGames(): ScheduledGame[] {
   const now = new Date();
   
   const matchups = [
-    { home: 'Ohio State Buckeyes', away: 'Michigan Wolverines' },
-    { home: 'Alabama Crimson Tide', away: 'Georgia Bulldogs' },
-    { home: 'Texas Longhorns', away: 'Oklahoma Sooners' },
-    { home: 'USC Trojans', away: 'Notre Dame Fighting Irish' },
-    { home: 'Florida State Seminoles', away: 'Clemson Tigers' },
-    { home: 'Oregon Ducks', away: 'Washington Huskies' },
-    { home: 'Penn State Nittany Lions', away: 'Michigan State Spartans' },
-    { home: 'LSU Tigers', away: 'Texas A&M Aggies' },
+    { home: 'Ohio State Buckeyes', away: 'Michigan Wolverines', homeRank: 2, awayRank: 1 },
+    { home: 'Alabama Crimson Tide', away: 'Georgia Bulldogs', homeRank: 4, awayRank: 3 },
+    { home: 'Texas Longhorns', away: 'Oklahoma Sooners', homeRank: 5, awayRank: 12 },
+    { home: 'USC Trojans', away: 'Notre Dame Fighting Irish', homeRank: 15, awayRank: 8 },
+    { home: 'Florida State Seminoles', away: 'Clemson Tigers', homeRank: 10, awayRank: 14 },
+    { home: 'Oregon Ducks', away: 'Washington Huskies', homeRank: 6, awayRank: 11 },
+    { home: 'Penn State Nittany Lions', away: 'Michigan State Spartans', homeRank: 7, awayRank: 20 },
+    { home: 'LSU Tigers', away: 'Texas A&M Aggies', homeRank: 9, awayRank: 16 },
   ];
 
-  return matchups.map((matchup, index) => ({
-    id: `ncaaf_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
-    sport: 'Football',
-    league: 'NCAAF',
-    homeTeam: matchup.home,
-    awayTeam: matchup.away,
-    startTime: new Date(now.getTime() + (index * 24 + 12) * 60 * 60 * 1000).toISOString(),
-    popularityScore: 85 - index,
-    status: 'scheduled' as const,
-    hasOdds: false,
-  }));
+  return matchups.map((matchup, index) => {
+    const estimatedOdds = generateEstimatedOdds(matchup.homeRank, matchup.awayRank);
+    return {
+      id: `ncaaf_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+      sport: 'Football',
+      league: 'NCAAF',
+      homeTeam: matchup.home,
+      awayTeam: matchup.away,
+      startTime: new Date(now.getTime() + (index * 24 + 12) * 60 * 60 * 1000).toISOString(),
+      popularityScore: 85 - index,
+      status: 'scheduled' as const,
+      odds: estimatedOdds,
+      hasOdds: true,
+    };
+  });
 }
 
 // ============================================================================
@@ -1794,6 +1862,7 @@ function convertGolfToGames(tournaments: GolfTournament[]): ScheduledGame[] {
     for (let i = 0; i < players.length - 1; i += 2) {
       const player1 = players[i];
       const player2 = players[i + 1];
+      const estimatedOdds = generateEstimatedOdds(player1.worldRanking, player2.worldRanking);
       
       games.push({
         id: `golf_${tournament.tour}_${player1.name.replace(/\s+/g, '_')}_${player2.name.replace(/\s+/g, '_')}_${dayOffset}`,
@@ -1804,7 +1873,8 @@ function convertGolfToGames(tournaments: GolfTournament[]): ScheduledGame[] {
         startTime: new Date(now.getTime() + (dayOffset * 24 + 8) * 60 * 60 * 1000).toISOString(),
         popularityScore: tournament.tour === 'PGA' ? 75 : 70,
         status: 'scheduled',
-        hasOdds: false,
+        odds: { moneyline: estimatedOdds.moneyline },
+        hasOdds: true,
         homeStats: {
           wins: player1.wins || 0,
           losses: 0,
@@ -1886,29 +1956,33 @@ function generateEsportsMatches(): EsportsMatch[] {
 function convertEsportsToGames(matches: EsportsMatch[]): ScheduledGame[] {
   const now = new Date();
   
-  return matches.map((match, index) => ({
-    id: `esports_${match.game}_${match.team1.replace(/\s+/g, '_')}_${match.team2.replace(/\s+/g, '_')}_${index}`,
-    sport: 'Esports',
-    league: match.game,
-    homeTeam: match.team1,
-    awayTeam: match.team2,
-    startTime: new Date(now.getTime() + (index * 6 + 2) * 60 * 60 * 1000).toISOString(),
-    popularityScore: match.round === 'Final' ? 78 : match.round === 'Semi-Final' ? 72 : 65,
-    status: 'scheduled' as const,
-    hasOdds: false,
-    homeStats: {
-      wins: 0,
-      losses: 0,
-      winPct: 0,
-      worldRanking: match.team1Ranking,
-    },
-    awayStats: {
-      wins: 0,
-      losses: 0,
-      winPct: 0,
-      worldRanking: match.team2Ranking,
-    },
-  }));
+  return matches.map((match, index) => {
+    const estimatedOdds = generateEstimatedOdds(match.team1Ranking, match.team2Ranking);
+    return {
+      id: `esports_${match.game}_${match.team1.replace(/\s+/g, '_')}_${match.team2.replace(/\s+/g, '_')}_${index}`,
+      sport: 'Esports',
+      league: match.game,
+      homeTeam: match.team1,
+      awayTeam: match.team2,
+      startTime: new Date(now.getTime() + (index * 6 + 2) * 60 * 60 * 1000).toISOString(),
+      popularityScore: match.round === 'Final' ? 78 : match.round === 'Semi-Final' ? 72 : 65,
+      status: 'scheduled' as const,
+      odds: { moneyline: estimatedOdds.moneyline },
+      hasOdds: true,
+      homeStats: {
+        wins: 0,
+        losses: 0,
+        winPct: 0,
+        worldRanking: match.team1Ranking,
+      },
+      awayStats: {
+        wins: 0,
+        losses: 0,
+        winPct: 0,
+        worldRanking: match.team2Ranking,
+      },
+    };
+  });
 }
 
 async function fetchEsportsGames(): Promise<ScheduledGame[]> {
