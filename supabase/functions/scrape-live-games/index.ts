@@ -1336,6 +1336,367 @@ async function fetchMLBGames(): Promise<ScheduledGame[]> {
 }
 
 // ============================================================================
+// TENNIS (ATP/WTA) INTEGRATION via SportsGameOdds API
+// ============================================================================
+
+async function fetchTennisGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[Tennis] No SPORTSGAMEODDS_API_KEY configured');
+      return generateFallbackTennisMatches();
+    }
+
+    console.log('[Tennis] Fetching ATP and WTA from SportsGameOdds API...');
+    
+    // Fetch both ATP and WTA
+    const [atpResponse, wtaResponse] = await Promise.all([
+      fetch('https://api.sportsgameodds.com/v2/events?leagueID=ATP&oddsAvailable=true&limit=20', 
+        { headers: { 'x-api-key': apiKey } }),
+      fetch('https://api.sportsgameodds.com/v2/events?leagueID=WTA&oddsAvailable=true&limit=20', 
+        { headers: { 'x-api-key': apiKey } }),
+    ]);
+
+    const processResponse = async (response: Response, league: string) => {
+      if (!response.ok) {
+        console.error(`[Tennis] ${league} API error: ${response.status}`);
+        return;
+      }
+
+      const data = await response.json();
+      const events = data?.data || data?.events || [];
+      console.log(`[Tennis] Found ${events.length} ${league} events`);
+
+      for (const event of events) {
+        const player1 = event.teams?.home?.names?.long || 
+                        event.teams?.home?.names?.medium || 
+                        event.homeTeam || '';
+        const player2 = event.teams?.away?.names?.long || 
+                        event.teams?.away?.names?.medium || 
+                        event.awayTeam || '';
+        
+        if (!player1 || !player2) continue;
+        
+        const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+        const isLive = event.status?.live === true;
+        const isEnded = event.status?.ended === true;
+
+        // Parse odds
+        const odds = event.odds || {};
+        let moneylineHome = 0, moneylineAway = 0;
+
+        for (const [oddId, oddData] of Object.entries(odds)) {
+          const odd = oddData as any;
+          const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                          (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+          
+          if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+          if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        }
+
+        const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0;
+
+        games.push({
+          id: `tennis_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Tennis',
+          league,
+          homeTeam: player1,
+          awayTeam: player2,
+          startTime,
+          popularityScore: league === 'ATP' ? 70 : 65,
+          status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+          odds: hasValidOdds ? {
+            moneyline: { home: moneylineHome, away: moneylineAway },
+          } : undefined,
+          hasOdds: hasValidOdds,
+        });
+      }
+    };
+
+    await Promise.all([
+      processResponse(atpResponse, 'ATP'),
+      processResponse(wtaResponse, 'WTA'),
+    ]);
+
+    console.log(`[Tennis] Returning ${games.length} total tennis matches`);
+    return games.length > 0 ? games : generateFallbackTennisMatches();
+  } catch (error) {
+    console.error('[Tennis] Error fetching games:', error);
+    return generateFallbackTennisMatches();
+  }
+}
+
+function generateFallbackTennisMatches(): ScheduledGame[] {
+  const now = new Date();
+  
+  const matches = [
+    { player1: 'Jannik Sinner', player2: 'Carlos Alcaraz', league: 'ATP', ranking1: 1, ranking2: 2 },
+    { player1: 'Novak Djokovic', player2: 'Daniil Medvedev', league: 'ATP', ranking1: 3, ranking2: 4 },
+    { player1: 'Alexander Zverev', player2: 'Andrey Rublev', league: 'ATP', ranking1: 5, ranking2: 6 },
+    { player1: 'Holger Rune', player2: 'Hubert Hurkacz', league: 'ATP', ranking1: 7, ranking2: 8 },
+    { player1: 'Stefanos Tsitsipas', player2: 'Casper Ruud', league: 'ATP', ranking1: 9, ranking2: 10 },
+    { player1: 'Taylor Fritz', player2: 'Tommy Paul', league: 'ATP', ranking1: 11, ranking2: 12 },
+    { player1: 'Iga Swiatek', player2: 'Aryna Sabalenka', league: 'WTA', ranking1: 1, ranking2: 2 },
+    { player1: 'Coco Gauff', player2: 'Elena Rybakina', league: 'WTA', ranking1: 3, ranking2: 4 },
+    { player1: 'Jessica Pegula', player2: 'Ons Jabeur', league: 'WTA', ranking1: 5, ranking2: 6 },
+    { player1: 'Maria Sakkari', player2: 'Qinwen Zheng', league: 'WTA', ranking1: 7, ranking2: 8 },
+  ];
+
+  return matches.map((match, index) => ({
+    id: `tennis_${match.player1.replace(/\s+/g, '_')}_${match.player2.replace(/\s+/g, '_')}_${index}`,
+    sport: 'Tennis',
+    league: match.league,
+    homeTeam: match.player1,
+    awayTeam: match.player2,
+    startTime: new Date(now.getTime() + (index * 8 + 4) * 60 * 60 * 1000).toISOString(),
+    popularityScore: match.league === 'ATP' ? 70 - index : 65 - index,
+    status: 'scheduled' as const,
+    hasOdds: false,
+    homeStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking1 },
+    awayStats: { wins: 0, losses: 0, winPct: 0, worldRanking: match.ranking2 },
+  }));
+}
+
+// ============================================================================
+// COLLEGE BASKETBALL (NCAAB) INTEGRATION via SportsGameOdds API
+// ============================================================================
+
+async function fetchNCAABGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[NCAAB] No SPORTSGAMEODDS_API_KEY configured');
+      return generateFallbackNCAABGames();
+    }
+
+    console.log('[NCAAB] Fetching from SportsGameOdds API...');
+    
+    const response = await fetch(
+      'https://api.sportsgameodds.com/v2/events?leagueID=NCAAB&oddsAvailable=true&limit=30',
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!response.ok) {
+      console.error(`[NCAAB] API error: ${response.status}`);
+      return generateFallbackNCAABGames();
+    }
+
+    const data = await response.json();
+    const events = data?.data || data?.events || [];
+    
+    console.log(`[NCAAB] Found ${events.length} events from API`);
+
+    for (const event of events) {
+      const homeTeam = event.teams?.home?.names?.long || 
+                       event.teams?.home?.names?.medium || 
+                       event.homeTeam || 'Home Team';
+      const awayTeam = event.teams?.away?.names?.long || 
+                       event.teams?.away?.names?.medium || 
+                       event.awayTeam || 'Away Team';
+      
+      if (homeTeam === 'Home Team' && awayTeam === 'Away Team') continue;
+      
+      const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+      const isLive = event.status?.live === true;
+      const isEnded = event.status?.ended === true;
+
+      const odds = event.odds || {};
+      let moneylineHome = 0, moneylineAway = 0;
+      let spreadHome = 0, spreadHomeOdds = -110;
+
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                        (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+        
+        if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+        if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        if (oddId.includes('-sp-home')) {
+          spreadHome = parseFloat(odd?.fairSpread || odd?.line || 0);
+          spreadHomeOdds = fairOdds || -110;
+        }
+      }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || spreadHome !== 0;
+
+      games.push({
+        id: `ncaab_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        sport: 'Basketball',
+        league: 'NCAAB',
+        homeTeam,
+        awayTeam,
+        startTime,
+        popularityScore: 80,
+        status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+        odds: hasValidOdds ? {
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          spread: { home: spreadHome, homeOdds: spreadHomeOdds, away: -spreadHome, awayOdds: -110 },
+        } : undefined,
+        hasOdds: hasValidOdds,
+      });
+    }
+
+    console.log(`[NCAAB] Returning ${games.length} games`);
+    return games.length > 0 ? games : generateFallbackNCAABGames();
+  } catch (error) {
+    console.error('[NCAAB] Error fetching games:', error);
+    return generateFallbackNCAABGames();
+  }
+}
+
+function generateFallbackNCAABGames(): ScheduledGame[] {
+  const now = new Date();
+  
+  const matchups = [
+    { home: 'Duke Blue Devils', away: 'North Carolina Tar Heels' },
+    { home: 'Kansas Jayhawks', away: 'Kentucky Wildcats' },
+    { home: 'Gonzaga Bulldogs', away: 'UCLA Bruins' },
+    { home: 'UConn Huskies', away: 'Villanova Wildcats' },
+    { home: 'Purdue Boilermakers', away: 'Michigan State Spartans' },
+    { home: 'Arizona Wildcats', away: 'Creighton Bluejays' },
+    { home: 'Houston Cougars', away: 'Baylor Bears' },
+    { home: 'Tennessee Volunteers', away: 'Auburn Tigers' },
+  ];
+
+  return matchups.map((matchup, index) => ({
+    id: `ncaab_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+    sport: 'Basketball',
+    league: 'NCAAB',
+    homeTeam: matchup.home,
+    awayTeam: matchup.away,
+    startTime: new Date(now.getTime() + (index * 6 + 3) * 60 * 60 * 1000).toISOString(),
+    popularityScore: 80 - index,
+    status: 'scheduled' as const,
+    hasOdds: false,
+  }));
+}
+
+// ============================================================================
+// COLLEGE FOOTBALL (NCAAF) INTEGRATION via SportsGameOdds API
+// ============================================================================
+
+async function fetchNCAAFGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[NCAAF] No SPORTSGAMEODDS_API_KEY configured');
+      return generateFallbackNCAAFGames();
+    }
+
+    console.log('[NCAAF] Fetching from SportsGameOdds API...');
+    
+    const response = await fetch(
+      'https://api.sportsgameodds.com/v2/events?leagueID=NCAAF&oddsAvailable=true&limit=30',
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!response.ok) {
+      console.error(`[NCAAF] API error: ${response.status}`);
+      return generateFallbackNCAAFGames();
+    }
+
+    const data = await response.json();
+    const events = data?.data || data?.events || [];
+    
+    console.log(`[NCAAF] Found ${events.length} events from API`);
+
+    for (const event of events) {
+      const homeTeam = event.teams?.home?.names?.long || 
+                       event.teams?.home?.names?.medium || 
+                       event.homeTeam || 'Home Team';
+      const awayTeam = event.teams?.away?.names?.long || 
+                       event.teams?.away?.names?.medium || 
+                       event.awayTeam || 'Away Team';
+      
+      if (homeTeam === 'Home Team' && awayTeam === 'Away Team') continue;
+      
+      const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+      const isLive = event.status?.live === true;
+      const isEnded = event.status?.ended === true;
+
+      const odds = event.odds || {};
+      let moneylineHome = 0, moneylineAway = 0;
+      let spreadHome = 0, spreadHomeOdds = -110;
+      let totalOver = 0;
+
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                        (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+        
+        if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+        if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        if (oddId.includes('-sp-home')) {
+          spreadHome = parseFloat(odd?.fairSpread || odd?.line || 0);
+          spreadHomeOdds = fairOdds || -110;
+        }
+        if (oddId.includes('-ou-over')) {
+          totalOver = parseFloat(odd?.fairOverUnder || odd?.line || 0);
+        }
+      }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || spreadHome !== 0;
+
+      games.push({
+        id: `ncaaf_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        sport: 'Football',
+        league: 'NCAAF',
+        homeTeam,
+        awayTeam,
+        startTime,
+        popularityScore: 85,
+        status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+        odds: hasValidOdds ? {
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          spread: { home: spreadHome, homeOdds: spreadHomeOdds, away: -spreadHome, awayOdds: -110 },
+          total: { over: totalOver, overOdds: -110, under: totalOver, underOdds: -110 },
+        } : undefined,
+        hasOdds: hasValidOdds,
+      });
+    }
+
+    console.log(`[NCAAF] Returning ${games.length} games`);
+    return games.length > 0 ? games : generateFallbackNCAAFGames();
+  } catch (error) {
+    console.error('[NCAAF] Error fetching games:', error);
+    return generateFallbackNCAAFGames();
+  }
+}
+
+function generateFallbackNCAAFGames(): ScheduledGame[] {
+  const now = new Date();
+  
+  const matchups = [
+    { home: 'Ohio State Buckeyes', away: 'Michigan Wolverines' },
+    { home: 'Alabama Crimson Tide', away: 'Georgia Bulldogs' },
+    { home: 'Texas Longhorns', away: 'Oklahoma Sooners' },
+    { home: 'USC Trojans', away: 'Notre Dame Fighting Irish' },
+    { home: 'Florida State Seminoles', away: 'Clemson Tigers' },
+    { home: 'Oregon Ducks', away: 'Washington Huskies' },
+    { home: 'Penn State Nittany Lions', away: 'Michigan State Spartans' },
+    { home: 'LSU Tigers', away: 'Texas A&M Aggies' },
+  ];
+
+  return matchups.map((matchup, index) => ({
+    id: `ncaaf_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+    sport: 'Football',
+    league: 'NCAAF',
+    homeTeam: matchup.home,
+    awayTeam: matchup.away,
+    startTime: new Date(now.getTime() + (index * 24 + 12) * 60 * 60 * 1000).toISOString(),
+    popularityScore: 85 - index,
+    status: 'scheduled' as const,
+    hasOdds: false,
+  }));
+}
+
+// ============================================================================
 // MAIN HANDLER
 // ============================================================================
 
@@ -1384,8 +1745,8 @@ Deno.serve(async (req) => {
     
     console.log('[Sportsbook API] Starting fresh fetch...');
     
-    // Fetch from all sources in parallel - now including NHL, NBA, MLB
-    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames, nhlGames, nbaGames, mlbGames] = await Promise.all([
+    // Fetch from all sources in parallel - comprehensive sports coverage
+    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames, nhlGames, nbaGames, mlbGames, tennisGames, ncaabGames, ncaafGames] = await Promise.all([
       apiKey ? fetchSportsbookGames(apiKey) : Promise.resolve([]),
       fetchUFCGames(),
       fetchTableTennisGames(),
@@ -1394,11 +1755,14 @@ Deno.serve(async (req) => {
       fetchNHLGames(),
       fetchNBAGames(),
       fetchMLBGames(),
+      fetchTennisGames(),
+      fetchNCAABGames(),
+      fetchNCAAFGames(),
     ]);
     
-    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames, ...nhlGames, ...nbaGames, ...mlbGames];
+    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames, ...nhlGames, ...nbaGames, ...mlbGames, ...tennisGames, ...ncaabGames, ...ncaafGames];
     
-    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length}, Table Tennis: ${tableTennisGames.length}, NFL: ${nflGames.length}, Soccer: ${soccerGames.length}, NHL: ${nhlGames.length}, NBA: ${nbaGames.length}, MLB: ${mlbGames.length})`);
+    console.log(`[Sportsbook API] Total: ${allGames.length} games (NHL: ${nhlGames.length}, NBA: ${nbaGames.length}, MLB: ${mlbGames.length}, NFL: ${nflGames.length}, Tennis: ${tennisGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Soccer: ${soccerGames.length}, Table Tennis: ${tableTennisGames.length})`);
 
     if (allGames.length === 0) {
       return new Response(
