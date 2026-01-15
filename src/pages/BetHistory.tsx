@@ -43,18 +43,25 @@ interface HistoricalBet {
 }
 
 const generateHistoricalBets = (): HistoricalBet[] => {
-  const sports = ["NBA", "NFL", "MLB", "NHL", "NCAAB", "NCAAF"];
+  const sports = ["NBA", "NFL", "MLB", "NCAAB", "NCAAF"];
   const teams: Record<string, string[]> = {
     NBA: ["Lakers", "Celtics", "Warriors", "Bucks", "Heat", "Nuggets", "Suns", "76ers"],
     NFL: ["Chiefs", "Eagles", "49ers", "Bills", "Cowboys", "Ravens", "Lions", "Dolphins"],
     MLB: ["Yankees", "Dodgers", "Astros", "Braves", "Mets", "Phillies", "Rangers", "Orioles"],
-    NHL: ["Bruins", "Panthers", "Oilers", "Rangers", "Avalanche", "Stars", "Devils", "Maple Leafs"],
     NCAAB: ["Duke", "Kansas", "UConn", "Gonzaga", "Kentucky", "North Carolina", "Houston", "Purdue"],
     NCAAF: ["Georgia", "Michigan", "Alabama", "Ohio State", "Texas", "USC", "Clemson", "Florida State"],
   };
 
+  // Sport-specific win rates for more realistic data
+  const sportWinRates: Record<string, number> = {
+    NBA: 0.68,
+    NFL: 0.65,
+    MLB: 0.59,
+    NCAAB: 0.63,
+    NCAAF: 0.61,
+  };
+
   const bets: HistoricalBet[] = [];
-  const winRate = 0.62;
 
   for (let i = 0; i < 150; i++) {
     const sport = sports[Math.floor(Math.random() * sports.length)];
@@ -70,6 +77,7 @@ const generateHistoricalBets = (): HistoricalBet[] => {
     const spread = Math.floor(Math.random() * 14) - 7;
     const pick = isMoneyline ? `${pickTeam} ML` : `${pickTeam} ${spread > 0 ? "+" : ""}${spread}`;
 
+    const winRate = sportWinRates[sport];
     const isWin = Math.random() < winRate;
     const confidence = Math.floor(Math.random() * 25) + 65;
     const edge = parseFloat((Math.random() * 8 + 2).toFixed(1));
@@ -217,7 +225,6 @@ const BetHistory = () => {
                   <SelectItem value="NBA">NBA</SelectItem>
                   <SelectItem value="NFL">NFL</SelectItem>
                   <SelectItem value="MLB">MLB</SelectItem>
-                  <SelectItem value="NHL">NHL</SelectItem>
                   <SelectItem value="NCAAB">NCAAB</SelectItem>
                   <SelectItem value="NCAAF">NCAAF</SelectItem>
                 </SelectContent>
