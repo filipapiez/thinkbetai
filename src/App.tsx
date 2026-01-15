@@ -28,7 +28,7 @@ import Paywall from "./pages/Paywall";
 import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
-import HistoricalBets from "./pages/HistoricalBets";
+import BetHistory from "./pages/BetHistory";
 
 const queryClient = new QueryClient();
 
@@ -60,7 +60,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/paywall" element={<Paywall />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
-              <Route path="/historical-bets" element={<HistoricalBets />} />
+              <Route path="/bet-history" element={<BetHistory />} />
               
               {/* Protected routes - require auth + subscription */}
               <Route path="/games" element={
