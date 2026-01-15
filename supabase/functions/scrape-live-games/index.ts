@@ -111,7 +111,8 @@ const LEAGUE_POPULARITY: Record<string, number> = {
   'NFL': 100, 'NBA': 95, 'MLB': 85, 'NHL': 80, 'NCAAF': 85, 'NCAAB': 80,
   'EPL': 90, 'La Liga': 85, 'Champions League': 95, 'Bundesliga': 82,
   'Serie A': 80, 'Ligue 1': 75, 'MLS': 65, 'UFC': 92, 'Boxing': 78,
-  'ATP': 70, 'WTA': 65, 'PGA': 65, 'WNBA': 70,
+  'ATP': 70, 'WTA': 65, 'PGA': 75, 'LIV': 70, 'WNBA': 70,
+  'CS2': 72, 'LoL': 75, 'Valorant': 70, 'LCS': 68, 'LEC': 70, 'VCT': 68,
 };
 
 function isCacheValid(): boolean {
@@ -368,7 +369,8 @@ function mapSport(input: string): string {
   if (lower.includes('mma') || lower.includes('ufc') || lower.includes('martial')) return 'MMA';
   if (lower.includes('boxing')) return 'Boxing';
   if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta')) return 'Tennis';
-  if (lower.includes('golf') || lower.includes('pga')) return 'Golf';
+  if (lower.includes('golf') || lower.includes('pga') || lower.includes('liv')) return 'Golf';
+  if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('csgo') || lower.includes('lol') || lower.includes('league of legends') || lower.includes('valorant') || lower.includes('esport') || lower.includes('dota')) return 'Esports';
   return 'Sports';
 }
 
@@ -393,6 +395,10 @@ function mapLeague(input: string): string {
   if (lower.includes('atp')) return 'ATP';
   if (lower.includes('wta')) return 'WTA';
   if (lower.includes('pga')) return 'PGA';
+  if (lower.includes('liv')) return 'LIV';
+  if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('csgo')) return 'CS2';
+  if (lower.includes('lol') || lower.includes('league of legends') || lower.includes('lcs') || lower.includes('lec')) return 'LoL';
+  if (lower.includes('valorant') || lower.includes('vct')) return 'Valorant';
   return input || 'Sports';
 }
 
@@ -1697,6 +1703,228 @@ function generateFallbackNCAAFGames(): ScheduledGame[] {
 }
 
 // ============================================================================
+// GOLF (PGA/LIV) INTEGRATION
+// ============================================================================
+
+interface GolfTournament {
+  name: string;
+  course: string;
+  tour: 'PGA' | 'LIV';
+  players: { name: string; worldRanking?: number; wins?: number }[];
+}
+
+function generateGolfTournaments(): GolfTournament[] {
+  return [
+    {
+      name: 'The Masters',
+      course: 'Augusta National Golf Club',
+      tour: 'PGA',
+      players: [
+        { name: 'Scottie Scheffler', worldRanking: 1, wins: 12 },
+        { name: 'Rory McIlroy', worldRanking: 2, wins: 25 },
+        { name: 'Jon Rahm', worldRanking: 3, wins: 14 },
+        { name: 'Xander Schauffele', worldRanking: 4, wins: 9 },
+        { name: 'Collin Morikawa', worldRanking: 5, wins: 7 },
+        { name: 'Viktor Hovland', worldRanking: 6, wins: 8 },
+        { name: 'Patrick Cantlay', worldRanking: 7, wins: 9 },
+        { name: 'Ludvig Åberg', worldRanking: 8, wins: 3 },
+      ],
+    },
+    {
+      name: 'PGA Championship',
+      course: 'Valhalla Golf Club',
+      tour: 'PGA',
+      players: [
+        { name: 'Brooks Koepka', worldRanking: 15, wins: 10 },
+        { name: 'Justin Thomas', worldRanking: 12, wins: 15 },
+        { name: 'Jordan Spieth', worldRanking: 18, wins: 13 },
+        { name: 'Tony Finau', worldRanking: 14, wins: 7 },
+        { name: 'Wyndham Clark', worldRanking: 9, wins: 3 },
+        { name: 'Max Homa', worldRanking: 11, wins: 6 },
+      ],
+    },
+    {
+      name: 'The Open Championship',
+      course: 'Royal Troon',
+      tour: 'PGA',
+      players: [
+        { name: 'Tommy Fleetwood', worldRanking: 16, wins: 6 },
+        { name: 'Shane Lowry', worldRanking: 20, wins: 6 },
+        { name: 'Cameron Smith', worldRanking: 22, wins: 8 },
+        { name: 'Matt Fitzpatrick', worldRanking: 13, wins: 8 },
+        { name: 'Tyrrell Hatton', worldRanking: 17, wins: 7 },
+      ],
+    },
+    {
+      name: 'LIV Golf Las Vegas',
+      course: 'Las Vegas Country Club',
+      tour: 'LIV',
+      players: [
+        { name: 'Bryson DeChambeau', worldRanking: 25, wins: 10 },
+        { name: 'Dustin Johnson', worldRanking: 35, wins: 24 },
+        { name: 'Phil Mickelson', worldRanking: 150, wins: 45 },
+        { name: 'Sergio Garcia', worldRanking: 55, wins: 36 },
+        { name: 'Patrick Reed', worldRanking: 75, wins: 9 },
+        { name: 'Joaquín Niemann', worldRanking: 28, wins: 4 },
+      ],
+    },
+    {
+      name: 'LIV Golf Miami',
+      course: 'Trump National Doral',
+      tour: 'LIV',
+      players: [
+        { name: 'Talor Gooch', worldRanking: 45, wins: 5 },
+        { name: 'Cameron Tringale', worldRanking: 90, wins: 1 },
+        { name: 'Lee Westwood', worldRanking: 120, wins: 25 },
+        { name: 'Ian Poulter', worldRanking: 200, wins: 13 },
+        { name: 'Bubba Watson', worldRanking: 180, wins: 14 },
+      ],
+    },
+  ];
+}
+
+function convertGolfToGames(tournaments: GolfTournament[]): ScheduledGame[] {
+  const games: ScheduledGame[] = [];
+  const now = new Date();
+  let dayOffset = 0;
+
+  for (const tournament of tournaments) {
+    // Create matchups between top players
+    const players = tournament.players;
+    for (let i = 0; i < players.length - 1; i += 2) {
+      const player1 = players[i];
+      const player2 = players[i + 1];
+      
+      games.push({
+        id: `golf_${tournament.tour}_${player1.name.replace(/\s+/g, '_')}_${player2.name.replace(/\s+/g, '_')}_${dayOffset}`,
+        sport: 'Golf',
+        league: tournament.tour,
+        homeTeam: player1.name,
+        awayTeam: player2.name,
+        startTime: new Date(now.getTime() + (dayOffset * 24 + 8) * 60 * 60 * 1000).toISOString(),
+        popularityScore: tournament.tour === 'PGA' ? 75 : 70,
+        status: 'scheduled',
+        hasOdds: false,
+        homeStats: {
+          wins: player1.wins || 0,
+          losses: 0,
+          winPct: 0,
+          worldRanking: player1.worldRanking,
+        },
+        awayStats: {
+          wins: player2.wins || 0,
+          losses: 0,
+          winPct: 0,
+          worldRanking: player2.worldRanking,
+        },
+      });
+      dayOffset++;
+    }
+  }
+
+  return games;
+}
+
+async function fetchGolfGames(): Promise<ScheduledGame[]> {
+  try {
+    console.log('[Golf] Generating PGA/LIV tournaments...');
+    const tournaments = generateGolfTournaments();
+    const games = convertGolfToGames(tournaments);
+    console.log(`[Golf] Generated ${games.length} golf matchups`);
+    return games;
+  } catch (error) {
+    console.error('[Golf] Error:', error);
+    return [];
+  }
+}
+
+// ============================================================================
+// ESPORTS (CS2, LoL, Valorant) INTEGRATION
+// ============================================================================
+
+interface EsportsMatch {
+  team1: string;
+  team2: string;
+  game: 'CS2' | 'LoL' | 'Valorant';
+  event: string;
+  round: string;
+  team1Ranking?: number;
+  team2Ranking?: number;
+}
+
+function generateEsportsMatches(): EsportsMatch[] {
+  return [
+    // CS2 Matches
+    { team1: 'Natus Vincere', team2: 'FaZe Clan', game: 'CS2', event: 'IEM Katowice 2025', round: 'Final', team1Ranking: 1, team2Ranking: 3 },
+    { team1: 'G2 Esports', team2: 'Team Vitality', game: 'CS2', event: 'IEM Katowice 2025', round: 'Semi-Final', team1Ranking: 2, team2Ranking: 4 },
+    { team1: 'Team Spirit', team2: 'MOUZ', game: 'CS2', event: 'IEM Katowice 2025', round: 'Semi-Final', team1Ranking: 5, team2Ranking: 6 },
+    { team1: 'Heroic', team2: 'Cloud9', game: 'CS2', event: 'BLAST Premier Spring', round: 'Quarter-Final', team1Ranking: 7, team2Ranking: 9 },
+    { team1: 'Astralis', team2: 'Complexity', game: 'CS2', event: 'BLAST Premier Spring', round: 'Quarter-Final', team1Ranking: 8, team2Ranking: 12 },
+    { team1: 'ENCE', team2: 'BIG', game: 'CS2', event: 'ESL Pro League S21', round: 'Group Stage', team1Ranking: 10, team2Ranking: 11 },
+    
+    // League of Legends Matches
+    { team1: 'T1', team2: 'Gen.G', game: 'LoL', event: 'LCK Spring 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Hanwha Life Esports', team2: 'DRX', game: 'LoL', event: 'LCK Spring 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 5 },
+    { team1: 'G2 Esports', team2: 'Fnatic', game: 'LoL', event: 'LEC Winter 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Team BDS', team2: 'MAD Lions', game: 'LoL', event: 'LEC Winter 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    { team1: 'Team Liquid', team2: 'Cloud9', game: 'LoL', event: 'LCS Spring 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'FlyQuest', team2: '100 Thieves', game: 'LoL', event: 'LCS Spring 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    { team1: 'JD Gaming', team2: 'Bilibili Gaming', game: 'LoL', event: 'LPL Spring 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Weibo Gaming', team2: 'Top Esports', game: 'LoL', event: 'LPL Spring 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    
+    // Valorant Matches
+    { team1: 'Sentinels', team2: 'LOUD', game: 'Valorant', event: 'VCT Americas 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Cloud9', team2: 'NRG', game: 'Valorant', event: 'VCT Americas 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    { team1: 'Fnatic', team2: 'Team Heretics', game: 'Valorant', event: 'VCT EMEA 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Karmine Corp', team2: 'Team Vitality', game: 'Valorant', event: 'VCT EMEA 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    { team1: 'Paper Rex', team2: 'DRX', game: 'Valorant', event: 'VCT Pacific 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+    { team1: 'Gen.G', team2: 'T1', game: 'Valorant', event: 'VCT Pacific 2025', round: 'Semi-Final', team1Ranking: 3, team2Ranking: 4 },
+    { team1: 'EDward Gaming', team2: 'FunPlus Phoenix', game: 'Valorant', event: 'VCT China 2025', round: 'Final', team1Ranking: 1, team2Ranking: 2 },
+  ];
+}
+
+function convertEsportsToGames(matches: EsportsMatch[]): ScheduledGame[] {
+  const now = new Date();
+  
+  return matches.map((match, index) => ({
+    id: `esports_${match.game}_${match.team1.replace(/\s+/g, '_')}_${match.team2.replace(/\s+/g, '_')}_${index}`,
+    sport: 'Esports',
+    league: match.game,
+    homeTeam: match.team1,
+    awayTeam: match.team2,
+    startTime: new Date(now.getTime() + (index * 6 + 2) * 60 * 60 * 1000).toISOString(),
+    popularityScore: match.round === 'Final' ? 78 : match.round === 'Semi-Final' ? 72 : 65,
+    status: 'scheduled' as const,
+    hasOdds: false,
+    homeStats: {
+      wins: 0,
+      losses: 0,
+      winPct: 0,
+      worldRanking: match.team1Ranking,
+    },
+    awayStats: {
+      wins: 0,
+      losses: 0,
+      winPct: 0,
+      worldRanking: match.team2Ranking,
+    },
+  }));
+}
+
+async function fetchEsportsGames(): Promise<ScheduledGame[]> {
+  try {
+    console.log('[Esports] Generating CS2, LoL, Valorant matches...');
+    const matches = generateEsportsMatches();
+    const games = convertEsportsToGames(matches);
+    console.log(`[Esports] Generated ${games.length} esports matches`);
+    return games;
+  } catch (error) {
+    console.error('[Esports] Error:', error);
+    return [];
+  }
+}
+
+// ============================================================================
 // MAIN HANDLER
 // ============================================================================
 
@@ -1746,7 +1974,7 @@ Deno.serve(async (req) => {
     console.log('[Sportsbook API] Starting fresh fetch...');
     
     // Fetch from all sources in parallel - comprehensive sports coverage
-    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames, nhlGames, nbaGames, mlbGames, tennisGames, ncaabGames, ncaafGames] = await Promise.all([
+    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames, nhlGames, nbaGames, mlbGames, tennisGames, ncaabGames, ncaafGames, golfGames, esportsGames] = await Promise.all([
       apiKey ? fetchSportsbookGames(apiKey) : Promise.resolve([]),
       fetchUFCGames(),
       fetchTableTennisGames(),
@@ -1758,11 +1986,13 @@ Deno.serve(async (req) => {
       fetchTennisGames(),
       fetchNCAABGames(),
       fetchNCAAFGames(),
+      fetchGolfGames(),
+      fetchEsportsGames(),
     ]);
     
-    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames, ...nhlGames, ...nbaGames, ...mlbGames, ...tennisGames, ...ncaabGames, ...ncaafGames];
+    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames, ...nhlGames, ...nbaGames, ...mlbGames, ...tennisGames, ...ncaabGames, ...ncaafGames, ...golfGames, ...esportsGames];
     
-    console.log(`[Sportsbook API] Total: ${allGames.length} games (NHL: ${nhlGames.length}, NBA: ${nbaGames.length}, MLB: ${mlbGames.length}, NFL: ${nflGames.length}, Tennis: ${tennisGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Soccer: ${soccerGames.length}, Table Tennis: ${tableTennisGames.length})`);
+    console.log(`[Sportsbook API] Total: ${allGames.length} games (NHL: ${nhlGames.length}, NBA: ${nbaGames.length}, MLB: ${mlbGames.length}, NFL: ${nflGames.length}, Tennis: ${tennisGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Soccer: ${soccerGames.length}, Table Tennis: ${tableTennisGames.length}, Golf: ${golfGames.length}, Esports: ${esportsGames.length})`);
 
     if (allGames.length === 0) {
       return new Response(
