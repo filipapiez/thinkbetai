@@ -1001,6 +1001,341 @@ function generateFallbackNFLGames(): ScheduledGame[] {
 }
 
 // ============================================================================
+// NHL INTEGRATION via SportsGameOdds API
+// ============================================================================
+
+async function fetchNHLGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[NHL] No SPORTSGAMEODDS_API_KEY configured, using fallback data');
+      return generateFallbackNHLGames();
+    }
+
+    console.log('[NHL] Fetching from SportsGameOdds API...');
+    
+    const response = await fetch(
+      'https://api.sportsgameodds.com/v2/events?leagueID=NHL&oddsAvailable=true&limit=30',
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!response.ok) {
+      console.error(`[NHL] API error: ${response.status}`);
+      return generateFallbackNHLGames();
+    }
+
+    const data = await response.json();
+    const events = data?.data || data?.events || [];
+    
+    console.log(`[NHL] Found ${events.length} events from API`);
+
+    for (const event of events) {
+      const homeTeam = event.teams?.home?.names?.long || 
+                       event.teams?.home?.names?.medium || 
+                       event.homeTeam || 'Home Team';
+      const awayTeam = event.teams?.away?.names?.long || 
+                       event.teams?.away?.names?.medium || 
+                       event.awayTeam || 'Away Team';
+      
+      if (homeTeam === 'Home Team' && awayTeam === 'Away Team') continue;
+      
+      const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+      const isLive = event.status?.live === true;
+      const isEnded = event.status?.ended === true;
+
+      // Parse odds
+      const odds = event.odds || {};
+      let moneylineHome = 0, moneylineAway = 0;
+      let totalOver = 0, totalOverOdds = -110;
+      let totalUnder = 0, totalUnderOdds = -110;
+
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                        (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+        
+        if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+        if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        if (oddId.includes('-ou-over')) {
+          totalOver = parseFloat(odd?.fairOverUnder || odd?.line || 0);
+          totalOverOdds = fairOdds || -110;
+        }
+        if (oddId.includes('-ou-under')) {
+          totalUnder = parseFloat(odd?.fairOverUnder || odd?.line || 0);
+          totalUnderOdds = fairOdds || -110;
+        }
+      }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || totalOver !== 0;
+
+      games.push({
+        id: `nhl_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        sport: 'Hockey',
+        league: 'NHL',
+        homeTeam,
+        awayTeam,
+        startTime,
+        popularityScore: 80,
+        status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+        odds: hasValidOdds ? {
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          total: { over: totalOver, overOdds: totalOverOdds, under: totalUnder, underOdds: totalUnderOdds },
+        } : undefined,
+        hasOdds: hasValidOdds,
+      });
+    }
+
+    console.log(`[NHL] Returning ${games.length} games with odds`);
+    return games;
+  } catch (error) {
+    console.error('[NHL] Error fetching games:', error);
+    return generateFallbackNHLGames();
+  }
+}
+
+function generateFallbackNHLGames(): ScheduledGame[] {
+  const now = new Date();
+  
+  const nhlMatchups = [
+    { home: 'Toronto Maple Leafs', away: 'Boston Bruins', homeRecord: '34-18-5', awayRecord: '38-12-6' },
+    { home: 'Edmonton Oilers', away: 'Calgary Flames', homeRecord: '35-16-4', awayRecord: '28-23-6' },
+    { home: 'New York Rangers', away: 'New Jersey Devils', homeRecord: '37-15-5', awayRecord: '32-20-5' },
+    { home: 'Colorado Avalanche', away: 'Vegas Golden Knights', homeRecord: '36-17-4', awayRecord: '35-18-4' },
+    { home: 'Carolina Hurricanes', away: 'Tampa Bay Lightning', homeRecord: '38-11-7', awayRecord: '34-19-4' },
+    { home: 'Dallas Stars', away: 'Minnesota Wild', homeRecord: '35-15-7', awayRecord: '33-19-5' },
+    { home: 'Florida Panthers', away: 'Washington Capitals', homeRecord: '34-18-5', awayRecord: '30-22-5' },
+    { home: 'Vancouver Canucks', away: 'Seattle Kraken', homeRecord: '32-20-5', awayRecord: '28-24-5' },
+    { home: 'Los Angeles Kings', away: 'Anaheim Ducks', homeRecord: '33-18-6', awayRecord: '18-35-4' },
+    { home: 'Detroit Red Wings', away: 'Chicago Blackhawks', homeRecord: '29-24-4', awayRecord: '20-32-5' },
+    { home: 'Pittsburgh Penguins', away: 'Philadelphia Flyers', homeRecord: '28-25-4', awayRecord: '25-27-5' },
+    { home: 'St. Louis Blues', away: 'Nashville Predators', homeRecord: '26-27-4', awayRecord: '28-24-5' },
+  ];
+
+  return nhlMatchups.map((matchup, index) => {
+    const parseRecord = (record: string) => {
+      const parts = record.split('-').map(Number);
+      const wins = parts[0] || 0;
+      const losses = parts[1] || 0;
+      const otl = parts[2] || 0;
+      return { wins, losses, winPct: wins / (wins + losses + otl) };
+    };
+
+    const homeStats = parseRecord(matchup.homeRecord);
+    const awayStats = parseRecord(matchup.awayRecord);
+
+    return {
+      id: `nhl_${matchup.home.replace(/\s+/g, '_')}_${matchup.away.replace(/\s+/g, '_')}_${index}`,
+      sport: 'Hockey',
+      league: 'NHL',
+      homeTeam: matchup.home,
+      awayTeam: matchup.away,
+      startTime: new Date(now.getTime() + (index * 12 + 6) * 60 * 60 * 1000).toISOString(),
+      popularityScore: 80 - index,
+      status: 'scheduled' as const,
+      hasOdds: false,
+      homeStats: {
+        wins: homeStats.wins,
+        losses: homeStats.losses,
+        winPct: homeStats.winPct,
+      },
+      awayStats: {
+        wins: awayStats.wins,
+        losses: awayStats.losses,
+        winPct: awayStats.winPct,
+      },
+    };
+  });
+}
+
+// ============================================================================
+// NBA INTEGRATION via SportsGameOdds API
+// ============================================================================
+
+async function fetchNBAGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[NBA] No SPORTSGAMEODDS_API_KEY configured');
+      return [];
+    }
+
+    console.log('[NBA] Fetching from SportsGameOdds API...');
+    
+    const response = await fetch(
+      'https://api.sportsgameodds.com/v2/events?leagueID=NBA&oddsAvailable=true&limit=30',
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!response.ok) {
+      console.error(`[NBA] API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const events = data?.data || data?.events || [];
+    
+    console.log(`[NBA] Found ${events.length} events from API`);
+
+    for (const event of events) {
+      const homeTeam = event.teams?.home?.names?.long || 
+                       event.teams?.home?.names?.medium || 
+                       event.homeTeam || 'Home Team';
+      const awayTeam = event.teams?.away?.names?.long || 
+                       event.teams?.away?.names?.medium || 
+                       event.awayTeam || 'Away Team';
+      
+      if (homeTeam === 'Home Team' && awayTeam === 'Away Team') continue;
+      
+      const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+      const isLive = event.status?.live === true;
+      const isEnded = event.status?.ended === true;
+
+      // Parse odds
+      const odds = event.odds || {};
+      let moneylineHome = 0, moneylineAway = 0;
+      let spreadHome = 0, spreadHomeOdds = -110;
+      let totalOver = 0, totalOverOdds = -110;
+
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                        (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+        
+        if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+        if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        if (oddId.includes('-sp-home')) {
+          spreadHome = parseFloat(odd?.fairSpread || odd?.line || 0);
+          spreadHomeOdds = fairOdds || -110;
+        }
+        if (oddId.includes('-ou-over')) {
+          totalOver = parseFloat(odd?.fairOverUnder || odd?.line || 0);
+          totalOverOdds = fairOdds || -110;
+        }
+      }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || spreadHome !== 0;
+
+      games.push({
+        id: `nba_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        sport: 'Basketball',
+        league: 'NBA',
+        homeTeam,
+        awayTeam,
+        startTime,
+        popularityScore: 95,
+        status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+        odds: hasValidOdds ? {
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          spread: { home: spreadHome, homeOdds: spreadHomeOdds, away: -spreadHome, awayOdds: -110 },
+          total: { over: totalOver, overOdds: totalOverOdds, under: totalOver, underOdds: -110 },
+        } : undefined,
+        hasOdds: hasValidOdds,
+      });
+    }
+
+    console.log(`[NBA] Returning ${games.length} games with odds`);
+    return games;
+  } catch (error) {
+    console.error('[NBA] Error fetching games:', error);
+    return [];
+  }
+}
+
+// ============================================================================
+// MLB INTEGRATION via SportsGameOdds API  
+// ============================================================================
+
+async function fetchMLBGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[MLB] No SPORTSGAMEODDS_API_KEY configured');
+      return [];
+    }
+
+    console.log('[MLB] Fetching from SportsGameOdds API...');
+    
+    const response = await fetch(
+      'https://api.sportsgameodds.com/v2/events?leagueID=MLB&oddsAvailable=true&limit=30',
+      { headers: { 'x-api-key': apiKey } }
+    );
+
+    if (!response.ok) {
+      console.error(`[MLB] API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const events = data?.data || data?.events || [];
+    
+    console.log(`[MLB] Found ${events.length} events from API`);
+
+    for (const event of events) {
+      const homeTeam = event.teams?.home?.names?.long || 
+                       event.teams?.home?.names?.medium || 
+                       event.homeTeam || 'Home Team';
+      const awayTeam = event.teams?.away?.names?.long || 
+                       event.teams?.away?.names?.medium || 
+                       event.awayTeam || 'Away Team';
+      
+      if (homeTeam === 'Home Team' && awayTeam === 'Away Team') continue;
+      
+      const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+      const isLive = event.status?.live === true;
+      const isEnded = event.status?.ended === true;
+
+      // Parse odds
+      const odds = event.odds || {};
+      let moneylineHome = 0, moneylineAway = 0;
+      let totalOver = 0, totalOverOdds = -110;
+
+      for (const [oddId, oddData] of Object.entries(odds)) {
+        const odd = oddData as any;
+        const fairOdds = typeof odd?.fairOdds === 'number' ? odd.fairOdds : 
+                        (typeof odd?.bookOdds === 'number' ? odd.bookOdds : 0);
+        
+        if (oddId.includes('-ml-home')) moneylineHome = fairOdds;
+        if (oddId.includes('-ml-away')) moneylineAway = fairOdds;
+        if (oddId.includes('-ou-over')) {
+          totalOver = parseFloat(odd?.fairOverUnder || odd?.line || 0);
+          totalOverOdds = fairOdds || -110;
+        }
+      }
+
+      const hasValidOdds = moneylineHome !== 0 || moneylineAway !== 0 || totalOver !== 0;
+
+      games.push({
+        id: `mlb_${event.eventID || event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        sport: 'Baseball',
+        league: 'MLB',
+        homeTeam,
+        awayTeam,
+        startTime,
+        popularityScore: 85,
+        status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
+        odds: hasValidOdds ? {
+          moneyline: { home: moneylineHome, away: moneylineAway },
+          total: { over: totalOver, overOdds: totalOverOdds, under: totalOver, underOdds: -110 },
+        } : undefined,
+        hasOdds: hasValidOdds,
+      });
+    }
+
+    console.log(`[MLB] Returning ${games.length} games with odds`);
+    return games;
+  } catch (error) {
+    console.error('[MLB] Error fetching games:', error);
+    return [];
+  }
+}
+
+// ============================================================================
 // MAIN HANDLER
 // ============================================================================
 
@@ -1049,18 +1384,21 @@ Deno.serve(async (req) => {
     
     console.log('[Sportsbook API] Starting fresh fetch...');
     
-    // Fetch from all sources in parallel
-    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames] = await Promise.all([
+    // Fetch from all sources in parallel - now including NHL, NBA, MLB
+    const [sportsbookGames, ufcGames, tableTennisGames, nflGames, soccerGames, nhlGames, nbaGames, mlbGames] = await Promise.all([
       apiKey ? fetchSportsbookGames(apiKey) : Promise.resolve([]),
       fetchUFCGames(),
       fetchTableTennisGames(),
       fetchNFLGames(),
       fetchSoccerGames(),
+      fetchNHLGames(),
+      fetchNBAGames(),
+      fetchMLBGames(),
     ]);
     
-    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames];
+    const allGames = [...sportsbookGames, ...ufcGames, ...tableTennisGames, ...nflGames, ...soccerGames, ...nhlGames, ...nbaGames, ...mlbGames];
     
-    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length}, Table Tennis: ${tableTennisGames.length}, NFL: ${nflGames.length}, Soccer: ${soccerGames.length})`);
+    console.log(`[Sportsbook API] Total games: ${allGames.length} (Sportsbook: ${sportsbookGames.length}, UFC: ${ufcGames.length}, Table Tennis: ${tableTennisGames.length}, NFL: ${nflGames.length}, Soccer: ${soccerGames.length}, NHL: ${nhlGames.length}, NBA: ${nbaGames.length}, MLB: ${mlbGames.length})`);
 
     if (allGames.length === 0) {
       return new Response(
