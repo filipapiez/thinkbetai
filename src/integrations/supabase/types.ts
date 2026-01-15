@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      historical_bets: {
+        Row: {
+          away_team: string
+          confidence: number
+          created_at: string
+          date: string
+          edge: number
+          home_team: string
+          id: string
+          odds: number
+          pick: string
+          result: string
+          sport: string
+        }
+        Insert: {
+          away_team: string
+          confidence: number
+          created_at?: string
+          date: string
+          edge: number
+          home_team: string
+          id?: string
+          odds: number
+          pick: string
+          result: string
+          sport: string
+        }
+        Update: {
+          away_team?: string
+          confidence?: number
+          created_at?: string
+          date?: string
+          edge?: number
+          home_team?: string
+          id?: string
+          odds?: number
+          pick?: string
+          result?: string
+          sport?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_type: string | null
