@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Trophy, TrendingUp, Target, CheckCircle } from 'lucide-react';
+import { Trophy, TrendingUp, Target, CheckCircle, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { platformStats } from '@/lib/mockData';
 
 interface QualifiedBetAccuracyChartProps {
   sport: string;
@@ -17,57 +18,134 @@ interface SportAccuracy {
   profit: number;
 }
 
-// Get accuracy for specific sport with varied win ratios
+interface RecentBet {
+  id: string;
+  matchup: string;
+  pick: string;
+  result: 'W' | 'L';
+  date: string;
+}
+
+// Get accuracy for specific sport using platformStats for consistency
 const getSportAccuracy = (sport: string): SportAccuracy => {
   const normalizedSport = sport.toUpperCase().replace(/\s+/g, '');
   
-  const sportData: Record<string, SportAccuracy> = {
-    // Major US Leagues
-    'NBA': { wins: 149, losses: 51, total: 200, winRate: 74.5, profit: 32.8 },
-    'NFL': { wins: 66, losses: 14, total: 80, winRate: 82.5, profit: 48.2 },
-    'NHL': { wins: 108, losses: 32, total: 140, winRate: 77.1, profit: 38.4 },
-    'MLB': { wins: 182, losses: 58, total: 240, winRate: 75.8, profit: 34.6 },
-    'WNBA': { wins: 89, losses: 31, total: 120, winRate: 74.2, profit: 28.5 },
-    
-    // College Sports
-    'NCAAB': { wins: 168, losses: 52, total: 220, winRate: 76.4, profit: 35.9 },
-    'NCAAF': { wins: 58, losses: 17, total: 75, winRate: 77.3, profit: 41.1 },
-    
-    // Combat Sports
-    'UFC': { wins: 134, losses: 31, total: 165, winRate: 81.2, profit: 52.4 },
-    'MMA': { wins: 134, losses: 31, total: 165, winRate: 81.2, profit: 52.4 },
-    'BOXING': { wins: 72, losses: 23, total: 95, winRate: 75.8, profit: 33.2 },
-    
-    // Soccer Leagues
-    'SOCCER': { wins: 156, losses: 64, total: 220, winRate: 70.9, profit: 24.8 },
-    'EPL': { wins: 98, losses: 37, total: 135, winRate: 72.6, profit: 29.4 },
-    'LALIGA': { wins: 84, losses: 36, total: 120, winRate: 70.0, profit: 22.1 },
-    'CHAMPIONSLEAGUE': { wins: 67, losses: 23, total: 90, winRate: 74.4, profit: 35.7 },
-    'BUNDESLIGA': { wins: 76, losses: 34, total: 110, winRate: 69.1, profit: 21.3 },
-    'SERIEA': { wins: 71, losses: 34, total: 105, winRate: 67.6, profit: 18.9 },
-    'LIGUE1': { wins: 62, losses: 33, total: 95, winRate: 65.3, profit: 15.4 },
-    'MLS': { wins: 88, losses: 42, total: 130, winRate: 67.7, profit: 19.2 },
-    
-    // Tennis & Table Tennis
-    'TENNIS': { wins: 112, losses: 43, total: 155, winRate: 72.3, profit: 27.6 },
-    'ATP': { wins: 78, losses: 27, total: 105, winRate: 74.3, profit: 31.2 },
-    'WTA': { wins: 65, losses: 30, total: 95, winRate: 68.4, profit: 20.8 },
-    'TABLETENNIS': { wins: 94, losses: 36, total: 130, winRate: 72.3, profit: 28.1 },
-    'WTT': { wins: 94, losses: 36, total: 130, winRate: 72.3, profit: 28.1 },
-    
-    // Other Sports
-    'GOLF': { wins: 42, losses: 18, total: 60, winRate: 70.0, profit: 25.5 },
-    'PGA': { wins: 42, losses: 18, total: 60, winRate: 70.0, profit: 25.5 },
-    
-    // Generic categories
-    'BASKETBALL': { wins: 149, losses: 51, total: 200, winRate: 74.5, profit: 32.8 },
-    'FOOTBALL': { wins: 66, losses: 14, total: 80, winRate: 82.5, profit: 48.2 },
-    'HOCKEY': { wins: 108, losses: 32, total: 140, winRate: 77.1, profit: 38.4 },
-    'BASEBALL': { wins: 182, losses: 58, total: 240, winRate: 75.8, profit: 34.6 },
-    'SPORTS': { wins: 124, losses: 46, total: 170, winRate: 72.9, profit: 26.3 },
+  // Map sport to platformStats breakdown for consistent win rates
+  const sportMapping: Record<string, string> = {
+    'NBA': 'NBA',
+    'NFL': 'NFL', 
+    'NHL': 'NHL',
+    'MLB': 'MLB',
+    'UFC': 'UFC',
+    'MMA': 'UFC',
+    'TENNIS': 'Tennis',
+    'ATP': 'Tennis',
+    'WTA': 'Tennis',
+    'TABLETENNIS': 'Table Tennis',
+    'WTT': 'Table Tennis',
+    'SOCCER': 'Soccer',
+    'EPL': 'Soccer',
+    'LALIGA': 'Soccer',
+    'CHAMPIONSLEAGUE': 'Soccer',
+    'BUNDESLIGA': 'Soccer',
+    'SERIEA': 'Soccer',
+    'LIGUE1': 'Soccer',
+    'MLS': 'Soccer',
   };
   
-  return sportData[normalizedSport] || { wins: 124, losses: 46, total: 170, winRate: 72.9, profit: 26.3 };
+  const mappedSport = sportMapping[normalizedSport];
+  const sportData = platformStats.sportBreakdown.find(s => s.sport === mappedSport);
+  
+  if (sportData) {
+    const losses = sportData.qualified - sportData.wins;
+    return {
+      wins: sportData.wins,
+      losses: losses,
+      total: sportData.qualified,
+      winRate: sportData.winRate,
+      profit: Math.round((sportData.winRate - 50) * 0.9 * 10) / 10, // Approximate ROI
+    };
+  }
+  
+  // Fallback to overall platform stats for unknown sports
+  return {
+    wins: platformStats.correctQualified,
+    losses: platformStats.totalQualified - platformStats.correctQualified,
+    total: platformStats.totalQualified,
+    winRate: platformStats.qualifiedWinRate,
+    profit: 42.1,
+  };
+};
+
+// Get recent qualified bets for the sport
+const getRecentBets = (sport: string): RecentBet[] => {
+  const normalizedSport = sport.toUpperCase();
+  
+  // Sport-specific recent bets (simulated based on win rate)
+  const recentBetsData: Record<string, RecentBet[]> = {
+    'NBA': [
+      { id: '1', matchup: 'Lakers vs Celtics', pick: 'Lakers ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Warriors vs Heat', pick: 'Warriors -3.5', result: 'W', date: 'Jan 13' },
+      { id: '3', matchup: 'Nuggets vs 76ers', pick: 'Nuggets ML', result: 'W', date: 'Jan 12' },
+      { id: '4', matchup: 'Bucks vs Suns', pick: 'Under 228.5', result: 'L', date: 'Jan 11' },
+      { id: '5', matchup: 'Celtics vs Heat', pick: 'Celtics -5.5', result: 'W', date: 'Jan 10' },
+    ],
+    'NFL': [
+      { id: '1', matchup: 'Chiefs vs Bills', pick: 'Chiefs ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Lions vs Eagles', pick: 'Lions -2.5', result: 'W', date: 'Jan 13' },
+      { id: '3', matchup: 'Ravens vs Texans', pick: 'Ravens ML', result: 'W', date: 'Jan 12' },
+      { id: '4', matchup: 'Packers vs Cowboys', pick: 'Over 48.5', result: 'W', date: 'Jan 11' },
+      { id: '5', matchup: 'Bills vs Dolphins', pick: 'Bills -7.5', result: 'W', date: 'Jan 10' },
+    ],
+    'UFC': [
+      { id: '1', matchup: 'Jones vs Aspinall', pick: 'Jones ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Makhachev vs Holloway', pick: 'Makhachev ML', result: 'W', date: 'Jan 12' },
+      { id: '3', matchup: 'Pereira vs Hill', pick: 'Pereira KO', result: 'W', date: 'Jan 10' },
+      { id: '4', matchup: 'Du Plessis vs Strickland', pick: 'Du Plessis ML', result: 'W', date: 'Jan 8' },
+      { id: '5', matchup: 'O\'Malley vs Merab', pick: 'O\'Malley ML', result: 'L', date: 'Jan 6' },
+    ],
+    'SOCCER': [
+      { id: '1', matchup: 'Real Madrid vs Barcelona', pick: 'Real Madrid ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Liverpool vs Man City', pick: 'Liverpool ML', result: 'W', date: 'Jan 13' },
+      { id: '3', matchup: 'Arsenal vs Chelsea', pick: 'Under 2.5', result: 'L', date: 'Jan 12' },
+      { id: '4', matchup: 'Bayern vs Dortmund', pick: 'Bayern -1.5', result: 'W', date: 'Jan 11' },
+      { id: '5', matchup: 'PSG vs Monaco', pick: 'PSG ML', result: 'W', date: 'Jan 10' },
+    ],
+    'TENNIS': [
+      { id: '1', matchup: 'Sinner vs Alcaraz', pick: 'Sinner ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Djokovic vs Medvedev', pick: 'Djokovic ML', result: 'W', date: 'Jan 13' },
+      { id: '3', matchup: 'Zverev vs Rublev', pick: 'Zverev -3.5', result: 'W', date: 'Jan 12' },
+      { id: '4', matchup: 'Fritz vs Ruud', pick: 'Fritz ML', result: 'L', date: 'Jan 11' },
+      { id: '5', matchup: 'Sinner vs Djokovic', pick: 'Sinner ML', result: 'W', date: 'Jan 10' },
+    ],
+    'NHL': [
+      { id: '1', matchup: 'Oilers vs Panthers', pick: 'Oilers ML', result: 'W', date: 'Jan 14' },
+      { id: '2', matchup: 'Jets vs Golden Knights', pick: 'Jets -1.5', result: 'W', date: 'Jan 13' },
+      { id: '3', matchup: 'Avalanche vs Stars', pick: 'Over 6.5', result: 'L', date: 'Jan 12' },
+      { id: '4', matchup: 'Rangers vs Bruins', pick: 'Rangers ML', result: 'W', date: 'Jan 11' },
+      { id: '5', matchup: 'Hurricanes vs Leafs', pick: 'Under 6.5', result: 'W', date: 'Jan 10' },
+    ],
+    'MLB': [
+      { id: '1', matchup: 'Dodgers vs Yankees', pick: 'Dodgers ML', result: 'W', date: 'Oct 14' },
+      { id: '2', matchup: 'Braves vs Phillies', pick: 'Braves -1.5', result: 'W', date: 'Oct 13' },
+      { id: '3', matchup: 'Astros vs Rangers', pick: 'Astros ML', result: 'W', date: 'Oct 12' },
+      { id: '4', matchup: 'Orioles vs Rays', pick: 'Orioles ML', result: 'L', date: 'Oct 11' },
+      { id: '5', matchup: 'Padres vs Diamondbacks', pick: 'Padres ML', result: 'W', date: 'Oct 10' },
+    ],
+  };
+  
+  // Map variations to main sports
+  const sportKey = normalizedSport.includes('TENNIS') || normalizedSport === 'ATP' || normalizedSport === 'WTA' 
+    ? 'TENNIS' 
+    : normalizedSport.includes('TABLE') || normalizedSport === 'WTT'
+    ? 'TENNIS' // Use tennis data for table tennis
+    : normalizedSport.includes('SOCCER') || ['EPL', 'LALIGA', 'BUNDESLIGA', 'SERIEA', 'LIGUE1', 'MLS', 'CHAMPIONSLEAGUE'].includes(normalizedSport)
+    ? 'SOCCER'
+    : normalizedSport === 'MMA' 
+    ? 'UFC'
+    : recentBetsData[normalizedSport] ? normalizedSport : 'NBA';
+  
+  return recentBetsData[sportKey] || recentBetsData['NBA'];
 };
 
 // Generate monthly trend data for this sport
@@ -84,6 +162,7 @@ const getMonthlyTrend = (baseWinRate: number): { month: string; winRate: number;
 
 export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartProps) => {
   const sportData = useMemo(() => getSportAccuracy(sport), [sport]);
+  const recentBets = useMemo(() => getRecentBets(sport), [sport]);
   const trendData = useMemo(() => getMonthlyTrend(sportData.winRate), [sportData.winRate]);
 
   const pieData = [
@@ -94,14 +173,20 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between flex-wrap gap-2">
           <span className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-amber-400" />
             {sport} Model Performance
           </span>
-          <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-sm px-3">
-            {sportData.winRate}% Win Rate
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/40 text-xs px-2 animate-pulse">
+              <Radio className="h-3 w-3 mr-1" />
+              LIVE
+            </Badge>
+            <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-sm px-3">
+              {sportData.winRate}% Win Rate
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -134,6 +219,45 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
           </div>
         </div>
 
+        {/* Recent Qualified Bets */}
+        <div>
+          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            Recent Qualified Bets
+            <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20">
+              Last 5
+            </Badge>
+          </h4>
+          <div className="space-y-2">
+            {recentBets.map((bet) => (
+              <div 
+                key={bet.id}
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-lg border",
+                  bet.result === 'W' 
+                    ? "bg-emerald-500/5 border-emerald-500/20" 
+                    : "bg-rose-500/5 border-rose-500/20"
+                )}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{bet.matchup}</div>
+                  <div className="text-xs text-muted-foreground">{bet.pick} • {bet.date}</div>
+                </div>
+                <Badge 
+                  variant="outline" 
+                  className={cn(
+                    "ml-2 font-bold",
+                    bet.result === 'W' 
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" 
+                      : "bg-rose-500/20 text-rose-400 border-rose-500/40"
+                  )}
+                >
+                  {bet.result}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Win Rate Trend */}
@@ -148,7 +272,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
                     tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                   />
                   <YAxis 
-                    domain={[65, 90]} 
+                    domain={[65, 95]} 
                     tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                     tickFormatter={(v) => `${v}%`}
                   />
@@ -218,8 +342,8 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
         {/* Transparency Note */}
         <div className="p-3 rounded-lg bg-muted/30 border border-border">
           <p className="text-xs text-muted-foreground">
-            Based on <span className="font-medium text-foreground">{sportData.total} {sport.toLowerCase()} qualified matches</span> since Aug 2025. 
-            Only bets rated "Qualified" or higher are included in this record.
+            Based on <span className="font-medium text-foreground">{sportData.total} {sport.toLowerCase()} qualified bets</span> since Aug 2025. 
+            Only bets rated "GOOD" (qualified) are included in this record. Overall platform win rate: <span className="font-medium text-emerald-400">{platformStats.qualifiedWinRate}%</span>
           </p>
         </div>
       </CardContent>
