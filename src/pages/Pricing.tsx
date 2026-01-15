@@ -18,10 +18,11 @@ const pricingPlans = [
     icon: Zap,
     features: [
       'Access to all sports coverage',
-      'Basic odds explanations',
+      'Basic AI game analysis',
       'Injury reports & player status',
       'Recent form analysis',
       'Team stats & standings',
+      'Basic parlay insights',
       'Daily game previews',
       'Email support',
     ],
