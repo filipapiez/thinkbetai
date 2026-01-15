@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, isWithinInterval, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Filter, TrendingUp, Trophy, X, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Filter, TrendingUp, Trophy, X, Loader2, BarChart3 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,34 @@ const BetHistory = () => {
     return Array.from(sports).sort();
   }, [historicalBets]);
 
+  // Calculate sport-by-sport breakdown
+  const sportBreakdown = useMemo(() => {
+    const breakdown: Record<string, { wins: number; losses: number; total: number; winRate: number }> = {};
+    
+    historicalBets.forEach((bet) => {
+      if (!breakdown[bet.sport]) {
+        breakdown[bet.sport] = { wins: 0, losses: 0, total: 0, winRate: 0 };
+      }
+      breakdown[bet.sport].total++;
+      if (bet.result === "win") {
+        breakdown[bet.sport].wins++;
+      } else {
+        breakdown[bet.sport].losses++;
+      }
+    });
+
+    // Calculate win rates
+    Object.keys(breakdown).forEach((sport) => {
+      const { wins, total } = breakdown[sport];
+      breakdown[sport].winRate = total > 0 ? (wins / total) * 100 : 0;
+    });
+
+    // Sort by win rate descending
+    return Object.entries(breakdown)
+      .sort(([, a], [, b]) => b.winRate - a.winRate)
+      .map(([sport, data]) => ({ sport, ...data }));
+  }, [historicalBets]);
+
   const clearFilters = () => {
     setSportFilter("all");
     setResultFilter("all");
@@ -162,6 +191,53 @@ const BetHistory = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Sport-by-Sport Breakdown */}
+        <Card className="mb-6 bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Performance by Sport
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {sportBreakdown.map(({ sport, wins, losses, total, winRate }) => (
+                  <div
+                    key={sport}
+                    className="p-4 rounded-lg bg-secondary/50 border border-border hover:bg-secondary/70 transition-colors cursor-pointer"
+                    onClick={() => setSportFilter(sport)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
+                        {sport}
+                      </Badge>
+                      <span className={cn(
+                        "text-lg font-bold",
+                        winRate >= 65 ? "text-green-500" : winRate >= 55 ? "text-yellow-500" : "text-red-500"
+                      )}>
+                        {winRate.toFixed(1)}%
+                      </span>
+                    </div>
+                    <Progress 
+                      value={winRate} 
+                      className="h-2 mb-2"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{wins}W - {losses}L</span>
+                      <span>{total} bets</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Filters */}
         <Card className="mb-6 bg-card border-border">
