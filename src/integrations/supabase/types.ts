@@ -68,6 +68,69 @@ export type Database = {
         }
         Relationships: []
       }
+      active_bets: {
+        Row: {
+          away_score: number | null
+          away_team: string
+          confidence: number
+          created_at: string
+          edge: number
+          game_id: string
+          game_time: string
+          home_score: number | null
+          home_team: string
+          id: string
+          odds: number
+          pick: string
+          pick_type: string
+          pick_value: number | null
+          result: string | null
+          sport: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          away_score?: number | null
+          away_team: string
+          confidence?: number
+          created_at?: string
+          edge?: number
+          game_id: string
+          game_time: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          odds?: number
+          pick: string
+          pick_type?: string
+          pick_value?: number | null
+          result?: string | null
+          sport: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          away_score?: number | null
+          away_team?: string
+          confidence?: number
+          created_at?: string
+          edge?: number
+          game_id?: string
+          game_time?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          odds?: number
+          pick?: string
+          pick_type?: string
+          pick_value?: number | null
+          result?: string | null
+          sport?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string

@@ -53,3 +53,15 @@ verify_jwt = false
 
 [functions.generate-report]
 verify_jwt = false
+
+[functions.check-game-results]
+verify_jwt = false
+
+[functions.redeem-access-code]
+verify_jwt = false
+
+[functions.visitor-chat]
+verify_jwt = false
+
+[functions.scrape-prizepicks]
+verify_jwt = false
