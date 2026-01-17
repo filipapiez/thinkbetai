@@ -4,7 +4,6 @@ import { format, isWithinInterval, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Filter, TrendingUp, Trophy, X, Loader2, BarChart3 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Header } from "@/components/Header";
-import { ActiveBetsPanel } from "@/components/ActiveBetsPanel";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -150,9 +149,6 @@ const BetHistory = () => {
             Complete record of all AI-qualified betting picks with verified results
           </p>
         </div>
-
-        {/* Active Bets Tracker */}
-        <ActiveBetsPanel />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
