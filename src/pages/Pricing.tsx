@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -5,13 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { Check, Zap, Crown, Trophy } from 'lucide-react';
+import { Check, Zap, Crown, Trophy, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
 // Stripe price IDs for each plan
 const pricingPlans = [
   {
     id: 'basic',
-    paymentLink: 'https://buy.stripe.com/14AdRbfrUeI49kF4AH3840K',
+    priceId: 'price_1RcVxREjzJ25NYpN2IKqm7K2',
     name: 'Basic',
     price: 4.99,
     description: 'Perfect for casual fans looking to understand odds better',
@@ -31,7 +35,7 @@ const pricingPlans = [
   },
   {
     id: 'pro',
-    paymentLink: 'https://buy.stripe.com/14AdRbfrUeI49kF4AH3840K',
+    priceId: 'price_1RcVz5EjzJ25NYpNHVCOIrHu',
     name: 'Pro',
     price: 14.99,
     description: 'For serious enthusiasts who want deeper insights',
@@ -53,7 +57,7 @@ const pricingPlans = [
   },
   {
     id: 'insider',
-    paymentLink: 'https://buy.stripe.com/aFa7sNcfIbvS2Wh8QX3840I',
+    priceId: 'price_1RcW0nEjzJ25NYpN2gHl1BwN',
     name: 'Insider',
     price: 49,
     description: 'The ultimate package for dedicated analysts',
@@ -77,15 +81,34 @@ const pricingPlans = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, isSubscribed } = useAuth();
+  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
-  const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
+  const handleSelectPlan = async (plan: typeof pricingPlans[0]) => {
     if (!user) {
       navigate('/login', { state: { from: { pathname: '/pricing' } } });
       return;
     }
 
-    // Open the Stripe payment link directly
-    window.open(plan.paymentLink, '_blank');
+    setLoadingPlanId(plan.id);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: plan.priceId },
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error('Failed to start checkout. Please try again.');
+    } finally {
+      setLoadingPlanId(null);
+    }
   };
 
   return (
@@ -163,9 +186,11 @@ const Pricing = () => {
                       variant={plan.popular ? 'default' : 'outline'}
                       size="lg"
                       className="w-full"
-                      disabled={isSubscribed}
+                      disabled={isSubscribed || loadingPlanId !== null}
                     >
-                      {isSubscribed ? 'Already Subscribed' : plan.cta}
+                      {loadingPlanId === plan.id ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                      ) : isSubscribed ? 'Already Subscribed' : plan.cta}
                     </Button>
                   </CardContent>
                 </Card>
