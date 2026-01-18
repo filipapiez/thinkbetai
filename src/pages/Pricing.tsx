@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 const pricingPlans = [
   {
     id: 'basic',
-    priceId: 'price_1RcVxREjzJ25NYpN2IKqm7K2',
+    priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne',
     name: 'Basic',
     price: 4.99,
     description: 'Perfect for casual fans looking to understand odds better',
@@ -35,7 +35,7 @@ const pricingPlans = [
   },
   {
     id: 'pro',
-    priceId: 'price_1RcVz5EjzJ25NYpNHVCOIrHu',
+    priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY',
     name: 'Pro',
     price: 14.99,
     description: 'For serious enthusiasts who want deeper insights',
@@ -57,7 +57,7 @@ const pricingPlans = [
   },
   {
     id: 'insider',
-    priceId: 'price_1RcW0nEjzJ25NYpN2gHl1BwN',
+    priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     name: 'Insider',
     price: 49,
     description: 'The ultimate package for dedicated analysts',
