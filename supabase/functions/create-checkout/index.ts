@@ -73,8 +73,11 @@ serve(async (req) => {
       mode: "subscription",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
+      // Key mapping: payment -> user
+      client_reference_id: user.id,
       metadata: {
-        user_id: user.id,
+        userId: user.id,
+        email: user.email,
       },
     });
 
