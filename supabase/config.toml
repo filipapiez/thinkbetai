@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.scrape-prizepicks]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
