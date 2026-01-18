@@ -70,6 +70,21 @@ export const Footer = () => {
               </li>
             </ul>
           </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Contact</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a 
+                  href="mailto:support@thinkbetai.com"
+                  className="hover:text-foreground transition-colors"
+                >
+                  support@thinkbetai.com
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Disclaimer */}
