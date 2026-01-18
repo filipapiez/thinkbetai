@@ -682,6 +682,246 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
 }
 
 // ============================================================================
+// THE ODDS API INTEGRATION (Free tier: 500 requests/month)
+// ============================================================================
+
+async function fetchTheOddsAPIGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[TheOddsAPI] No THE_ODDS_API_KEY configured');
+      return [];
+    }
+
+    console.log('[TheOddsAPI] Fetching live and upcoming games...');
+    
+    // Fetch multiple sports with odds
+    const sports = [
+      { key: 'americanfootball_nfl', sport: 'Football', league: 'NFL', popularity: 100 },
+      { key: 'basketball_nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
+      { key: 'baseball_mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
+      { key: 'icehockey_nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
+      { key: 'americanfootball_ncaaf', sport: 'Football', league: 'NCAAF', popularity: 85 },
+      { key: 'basketball_ncaab', sport: 'Basketball', league: 'NCAAB', popularity: 80 },
+      { key: 'soccer_epl', sport: 'Soccer', league: 'EPL', popularity: 90 },
+      { key: 'soccer_spain_la_liga', sport: 'Soccer', league: 'La Liga', popularity: 85 },
+      { key: 'soccer_germany_bundesliga', sport: 'Soccer', league: 'Bundesliga', popularity: 82 },
+      { key: 'soccer_italy_serie_a', sport: 'Soccer', league: 'Serie A', popularity: 80 },
+      { key: 'soccer_usa_mls', sport: 'Soccer', league: 'MLS', popularity: 65 },
+      { key: 'mma_mixed_martial_arts', sport: 'MMA', league: 'UFC', popularity: 92 },
+      { key: 'tennis_atp_aus_open', sport: 'Tennis', league: 'ATP', popularity: 70 },
+    ];
+
+    for (const sportConfig of sports) {
+      try {
+        const response = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) continue; // Sport not in season
+          console.log(`[TheOddsAPI] ${sportConfig.league} error: ${response.status}`);
+          continue;
+        }
+
+        const events = await response.json();
+        console.log(`[TheOddsAPI] Found ${events.length} ${sportConfig.league} events`);
+
+        for (const event of events) {
+          const game = parseTheOddsEvent(event, sportConfig);
+          if (game) games.push(game);
+        }
+      } catch (e) {
+        console.log(`[TheOddsAPI] Error fetching ${sportConfig.league}:`, e);
+      }
+    }
+
+    console.log(`[TheOddsAPI] Total games fetched: ${games.length}`);
+    return games;
+  } catch (error) {
+    console.error('[TheOddsAPI] Error:', error);
+    return [];
+  }
+}
+
+function parseTheOddsEvent(event: any, config: { sport: string; league: string; popularity: number }): ScheduledGame | null {
+  try {
+    const homeTeam = event.home_team || '';
+    const awayTeam = event.away_team || '';
+    
+    if (!homeTeam || !awayTeam) return null;
+
+    // Extract best odds from bookmakers
+    const odds: ScheduledGame['odds'] = {};
+    const bookmakers = event.bookmakers || [];
+    
+    if (bookmakers.length > 0) {
+      const primaryBook = bookmakers[0];
+      const markets = primaryBook.markets || [];
+      
+      for (const market of markets) {
+        if (market.key === 'h2h') {
+          const homeOutcome = market.outcomes?.find((o: any) => o.name === homeTeam);
+          const awayOutcome = market.outcomes?.find((o: any) => o.name === awayTeam);
+          const drawOutcome = market.outcomes?.find((o: any) => o.name === 'Draw');
+          
+          if (homeOutcome && awayOutcome) {
+            odds.moneyline = {
+              home: homeOutcome.price || 0,
+              away: awayOutcome.price || 0,
+              draw: drawOutcome?.price,
+            };
+          }
+        }
+        
+        if (market.key === 'spreads') {
+          const homeSpread = market.outcomes?.find((o: any) => o.name === homeTeam);
+          const awaySpread = market.outcomes?.find((o: any) => o.name === awayTeam);
+          
+          if (homeSpread && awaySpread) {
+            odds.spread = {
+              home: parseFloat(homeSpread.point || 0),
+              homeOdds: homeSpread.price || -110,
+              away: parseFloat(awaySpread.point || 0),
+              awayOdds: awaySpread.price || -110,
+            };
+          }
+        }
+        
+        if (market.key === 'totals') {
+          const over = market.outcomes?.find((o: any) => o.name === 'Over');
+          const under = market.outcomes?.find((o: any) => o.name === 'Under');
+          
+          if (over && under) {
+            odds.total = {
+              over: parseFloat(over.point || 0),
+              overOdds: over.price || -110,
+              under: parseFloat(under.point || 0),
+              underOdds: under.price || -110,
+            };
+          }
+        }
+      }
+    }
+
+    return {
+      id: `odds_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      sport: config.sport,
+      league: config.league,
+      homeTeam,
+      awayTeam,
+      startTime: event.commence_time || new Date().toISOString(),
+      popularityScore: config.popularity,
+      status: 'scheduled',
+      odds: Object.keys(odds).length > 0 ? odds : undefined,
+      hasOdds: Object.keys(odds).length > 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// ESPN FREE PUBLIC API (No API key required)
+// ============================================================================
+
+async function fetchESPNGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  const espnSports = [
+    { path: 'football/nfl', sport: 'Football', league: 'NFL', popularity: 100 },
+    { path: 'basketball/nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
+    { path: 'baseball/mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
+    { path: 'hockey/nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
+    { path: 'football/college-football', sport: 'Football', league: 'NCAAF', popularity: 85 },
+    { path: 'basketball/mens-college-basketball', sport: 'Basketball', league: 'NCAAB', popularity: 80 },
+    { path: 'basketball/wnba', sport: 'Basketball', league: 'WNBA', popularity: 70 },
+    { path: 'soccer/eng.1', sport: 'Soccer', league: 'EPL', popularity: 90 },
+    { path: 'soccer/esp.1', sport: 'Soccer', league: 'La Liga', popularity: 85 },
+    { path: 'soccer/ger.1', sport: 'Soccer', league: 'Bundesliga', popularity: 82 },
+    { path: 'soccer/ita.1', sport: 'Soccer', league: 'Serie A', popularity: 80 },
+    { path: 'soccer/usa.1', sport: 'Soccer', league: 'MLS', popularity: 65 },
+    { path: 'mma/ufc', sport: 'MMA', league: 'UFC', popularity: 92 },
+  ];
+
+  console.log('[ESPN] Fetching from free public API...');
+
+  for (const sportConfig of espnSports) {
+    try {
+      const response = await fetch(
+        `https://site.api.espn.com/apis/site/v2/sports/${sportConfig.path}/scoreboard`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+
+      if (!response.ok) continue;
+
+      const data = await response.json();
+      const events = data.events || [];
+      
+      if (events.length > 0) {
+        console.log(`[ESPN] Found ${events.length} ${sportConfig.league} events`);
+      }
+
+      for (const event of events) {
+        const game = parseESPNEvent(event, sportConfig);
+        if (game) games.push(game);
+      }
+    } catch (e) {
+      // Silently continue on errors
+    }
+  }
+
+  console.log(`[ESPN] Total games fetched: ${games.length}`);
+  return games;
+}
+
+function parseESPNEvent(event: any, config: { sport: string; league: string; popularity: number }): ScheduledGame | null {
+  try {
+    const competitions = event.competitions || [];
+    if (competitions.length === 0) return null;
+    
+    const competition = competitions[0];
+    const competitors = competition.competitors || [];
+    
+    if (competitors.length < 2) return null;
+    
+    const homeComp = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
+    const awayComp = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
+    
+    const homeTeam = homeComp.team?.displayName || homeComp.team?.name || '';
+    const awayTeam = awayComp.team?.displayName || awayComp.team?.name || '';
+    
+    if (!homeTeam || !awayTeam) return null;
+
+    const status = event.status?.type?.name || '';
+    let gameStatus: 'scheduled' | 'live' | 'completed' = 'scheduled';
+    
+    if (status.toLowerCase().includes('in') || status === 'STATUS_IN_PROGRESS') {
+      gameStatus = 'live';
+    } else if (status.toLowerCase().includes('final') || status === 'STATUS_FINAL') {
+      gameStatus = 'completed';
+    }
+
+    return {
+      id: `espn_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      sport: config.sport,
+      league: config.league,
+      homeTeam,
+      awayTeam,
+      startTime: event.date || new Date().toISOString(),
+      popularityScore: config.popularity,
+      status: gameStatus,
+      hasOdds: false,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
 // SHARED API EVENT PARSER
 // ============================================================================
 
@@ -799,7 +1039,19 @@ Deno.serve(async (req) => {
     console.log('[API] Starting fresh fetch from real APIs only...');
     
     // Fetch from all REAL API sources in parallel
-    const [sportsbookGames, nflGames, nbaGames, nhlGames, mlbGames, ncaabGames, ncaafGames, ufcGames, tennisGames] = await Promise.all([
+    const [
+      sportsbookGames, 
+      nflGames, 
+      nbaGames, 
+      nhlGames, 
+      mlbGames, 
+      ncaabGames, 
+      ncaafGames, 
+      ufcGames, 
+      tennisGames,
+      theOddsGames,
+      espnGames,
+    ] = await Promise.all([
       rapidApiKey ? fetchSportsbookGames(rapidApiKey) : Promise.resolve([]),
       fetchNFLGames(),
       fetchNBAGames(),
@@ -809,6 +1061,8 @@ Deno.serve(async (req) => {
       fetchNCAAFGames(),
       fetchUFCGames(),
       fetchTennisGames(),
+      fetchTheOddsAPIGames(),
+      fetchESPNGames(),
     ]);
     
     const allGames = [
@@ -820,10 +1074,12 @@ Deno.serve(async (req) => {
       ...ncaabGames, 
       ...ncaafGames, 
       ...ufcGames, 
-      ...tennisGames
+      ...tennisGames,
+      ...theOddsGames,
+      ...espnGames,
     ];
     
-    console.log(`[API] Total: ${allGames.length} REAL games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length})`);
+    console.log(`[API] Total: ${allGames.length} REAL games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
 
     if (allGames.length === 0) {
       return new Response(
