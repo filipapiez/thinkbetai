@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { getPlanIdFromPriceId } from "../_shared/stripePlans.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +25,11 @@ serve(async (req) => {
     const { priceId } = await req.json().catch(() => ({}));
     if (!priceId) throw new Error("No priceId provided");
     logStep("Price ID received", { priceId });
+
+    // Validate this price maps to a known in-app plan. Prevents DB constraint failures downstream.
+    const planId = getPlanIdFromPriceId(priceId);
+    if (!planId) throw new Error(`Unknown priceId: ${priceId}`);
+    logStep("Plan determined", { planId });
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -50,7 +56,7 @@ serve(async (req) => {
     // Check for existing customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId: string | undefined;
-    
+
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Found existing Stripe customer", { customerId });
@@ -78,6 +84,8 @@ serve(async (req) => {
       metadata: {
         userId: user.id,
         email: user.email,
+        priceId,
+        planId,
       },
     });
 
