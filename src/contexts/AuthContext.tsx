@@ -99,6 +99,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = async () => {
     if (user) {
+      // First, sync subscription status with Stripe
+      try {
+        const { error } = await supabase.functions.invoke('check-subscription');
+        if (error) {
+          console.error('Error checking subscription:', error);
+        }
+      } catch (err) {
+        console.error('Error invoking check-subscription:', err);
+      }
+      
+      // Then fetch the updated profile
       const updatedProfile = await fetchProfile(user.id);
       setProfile(updatedProfile);
     }
