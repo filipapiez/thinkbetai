@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { getPlanIdFromPriceId } from "../_shared/stripePlans.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +46,7 @@ serve(async (req) => {
 
     // Check for existing customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
+
     if (customers.data.length === 0) {
       logStep("No customer found, returning unsubscribed");
       return new Response(JSON.stringify({ subscribed: false }), {
@@ -65,57 +66,82 @@ serve(async (req) => {
     });
 
     const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionEnd = null;
-    let productId = null;
+    let subscriptionEnd: string | null = null;
+    let productId: string | null = null;
+    let priceId: string | null = null;
+    let planId: string | null = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product;
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      const periodEnd = (subscription as any).current_period_end;
+      if (typeof periodEnd === "number" && Number.isFinite(periodEnd)) {
+        subscriptionEnd = new Date(periodEnd * 1000).toISOString();
+      } else {
+        // Avoid throwing "Invalid time value" and still allow access sync.
+        logStep("Missing/invalid current_period_end", { periodEnd });
+      }
+
+      const item = subscription.items?.data?.[0];
+      productId = (item?.price?.product as string | undefined) ?? null;
+      priceId = (item?.price?.id as string | undefined) ?? null;
+      planId = getPlanIdFromPriceId(priceId);
+
+      logStep("Active subscription found", {
+        subscriptionId: subscription.id,
+        endDate: subscriptionEnd,
+        productId,
+        priceId,
+        planId,
+      });
 
       // Update profile subscription status
+      // IMPORTANT: access_type must match our DB constraint, so store planId (basic/pro/insider).
+      const updatePayload: Record<string, any> = {
+        subscription_status: "active",
+        has_access: true,
+      };
+      if (planId) updatePayload.access_type = planId;
+
       const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ 
-          subscription_status: 'active',
-          has_access: true,
-          access_type: 'subscription'
-        })
-        .eq('user_id', user.id);
+        .from("profiles")
+        .update(updatePayload)
+        .eq("user_id", user.id);
 
       if (updateError) {
-        logStep("Error updating profile", { error: updateError.message });
+        logStep("Error updating profile", { error: updateError.message, updatePayload });
       } else {
-        logStep("Profile updated with active subscription");
+        logStep("Profile updated with active subscription", { access_type: updatePayload.access_type });
       }
     } else {
       logStep("No active subscription found");
-      
+
       // Check if user still has access via promo code
       const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('promo_used, has_access')
-        .eq('user_id', user.id)
+        .from("profiles")
+        .select("promo_used, has_access")
+        .eq("user_id", user.id)
         .single();
 
       // Only update to inactive if they don't have promo access
       if (!profile?.promo_used) {
         await supabaseClient
-          .from('profiles')
-          .update({ subscription_status: 'inactive' })
-          .eq('user_id', user.id);
+          .from("profiles")
+          .update({ subscription_status: "inactive", has_access: false })
+          .eq("user_id", user.id);
       }
     }
 
-    return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      product_id: productId,
-      subscription_end: subscriptionEnd,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        subscribed: hasActiveSub,
+        product_id: productId,
+        subscription_end: subscriptionEnd,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });
