@@ -1096,9 +1096,34 @@ Deno.serve(async (req) => {
       ...espnGames,
     ];
     
-    console.log(`[API] Total: ${allGames.length} REAL games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
+    console.log(`[API] Total fetched: ${allGames.length} games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
 
-    if (allGames.length === 0) {
+    // Filter out completed games and games with past dates (allow games from today onwards or live games)
+    const now = new Date();
+    // Set to start of today to include all games from today
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const upcomingOrLiveGames = allGames.filter(game => {
+      // Always keep live games
+      if (game.status === 'live') return true;
+      
+      // Filter out completed games
+      if (game.status === 'completed') return false;
+      
+      // Filter out games with past dates
+      try {
+        const gameDate = new Date(game.startTime);
+        // Keep games that are today or in the future
+        return gameDate >= startOfToday;
+      } catch {
+        // If date parsing fails, exclude the game
+        return false;
+      }
+    });
+    
+    console.log(`[API] After date filtering: ${upcomingOrLiveGames.length} upcoming/live games (filtered out ${allGames.length - upcomingOrLiveGames.length} past/completed games)`);
+
+    if (upcomingOrLiveGames.length === 0) {
       return new Response(
         JSON.stringify({
           success: true,
@@ -1111,7 +1136,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const rankedGames = deduplicateAndRank(allGames);
+    const rankedGames = deduplicateAndRank(upcomingOrLiveGames);
     cachedGames = rankedGames;
     cacheTimestamp = Date.now();
 
