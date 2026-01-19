@@ -187,6 +187,10 @@ function parseEventToGame(event: any, competition: any): ScheduledGame | null {
     
     if (!homeTeam || !awayTeam) return null;
     
+    // Require a valid start time - don't use current date as fallback
+    const rawStartTime = event.startTime || event.commence_time || event.start || event.date;
+    if (!rawStartTime) return null;
+    
     const compName = competition?.name || competition?.key || '';
     const sport = mapSport(compName);
     const league = mapLeague(compName);
@@ -197,7 +201,7 @@ function parseEventToGame(event: any, competition: any): ScheduledGame | null {
       league,
       homeTeam,
       awayTeam,
-      startTime: event.startTime || event.commence_time || event.start || new Date().toISOString(),
+      startTime: rawStartTime,
       popularityScore: LEAGUE_POPULARITY[league] || 60,
       status: getEventStatus(event),
       hasOdds: false,
@@ -230,6 +234,10 @@ function parseAdvantageToGame(advantage: any): ScheduledGame | null {
     
     if (!homeTeam || !awayTeam) return null;
     
+    // Require a valid start time - don't use current date as fallback
+    const rawStartTime = event.startTime || event.start || advantage.eventTime || event.date;
+    if (!rawStartTime) return null;
+    
     const compInstance = event.competitionInstance?.competition || {};
     const competition = compInstance.name || compInstance.shortName || '';
     const sport = mapSport(competition);
@@ -255,7 +263,7 @@ function parseAdvantageToGame(advantage: any): ScheduledGame | null {
       league,
       homeTeam,
       awayTeam,
-      startTime: event.startTime || event.start || advantage.eventTime || new Date().toISOString(),
+      startTime: rawStartTime,
       popularityScore: (LEAGUE_POPULARITY[league] || 60) + 10,
       status: 'scheduled',
       odds: Object.keys(odds).length > 0 ? odds : undefined,
@@ -807,13 +815,16 @@ function parseTheOddsEvent(event: any, config: { sport: string; league: string; 
       }
     }
 
+    // Require a valid commence_time - don't use current date as fallback
+    if (!event.commence_time) return null;
+    
     return {
       id: `odds_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       sport: config.sport,
       league: config.league,
       homeTeam,
       awayTeam,
-      startTime: event.commence_time || new Date().toISOString(),
+      startTime: event.commence_time,
       popularityScore: config.popularity,
       status: 'scheduled',
       odds: Object.keys(odds).length > 0 ? odds : undefined,
@@ -905,13 +916,16 @@ function parseESPNEvent(event: any, config: { sport: string; league: string; pop
       gameStatus = 'completed';
     }
 
+    // Require a valid date - don't use current date as fallback
+    if (!event.date) return null;
+    
     return {
       id: `espn_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       sport: config.sport,
       league: config.league,
       homeTeam,
       awayTeam,
-      startTime: event.date || new Date().toISOString(),
+      startTime: event.date,
       popularityScore: config.popularity,
       status: gameStatus,
       hasOdds: false,
@@ -935,7 +949,10 @@ function parseAPIEvent(event: any, sport: string, league: string, popularity: nu
   
   if (!homeTeam || !awayTeam) return null;
   
-  const startTime = event.status?.startsAt || event.startTime || new Date().toISOString();
+  // Require a valid start time - don't use current date as fallback
+  const rawStartTime = event.status?.startsAt || event.startTime || event.date;
+  if (!rawStartTime) return null;
+  
   const isLive = event.status?.live === true;
   const isEnded = event.status?.ended === true;
 
@@ -981,7 +998,7 @@ function parseAPIEvent(event: any, sport: string, league: string, popularity: nu
     league,
     homeTeam,
     awayTeam,
-    startTime,
+    startTime: rawStartTime,
     popularityScore: popularity,
     status: isEnded ? 'completed' : (isLive ? 'live' : 'scheduled'),
     odds: Object.keys(gameOdds).length > 0 ? gameOdds : undefined,
