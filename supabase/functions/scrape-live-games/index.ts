@@ -328,8 +328,27 @@ function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
     const reverseKey = `${game.awayTeam.toLowerCase()}_${game.homeTeam.toLowerCase()}_${game.league}`;
     
     const existing = seen.get(key) || seen.get(reverseKey);
-    if (!existing || (!existing.hasOdds && game.hasOdds)) {
+    if (!existing) {
       seen.set(key, game);
+    } else {
+      // Merge: prefer odds from one source, status from another
+      // If existing has odds but new has better status info, merge them
+      const merged = { ...existing };
+      
+      // Prefer 'live' or 'completed' status over 'scheduled'
+      if (game.status === 'live' && existing.status === 'scheduled') {
+        merged.status = 'live';
+      } else if (game.status === 'completed' && existing.status === 'scheduled') {
+        merged.status = 'completed';
+      }
+      
+      // Prefer game with odds
+      if (!existing.hasOdds && game.hasOdds) {
+        merged.odds = game.odds;
+        merged.hasOdds = true;
+      }
+      
+      seen.set(key, merged);
     }
   }
   
@@ -908,11 +927,13 @@ function parseESPNEvent(event: any, config: { sport: string; league: string; pop
     if (!homeTeam || !awayTeam) return null;
 
     const status = event.status?.type?.name || '';
+    const statusState = event.status?.type?.state || '';
     let gameStatus: 'scheduled' | 'live' | 'completed' = 'scheduled';
     
-    if (status.toLowerCase().includes('in') || status === 'STATUS_IN_PROGRESS') {
+    // ESPN uses state: 'in', 'pre', 'post' for status
+    if (statusState === 'in' || status === 'STATUS_IN_PROGRESS') {
       gameStatus = 'live';
-    } else if (status.toLowerCase().includes('final') || status === 'STATUS_FINAL') {
+    } else if (statusState === 'post' || status.toLowerCase().includes('final') || status === 'STATUS_FINAL') {
       gameStatus = 'completed';
     }
 
