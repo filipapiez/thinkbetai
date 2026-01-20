@@ -42,15 +42,14 @@ async function authenticateUser(req: Request): Promise<{ userId: string } | null
     { global: { headers: { Authorization: authHeader } } }
   );
 
-  const token = authHeader.replace('Bearer ', '');
-  const { data, error } = await supabase.auth.getClaims(token);
+  const { data: { user }, error } = await supabase.auth.getUser();
   
-  if (error || !data?.claims) {
-    console.log('Auth claims error:', error?.message);
+  if (error || !user) {
+    console.log('Auth error:', error?.message);
     return null;
   }
 
-  return { userId: data.claims.sub as string };
+  return { userId: user.id };
 }
 
 // Input validation
