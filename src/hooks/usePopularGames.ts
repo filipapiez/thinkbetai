@@ -53,6 +53,28 @@ function setClientCache(games: PopularGame[]): void {
   } catch {}
 }
 
+// Filter out past/completed games client-side
+function filterUpcomingGames(games: PopularGame[]): PopularGame[] {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  return games.filter(game => {
+    // Always keep live games
+    if (game.status === 'live') return true;
+    
+    // Filter out completed games
+    if (game.status === 'completed') return false;
+    
+    // Filter out games with past dates
+    try {
+      const gameDate = new Date(game.startTime);
+      return gameDate >= startOfToday;
+    } catch {
+      return false;
+    }
+  });
+}
+
 export function usePopularGames() {
   const [games, setGames] = useState<PopularGame[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,7 +91,9 @@ export function usePopularGames() {
       const clientCache = getClientCache();
       if (clientCache && (Date.now() - clientCache.timestamp) < CLIENT_CACHE_TTL) {
         console.log('[PopularGames] Using client cache');
-        setGames(clientCache.games);
+        // Also filter cached games in case they've become stale
+        const upcomingGames = filterUpcomingGames(clientCache.games);
+        setGames(upcomingGames);
         setLastUpdated(new Date(clientCache.timestamp).toISOString());
         setSource('client-cache');
         setIsLoading(false);
@@ -94,7 +118,8 @@ export function usePopularGames() {
         console.log('[PopularGames] No active session, using cached data only');
         const clientCache = getClientCache();
         if (clientCache && clientCache.games.length > 0) {
-          setGames(clientCache.games);
+          const upcomingGames = filterUpcomingGames(clientCache.games);
+          setGames(upcomingGames);
           setLastUpdated(new Date(clientCache.timestamp).toISOString());
           setSource('client-cache');
           setIsLoading(false);
@@ -123,13 +148,17 @@ export function usePopularGames() {
       const data: PopularGamesResponse = await response.json();
       
       if (data.success && data.games) {
-        setGames(data.games);
+        // Filter out past/completed games client-side as extra safety
+        const upcomingGames = filterUpcomingGames(data.games);
+        console.log(`[PopularGames] Received ${data.games.length} games, filtered to ${upcomingGames.length} upcoming/live games`);
+        
+        setGames(upcomingGames);
         setLastUpdated(data.lastUpdated);
         setSource(data.source);
-        setClientCache(data.games);
+        setClientCache(upcomingGames);
         
-        if (data.games.length === 0) {
-          toast.info('No games available at this time');
+        if (upcomingGames.length === 0) {
+          toast.info('No upcoming games available at this time');
         }
       } else {
         throw new Error(data.error || 'Failed to fetch games');
@@ -143,7 +172,8 @@ export function usePopularGames() {
       // Fall back to client cache if available
       const clientCache = getClientCache();
       if (clientCache && clientCache.games.length > 0) {
-        setGames(clientCache.games);
+        const upcomingGames = filterUpcomingGames(clientCache.games);
+        setGames(upcomingGames);
         setLastUpdated(new Date(clientCache.timestamp).toISOString());
         setSource('fallback-cache');
         toast.info('Using cached data');
