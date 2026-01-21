@@ -709,6 +709,102 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
     return games;
   } catch (error) {
     console.error('[Tennis] Error fetching games:', error);
+  return [];
+  }
+}
+
+// ============================================================================
+// TABLE TENNIS INTEGRATION via TheOddsAPI
+// ============================================================================
+
+async function fetchTableTennisGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const apiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (!apiKey) {
+      console.log('[Table Tennis] No THE_ODDS_API_KEY configured');
+      return [];
+    }
+
+    console.log('[Table Tennis] Fetching from TheOddsAPI...');
+    
+    // TheOddsAPI supports table tennis with key 'tabletennis_wtt'
+    const tableTennisSports = [
+      { key: 'tabletennis', league: 'Table Tennis', popularity: 58 },
+    ];
+
+    for (const sportConfig of tableTennisSports) {
+      try {
+        const response = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.log(`[Table Tennis] Sport not available: ${response.status}`);
+            continue;
+          }
+          console.log(`[Table Tennis] API error: ${response.status}`);
+          continue;
+        }
+
+        const events = await response.json();
+        console.log(`[Table Tennis] Found ${events.length} events from TheOddsAPI`);
+
+        for (const event of events) {
+          const homeTeam = event.home_team || '';
+          const awayTeam = event.away_team || '';
+          
+          if (!homeTeam || !awayTeam) continue;
+          if (!event.commence_time) continue;
+
+          // Extract odds
+          const odds: ScheduledGame['odds'] = {};
+          const bookmakers = event.bookmakers || [];
+          
+          if (bookmakers.length > 0) {
+            const primaryBook = bookmakers[0];
+            const markets = primaryBook.markets || [];
+            
+            for (const market of markets) {
+              if (market.key === 'h2h') {
+                const homeOutcome = market.outcomes?.find((o: any) => o.name === homeTeam);
+                const awayOutcome = market.outcomes?.find((o: any) => o.name === awayTeam);
+                
+                if (homeOutcome && awayOutcome) {
+                  odds.moneyline = {
+                    home: homeOutcome.price || 0,
+                    away: awayOutcome.price || 0,
+                  };
+                }
+              }
+            }
+          }
+
+          games.push({
+            id: `tt_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            sport: 'Table Tennis',
+            league: sportConfig.league,
+            homeTeam,
+            awayTeam,
+            startTime: event.commence_time,
+            popularityScore: sportConfig.popularity,
+            status: 'scheduled',
+            odds: Object.keys(odds).length > 0 ? odds : undefined,
+            hasOdds: Object.keys(odds).length > 0,
+          });
+        }
+      } catch (e) {
+        console.log(`[Table Tennis] Error fetching:`, e);
+      }
+    }
+
+    console.log(`[Table Tennis] Total games fetched: ${games.length}`);
+    return games;
+  } catch (error) {
+    console.error('[Table Tennis] Error fetching games:', error);
     return [];
   }
 }
@@ -923,11 +1019,29 @@ function parseESPNEvent(event: any, config: { sport: string; league: string; pop
     
     if (competitors.length < 2) return null;
     
-    const homeComp = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
-    const awayComp = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
+    let homeTeam = '';
+    let awayTeam = '';
     
-    const homeTeam = homeComp.team?.displayName || homeComp.team?.name || '';
-    const awayTeam = awayComp.team?.displayName || awayComp.team?.name || '';
+    // For UFC/MMA, competitors don't have homeAway, use athlete names or first two competitors
+    if (config.league === 'UFC' || config.sport === 'MMA') {
+      // UFC uses athlete property for fighters
+      const fighter1 = competitors[0]?.athlete?.displayName || 
+                       competitors[0]?.team?.displayName || 
+                       competitors[0]?.team?.name ||
+                       competitors[0]?.displayName || '';
+      const fighter2 = competitors[1]?.athlete?.displayName || 
+                       competitors[1]?.team?.displayName || 
+                       competitors[1]?.team?.name ||
+                       competitors[1]?.displayName || '';
+      homeTeam = fighter1;
+      awayTeam = fighter2;
+    } else {
+      // Standard home/away for team sports
+      const homeComp = competitors.find((c: any) => c.homeAway === 'home') || competitors[0];
+      const awayComp = competitors.find((c: any) => c.homeAway === 'away') || competitors[1];
+      homeTeam = homeComp.team?.displayName || homeComp.team?.name || '';
+      awayTeam = awayComp.team?.displayName || awayComp.team?.name || '';
+    }
     
     if (!homeTeam || !awayTeam) return null;
 
@@ -1092,6 +1206,7 @@ Deno.serve(async (req) => {
       ncaafGames, 
       ufcGames, 
       tennisGames,
+      tableTennisGames,
       theOddsGames,
       espnGames,
     ] = await Promise.all([
@@ -1104,6 +1219,7 @@ Deno.serve(async (req) => {
       fetchNCAAFGames(),
       fetchUFCGames(),
       fetchTennisGames(),
+      fetchTableTennisGames(),
       fetchTheOddsAPIGames(),
       fetchESPNGames(),
     ]);
@@ -1118,11 +1234,12 @@ Deno.serve(async (req) => {
       ...ncaafGames, 
       ...ufcGames, 
       ...tennisGames,
+      ...tableTennisGames,
       ...theOddsGames,
       ...espnGames,
     ];
     
-    console.log(`[API] Total fetched: ${allGames.length} games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
+    console.log(`[API] Total fetched: ${allGames.length} games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TableTennis: ${tableTennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
 
     // Filter out completed games and games with past dates (allow games from today onwards or live games)
     const now = new Date();
