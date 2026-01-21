@@ -435,7 +435,7 @@ const Games = () => {
           {filteredGames.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGames.map((game, index) => (
-                <div key={game.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                <div key={`${game.id}-${index}`} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
                   <PopularGameCard game={game} rank={index + 1} />
                 </div>
               ))}
