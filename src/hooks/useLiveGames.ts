@@ -1,35 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LiveGame, LiveTeam } from '@/lib/liveTypes';
+import { LiveGame } from '@/lib/liveTypes';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-
-interface APIGame {
-  id: string;
-  sportKey: string;
-  sportTitle: string;
-  commenceTime: string;
-  homeTeam: string;
-  awayTeam: string;
-  homeAbbr?: string;
-  awayAbbr?: string;
-  status?: string;
-  bookmaker: string;
-  odds: {
-    moneyline: { home: number; away: number };
-    spread: { home: number; homeOdds: number; away: number; awayOdds: number };
-    total: { over: number; overOdds: number; under: number; underOdds: number };
-  };
-  hasOdds: boolean;
-}
-
-interface APIResponse {
-  games: APIGame[];
-  remainingRequests: number | null;
-  lastUpdated: string;
-  error?: string;
-  rateLimited?: boolean;
-  upstreamStatus?: number;
-}
 
 // Map sport keys to display names - 20+ popular sports
 const sportDisplayNames: Record<string, string> = {
@@ -65,54 +37,6 @@ const sportDisplayNames: Record<string, string> = {
   'nascar': 'NASCAR',
 };
 
-function transformGame(apiGame: APIGame): LiveGame {
-  const homeTeam: LiveTeam = {
-    id: apiGame.homeTeam.toLowerCase().replace(/\s+/g, '-'),
-    name: apiGame.homeTeam,
-    abbreviation: apiGame.homeAbbr || apiGame.homeTeam.substring(0, 3).toUpperCase(),
-    stats: undefined, // Stats would need separate API call
-  };
-  
-  const awayTeam: LiveTeam = {
-    id: apiGame.awayTeam.toLowerCase().replace(/\s+/g, '-'),
-    name: apiGame.awayTeam,
-    abbreviation: apiGame.awayAbbr || apiGame.awayTeam.substring(0, 3).toUpperCase(),
-    stats: undefined,
-  };
-  
-  const sportKey = apiGame.sportKey.toLowerCase();
-  const sport = sportDisplayNames[sportKey] || apiGame.sportTitle || sportKey.toUpperCase();
-  
-  const status = apiGame.status === 'live' ? 'live' : 
-                 apiGame.status === 'final' ? 'final' : 'scheduled';
-  
-  return {
-    id: apiGame.id,
-    sport,
-    sportKey,
-    homeTeam,
-    awayTeam,
-    startTime: apiGame.commenceTime,
-    venue: `${homeTeam.name} Arena`,
-    status,
-    odds: apiGame.odds,
-    hasOdds: apiGame.hasOdds,
-  };
-}
-
-// Sports to fetch from API - reduced to prevent rate limiting
-// Other sports are fetched from scrape-live-games instead
-const SPORTS_TO_FETCH = [
-  // Major US Sports only (reduces API calls from 60+ to ~10)
-  'nba', 'nfl', 'nhl', 'mlb',
-  // Top Soccer
-  'epl', 'ucl',
-  // Combat Sports
-  'ufc',
-  // Tennis
-  'atp',
-];
-
 // Store for game lookup by ID
 let gamesCache: Map<string, LiveGame> = new Map();
 
@@ -120,9 +44,6 @@ let gamesCache: Map<string, LiveGame> = new Map();
 let apiCache: { data: LiveGame[]; timestamp: number } | null = null;
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const STORAGE_KEY = 'liveGamesCache_v1';
-
-// Helper to delay between requests
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export function getGameById(gameId: string): LiveGame | undefined {
   return gamesCache.get(gameId);
@@ -182,50 +103,8 @@ export function useLiveGames() {
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       const allGames: LiveGame[] = [];
       const seenIds = new Set<string>();
-      
-      // 1. Fetch from odds API (primary source)
-      for (const sport of SPORTS_TO_FETCH) {
-        try {
-          const response = await fetch(`${baseUrl}/functions/v1/get-odds?sport=${sport}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-          });
 
-          if (!response.ok) {
-            console.warn(`Failed to fetch ${sport}: ${response.status}`);
-            // If auth/key issue, no point continuing
-            if (response.status === 401) break;
-            continue;
-          }
-
-          const result: APIResponse = await response.json();
-
-          if (result.rateLimited) {
-            console.warn(`Upstream rate limit hit on ${sport}; stopping API fetches for now.`);
-            // Don't hammer the provider further
-            break;
-          }
-
-          if (result.error) {
-            console.warn(`API returned error for ${sport}: ${result.error}`);
-            continue;
-          }
-
-          for (const game of result.games) {
-            const transformed = transformGame(game);
-            if (!seenIds.has(transformed.id)) {
-              seenIds.add(transformed.id);
-              allGames.push(transformed);
-            }
-          }
-
-          await delay(1200);
-        } catch (err) {
-          console.warn(`Error fetching ${sport}:`, err);
-        }
-      }
-
-      // 2. Supplement with scraped games from Sportsbook API
+      // Fetch scraped games. Odds should be fetched on-demand when a user opens a game.
       try {
         console.log('Fetching scraped games from Sportsbook API...');
         // Get user session for auth header
@@ -307,7 +186,7 @@ export function useLiveGames() {
         }
       } catch (scrapeErr) {
         console.warn('Error fetching scraped games:', scrapeErr);
-        // Non-fatal - continue with API games
+        // Non-fatal
       }
       
       // Sort by start time
