@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { LiveGame, calculateLiveBetQualification, LiveBetQualification } from '@/lib/liveTypes';
 import { useLiveGames } from '@/hooks/useLiveGames';
+import { supabase } from '@/integrations/supabase/client';
 
 import { cn } from '@/lib/utils';
 import { fetchGameData, ScrapedGameData } from '@/lib/api/gameData';
@@ -336,33 +337,22 @@ const GameDetail = () => {
         .trim();
 
     const mapToSportParam = (): string | null => {
-      // Prefer league from PopularGame if available (much more specific than sport)
+      // Note: get-odds validates the sport key against a large whitelist after normalizing
+      // to [a-z0-9], so we should NOT over-restrict here.
       const league = stateGame?.league || cachedPopularGame?.league;
       const leagueKey = league ? normalizeSport(league) : '';
       const sportKey = game.sportKey ? normalizeSport(game.sportKey) : '';
       const sportName = game.sport ? normalizeSport(game.sport) : '';
 
-      const known = new Set([
-        'nba', 'nfl', 'mlb', 'nhl', 'ncaab', 'ncaaf', 'wnba',
-        'epl', 'laliga', 'bundesliga', 'seriea', 'mls', 'ligue1', 'ucl',
-        'ufc', 'boxing',
-        'atp', 'wta',
-      ]);
+      const candidate = leagueKey || sportKey || sportName;
+      if (!candidate) return null;
 
-      if (leagueKey && known.has(leagueKey)) return leagueKey;
-      if (sportKey && known.has(sportKey)) return sportKey;
+      // Light normalization for common naming variants
+      if (candidate.includes('tabletennis') || candidate.includes('pingpong')) return 'tabletennis';
+      if (candidate.includes('mixedmartialarts')) return 'mma';
+      if (candidate.includes('premierleague') || candidate === 'soccer') return 'epl';
 
-      // Fuzzy fallback
-      if (sportName.includes('nba')) return 'nba';
-      if (sportName.includes('nfl')) return 'nfl';
-      if (sportName.includes('mlb')) return 'mlb';
-      if (sportName.includes('nhl')) return 'nhl';
-      if (sportName.includes('ufc') || sportName.includes('mma')) return 'ufc';
-      if (sportName.includes('atp')) return 'atp';
-      if (sportName.includes('wta')) return 'wta';
-      if (sportName.includes('premierleague') || sportName === 'soccer') return 'epl';
-
-      return null;
+      return candidate;
     };
 
     const sportParam = mapToSportParam();
@@ -372,58 +362,28 @@ const GameDetail = () => {
     if (oddsFetchKeyRef.current === fetchKey) return;
     oddsFetchKeyRef.current = fetchKey;
 
-    const fetchOdds = async () => {
+     const fetchOdds = async () => {
       setIsLoadingOdds(true);
       try {
         const baseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const res = await fetch(`${baseUrl}/functions/v1/get-odds?sport=${encodeURIComponent(sportParam)}`);
-        if (!res.ok) return;
-
-        const data = (await res.json()) as OddsApiResponse;
-        if (!data?.games?.length) return;
-
-        const targetHome = normalize(game.homeTeam.name);
-        const targetAway = normalize(game.awayTeam.name);
-        const targetTs = new Date(game.startTime).getTime();
-        const MAX_TIME_DIFF_MS = 36 * 60 * 60 * 1000;
-
-        let best: { score: number; g: OddsApiGame } | null = null;
-
-        for (const g of data.games) {
-          if (!g?.hasOdds || !g?.odds) continue;
-
-          const h = normalize(g.homeTeam);
-          const a = normalize(g.awayTeam);
-          const ts = new Date(g.commenceTime).getTime();
-
-          if (Number.isFinite(targetTs) && Number.isFinite(ts) && Math.abs(ts - targetTs) > MAX_TIME_DIFF_MS) {
-            continue;
-          }
-
-          let score = 0;
-
-          // Exact match (home/away)
-          if (h === targetHome) score += 3;
-          if (a === targetAway) score += 3;
-
-          // Swapped match
-          if (h === targetAway) score += 2;
-          if (a === targetHome) score += 2;
-
-          // Partial match fallback
-          if (score === 0) {
-            if (h.includes(targetHome) || targetHome.includes(h)) score += 1;
-            if (a.includes(targetAway) || targetAway.includes(a)) score += 1;
-          }
-
-          if (score > 0 && (!best || score > best.score)) {
-            best = { score, g };
-          }
-        }
-
-        if (best?.g?.odds) {
-          setOddsOverride(best.g.odds);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+         const res = await fetch(`${baseUrl}/functions/v1/lookup-game-odds`, {
+           method: 'POST',
+           headers: {
+             'Content-Type': 'application/json',
+             ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+           },
+           body: JSON.stringify({
+             sport: sportParam,
+             homeTeam: game.homeTeam.name,
+             awayTeam: game.awayTeam.name,
+             commenceTime: game.startTime,
+           }),
+         });
+ 
+         if (!res.ok) return;
+         const data = (await res.json()) as { odds?: LiveGame['odds'] };
+         if (data?.odds) setOddsOverride(data.odds);
       } finally {
         setIsLoadingOdds(false);
       }
