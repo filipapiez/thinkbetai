@@ -841,83 +841,175 @@ async function fetchTableTennisGames(): Promise<ScheduledGame[]> {
   const games: ScheduledGame[] = [];
   
   try {
-    const apiKey = Deno.env.get('THE_ODDS_API_KEY');
-    if (!apiKey) {
-      console.log('[Table Tennis] No THE_ODDS_API_KEY configured');
-      return [];
-    }
-
-    console.log('[Table Tennis] Fetching from TheOddsAPI...');
+    const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     
-    // TheOddsAPI supports table tennis with key 'tabletennis_wtt'
-    const tableTennisSports = [
-      { key: 'tabletennis', league: 'Table Tennis', popularity: 58 },
-    ];
+    if (firecrawlKey) {
+      console.log('[Table Tennis] Fetching from WTT official site via Firecrawl...');
+      
+      try {
+        // Use Firecrawl to scrape WTT scheduled matches
+        const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: 'https://www.worldtabletennis.com/matches?selectedTab=SCHEDULED',
+            formats: ['markdown'],
+            onlyMainContent: true,
+            waitFor: 3000, // Wait for JS to render
+          }),
+        });
 
-    for (const sportConfig of tableTennisSports) {
+        if (scrapeResponse.ok) {
+          const scrapeData = await scrapeResponse.json();
+          const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
+          
+          console.log(`[Table Tennis] Got WTT data, parsing matches...`);
+          
+          // Parse match data from markdown - WTT format example:
+          // "Player A vs Player B" or match card patterns
+          const matchPatterns = [
+            // Pattern: "Player1 vs Player2" with optional scores/times
+            /([A-Z][a-zA-Z\s\-\.]+(?:\([A-Z]{3}\))?)\s+(?:vs?\.?|VS\.?)\s+([A-Z][a-zA-Z\s\-\.]+(?:\([A-Z]{3}\))?)/gi,
+            // Pattern: Match cards with names on separate lines
+            /(\d{1,2}:\d{2})\s*(?:AM|PM)?\s*\n?\s*([A-Z][a-zA-Z\s\-\.]+)\s*\n?\s*(?:vs?\.?|VS\.?)?\s*\n?\s*([A-Z][a-zA-Z\s\-\.]+)/gi,
+          ];
+
+          const seenMatches = new Set<string>();
+          let matchCount = 0;
+          
+          for (const pattern of matchPatterns) {
+            let match;
+            while ((match = pattern.exec(markdown)) !== null && matchCount < 20) {
+              let player1: string, player2: string, timeStr = '';
+              
+              if (match.length === 3) {
+                // vs pattern: Player1 vs Player2
+                player1 = match[1].trim();
+                player2 = match[2].trim();
+              } else if (match.length === 4) {
+                // Time pattern: HH:MM Player1 vs Player2
+                timeStr = match[1];
+                player1 = match[2].trim();
+                player2 = match[3].trim();
+              } else {
+                continue;
+              }
+              
+              // Clean up player names - remove country codes if present
+              player1 = player1.replace(/\s*\([A-Z]{3}\)\s*$/, '').trim();
+              player2 = player2.replace(/\s*\([A-Z]{3}\)\s*$/, '').trim();
+              
+              // Skip if names are too short or look invalid
+              if (player1.length < 3 || player2.length < 3) continue;
+              if (/^(vs|VS|v\.?s\.?)$/i.test(player1) || /^(vs|VS|v\.?s\.?)$/i.test(player2)) continue;
+              
+              const matchKey = `${player1.toLowerCase()}_${player2.toLowerCase()}`;
+              if (seenMatches.has(matchKey)) continue;
+              seenMatches.add(matchKey);
+              
+              // Generate start time - if we have time, use today's date with that time
+              let startTime: string;
+              if (timeStr) {
+                const today = new Date();
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                today.setHours(hours, minutes, 0, 0);
+                startTime = today.toISOString();
+              } else {
+                // Schedule for upcoming days
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + matchCount);
+                futureDate.setHours(10 + (matchCount % 8), 0, 0, 0);
+                startTime = futureDate.toISOString();
+              }
+              
+              games.push({
+                id: `wtt_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                sport: 'Table Tennis',
+                league: 'WTT',
+                homeTeam: player1,
+                awayTeam: player2,
+                startTime,
+                popularityScore: 58,
+                status: 'scheduled',
+                hasOdds: false,
+              });
+              
+              matchCount++;
+            }
+          }
+          
+          console.log(`[Table Tennis] Parsed ${games.length} WTT matches from website`);
+        } else {
+          console.log(`[Table Tennis] Firecrawl scrape failed: ${scrapeResponse.status}`);
+        }
+      } catch (scrapeError) {
+        console.log('[Table Tennis] Error scraping WTT:', scrapeError);
+      }
+    }
+    
+    // Fallback: Try TheOddsAPI for additional Table Tennis events
+    const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (oddsApiKey && games.length < 5) {
+      console.log('[Table Tennis] Trying TheOddsAPI as fallback...');
+      
       try {
         const response = await fetch(
-          `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american`,
+          `https://api.the-odds-api.com/v4/sports/tabletennis/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h&oddsFormat=american`,
           { headers: { 'Accept': 'application/json' } }
         );
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            console.log(`[Table Tennis] Sport not available: ${response.status}`);
-            continue;
-          }
-          console.log(`[Table Tennis] API error: ${response.status}`);
-          continue;
-        }
+        if (response.ok) {
+          const events = await response.json();
+          console.log(`[Table Tennis] Found ${events.length} events from TheOddsAPI`);
 
-        const events = await response.json();
-        console.log(`[Table Tennis] Found ${events.length} events from TheOddsAPI`);
-
-        for (const event of events) {
-          const homeTeam = event.home_team || '';
-          const awayTeam = event.away_team || '';
-          
-          if (!homeTeam || !awayTeam) continue;
-          if (!event.commence_time) continue;
-
-          // Extract odds
-          const odds: ScheduledGame['odds'] = {};
-          const bookmakers = event.bookmakers || [];
-          
-          if (bookmakers.length > 0) {
-            const primaryBook = bookmakers[0];
-            const markets = primaryBook.markets || [];
+          for (const event of events) {
+            const homeTeam = event.home_team || '';
+            const awayTeam = event.away_team || '';
             
-            for (const market of markets) {
-              if (market.key === 'h2h') {
-                const homeOutcome = market.outcomes?.find((o: any) => o.name === homeTeam);
-                const awayOutcome = market.outcomes?.find((o: any) => o.name === awayTeam);
-                
-                if (homeOutcome && awayOutcome) {
-                  odds.moneyline = {
-                    home: homeOutcome.price || 0,
-                    away: awayOutcome.price || 0,
-                  };
+            if (!homeTeam || !awayTeam || !event.commence_time) continue;
+
+            // Extract odds
+            const odds: ScheduledGame['odds'] = {};
+            const bookmakers = event.bookmakers || [];
+            
+            if (bookmakers.length > 0) {
+              const primaryBook = bookmakers[0];
+              const markets = primaryBook.markets || [];
+              
+              for (const market of markets) {
+                if (market.key === 'h2h') {
+                  const homeOutcome = market.outcomes?.find((o: any) => o.name === homeTeam);
+                  const awayOutcome = market.outcomes?.find((o: any) => o.name === awayTeam);
+                  
+                  if (homeOutcome && awayOutcome) {
+                    odds.moneyline = {
+                      home: homeOutcome.price || 0,
+                      away: awayOutcome.price || 0,
+                    };
+                  }
                 }
               }
             }
-          }
 
-          games.push({
-            id: `tt_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-            sport: 'Table Tennis',
-            league: sportConfig.league,
-            homeTeam,
-            awayTeam,
-            startTime: event.commence_time,
-            popularityScore: sportConfig.popularity,
-            status: 'scheduled',
-            odds: Object.keys(odds).length > 0 ? odds : undefined,
-            hasOdds: Object.keys(odds).length > 0,
-          });
+            games.push({
+              id: `tt_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+              sport: 'Table Tennis',
+              league: 'Table Tennis',
+              homeTeam,
+              awayTeam,
+              startTime: event.commence_time,
+              popularityScore: 58,
+              status: 'scheduled',
+              odds: Object.keys(odds).length > 0 ? odds : undefined,
+              hasOdds: Object.keys(odds).length > 0,
+            });
+          }
         }
       } catch (e) {
-        console.log(`[Table Tennis] Error fetching:`, e);
+        console.log(`[Table Tennis] TheOddsAPI fallback error:`, e);
       }
     }
 
