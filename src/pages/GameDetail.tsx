@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { LiveDataBanner } from '@/components/LiveDataBanner';
@@ -35,6 +35,24 @@ import { PerformanceChartLive } from '@/components/PerformanceChartLive';
 import { QualifiedBetAccuracyChart } from '@/components/QualifiedBetAccuracyChart';
 import { FullAIReport } from '@/components/FullAIReport';
 import type { PopularGame } from '@/hooks/usePopularGames';
+
+type OddsApiGame = {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  commenceTime: string;
+  hasOdds: boolean;
+  odds: NonNullable<LiveGame['odds']>;
+};
+
+type OddsApiResponse = {
+  games: OddsApiGame[];
+  lastUpdated: string;
+  remainingRequests: number | null;
+  error?: string;
+  rateLimited?: boolean;
+  upstreamStatus?: number;
+};
 
 function popularGameToLiveGame(pg: PopularGame): LiveGame {
   const abbrev = (name: string) => {
@@ -267,6 +285,21 @@ const GameDetail = () => {
     return undefined;
   }, [games, gameId, stateGame, cachedPopularGame]);
 
+  // Odds are fetched on-demand (only when user opens a game)
+  const [oddsOverride, setOddsOverride] = useState<LiveGame['odds'] | null>(null);
+  const [isLoadingOdds, setIsLoadingOdds] = useState(false);
+  const oddsFetchKeyRef = useRef<string | null>(null);
+
+  const gameForAnalysis = useMemo(() => {
+    if (!game) return undefined;
+    if (!oddsOverride) return game;
+    return {
+      ...game,
+      odds: oddsOverride,
+      hasOdds: true,
+    } satisfies LiveGame;
+  }, [game, oddsOverride]);
+
   const [scrapedData, setScrapedData] = useState<ScrapedGameData | null>(null);
   const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
 
@@ -283,20 +316,136 @@ const GameDetail = () => {
       .finally(() => setIsLoadingScrapedData(false));
   }, [game]);
 
+  useEffect(() => {
+    if (!gameId || !game) return;
+
+    // If odds already present, don't fetch
+    if (game.odds && game.hasOdds) return;
+    if (oddsOverride) return;
+
+    const normalize = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+
+    const normalizeSport = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .trim();
+
+    const mapToSportParam = (): string | null => {
+      // Prefer league from PopularGame if available (much more specific than sport)
+      const league = stateGame?.league || cachedPopularGame?.league;
+      const leagueKey = league ? normalizeSport(league) : '';
+      const sportKey = game.sportKey ? normalizeSport(game.sportKey) : '';
+      const sportName = game.sport ? normalizeSport(game.sport) : '';
+
+      const known = new Set([
+        'nba', 'nfl', 'mlb', 'nhl', 'ncaab', 'ncaaf', 'wnba',
+        'epl', 'laliga', 'bundesliga', 'seriea', 'mls', 'ligue1', 'ucl',
+        'ufc', 'boxing',
+        'atp', 'wta',
+      ]);
+
+      if (leagueKey && known.has(leagueKey)) return leagueKey;
+      if (sportKey && known.has(sportKey)) return sportKey;
+
+      // Fuzzy fallback
+      if (sportName.includes('nba')) return 'nba';
+      if (sportName.includes('nfl')) return 'nfl';
+      if (sportName.includes('mlb')) return 'mlb';
+      if (sportName.includes('nhl')) return 'nhl';
+      if (sportName.includes('ufc') || sportName.includes('mma')) return 'ufc';
+      if (sportName.includes('atp')) return 'atp';
+      if (sportName.includes('wta')) return 'wta';
+      if (sportName.includes('premierleague') || sportName === 'soccer') return 'epl';
+
+      return null;
+    };
+
+    const sportParam = mapToSportParam();
+    if (!sportParam) return;
+
+    const fetchKey = `${gameId}:${sportParam}:${normalize(game.homeTeam.name)}:${normalize(game.awayTeam.name)}:${game.startTime}`;
+    if (oddsFetchKeyRef.current === fetchKey) return;
+    oddsFetchKeyRef.current = fetchKey;
+
+    const fetchOdds = async () => {
+      setIsLoadingOdds(true);
+      try {
+        const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const res = await fetch(`${baseUrl}/functions/v1/get-odds?sport=${encodeURIComponent(sportParam)}`);
+        if (!res.ok) return;
+
+        const data = (await res.json()) as OddsApiResponse;
+        if (!data?.games?.length) return;
+
+        const targetHome = normalize(game.homeTeam.name);
+        const targetAway = normalize(game.awayTeam.name);
+        const targetTs = new Date(game.startTime).getTime();
+        const MAX_TIME_DIFF_MS = 36 * 60 * 60 * 1000;
+
+        let best: { score: number; g: OddsApiGame } | null = null;
+
+        for (const g of data.games) {
+          if (!g?.hasOdds || !g?.odds) continue;
+
+          const h = normalize(g.homeTeam);
+          const a = normalize(g.awayTeam);
+          const ts = new Date(g.commenceTime).getTime();
+
+          if (Number.isFinite(targetTs) && Number.isFinite(ts) && Math.abs(ts - targetTs) > MAX_TIME_DIFF_MS) {
+            continue;
+          }
+
+          let score = 0;
+
+          // Exact match (home/away)
+          if (h === targetHome) score += 3;
+          if (a === targetAway) score += 3;
+
+          // Swapped match
+          if (h === targetAway) score += 2;
+          if (a === targetHome) score += 2;
+
+          // Partial match fallback
+          if (score === 0) {
+            if (h.includes(targetHome) || targetHome.includes(h)) score += 1;
+            if (a.includes(targetAway) || targetAway.includes(a)) score += 1;
+          }
+
+          if (score > 0 && (!best || score > best.score)) {
+            best = { score, g };
+          }
+        }
+
+        if (best?.g?.odds) {
+          setOddsOverride(best.g.odds);
+        }
+      } finally {
+        setIsLoadingOdds(false);
+      }
+    };
+
+    fetchOdds();
+  }, [gameId, game, oddsOverride, stateGame?.league, cachedPopularGame?.league]);
+
   const qualification = useMemo(() => {
-    if (!game) return null;
-    return calculateLiveBetQualification(game);
-  }, [game]);
+    if (!gameForAnalysis) return null;
+    return calculateLiveBetQualification(gameForAnalysis);
+  }, [gameForAnalysis]);
 
   const risk = useMemo(() => {
-    if (!game) return null;
-    return analyzeRisk(game);
-  }, [game]);
+    if (!gameForAnalysis) return null;
+    return analyzeRisk(gameForAnalysis);
+  }, [gameForAnalysis]);
 
   const value = useMemo(() => {
-    if (!game) return null;
-    return analyzeValue(game);
-  }, [game]);
+    if (!gameForAnalysis) return null;
+    return analyzeValue(gameForAnalysis);
+  }, [gameForAnalysis]);
 
   if (isLoadingGames && !game) {
     return (
@@ -478,7 +627,7 @@ const GameDetail = () => {
           </Card>
 
           {/* Odds Cards */}
-          {game.odds ? (
+          {oddsOverride ?? game.odds ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               {/* Moneyline */}
               <Card>
@@ -494,9 +643,9 @@ const GameDetail = () => {
                       <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
                       <div className={cn(
                         "text-2xl font-bold font-mono",
-                        game.odds.moneyline.home < 0 ? "text-emerald-400" : "text-foreground"
+                        (oddsOverride ?? game.odds)!.moneyline.home < 0 ? "text-emerald-400" : "text-foreground"
                       )}>
-                        {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.moneyline.home > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.moneyline.home || 'N/A'}
                       </div>
                     </div>
                     <div className="text-muted-foreground">vs</div>
@@ -504,9 +653,9 @@ const GameDetail = () => {
                       <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
                       <div className={cn(
                         "text-2xl font-bold font-mono",
-                        game.odds.moneyline.away < 0 ? "text-emerald-400" : "text-foreground"
+                        (oddsOverride ?? game.odds)!.moneyline.away < 0 ? "text-emerald-400" : "text-foreground"
                       )}>
-                        {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.moneyline.away > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.moneyline.away || 'N/A'}
                       </div>
                     </div>
                   </div>
@@ -526,20 +675,20 @@ const GameDetail = () => {
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground mb-1">{game.homeTeam.abbreviation}</div>
                       <div className="text-2xl font-bold font-mono">
-                        {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.spread.home > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.spread.home || 'N/A'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
+                        ({(oddsOverride ?? game.odds)!.spread.homeOdds > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.spread.homeOdds})
                       </div>
                     </div>
                     <div className="text-muted-foreground">vs</div>
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground mb-1">{game.awayTeam.abbreviation}</div>
                       <div className="text-2xl font-bold font-mono">
-                        {game.odds.spread.away > 0 ? '+' : ''}{game.odds.spread.away || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.spread.away > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.spread.away || 'N/A'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        ({game.odds.spread.awayOdds > 0 ? '+' : ''}{game.odds.spread.awayOdds})
+                        ({(oddsOverride ?? game.odds)!.spread.awayOdds > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.spread.awayOdds})
                       </div>
                     </div>
                   </div>
@@ -559,20 +708,20 @@ const GameDetail = () => {
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground mb-1">Over</div>
                       <div className="text-2xl font-bold font-mono">
-                        {game.odds.total.over || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.total.over || 'N/A'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
+                        ({(oddsOverride ?? game.odds)!.total.overOdds > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.total.overOdds})
                       </div>
                     </div>
                     <div className="text-muted-foreground">/</div>
                     <div className="text-center">
                       <div className="text-xs text-muted-foreground mb-1">Under</div>
                       <div className="text-2xl font-bold font-mono">
-                        {game.odds.total.under || 'N/A'}
+                        {(oddsOverride ?? game.odds)!.total.under || 'N/A'}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        ({game.odds.total.underOdds > 0 ? '+' : ''}{game.odds.total.underOdds})
+                        ({(oddsOverride ?? game.odds)!.total.underOdds > 0 ? '+' : ''}{(oddsOverride ?? game.odds)!.total.underOdds})
                       </div>
                     </div>
                   </div>
@@ -582,8 +731,10 @@ const GameDetail = () => {
           ) : (
             <Card className="mb-6">
               <CardContent className="p-6 flex items-center gap-3 text-sm text-muted-foreground">
-                <Info className="h-4 w-4" />
-                Odds currently unavailable. Analysis based on schedule, form, and market interest.
+                {isLoadingOdds ? <Loader2 className="h-4 w-4 animate-spin" /> : <Info className="h-4 w-4" />}
+                {isLoadingOdds
+                  ? 'Loading odds…'
+                  : 'Odds currently unavailable. Analysis based on schedule, form, and market interest.'}
               </CardContent>
             </Card>
           )}
@@ -609,7 +760,7 @@ const GameDetail = () => {
           {/* 4) AI Analysis - CRITICAL SECTION */}
           <div className="mb-6">
             <AIAnalysisCard 
-              game={game}
+              game={gameForAnalysis ?? game}
               qualification={qualification}
               scrapedData={scrapedData}
               riskAssessment={risk}
@@ -724,7 +875,7 @@ const GameDetail = () => {
           {/* Full AI Report */}
           <div className="mb-6">
             <FullAIReport 
-              game={game}
+              game={gameForAnalysis ?? game}
               scrapedData={scrapedData}
             />
           </div>
