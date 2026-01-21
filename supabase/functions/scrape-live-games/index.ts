@@ -411,20 +411,140 @@ async function fetchNHLGames(): Promise<ScheduledGame[]> {
 }
 
 // ============================================================================
-// NBA INTEGRATION via SportsGameOdds API
+// NBA INTEGRATION via NBA.com Official CDN API (No API key required)
 // ============================================================================
 
 async function fetchNBAGames(): Promise<ScheduledGame[]> {
   const games: ScheduledGame[] = [];
   
   try {
+    console.log('[NBA] Fetching from NBA.com official schedule CDN...');
+    
+    // NBA.com provides a public CDN endpoint for schedule data
+    const response = await fetch(
+      'https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json',
+      { 
+        headers: { 
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; ThinkBetAI/1.0)'
+        } 
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`[NBA] CDN API error: ${response.status}`);
+      // Fallback to SportsGameOdds API if CDN fails
+      return fetchNBAGamesFromSportsGameOdds();
+    }
+
+    const data = await response.json();
+    const leagueSchedule = data?.leagueSchedule;
+    
+    if (!leagueSchedule || !leagueSchedule.gameDates) {
+      console.log('[NBA] No schedule data found in CDN response');
+      return fetchNBAGamesFromSportsGameOdds();
+    }
+
+    const gameDates = leagueSchedule.gameDates || [];
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const sevenDaysFromNow = new Date(startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    let gamesCount = 0;
+    
+    for (const dateEntry of gameDates) {
+      const gameDate = new Date(dateEntry.gameDate);
+      
+      // Only include games from today to 7 days ahead
+      if (gameDate < startOfToday || gameDate > sevenDaysFromNow) continue;
+      
+      const dayGames = dateEntry.games || [];
+      
+      for (const game of dayGames) {
+        // Skip if no team data
+        if (!game.homeTeam || !game.awayTeam) continue;
+        
+        const homeTeam = game.homeTeam.teamName 
+          ? `${game.homeTeam.teamCity || ''} ${game.homeTeam.teamName}`.trim()
+          : game.homeTeam.teamTricode || 'TBD';
+        const awayTeam = game.awayTeam.teamName 
+          ? `${game.awayTeam.teamCity || ''} ${game.awayTeam.teamName}`.trim()
+          : game.awayTeam.teamTricode || 'TBD';
+        
+        // Parse game time
+        const gameTimeUTC = game.gameDateTimeUTC || game.gameTimeUTC;
+        const startTime = gameTimeUTC || dateEntry.gameDate;
+        
+        // Determine game status
+        let status: 'scheduled' | 'live' | 'completed' = 'scheduled';
+        const gameStatus = game.gameStatus;
+        if (gameStatus === 2) status = 'live';
+        else if (gameStatus === 3) status = 'completed';
+        
+        // Skip completed games
+        if (status === 'completed') continue;
+        
+        games.push({
+          id: `nba_${game.gameId || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          sport: 'Basketball',
+          league: 'NBA',
+          homeTeam,
+          awayTeam,
+          startTime,
+          popularityScore: 95,
+          status,
+          hasOdds: false,
+        });
+        
+        gamesCount++;
+        if (gamesCount >= 50) break;
+      }
+      
+      if (gamesCount >= 50) break;
+    }
+
+    console.log(`[NBA] Found ${games.length} upcoming games from NBA.com CDN`);
+    
+    // If we got games from CDN, try to enhance with odds from SportsGameOdds
+    if (games.length > 0) {
+      const oddsGames = await fetchNBAGamesFromSportsGameOdds();
+      // Merge odds into CDN games
+      for (const cdnGame of games) {
+        const matchingOddsGame = oddsGames.find(og => 
+          normalizeTeamName(og.homeTeam) === normalizeTeamName(cdnGame.homeTeam) &&
+          normalizeTeamName(og.awayTeam) === normalizeTeamName(cdnGame.awayTeam)
+        );
+        if (matchingOddsGame?.odds) {
+          cdnGame.odds = matchingOddsGame.odds;
+          cdnGame.hasOdds = true;
+        }
+      }
+    }
+
+    return games;
+  } catch (error) {
+    console.error('[NBA] Error fetching from CDN:', error);
+    return fetchNBAGamesFromSportsGameOdds();
+  }
+}
+
+// Helper to normalize team names for matching
+function normalizeTeamName(name: string): string {
+  return name.toLowerCase().replace(/[^a-z]/g, '');
+}
+
+// Fallback NBA fetcher using SportsGameOdds API
+async function fetchNBAGamesFromSportsGameOdds(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
     const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
     if (!apiKey) {
-      console.log('[NBA] No SPORTSGAMEODDS_API_KEY configured');
+      console.log('[NBA Fallback] No SPORTSGAMEODDS_API_KEY configured');
       return [];
     }
 
-    console.log('[NBA] Fetching from SportsGameOdds API...');
+    console.log('[NBA Fallback] Fetching from SportsGameOdds API...');
     
     const response = await fetch(
       'https://api.sportsgameodds.com/v2/events?leagueID=NBA&oddsAvailable=true&limit=30',
@@ -432,13 +552,13 @@ async function fetchNBAGames(): Promise<ScheduledGame[]> {
     );
 
     if (!response.ok) {
-      console.error(`[NBA] API error: ${response.status}`);
+      console.error(`[NBA Fallback] API error: ${response.status}`);
       return [];
     }
 
     const data = await response.json();
     const events = data?.data || data?.events || [];
-    console.log(`[NBA] Found ${events.length} events from API`);
+    console.log(`[NBA Fallback] Found ${events.length} events from API`);
 
     for (const event of events) {
       const game = parseAPIEvent(event, 'Basketball', 'NBA', 95);
@@ -447,7 +567,7 @@ async function fetchNBAGames(): Promise<ScheduledGame[]> {
 
     return games;
   } catch (error) {
-    console.error('[NBA] Error fetching games:', error);
+    console.error('[NBA Fallback] Error fetching games:', error);
     return [];
   }
 }
