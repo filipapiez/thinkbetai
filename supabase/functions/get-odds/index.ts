@@ -199,7 +199,7 @@ function validateSport(sport: string | null): string | null {
 
 // In-memory cache to reduce external API calls and avoid rate limits
 const oddsCache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes - extended to prevent rate limiting
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -272,12 +272,14 @@ serve(async (req) => {
         });
       }
 
-      // Return empty payload
+      // Return empty payload with rateLimited flag for 429
       const emptyPayload = {
         games: [],
         remainingRequests: null,
         lastUpdated: new Date().toISOString(),
         error: 'Unable to fetch data at this time',
+        rateLimited: response.status === 429,
+        upstreamStatus: response.status,
       };
 
       return new Response(JSON.stringify(emptyPayload), {
