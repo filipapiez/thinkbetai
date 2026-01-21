@@ -101,6 +101,7 @@ const LEAGUE_POPULARITY: Record<string, number> = {
   'Serie A': 80, 'Ligue 1': 75, 'MLS': 65, 'UFC': 92, 'Boxing': 78,
   'ATP': 70, 'WTA': 65, 'PGA': 75, 'LIV': 70, 'WNBA': 70,
   'CS2': 72, 'LoL': 75, 'Valorant': 70, 'LCS': 68, 'LEC': 70, 'VCT': 68,
+  'ITTF': 60, 'WTT': 62, 'Table Tennis': 58,
 };
 
 function isCacheValid(): boolean {
@@ -292,6 +293,7 @@ function mapSport(input: string): string {
   if (lower.includes('boxing')) return 'Boxing';
   if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta')) return 'Tennis';
   if (lower.includes('golf') || lower.includes('pga') || lower.includes('liv')) return 'Golf';
+  if (lower.includes('table tennis') || lower.includes('tabletennis') || lower.includes('ping pong') || lower.includes('ittf') || lower.includes('wtt')) return 'Table Tennis';
   if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('lol') || lower.includes('valorant') || lower.includes('esport')) return 'Esports';
   return 'Sports';
 }
@@ -317,6 +319,9 @@ function mapLeague(input: string): string {
   if (lower.includes('atp')) return 'ATP';
   if (lower.includes('wta')) return 'WTA';
   if (lower.includes('pga')) return 'PGA';
+  if (lower.includes('wtt')) return 'WTT';
+  if (lower.includes('ittf')) return 'ITTF';
+  if (lower.includes('table tennis') || lower.includes('tabletennis') || lower.includes('ping pong')) return 'Table Tennis';
   return input || 'Sports';
 }
 
