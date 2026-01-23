@@ -35,12 +35,44 @@ interface GeneratedBet {
   result: 'win' | 'loss';
 }
 
+// All sports from website configuration with ESPN API endpoints
 const SPORT_ENDPOINTS = [
-  { sport: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20250101-20250123&limit=100' },
+  // Priority 1 - Football
   { sport: 'NFL', url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20250101-20250123&limit=100' },
+  { sport: 'CFB', url: 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=20250101-20250123&limit=100' },
+  
+  // Priority 2 - Basketball
+  { sport: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20250101-20250123&limit=100' },
+  { sport: 'NCAAB', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20250101-20250123&limit=100' },
+  
+  // Priority 3 - Baseball
+  { sport: 'MLB', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20240901-20241101&limit=100' },
+  { sport: 'College Baseball', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=20240501-20240701&limit=50' },
+  
+  // Priority 4 - Soccer (multiple leagues)
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20250101-20250123&limit=50' }, // EPL
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20241001-20241201&limit=50' }, // MLS
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20250101-20250123&limit=50' }, // La Liga
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20250101-20250123&limit=50' }, // Champions League
+  
+  // Priority 5 - Hockey
   { sport: 'NHL', url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20250101-20250123&limit=100' },
-  { sport: 'NCAAB', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20250101-20250123&limit=50' },
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20250101-20250123&limit=50' },
+  
+  // Priority 6 - Tennis
+  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=20250101-20250123&limit=50' },
+  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=20250101-20250123&limit=50' },
+  
+  // Priority 7 - UFC/MMA
+  { sport: 'UFC', url: 'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=20250101-20250123&limit=50' },
+  
+  // Priority 9 - Golf
+  { sport: 'Golf', url: 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=20250101-20250123&limit=30' },
+  
+  // Priority 10 - Boxing
+  { sport: 'Boxing', url: 'https://site.api.espn.com/apis/site/v2/sports/boxing/scoreboard?dates=20250101-20250123&limit=30' },
+  
+  // Priority 11 - NASCAR
+  { sport: 'NASCAR', url: 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=20240901-20241201&limit=30' },
 ];
 
 serve(async (req) => {
