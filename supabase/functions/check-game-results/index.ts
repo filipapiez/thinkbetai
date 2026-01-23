@@ -172,11 +172,53 @@ serve(async (req) => {
               continue;
             }
 
-            // Insert into historical_bets
+            // Call AI-powered bet generation function
             const gameDate = new Date(bet.game_time).toISOString().split('T')[0];
-            const { error: insertError } = await supabase
-              .from('historical_bets')
-              .insert({
+            try {
+              const aiResponse = await fetch(`${supabaseUrl}/functions/v1/generate-ai-bet`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  game: {
+                    sport: bet.sport,
+                    homeTeam: bet.home_team,
+                    awayTeam: bet.away_team,
+                    homeScore,
+                    awayScore,
+                    gameDate,
+                  }
+                }),
+              });
+
+              if (aiResponse.ok) {
+                const aiResult = await aiResponse.json();
+                console.log(`AI bet generated:`, aiResult);
+                updatedCount++;
+                results.push({ betId: bet.id, result, homeScore, awayScore });
+              } else {
+                console.error(`AI bet generation failed:`, await aiResponse.text());
+                // Fallback: insert basic historical bet
+                await supabase.from('historical_bets').insert({
+                  date: gameDate,
+                  sport: bet.sport,
+                  home_team: bet.home_team,
+                  away_team: bet.away_team,
+                  pick: bet.pick,
+                  odds: bet.odds,
+                  confidence: bet.confidence,
+                  edge: bet.edge,
+                  result,
+                });
+                updatedCount++;
+                results.push({ betId: bet.id, result, homeScore, awayScore });
+              }
+            } catch (aiErr) {
+              console.error(`Error calling AI bet generator:`, aiErr);
+              // Fallback: insert basic historical bet
+              await supabase.from('historical_bets').insert({
                 date: gameDate,
                 sport: bet.sport,
                 home_team: bet.home_team,
@@ -187,10 +229,6 @@ serve(async (req) => {
                 edge: bet.edge,
                 result,
               });
-
-            if (insertError) {
-              console.error(`Error inserting historical bet:`, insertError);
-            } else {
               updatedCount++;
               results.push({ betId: bet.id, result, homeScore, awayScore });
             }
