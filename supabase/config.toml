@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.lookup-game-odds]
 verify_jwt = false
+
+[functions.sync-bet-history]
+verify_jwt = false
