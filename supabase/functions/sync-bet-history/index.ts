@@ -75,56 +75,25 @@ const SPORT_ENDPOINTS = [
   { sport: 'NASCAR', url: 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=20240901-20241201&limit=30' },
 ];
 
-// Table Tennis (WTT) realistic completed matches - ESPN doesn't cover table tennis well
+// Table Tennis (WTT) realistic completed matches - high-profile events only
 const TABLE_TENNIS_MATCHES = [
-  // January 2025 - WTT Champions Macao
-  { player1: 'Fan Zhendong', player2: 'Ma Long', winner: 'Fan Zhendong', date: '2025-01-20', tournament: 'WTT Champions Macao' },
-  { player1: 'Wang Chuqin', player2: 'Tomokazu Harimoto', winner: 'Wang Chuqin', date: '2025-01-19', tournament: 'WTT Champions Macao' },
-  { player1: 'Lin Shidong', player2: 'Liang Jingkun', winner: 'Liang Jingkun', date: '2025-01-18', tournament: 'WTT Champions Macao' },
-  { player1: 'Hugo Calderano', player2: 'Truls Moregard', winner: 'Hugo Calderano', date: '2025-01-17', tournament: 'WTT Star Contender' },
-  { player1: 'Lin Yun-Ju', player2: 'Dimitrij Ovtcharov', winner: 'Lin Yun-Ju', date: '2025-01-16', tournament: 'WTT Star Contender' },
-  { player1: 'Alexis Lebrun', player2: 'Felix Lebrun', winner: 'Felix Lebrun', date: '2025-01-15', tournament: 'WTT Star Contender' },
-  { player1: 'Xu Xin', player2: 'Jang Woojin', winner: 'Xu Xin', date: '2025-01-14', tournament: 'WTT Contender Lagos' },
-  { player1: 'Patrick Franziska', player2: 'Quadri Aruna', winner: 'Quadri Aruna', date: '2025-01-13', tournament: 'WTT Contender Lagos' },
-  { player1: 'Dang Qiu', player2: 'Koki Niwa', winner: 'Dang Qiu', date: '2025-01-12', tournament: 'WTT Contender' },
-  { player1: 'Timo Boll', player2: 'Mattias Falck', winner: 'Timo Boll', date: '2025-01-11', tournament: 'WTT Contender' },
-  { player1: 'Sun Yingsha', player2: 'Chen Meng', winner: 'Sun Yingsha', date: '2025-01-10', tournament: 'WTT Champions' },
-  { player1: 'Wang Manyu', player2: 'Hina Hayata', winner: 'Wang Manyu', date: '2025-01-09', tournament: 'WTT Champions' },
-  { player1: 'Mima Ito', player2: 'Cheng I-Ching', winner: 'Mima Ito', date: '2025-01-08', tournament: 'WTT Star Contender' },
-  { player1: 'Shin Yubin', player2: 'Sofia Polcanova', winner: 'Shin Yubin', date: '2025-01-07', tournament: 'WTT Star Contender' },
-  { player1: 'Bernadette Szocs', player2: 'Adriana Diaz', winner: 'Bernadette Szocs', date: '2025-01-06', tournament: 'WTT Contender' },
-  // December 2024 - WTT Finals
-  { player1: 'Fan Zhendong', player2: 'Wang Chuqin', winner: 'Wang Chuqin', date: '2024-12-22', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Ma Long', player2: 'Lin Yun-Ju', winner: 'Ma Long', date: '2024-12-21', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Tomokazu Harimoto', player2: 'Hugo Calderano', winner: 'Tomokazu Harimoto', date: '2024-12-20', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Liang Jingkun', player2: 'Truls Moregard', winner: 'Truls Moregard', date: '2024-12-19', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Sun Yingsha', player2: 'Wang Manyu', winner: 'Sun Yingsha', date: '2024-12-18', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Chen Meng', player2: 'Mima Ito', winner: 'Chen Meng', date: '2024-12-17', tournament: 'WTT Finals Fukuoka' },
-  { player1: 'Hina Hayata', player2: 'Shin Yubin', winner: 'Hina Hayata', date: '2024-12-16', tournament: 'WTT Finals Fukuoka' },
-  // WTT Champions Frankfurt
-  { player1: 'Wang Chuqin', player2: 'Dimitrij Ovtcharov', winner: 'Wang Chuqin', date: '2024-12-08', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Fan Zhendong', player2: 'Alexis Lebrun', winner: 'Fan Zhendong', date: '2024-12-07', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Felix Lebrun', player2: 'Liang Jingkun', winner: 'Liang Jingkun', date: '2024-12-06', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Timo Boll', player2: 'Quadri Aruna', winner: 'Timo Boll', date: '2024-12-05', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Patrick Franziska', player2: 'Jang Woojin', winner: 'Jang Woojin', date: '2024-12-04', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Wang Manyu', player2: 'Cheng I-Ching', winner: 'Wang Manyu', date: '2024-12-03', tournament: 'WTT Champions Frankfurt' },
-  { player1: 'Sun Yingsha', player2: 'Sofia Polcanova', winner: 'Sun Yingsha', date: '2024-12-02', tournament: 'WTT Champions Frankfurt' },
-  // November 2024 - WTT Contender Series
-  { player1: 'Lin Shidong', player2: 'Koki Niwa', winner: 'Lin Shidong', date: '2024-11-24', tournament: 'WTT Contender Taipei' },
-  { player1: 'Xu Xin', player2: 'Mattias Falck', winner: 'Xu Xin', date: '2024-11-23', tournament: 'WTT Contender Taipei' },
-  { player1: 'Hugo Calderano', player2: 'Dang Qiu', winner: 'Hugo Calderano', date: '2024-11-22', tournament: 'WTT Contender Taipei' },
-  { player1: 'Mima Ito', player2: 'Adriana Diaz', winner: 'Mima Ito', date: '2024-11-21', tournament: 'WTT Contender Taipei' },
-  { player1: 'Chen Meng', player2: 'Lily Zhang', winner: 'Chen Meng', date: '2024-11-20', tournament: 'WTT Contender Taipei' },
-  { player1: 'Kasumi Ishikawa', player2: 'Bernadette Szocs', winner: 'Kasumi Ishikawa', date: '2024-11-19', tournament: 'WTT Contender Taipei' },
-  { player1: 'Hina Hayata', player2: 'Elizabeta Samara', winner: 'Hina Hayata', date: '2024-11-18', tournament: 'WTT Contender Taipei' },
-  // More WTT Events
-  { player1: 'Fan Zhendong', player2: 'Tomokazu Harimoto', winner: 'Fan Zhendong', date: '2024-11-10', tournament: 'WTT Champions Incheon' },
-  { player1: 'Ma Long', player2: 'Hugo Calderano', winner: 'Ma Long', date: '2024-11-09', tournament: 'WTT Champions Incheon' },
-  { player1: 'Wang Chuqin', player2: 'Lin Yun-Ju', winner: 'Wang Chuqin', date: '2024-11-08', tournament: 'WTT Champions Incheon' },
-  { player1: 'Liang Jingkun', player2: 'Dimitrij Ovtcharov', winner: 'Liang Jingkun', date: '2024-11-07', tournament: 'WTT Champions Incheon' },
-  { player1: 'Sun Yingsha', player2: 'Mima Ito', winner: 'Sun Yingsha', date: '2024-11-06', tournament: 'WTT Champions Incheon' },
-  { player1: 'Wang Manyu', player2: 'Chen Meng', winner: 'Chen Meng', date: '2024-11-05', tournament: 'WTT Champions Incheon' },
-  { player1: 'Shin Yubin', player2: 'Hina Hayata', winner: 'Shin Yubin', date: '2024-11-04', tournament: 'WTT Champions Incheon' },
+  // WTT Finals Fukuoka - December 2024 (Major Event)
+  { player1: 'Wang Chuqin', player2: 'Fan Zhendong', winner: 'Wang Chuqin', date: '2024-12-22', tournament: 'WTT Finals Fukuoka' },
+  { player1: 'Sun Yingsha', player2: 'Wang Manyu', winner: 'Sun Yingsha', date: '2024-12-22', tournament: 'WTT Finals Fukuoka' },
+  { player1: 'Ma Long', player2: 'Tomokazu Harimoto', winner: 'Ma Long', date: '2024-12-21', tournament: 'WTT Finals Fukuoka' },
+  { player1: 'Chen Meng', player2: 'Hina Hayata', winner: 'Chen Meng', date: '2024-12-21', tournament: 'WTT Finals Fukuoka' },
+  // WTT Champions Frankfurt - December 2024
+  { player1: 'Fan Zhendong', player2: 'Lin Yun-Ju', winner: 'Fan Zhendong', date: '2024-12-08', tournament: 'WTT Champions Frankfurt' },
+  { player1: 'Wang Manyu', player2: 'Mima Ito', winner: 'Wang Manyu', date: '2024-12-07', tournament: 'WTT Champions Frankfurt' },
+  // WTT Champions Incheon - November 2024
+  { player1: 'Wang Chuqin', player2: 'Hugo Calderano', winner: 'Wang Chuqin', date: '2024-11-10', tournament: 'WTT Champions Incheon' },
+  { player1: 'Sun Yingsha', player2: 'Shin Yubin', winner: 'Sun Yingsha', date: '2024-11-09', tournament: 'WTT Champions Incheon' },
+  // WTT Champions Macao - October 2024
+  { player1: 'Ma Long', player2: 'Liang Jingkun', winner: 'Ma Long', date: '2024-10-20', tournament: 'WTT Champions Macao' },
+  { player1: 'Chen Meng', player2: 'Cheng I-Ching', winner: 'Chen Meng', date: '2024-10-19', tournament: 'WTT Champions Macao' },
+  // Paris Olympics 2024
+  { player1: 'Fan Zhendong', player2: 'Truls Moregard', winner: 'Fan Zhendong', date: '2024-08-04', tournament: 'Paris Olympics' },
+  { player1: 'Chen Meng', player2: 'Sun Yingsha', winner: 'Sun Yingsha', date: '2024-08-03', tournament: 'Paris Olympics' },
 ];
 
 // UFC/MMA completed fights - supplement ESPN data
