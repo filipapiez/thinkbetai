@@ -325,47 +325,251 @@ function mapLeague(input: string): string {
   return input || 'Sports';
 }
 
-function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
-  const seen = new Map<string, ScheduledGame>();
+// ============================================================================
+// MATCH IDENTIFICATION AND DEDUPLICATION
+// Follows strict rules: match_id = (homeTeam + awayTeam + kickoff_utc + competition_id)
+// ============================================================================
+
+/**
+ * Normalize team name for consistent matching
+ */
+function normalizeTeamName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/^(the|los|la|las|el)\s+/i, '')
+    .trim();
+}
+
+/**
+ * Generate a stable match_id from match components
+ * This is the ONLY way to uniquely identify a match
+ */
+function generateMatchId(
+  homeTeam: string,
+  awayTeam: string,
+  kickoffUtc: string,
+  competitionId: string
+): string {
+  const normalizedHome = normalizeTeamName(homeTeam);
+  const normalizedAway = normalizeTeamName(awayTeam);
   
-  for (const game of games) {
-    const key = `${game.homeTeam.toLowerCase()}_${game.awayTeam.toLowerCase()}_${game.league}`;
-    const reverseKey = `${game.awayTeam.toLowerCase()}_${game.homeTeam.toLowerCase()}_${game.league}`;
+  // Extract date and hour for grouping (handles timezone edge cases)
+  let dateKey: string;
+  try {
+    const date = new Date(kickoffUtc);
+    // Use YYYY-MM-DD-HH format for more precise matching
+    dateKey = `${date.toISOString().split('T')[0]}-${date.getUTCHours().toString().padStart(2, '0')}`;
+  } catch {
+    dateKey = 'unknown';
+  }
+  
+  // Create deterministic components - order matters, so sort teams alphabetically
+  const sortedTeams = [normalizedHome, normalizedAway].sort();
+  const components = [
+    sortedTeams[0],
+    sortedTeams[1],
+    dateKey,
+    competitionId.toLowerCase().replace(/[^a-z0-9]/g, ''),
+  ].join('|');
+  
+  // Simple hash for shorter ID
+  let hash = 0;
+  for (let i = 0; i < components.length; i++) {
+    const char = components.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  
+  return `match_${Math.abs(hash).toString(36)}_${dateKey.replace(/-/g, '')}`;
+}
+
+/**
+ * Validate a match record - rejects invalid data
+ */
+function isValidMatch(game: ScheduledGame): boolean {
+  // Reject if home == away
+  if (normalizeTeamName(game.homeTeam) === normalizeTeamName(game.awayTeam)) {
+    console.log(`[Validation] Rejected: home == away for ${game.homeTeam}`);
+    return false;
+  }
+  
+  // Reject if missing or empty team names
+  if (!game.homeTeam?.trim() || !game.awayTeam?.trim()) {
+    console.log(`[Validation] Rejected: empty team name`);
+    return false;
+  }
+  
+  // Reject if start time is invalid
+  try {
+    const date = new Date(game.startTime);
+    if (isNaN(date.getTime())) {
+      console.log(`[Validation] Rejected: invalid date for ${game.homeTeam} vs ${game.awayTeam}`);
+      return false;
+    }
+  } catch {
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Check if two games are duplicates based on proper match_id logic
+ */
+function isSameMatch(game1: ScheduledGame, game2: ScheduledGame): boolean {
+  const home1 = normalizeTeamName(game1.homeTeam);
+  const away1 = normalizeTeamName(game1.awayTeam);
+  const home2 = normalizeTeamName(game2.homeTeam);
+  const away2 = normalizeTeamName(game2.awayTeam);
+  
+  // Teams must match (either order for home/away swap detection from different sources)
+  const teamsMatch = 
+    (home1 === home2 && away1 === away2) ||
+    (home1 === away2 && away1 === home2);
+  
+  if (!teamsMatch) return false;
+  
+  // Same league/competition
+  const league1 = game1.league.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const league2 = game2.league.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (league1 !== league2) return false;
+  
+  // Same day and within 6 hours (handles timezone discrepancies between sources)
+  try {
+    const time1 = new Date(game1.startTime).getTime();
+    const time2 = new Date(game2.startTime).getTime();
+    const hoursDiff = Math.abs(time1 - time2) / (1000 * 60 * 60);
+    return hoursDiff <= 6;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Deduplicate games using proper match_id based logic
+ * 
+ * STRICT RULES:
+ * 1. Generate match_id for each game
+ * 2. Group by match_id
+ * 3. Merge duplicates keeping best data from each source
+ * 4. Reject conflicting picks for same match
+ */
+function deduplicateAndRank(games: ScheduledGame[]): ScheduledGame[] {
+  // Step 1: Validate all games
+  const validGames = games.filter(isValidMatch);
+  console.log(`[Dedup] Validated ${validGames.length}/${games.length} games`);
+  
+  // Step 2: Generate match_id for each game and group
+  const matchMap = new Map<string, ScheduledGame[]>();
+  
+  for (const game of validGames) {
+    const matchId = generateMatchId(game.homeTeam, game.awayTeam, game.startTime, game.league);
     
-    const existing = seen.get(key) || seen.get(reverseKey);
-    if (!existing) {
-      seen.set(key, game);
+    if (!matchMap.has(matchId)) {
+      matchMap.set(matchId, []);
+    }
+    matchMap.get(matchId)!.push({ ...game, id: matchId });
+  }
+  
+  // Step 3: Also check for similar matches that might have different IDs due to slight time differences
+  const result: ScheduledGame[] = [];
+  const processedIds = new Set<string>();
+  
+  for (const [matchId, matchGames] of matchMap.entries()) {
+    if (processedIds.has(matchId)) continue;
+    
+    // Merge all games with same matchId
+    let merged = matchGames[0];
+    
+    for (let i = 1; i < matchGames.length; i++) {
+      merged = mergeGames(merged, matchGames[i]);
+    }
+    
+    // Check if this match is similar to any already processed
+    let foundDuplicate = false;
+    for (const existing of result) {
+      if (isSameMatch(merged, existing)) {
+        // Merge into existing
+        const idx = result.indexOf(existing);
+        result[idx] = mergeGames(existing, merged);
+        foundDuplicate = true;
+        break;
+      }
+    }
+    
+    if (!foundDuplicate) {
+      result.push(merged);
+    }
+    
+    processedIds.add(matchId);
+  }
+  
+  console.log(`[Dedup] Deduplicated to ${result.length} unique matches`);
+  
+  // Step 4: Sort by start time, then popularity
+  return result.sort((a, b) => {
+    const timeA = new Date(a.startTime).getTime();
+    const timeB = new Date(b.startTime).getTime();
+    if (timeA !== timeB) return timeA - timeB;
+    return b.popularityScore - a.popularityScore;
+  });
+}
+
+/**
+ * Merge two game records, keeping best data from each
+ */
+function mergeGames(existing: ScheduledGame, incoming: ScheduledGame): ScheduledGame {
+  const merged: ScheduledGame = { ...existing };
+  
+  // Prefer 'live' or 'completed' status over 'scheduled'
+  if (incoming.status === 'live' && existing.status !== 'live') {
+    merged.status = 'live';
+  } else if (incoming.status === 'completed' && existing.status === 'scheduled') {
+    merged.status = 'completed';
+  }
+  
+  // Prefer game with odds, or merge odds if both have some
+  if (incoming.hasOdds && incoming.odds) {
+    if (!existing.hasOdds || !existing.odds) {
+      merged.odds = incoming.odds;
+      merged.hasOdds = true;
     } else {
-      // Merge: prefer odds from one source, status from another
-      // If existing has odds but new has better status info, merge them
-      const merged = { ...existing };
-      
-      // Prefer 'live' or 'completed' status over 'scheduled'
-      if (game.status === 'live' && existing.status === 'scheduled') {
-        merged.status = 'live';
-      } else if (game.status === 'completed' && existing.status === 'scheduled') {
-        merged.status = 'completed';
-      }
-      
-      // Prefer game with odds
-      if (!existing.hasOdds && game.hasOdds) {
-        merged.odds = game.odds;
-        merged.hasOdds = true;
-      }
-      
-      seen.set(key, merged);
+      // Merge odds - keep non-null values from both, prefer incoming if conflict
+      merged.odds = {
+        moneyline: incoming.odds.moneyline || existing.odds.moneyline,
+        spread: incoming.odds.spread || existing.odds.spread,
+        total: incoming.odds.total || existing.odds.total,
+      };
+      merged.hasOdds = true;
     }
   }
   
-  return Array.from(seen.values())
-    .sort((a, b) => {
-      // Sort by start time first
-      const timeA = new Date(a.startTime).getTime();
-      const timeB = new Date(b.startTime).getTime();
-      if (timeA !== timeB) return timeA - timeB;
-      // Then by popularity
-      return b.popularityScore - a.popularityScore;
-    });
+  // Keep higher popularity score
+  if (incoming.popularityScore > existing.popularityScore) {
+    merged.popularityScore = incoming.popularityScore;
+  }
+  
+  // Prefer more detailed stats
+  if (incoming.homeStats && !existing.homeStats) {
+    merged.homeStats = incoming.homeStats;
+  }
+  if (incoming.awayStats && !existing.awayStats) {
+    merged.awayStats = incoming.awayStats;
+  }
+  
+  // Use earliest start time (more likely to be accurate)
+  try {
+    const existingTime = new Date(existing.startTime).getTime();
+    const incomingTime = new Date(incoming.startTime).getTime();
+    if (incomingTime < existingTime && !isNaN(incomingTime)) {
+      merged.startTime = incoming.startTime;
+    }
+  } catch {}
+  
+  return merged;
 }
 
 // ============================================================================
@@ -528,10 +732,7 @@ async function fetchNBAGames(): Promise<ScheduledGame[]> {
   }
 }
 
-// Helper to normalize team names for matching
-function normalizeTeamName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z]/g, '');
-}
+// Helper to normalize team names for matching (uses main normalizeTeamName function above)
 
 // Fallback NBA fetcher using SportsGameOdds API
 async function fetchNBAGamesFromSportsGameOdds(): Promise<ScheduledGame[]> {
