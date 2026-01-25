@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  generateMatchId, 
+  normalizeTeamName, 
+  isValidMatch,
+  isKickoffInPast 
+} from '@/lib/matchUtils';
 
 export interface PopularGameOdds {
   moneyline?: { home: number; away: number; draw?: number };
@@ -30,9 +36,9 @@ interface PopularGamesResponse {
   error?: string;
 }
 
-// Local storage cache - short TTL to show fresh data on refresh
-const CACHE_KEY = 'popular_games_cache';
-const CLIENT_CACHE_TTL = 2 * 60 * 1000; // 2 minutes client-side
+// Local storage cache - reduced TTL to ensure fresh data
+const CACHE_KEY = 'popular_games_cache_v2';
+const CLIENT_CACHE_TTL = 30 * 1000; // 30 seconds client-side (reduced from 2 min)
 
 function getClientCache(): { games: PopularGame[]; timestamp: number } | null {
   try {
@@ -53,25 +59,74 @@ function setClientCache(games: PopularGame[]): void {
   } catch {}
 }
 
-// Filter out past/completed games client-side
-function filterUpcomingGames(games: PopularGame[]): PopularGame[] {
+/**
+ * Validate and deduplicate games on client side
+ * Uses proper match_id based logic to prevent duplicates
+ */
+function validateAndDeduplicateGames(games: PopularGame[]): PopularGame[] {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
-  return games.filter(game => {
+  // Step 1: Filter valid upcoming/live games
+  const validGames = games.filter(game => {
+    // Validate match data
+    if (!isValidMatch({
+      id: game.id,
+      homeTeam: game.homeTeam,
+      awayTeam: game.awayTeam,
+      startTime: game.startTime,
+    })) {
+      return false;
+    }
+    
     // Always keep live games
     if (game.status === 'live') return true;
     
     // Filter out completed games
     if (game.status === 'completed') return false;
     
-    // Filter out games with past dates
+    // Filter out games with past kickoff times
     try {
       const gameDate = new Date(game.startTime);
       return gameDate >= startOfToday;
     } catch {
       return false;
     }
+  });
+  
+  // Step 2: Deduplicate using match_id
+  const matchMap = new Map<string, PopularGame>();
+  
+  for (const game of validGames) {
+    const matchId = generateMatchId(game.homeTeam, game.awayTeam, game.startTime, game.league);
+    
+    if (!matchMap.has(matchId)) {
+      // Store with consistent match_id
+      matchMap.set(matchId, { ...game, id: matchId });
+    } else {
+      // Merge with existing - prefer odds, live status
+      const existing = matchMap.get(matchId)!;
+      const merged = { ...existing };
+      
+      if (game.status === 'live') merged.status = 'live';
+      if (game.hasOdds && !existing.hasOdds) {
+        merged.odds = game.odds;
+        merged.hasOdds = true;
+      }
+      if (game.popularityScore > existing.popularityScore) {
+        merged.popularityScore = game.popularityScore;
+      }
+      
+      matchMap.set(matchId, merged);
+    }
+  }
+  
+  // Step 3: Return sorted by time then popularity
+  return Array.from(matchMap.values()).sort((a, b) => {
+    const timeA = new Date(a.startTime).getTime();
+    const timeB = new Date(b.startTime).getTime();
+    if (timeA !== timeB) return timeA - timeB;
+    return b.popularityScore - a.popularityScore;
   });
 }
 
@@ -91,9 +146,9 @@ export function usePopularGames() {
       const clientCache = getClientCache();
       if (clientCache && (Date.now() - clientCache.timestamp) < CLIENT_CACHE_TTL) {
         console.log('[PopularGames] Using client cache');
-        // Also filter cached games in case they've become stale
-        const upcomingGames = filterUpcomingGames(clientCache.games);
-        setGames(upcomingGames);
+        // Validate and deduplicate cached games
+        const validGames = validateAndDeduplicateGames(clientCache.games);
+        setGames(validGames);
         setLastUpdated(new Date(clientCache.timestamp).toISOString());
         setSource('client-cache');
         setIsLoading(false);
@@ -118,8 +173,8 @@ export function usePopularGames() {
         console.log('[PopularGames] No active session, using cached data only');
         const clientCache = getClientCache();
         if (clientCache && clientCache.games.length > 0) {
-          const upcomingGames = filterUpcomingGames(clientCache.games);
-          setGames(upcomingGames);
+          const validGames = validateAndDeduplicateGames(clientCache.games);
+          setGames(validGames);
           setLastUpdated(new Date(clientCache.timestamp).toISOString());
           setSource('client-cache');
           setIsLoading(false);
@@ -148,16 +203,16 @@ export function usePopularGames() {
       const data: PopularGamesResponse = await response.json();
       
       if (data.success && data.games) {
-        // Filter out past/completed games client-side as extra safety
-        const upcomingGames = filterUpcomingGames(data.games);
-        console.log(`[PopularGames] Received ${data.games.length} games, filtered to ${upcomingGames.length} upcoming/live games`);
+        // Validate, deduplicate, and filter games client-side
+        const validGames = validateAndDeduplicateGames(data.games);
+        console.log(`[PopularGames] Received ${data.games.length} games, validated to ${validGames.length} unique matches`);
         
-        setGames(upcomingGames);
+        setGames(validGames);
         setLastUpdated(data.lastUpdated);
         setSource(data.source);
-        setClientCache(upcomingGames);
+        setClientCache(validGames);
         
-        if (upcomingGames.length === 0) {
+        if (validGames.length === 0) {
           toast.info('No upcoming games available at this time');
         }
       } else {
@@ -172,8 +227,8 @@ export function usePopularGames() {
       // Fall back to client cache if available
       const clientCache = getClientCache();
       if (clientCache && clientCache.games.length > 0) {
-        const upcomingGames = filterUpcomingGames(clientCache.games);
-        setGames(upcomingGames);
+        const validGames = validateAndDeduplicateGames(clientCache.games);
+        setGames(validGames);
         setLastUpdated(new Date(clientCache.timestamp).toISOString());
         setSource('fallback-cache');
         toast.info('Using cached data');
