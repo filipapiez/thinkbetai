@@ -191,30 +191,30 @@ const Index = () => {
           <div className="container relative">
             <div className="max-w-4xl mx-auto text-center">
               {/* Live Badge */}
-              <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8 animate-fade-in">
+              <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8 animate-fade-in">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
-                  <span className="text-sm font-semibold text-emerald-400">LIVE</span>
+                  <span className="text-xs md:text-sm font-semibold text-emerald-400">LIVE</span>
                 </div>
-                <div className="w-px h-4 bg-border" />
-                <span className="text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">{platformStats.qualifiedWinRate}%</span> Win Rate Today
+                <div className="hidden sm:block w-px h-4 bg-border" />
+                <span className="text-xs md:text-sm font-medium text-foreground">
+                  <span className="text-primary font-bold">{platformStats.qualifiedWinRate}%</span> Win Rate
                 </span>
-                <div className="w-px h-4 bg-border" />
-                <span className="text-sm text-muted-foreground">
+                <div className="hidden md:block w-px h-4 bg-border" />
+                <span className="hidden md:inline text-sm text-muted-foreground">
                   <span className="font-semibold text-foreground">{platformStats.streakCurrent}</span> Game Streak 🔥
                 </span>
               </div>
 
               {/* Headline */}
-              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
                 Smarter Picks.{' '}
-                <span className="relative">
+                <span className="relative inline-block">
                   <span className="text-gradient">Bigger Wins.</span>
-                  <Sparkles className="absolute -top-2 -right-6 h-6 w-6 text-primary animate-pulse" />
+                  <Sparkles className="absolute -top-1 -right-4 md:-top-2 md:-right-6 h-4 w-4 md:h-6 md:w-6 text-primary animate-pulse" />
                 </span>
               </h1>
 
@@ -225,17 +225,17 @@ const Index = () => {
               </p>
 
               {/* Quick Value Props */}
-              <div className="flex flex-wrap justify-center gap-4 mb-10 animate-slide-up" style={{ animationDelay: '150ms' }}>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-card/80 border-border/50">
-                  <Clock className="h-4 w-4 mr-2 text-primary" />
-                  Picks Updated Every 5 Min
+              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10 animate-slide-up" style={{ animationDelay: '150ms' }}>
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
+                  Updated Every 5 Min
                 </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-card/80 border-border/50">
-                  <TrendingUp className="h-4 w-4 mr-2 text-emerald-400" />
-                  {platformStats.totalQualified}+ Winning Picks This Season
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
+                  {platformStats.totalQualified}+ Winning Picks
                 </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-card/80 border-border/50">
-                  <Shield className="h-4 w-4 mr-2 text-amber-400" />
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
+                  <Shield className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
                   Money-Back Guarantee
                 </Badge>
               </div>
@@ -258,21 +258,21 @@ const Index = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border-2 border-background flex items-center justify-center text-xs font-bold">
+                      <div key={i} className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border-2 border-background flex items-center justify-center text-xs font-bold">
                         {['M', 'S', 'J', 'A'][i]}
                       </div>
                     ))}
                   </div>
-                  <span><span className="font-semibold text-foreground">1,247</span> bettors joined this week</span>
+                  <span><span className="font-semibold text-foreground">1,247</span> joined this week</span>
                 </div>
-                <div className="hidden md:block w-px h-5 bg-border" />
-                <div className="flex items-center gap-1.5">
+                <div className="hidden sm:block w-px h-5 bg-border" />
+                <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
                   ))}
                   <span className="ml-1"><span className="font-semibold text-foreground">4.9</span> from 2,400+ reviews</span>
                 </div>
@@ -349,15 +349,15 @@ const Index = () => {
                 From primetime NFL to late-night UFC, our AI never sleeps so you never miss a winning opportunity.
               </p>
             </div>
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-3 max-w-5xl mx-auto">
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 gap-2 sm:gap-3 max-w-5xl mx-auto">
               {allSports.map((sport, index) => (
                 <div 
                   key={sport.name}
-                  className="group flex flex-col items-center gap-2 p-4 bg-card/50 border border-border/40 rounded-xl text-center hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer animate-slide-up"
+                  className="group flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 bg-card/50 border border-border/40 rounded-lg sm:rounded-xl text-center hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer animate-slide-up"
                   style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <span className="text-2xl md:text-3xl group-hover:scale-110 transition-transform">{sport.emoji}</span>
-                  <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{sport.name}</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform">{sport.emoji}</span>
+                  <span className="text-[10px] sm:text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate w-full">{sport.name}</span>
                 </div>
               ))}
             </div>
@@ -410,16 +410,16 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 max-w-6xl mx-auto">
+            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-4 max-w-6xl mx-auto">
               {platformStats.sportBreakdown.map((sport, index) => (
                 <div 
                   key={sport.sport} 
-                  className="bg-background/50 border border-border/40 rounded-xl p-4 text-center hover:border-primary/40 transition-colors animate-slide-up"
+                  className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="text-2xl font-bold text-primary mb-1">{sport.winRate}%</div>
-                  <div className="text-sm font-medium">{sport.sport}</div>
-                  <div className="text-xs text-muted-foreground">{sport.wins}/{sport.qualified} wins</div>
+                  <div className="text-lg sm:text-2xl font-bold text-primary mb-0.5 sm:mb-1">{sport.winRate}%</div>
+                  <div className="text-[10px] sm:text-sm font-medium truncate">{sport.sport}</div>
+                  <div className="text-[9px] sm:text-xs text-muted-foreground">{sport.wins}/{sport.qualified}</div>
                 </div>
               ))}
             </div>
@@ -484,33 +484,33 @@ const Index = () => {
         {/* Testimonials */}
         <section className="py-16 md:py-24 bg-card/30 border-t border-border/40">
           <div className="container">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">
                   What People Are Saying
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Real users, real results
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 self-end sm:self-auto">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => scrollTestimonials('left')}
                   disabled={!canScrollLeft}
-                  className="h-10 w-10 rounded-full"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => scrollTestimonials('right')}
                   disabled={!canScrollRight}
-                  className="h-10 w-10 rounded-full"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </div>
             </div>
@@ -585,7 +585,7 @@ const Index = () => {
               <p className="mt-6 text-sm text-muted-foreground">
                 No credit card required • Cancel anytime • 100% money-back guarantee
               </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
+              <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm px-4">
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
                 <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
                 <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>
