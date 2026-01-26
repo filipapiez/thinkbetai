@@ -92,9 +92,22 @@ const Paywall = () => {
               <Lock className="h-8 w-8 text-primary" />
             </div>
             <h1 className="text-2xl font-bold mb-2">Unlock ThinkBetAI</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Get instant access to Games, AI Analysis, and more.
             </p>
+            
+            {/* Win Rate Stats */}
+            <div className="flex items-center justify-center gap-6 py-4 px-6 bg-card/50 rounded-xl border border-border/50">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-success">80%</div>
+                <div className="text-xs text-muted-foreground">Win Rate</div>
+              </div>
+              <div className="h-10 w-px bg-border" />
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">500+</div>
+                <div className="text-xs text-muted-foreground">Verified Picks</div>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-6">
