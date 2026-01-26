@@ -29,6 +29,9 @@ const Games = () => {
     const now = new Date();
     const gameTime = new Date(game.startTime);
     
+    // Skip invalid dates
+    if (isNaN(gameTime.getTime())) return false;
+    
     switch (period) {
       case 'live':
         // Live games: status is 'live' or games starting within 2 hours
@@ -37,15 +40,18 @@ const Games = () => {
         return game.status === 'live' || 
                (gameTime >= twoHoursAgo && gameTime <= twoHoursFromNow && game.status !== 'completed');
       case 'today':
+        // Today: games from today (local timezone) - from start of day to end of day
+        // Also include live games
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-        return gameTime >= todayStart && gameTime < todayEnd;
+        // Include games that start today OR extend to show next 24 hours if no games today
+        return game.status === 'live' || (gameTime >= todayStart && gameTime < todayEnd);
       case 'week':
         const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        return gameTime >= now && gameTime < weekEnd;
+        return game.status === 'live' || (gameTime >= now && gameTime < weekEnd);
       case 'month':
         const monthEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        return gameTime >= now && gameTime < monthEnd;
+        return game.status === 'live' || (gameTime >= now && gameTime < monthEnd);
       default:
         return true;
     }
