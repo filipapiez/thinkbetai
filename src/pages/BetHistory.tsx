@@ -142,95 +142,95 @@ const BetHistory = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Historical Qualified Bets</h1>
-          <p className="text-muted-foreground">
-            Complete record of all AI-qualified betting picks with verified results
+      <main className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">Historical Qualified Bets</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Complete record of AI-qualified picks with verified results
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Trophy className="h-4 w-4" />
-                <span className="text-sm">Win Rate</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground mb-1">
+                <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">Win Rate</span>
               </div>
-              <p className="text-2xl font-bold text-primary">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.winRate}%`}
+              <p className="text-xl sm:text-2xl font-bold text-primary">
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : `${stats.winRate}%`}
               </p>
             </CardContent>
           </Card>
           <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm">Total Bets</span>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground mb-1">
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="text-xs sm:text-sm">Total Bets</span>
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.total}
+              <p className="text-xl sm:text-2xl font-bold text-foreground">
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : stats.total.toLocaleString()}
               </p>
             </CardContent>
           </Card>
           <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Wins</div>
-              <p className="text-2xl font-bold text-green-500">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.wins}
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Wins</div>
+              <p className="text-xl sm:text-2xl font-bold text-success">
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : stats.wins.toLocaleString()}
               </p>
             </CardContent>
           </Card>
           <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Losses</div>
-              <p className="text-2xl font-bold text-red-500">
-                {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.losses}
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xs sm:text-sm text-muted-foreground mb-1">Losses</div>
+              <p className="text-xl sm:text-2xl font-bold text-destructive">
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : stats.losses.toLocaleString()}
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Sport-by-Sport Breakdown */}
-        <Card className="mb-6 bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-6 bg-card border-border">
+          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               Performance by Sport
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
                 {sportBreakdown.map(({ sport, wins, losses, total, winRate }) => (
                   <div
                     key={sport}
-                    className="p-4 rounded-lg bg-secondary/50 border border-border hover:bg-secondary/70 transition-colors cursor-pointer"
+                    className="p-3 sm:p-4 rounded-lg bg-secondary/50 border border-border hover:bg-secondary/70 transition-colors cursor-pointer"
                     onClick={() => setSportFilter(sport)}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold">
+                    <div className="flex items-center justify-between mb-2 gap-1">
+                      <Badge variant="secondary" className="bg-primary/20 text-primary font-semibold text-xs truncate max-w-[60%]">
                         {sport}
                       </Badge>
                       <span className={cn(
-                        "text-lg font-bold",
-                        winRate >= 65 ? "text-green-500" : winRate >= 55 ? "text-yellow-500" : "text-red-500"
+                        "text-sm sm:text-lg font-bold shrink-0",
+                        winRate >= 65 ? "text-success" : winRate >= 55 ? "text-warning" : "text-destructive"
                       )}>
-                        {winRate.toFixed(1)}%
+                        {winRate.toFixed(0)}%
                       </span>
                     </div>
                     <Progress 
                       value={winRate} 
-                      className="h-2 mb-2"
+                      className="h-1.5 sm:h-2 mb-2"
                     />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{wins}W - {losses}L</span>
-                      <span>{total} bets</span>
+                    <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
+                      <span>{wins}W-{losses}L</span>
+                      <span>{total}</span>
                     </div>
                   </div>
                 ))}
@@ -240,23 +240,23 @@ const BetHistory = () => {
         </Card>
 
         {/* Filters */}
-        <Card className="mb-6 bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Filter className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-6 bg-card border-border">
+          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
               Filters
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto">
-                  <X className="h-4 w-4 mr-1" />
-                  Clear All
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto text-xs sm:text-sm">
+                  <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  Clear
                 </Button>
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
+          <CardContent className="px-4 sm:px-6">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4">
               <Select value={sportFilter} onValueChange={setSportFilter}>
-                <SelectTrigger className="w-[150px] bg-background border-border">
+                <SelectTrigger className="w-full sm:w-[140px] bg-background border-border text-sm">
                   <SelectValue placeholder="Sport" />
                 </SelectTrigger>
                 <SelectContent>
@@ -270,7 +270,7 @@ const BetHistory = () => {
               </Select>
 
               <Select value={resultFilter} onValueChange={setResultFilter}>
-                <SelectTrigger className="w-[150px] bg-background border-border">
+                <SelectTrigger className="w-full sm:w-[130px] bg-background border-border text-sm">
                   <SelectValue placeholder="Result" />
                 </SelectTrigger>
                 <SelectContent>
@@ -285,12 +285,12 @@ const BetHistory = () => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-[150px] justify-start text-left font-normal bg-background border-border",
+                      "w-full sm:w-[130px] justify-start text-left font-normal bg-background border-border text-sm",
                       !dateFrom && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFrom ? format(dateFrom, "MMM d, yyyy") : "From Date"}
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
+                    {dateFrom ? format(dateFrom, "MMM d") : "From"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -308,12 +308,12 @@ const BetHistory = () => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-[150px] justify-start text-left font-normal bg-background border-border",
+                      "w-full sm:w-[130px] justify-start text-left font-normal bg-background border-border text-sm",
                       !dateTo && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateTo ? format(dateTo, "MMM d, yyyy") : "To Date"}
+                    <CalendarIcon className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
+                    {dateTo ? format(dateTo, "MMM d") : "To"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -329,8 +329,64 @@ const BetHistory = () => {
           </CardContent>
         </Card>
 
-        {/* Table */}
-        <Card className="bg-card border-border">
+        {/* Mobile Card View */}
+        <div className="block sm:hidden space-y-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredBets.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No bets match your filters.
+            </div>
+          ) : (
+            filteredBets.slice(0, 50).map((bet) => (
+              <Card key={bet.id} className="bg-card border-border">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="bg-secondary text-secondary-foreground text-xs">
+                        {bet.sport}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {format(parseISO(bet.date), "MMM d")}
+                      </span>
+                    </div>
+                    <Badge
+                      className={cn(
+                        "text-xs",
+                        bet.result === "win"
+                          ? "bg-success/20 text-success hover:bg-success/30"
+                          : "bg-destructive/20 text-destructive hover:bg-destructive/30"
+                      )}
+                    >
+                      {bet.result === "win" ? "WIN" : "LOSS"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    {bet.away_team} @ {bet.home_team}
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Pick: <span className="text-foreground font-medium">{bet.pick}</span>
+                  </p>
+                  <div className="flex items-center gap-4 text-xs">
+                    <span className="text-muted-foreground">Odds: <span className="text-foreground">{formatOdds(bet.odds)}</span></span>
+                    <span className="text-muted-foreground">Conf: <span className="text-primary font-medium">{bet.confidence}%</span></span>
+                    <span className="text-muted-foreground">Edge: <span className="text-success">+{bet.edge}%</span></span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+          {filteredBets.length > 50 && (
+            <p className="text-center text-xs text-muted-foreground py-2">
+              Showing 50 of {filteredBets.length} bets
+            </p>
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <Card className="bg-card border-border hidden sm:block">
           <CardContent className="p-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
@@ -346,7 +402,7 @@ const BetHistory = () => {
                       <TableHead className="text-muted-foreground">Matchup</TableHead>
                       <TableHead className="text-muted-foreground">Pick</TableHead>
                       <TableHead className="text-muted-foreground">Odds</TableHead>
-                      <TableHead className="text-muted-foreground">Confidence</TableHead>
+                      <TableHead className="text-muted-foreground">Conf</TableHead>
                       <TableHead className="text-muted-foreground">Edge</TableHead>
                       <TableHead className="text-muted-foreground">Result</TableHead>
                     </TableRow>
@@ -354,31 +410,31 @@ const BetHistory = () => {
                   <TableBody>
                     {filteredBets.map((bet) => (
                       <TableRow key={bet.id} className="border-border">
-                        <TableCell className="text-foreground">
+                        <TableCell className="text-foreground text-sm">
                           {format(parseISO(bet.date), "MMM d, yyyy")}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
+                          <Badge variant="secondary" className="bg-secondary text-secondary-foreground text-xs">
                             {bet.sport}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-foreground">
+                        <TableCell className="text-foreground text-sm">
                           {bet.away_team} @ {bet.home_team}
                         </TableCell>
-                        <TableCell className="font-medium text-foreground">{bet.pick}</TableCell>
-                        <TableCell className="text-foreground">{formatOdds(bet.odds)}</TableCell>
+                        <TableCell className="font-medium text-foreground text-sm">{bet.pick}</TableCell>
+                        <TableCell className="text-foreground text-sm">{formatOdds(bet.odds)}</TableCell>
                         <TableCell>
-                          <span className="text-primary font-medium">{bet.confidence}%</span>
+                          <span className="text-primary font-medium text-sm">{bet.confidence}%</span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-green-500">+{bet.edge}%</span>
+                          <span className="text-success text-sm">+{bet.edge}%</span>
                         </TableCell>
                         <TableCell>
                           <Badge
                             className={cn(
                               bet.result === "win"
-                                ? "bg-green-500/20 text-green-500 hover:bg-green-500/30"
-                                : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                                ? "bg-success/20 text-success hover:bg-success/30"
+                                : "bg-destructive/20 text-destructive hover:bg-destructive/30"
                             )}
                           >
                             {bet.result === "win" ? "W" : "L"}

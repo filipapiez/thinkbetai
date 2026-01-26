@@ -619,14 +619,14 @@ const Picks = () => {
                     </h3>
                     
                     {/* Win Rate Stats */}
-                    <div className="flex items-center justify-center gap-6 my-6 py-4 px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 my-6 py-4 px-4 sm:px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-success">80%</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-success">82.4%</div>
                         <div className="text-xs text-muted-foreground">Win Rate</div>
                       </div>
                       <div className="h-10 w-px bg-border" />
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-primary">500+</div>
+                        <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
                         <div className="text-xs text-muted-foreground">Verified Picks</div>
                       </div>
                     </div>

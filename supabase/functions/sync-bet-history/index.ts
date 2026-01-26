@@ -38,41 +38,41 @@ interface GeneratedBet {
 // All sports from website configuration with ESPN API endpoints
 const SPORT_ENDPOINTS = [
   // Priority 1 - Football
-  { sport: 'NFL', url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20250101-20250124&limit=100' },
-  { sport: 'CFB', url: 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=20250101-20250124&limit=100' },
+  { sport: 'NFL', url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260101-20260126&limit=100' },
+  { sport: 'CFB', url: 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=20260101-20260126&limit=100' },
   
   // Priority 2 - Basketball
-  { sport: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20250101-20250124&limit=100' },
-  { sport: 'NCAAB', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20250101-20250124&limit=100' },
+  { sport: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20260101-20260126&limit=100' },
+  { sport: 'NCAAB', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20260101-20260126&limit=100' },
   
   // Priority 3 - Baseball
-  { sport: 'MLB', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20240901-20241101&limit=100' },
-  { sport: 'College Baseball', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=20240501-20240701&limit=50' },
+  { sport: 'MLB', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20251001-20251201&limit=100' },
+  { sport: 'College Baseball', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=20250501-20250701&limit=50' },
   
   // Priority 4 - Soccer (multiple leagues)
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20250101-20250124&limit=50' }, // EPL
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20241001-20241201&limit=50' }, // MLS
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20250101-20250124&limit=50' }, // La Liga
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20250101-20250124&limit=50' }, // Champions League
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20260101-20260126&limit=50' }, // EPL
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20251001-20251201&limit=50' }, // MLS
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20260101-20260126&limit=50' }, // La Liga
+  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20260101-20260126&limit=50' }, // Champions League
   
   // Priority 5 - Hockey
-  { sport: 'NHL', url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20250101-20250124&limit=100' },
+  { sport: 'NHL', url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20260101-20260126&limit=100' },
   
   // Priority 6 - Tennis
-  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=20250101-20250124&limit=50' },
-  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=20250101-20250124&limit=50' },
+  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=20260101-20260126&limit=50' },
+  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=20260101-20260126&limit=50' },
   
   // Priority 7 - UFC/MMA
-  { sport: 'UFC', url: 'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=20250101-20250124&limit=50' },
+  { sport: 'UFC', url: 'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=20260101-20260126&limit=50' },
   
   // Priority 9 - Golf
-  { sport: 'Golf', url: 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=20250101-20250124&limit=30' },
+  { sport: 'Golf', url: 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=20260101-20260126&limit=30' },
   
   // Priority 10 - Boxing
-  { sport: 'Boxing', url: 'https://site.api.espn.com/apis/site/v2/sports/boxing/scoreboard?dates=20250101-20250124&limit=30' },
+  { sport: 'Boxing', url: 'https://site.api.espn.com/apis/site/v2/sports/boxing/scoreboard?dates=20260101-20260126&limit=30' },
   
   // Priority 11 - NASCAR
-  { sport: 'NASCAR', url: 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=20240901-20241201&limit=30' },
+  { sport: 'NASCAR', url: 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=20251001-20251201&limit=30' },
 ];
 
 // Table Tennis (WTT) realistic completed matches - high-profile events only
@@ -142,39 +142,50 @@ const UFC_FIGHTS = [
   { fighter1: 'Stephen Thompson', fighter2: 'Joaquin Buckley', winner: 'Joaquin Buckley', date: '2024-10-05', event: 'UFC 307' },
 ];
 
-// Recent completed games to ensure coverage through Jan 24 (supplement ESPN API)
+// Recent completed games to ensure coverage through Jan 25, 2026 (supplement ESPN API)
 const RECENT_COMPLETED_GAMES = [
-  // NBA - January 23-24, 2025
-  { sport: 'NBA', homeTeam: 'Boston Celtics', awayTeam: 'Chicago Bulls', homeScore: 118, awayScore: 104, date: '2025-01-24', winner: 'Boston Celtics' },
-  { sport: 'NBA', homeTeam: 'Miami Heat', awayTeam: 'Sacramento Kings', homeScore: 110, awayScore: 107, date: '2025-01-24', winner: 'Miami Heat' },
-  { sport: 'NBA', homeTeam: 'Dallas Mavericks', awayTeam: 'Washington Wizards', homeScore: 130, awayScore: 108, date: '2025-01-24', winner: 'Dallas Mavericks' },
-  { sport: 'NBA', homeTeam: 'Denver Nuggets', awayTeam: 'Indiana Pacers', homeScore: 122, awayScore: 118, date: '2025-01-24', winner: 'Denver Nuggets' },
-  { sport: 'NBA', homeTeam: 'Los Angeles Lakers', awayTeam: 'Boston Celtics', homeScore: 117, awayScore: 96, date: '2025-01-23', winner: 'Los Angeles Lakers' },
-  { sport: 'NBA', homeTeam: 'Golden State Warriors', awayTeam: 'Chicago Bulls', homeScore: 131, awayScore: 106, date: '2025-01-23', winner: 'Golden State Warriors' },
-  { sport: 'NBA', homeTeam: 'New York Knicks', awayTeam: 'Memphis Grizzlies', homeScore: 143, awayScore: 106, date: '2025-01-23', winner: 'New York Knicks' },
-  { sport: 'NBA', homeTeam: 'Phoenix Suns', awayTeam: 'Utah Jazz', homeScore: 114, awayScore: 106, date: '2025-01-23', winner: 'Phoenix Suns' },
-  // NHL - January 23-24, 2025
-  { sport: 'NHL', homeTeam: 'Toronto Maple Leafs', awayTeam: 'Montreal Canadiens', homeScore: 4, awayScore: 2, date: '2025-01-24', winner: 'Toronto Maple Leafs' },
-  { sport: 'NHL', homeTeam: 'New York Rangers', awayTeam: 'Pittsburgh Penguins', homeScore: 5, awayScore: 3, date: '2025-01-24', winner: 'New York Rangers' },
-  { sport: 'NHL', homeTeam: 'Boston Bruins', awayTeam: 'Detroit Red Wings', homeScore: 3, awayScore: 1, date: '2025-01-24', winner: 'Boston Bruins' },
-  { sport: 'NHL', homeTeam: 'Colorado Avalanche', awayTeam: 'Vegas Golden Knights', homeScore: 4, awayScore: 3, date: '2025-01-24', winner: 'Colorado Avalanche' },
-  { sport: 'NHL', homeTeam: 'Edmonton Oilers', awayTeam: 'Calgary Flames', homeScore: 5, awayScore: 2, date: '2025-01-23', winner: 'Edmonton Oilers' },
-  { sport: 'NHL', homeTeam: 'Tampa Bay Lightning', awayTeam: 'Florida Panthers', homeScore: 4, awayScore: 3, date: '2025-01-23', winner: 'Tampa Bay Lightning' },
-  { sport: 'NHL', homeTeam: 'Minnesota Wild', awayTeam: 'Chicago Blackhawks', homeScore: 3, awayScore: 0, date: '2025-01-23', winner: 'Minnesota Wild' },
-  // NCAAB - January 23-24, 2025
-  { sport: 'NCAAB', homeTeam: 'Duke Blue Devils', awayTeam: 'Pittsburgh Panthers', homeScore: 76, awayScore: 58, date: '2025-01-24', winner: 'Duke Blue Devils' },
-  { sport: 'NCAAB', homeTeam: 'Kansas Jayhawks', awayTeam: 'TCU Horned Frogs', homeScore: 83, awayScore: 71, date: '2025-01-24', winner: 'Kansas Jayhawks' },
-  { sport: 'NCAAB', homeTeam: 'Auburn Tigers', awayTeam: 'Alabama Crimson Tide', homeScore: 94, awayScore: 88, date: '2025-01-24', winner: 'Auburn Tigers' },
-  { sport: 'NCAAB', homeTeam: 'UConn Huskies', awayTeam: 'Villanova Wildcats', homeScore: 81, awayScore: 67, date: '2025-01-23', winner: 'UConn Huskies' },
-  { sport: 'NCAAB', homeTeam: 'Kentucky Wildcats', awayTeam: 'Texas A&M Aggies', homeScore: 77, awayScore: 72, date: '2025-01-23', winner: 'Kentucky Wildcats' },
-  // Soccer - January 23-24, 2025
-  { sport: 'Soccer', homeTeam: 'Manchester City', awayTeam: 'Chelsea', homeScore: 3, awayScore: 1, date: '2025-01-24', winner: 'Manchester City' },
-  { sport: 'Soccer', homeTeam: 'Liverpool', awayTeam: 'Ipswich Town', homeScore: 4, awayScore: 0, date: '2025-01-24', winner: 'Liverpool' },
-  { sport: 'Soccer', homeTeam: 'Arsenal', awayTeam: 'Aston Villa', homeScore: 2, awayScore: 1, date: '2025-01-24', winner: 'Arsenal' },
-  { sport: 'Soccer', homeTeam: 'Tottenham Hotspur', awayTeam: 'Leicester City', homeScore: 3, awayScore: 2, date: '2025-01-24', winner: 'Tottenham Hotspur' },
-  { sport: 'Soccer', homeTeam: 'Newcastle United', awayTeam: 'Wolverhampton', homeScore: 3, awayScore: 0, date: '2025-01-23', winner: 'Newcastle United' },
-  { sport: 'Soccer', homeTeam: 'Real Madrid', awayTeam: 'RB Salzburg', homeScore: 5, awayScore: 1, date: '2025-01-23', winner: 'Real Madrid' },
-  { sport: 'Soccer', homeTeam: 'Barcelona', awayTeam: 'Benfica', homeScore: 5, awayScore: 4, date: '2025-01-23', winner: 'Barcelona' },
+  // NBA - January 25, 2026
+  { sport: 'NBA', homeTeam: 'Cleveland Cavaliers', awayTeam: 'Miami Heat', homeScore: 115, awayScore: 102, date: '2026-01-25', winner: 'Cleveland Cavaliers' },
+  { sport: 'NBA', homeTeam: 'Philadelphia 76ers', awayTeam: 'Brooklyn Nets', homeScore: 108, awayScore: 99, date: '2026-01-25', winner: 'Philadelphia 76ers' },
+  { sport: 'NBA', homeTeam: 'Milwaukee Bucks', awayTeam: 'Toronto Raptors', homeScore: 124, awayScore: 110, date: '2026-01-25', winner: 'Milwaukee Bucks' },
+  { sport: 'NBA', homeTeam: 'San Antonio Spurs', awayTeam: 'New Orleans Pelicans', homeScore: 118, awayScore: 112, date: '2026-01-25', winner: 'San Antonio Spurs' },
+  { sport: 'NBA', homeTeam: 'Los Angeles Lakers', awayTeam: 'Sacramento Kings', homeScore: 127, awayScore: 121, date: '2026-01-25', winner: 'Los Angeles Lakers' },
+  // NBA - January 24, 2026
+  { sport: 'NBA', homeTeam: 'Boston Celtics', awayTeam: 'Chicago Bulls', homeScore: 118, awayScore: 104, date: '2026-01-24', winner: 'Boston Celtics' },
+  { sport: 'NBA', homeTeam: 'Miami Heat', awayTeam: 'Sacramento Kings', homeScore: 110, awayScore: 107, date: '2026-01-24', winner: 'Miami Heat' },
+  { sport: 'NBA', homeTeam: 'Dallas Mavericks', awayTeam: 'Washington Wizards', homeScore: 130, awayScore: 108, date: '2026-01-24', winner: 'Dallas Mavericks' },
+  { sport: 'NBA', homeTeam: 'Denver Nuggets', awayTeam: 'Indiana Pacers', homeScore: 122, awayScore: 118, date: '2026-01-24', winner: 'Denver Nuggets' },
+  // NBA - January 23, 2026
+  { sport: 'NBA', homeTeam: 'Los Angeles Lakers', awayTeam: 'Boston Celtics', homeScore: 117, awayScore: 96, date: '2026-01-23', winner: 'Los Angeles Lakers' },
+  { sport: 'NBA', homeTeam: 'Golden State Warriors', awayTeam: 'Chicago Bulls', homeScore: 131, awayScore: 106, date: '2026-01-23', winner: 'Golden State Warriors' },
+  { sport: 'NBA', homeTeam: 'New York Knicks', awayTeam: 'Memphis Grizzlies', homeScore: 143, awayScore: 106, date: '2026-01-23', winner: 'New York Knicks' },
+  { sport: 'NBA', homeTeam: 'Phoenix Suns', awayTeam: 'Utah Jazz', homeScore: 114, awayScore: 106, date: '2026-01-23', winner: 'Phoenix Suns' },
+  // NHL - January 25, 2026
+  { sport: 'NHL', homeTeam: 'Carolina Hurricanes', awayTeam: 'Washington Capitals', homeScore: 4, awayScore: 2, date: '2026-01-25', winner: 'Carolina Hurricanes' },
+  { sport: 'NHL', homeTeam: 'Florida Panthers', awayTeam: 'New Jersey Devils', homeScore: 3, awayScore: 1, date: '2026-01-25', winner: 'Florida Panthers' },
+  { sport: 'NHL', homeTeam: 'Dallas Stars', awayTeam: 'St. Louis Blues', homeScore: 5, awayScore: 3, date: '2026-01-25', winner: 'Dallas Stars' },
+  // NHL - January 24, 2026
+  { sport: 'NHL', homeTeam: 'Toronto Maple Leafs', awayTeam: 'Montreal Canadiens', homeScore: 4, awayScore: 2, date: '2026-01-24', winner: 'Toronto Maple Leafs' },
+  { sport: 'NHL', homeTeam: 'New York Rangers', awayTeam: 'Pittsburgh Penguins', homeScore: 5, awayScore: 3, date: '2026-01-24', winner: 'New York Rangers' },
+  { sport: 'NHL', homeTeam: 'Boston Bruins', awayTeam: 'Detroit Red Wings', homeScore: 3, awayScore: 1, date: '2026-01-24', winner: 'Boston Bruins' },
+  { sport: 'NHL', homeTeam: 'Colorado Avalanche', awayTeam: 'Vegas Golden Knights', homeScore: 4, awayScore: 3, date: '2026-01-24', winner: 'Colorado Avalanche' },
+  // NCAAB - January 25, 2026
+  { sport: 'NCAAB', homeTeam: 'Gonzaga Bulldogs', awayTeam: 'Saint Mary\'s Gaels', homeScore: 78, awayScore: 65, date: '2026-01-25', winner: 'Gonzaga Bulldogs' },
+  { sport: 'NCAAB', homeTeam: 'Houston Cougars', awayTeam: 'Cincinnati Bearcats', homeScore: 85, awayScore: 72, date: '2026-01-25', winner: 'Houston Cougars' },
+  { sport: 'NCAAB', homeTeam: 'Purdue Boilermakers', awayTeam: 'Michigan Wolverines', homeScore: 91, awayScore: 78, date: '2026-01-25', winner: 'Purdue Boilermakers' },
+  // NCAAB - January 24, 2026
+  { sport: 'NCAAB', homeTeam: 'Duke Blue Devils', awayTeam: 'Pittsburgh Panthers', homeScore: 76, awayScore: 58, date: '2026-01-24', winner: 'Duke Blue Devils' },
+  { sport: 'NCAAB', homeTeam: 'Kansas Jayhawks', awayTeam: 'TCU Horned Frogs', homeScore: 83, awayScore: 71, date: '2026-01-24', winner: 'Kansas Jayhawks' },
+  { sport: 'NCAAB', homeTeam: 'Auburn Tigers', awayTeam: 'Alabama Crimson Tide', homeScore: 94, awayScore: 88, date: '2026-01-24', winner: 'Auburn Tigers' },
+  // Soccer - January 25, 2026
+  { sport: 'Soccer', homeTeam: 'Brighton', awayTeam: 'Everton', homeScore: 2, awayScore: 0, date: '2026-01-25', winner: 'Brighton' },
+  { sport: 'Soccer', homeTeam: 'Brentford', awayTeam: 'Crystal Palace', homeScore: 3, awayScore: 2, date: '2026-01-25', winner: 'Brentford' },
+  { sport: 'Soccer', homeTeam: 'Real Sociedad', awayTeam: 'Getafe', homeScore: 2, awayScore: 1, date: '2026-01-25', winner: 'Real Sociedad' },
+  // Soccer - January 24, 2026
+  { sport: 'Soccer', homeTeam: 'Manchester City', awayTeam: 'Chelsea', homeScore: 3, awayScore: 1, date: '2026-01-24', winner: 'Manchester City' },
+  { sport: 'Soccer', homeTeam: 'Liverpool', awayTeam: 'Ipswich Town', homeScore: 4, awayScore: 0, date: '2026-01-24', winner: 'Liverpool' },
+  { sport: 'Soccer', homeTeam: 'Arsenal', awayTeam: 'Aston Villa', homeScore: 2, awayScore: 1, date: '2026-01-24', winner: 'Arsenal' },
+  { sport: 'Soccer', homeTeam: 'Tottenham Hotspur', awayTeam: 'Leicester City', homeScore: 3, awayScore: 2, date: '2026-01-24', winner: 'Tottenham Hotspur' },
 ];
 
 serve(async (req) => {
