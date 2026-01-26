@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PickCard } from '@/components/PickCard';
@@ -9,10 +10,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Search, Filter, X, TrendingUp, TrendingDown, RefreshCw, 
-  Loader2, Clock, Target, ChevronDown, Calendar, Flame
+  Loader2, Clock, Target, ChevronDown, Calendar, Flame, Lock
 } from 'lucide-react';
 import { usePicks } from '@/hooks/usePicks';
 import { useUserParlays } from '@/hooks/useUserParlays';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +24,11 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
+const SAMPLE_PICKS_COUNT = 2;
+
 const Picks = () => {
+  const navigate = useNavigate();
+  const { isSubscribed, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
@@ -565,17 +571,52 @@ const Picks = () => {
 
           {/* Picks Grid */}
           {filteredPicks.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredPicks.map((pick, index) => (
-                <div key={pick.id} className="animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
-                  <PickCard 
-                    pick={pick} 
-                    isSelected={selectedPickIds.has(pick.id)}
-                    onSelect={handleSelectPick}
-                  />
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(isSubscribed ? filteredPicks : filteredPicks.slice(0, SAMPLE_PICKS_COUNT)).map((pick, index) => (
+                  <div key={pick.id} className="animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
+                    <PickCard 
+                      pick={pick} 
+                      isSelected={selectedPickIds.has(pick.id)}
+                      onSelect={isSubscribed ? handleSelectPick : undefined}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Paywall CTA for non-subscribers */}
+              {!isSubscribed && filteredPicks.length > SAMPLE_PICKS_COUNT && (
+                <Card className="mt-8 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
+                  <CardContent className="py-10 text-center">
+                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 mb-4">
+                      <Lock className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">
+                      Unlock {filteredPicks.length - SAMPLE_PICKS_COUNT}+ More Picks
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Get full access to all AI-powered picks, parlays, and real-time analysis with a subscription.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button 
+                        variant="hero" 
+                        size="lg"
+                        onClick={() => navigate(user ? '/paywall' : '/login', { state: { from: { pathname: '/picks' } } })}
+                      >
+                        {user ? 'Unlock Full Access' : 'Sign Up to Unlock'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="lg"
+                        onClick={() => navigate('/pricing')}
+                      >
+                        View Pricing
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
 
           {/* Results Count */}

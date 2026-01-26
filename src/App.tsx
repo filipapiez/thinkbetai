@@ -73,11 +73,7 @@ const App = () => (
                   <GameDetail />
                 </ProtectedRoute>
               } />
-              <Route path="/picks" element={
-                <ProtectedRoute requireSubscription>
-                  <Picks />
-                </ProtectedRoute>
-              } />
+              <Route path="/picks" element={<Picks />} />
               <Route path="/parlays" element={
                 <ProtectedRoute requireSubscription>
                   <Parlays />
