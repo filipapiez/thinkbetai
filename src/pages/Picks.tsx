@@ -573,15 +573,38 @@ const Picks = () => {
           {filteredPicks.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {(isSubscribed ? filteredPicks : filteredPicks.slice(0, SAMPLE_PICKS_COUNT)).map((pick, index) => (
-                  <div key={pick.id} className="animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
-                    <PickCard 
-                      pick={pick} 
-                      isSelected={selectedPickIds.has(pick.id)}
-                      onSelect={isSubscribed ? handleSelectPick : undefined}
-                    />
-                  </div>
-                ))}
+                {filteredPicks.map((pick, index) => {
+                  const isLocked = !isSubscribed && index >= SAMPLE_PICKS_COUNT;
+                  
+                  return (
+                    <div key={pick.id} className="animate-slide-up relative" style={{ animationDelay: `${index * 30}ms` }}>
+                      {isLocked ? (
+                        <div className="relative">
+                          {/* Blurred card */}
+                          <div className="blur-[6px] pointer-events-none select-none">
+                            <PickCard pick={pick} />
+                          </div>
+                          {/* Lock overlay */}
+                          <div 
+                            className="absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-background/50"
+                            onClick={() => navigate(user ? '/paywall' : '/login', { state: { from: { pathname: '/picks' } } })}
+                          >
+                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center mb-2">
+                              <Lock className="h-5 w-5 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium text-primary">Unlock Pick</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <PickCard 
+                          pick={pick} 
+                          isSelected={selectedPickIds.has(pick.id)}
+                          onSelect={isSubscribed ? handleSelectPick : undefined}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Paywall CTA for non-subscribers */}
@@ -592,7 +615,7 @@ const Picks = () => {
                       <Lock className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-bold mb-2">
-                      Unlock {filteredPicks.length - SAMPLE_PICKS_COUNT}+ More Picks
+                      Unlock All {filteredPicks.length} Picks
                     </h3>
                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                       Get full access to all AI-powered picks, parlays, and real-time analysis with a subscription.
