@@ -536,10 +536,24 @@ async function extractHistoricalDataWithAIFromSources({
     normalizeRF(awayTeam, Array.isArray(awayRaw) ? awayRaw : []),
   ];
 
+  // Helper to check if winner name matches either team (fuzzy)
+  const matchesTeam = (winner: string, team: string): boolean => {
+    const w = winner.toLowerCase().trim();
+    const t = team.toLowerCase().trim();
+    return w === t || w.includes(t) || t.includes(w);
+  };
+
+  // Normalize winner to exact team name for consistent frontend matching
+  const normalizeWinner = (winner: string): string => {
+    if (matchesTeam(winner, homeTeam)) return homeTeam;
+    if (matchesTeam(winner, awayTeam)) return awayTeam;
+    return winner;
+  };
+
   const headToHead: ScrapedGameData['headToHead'] = clampArray(extracted.headToHead || [], 5)
     .map((h: any) => ({
       date: typeof h?.date === 'string' ? h.date : '',
-      winner: typeof h?.winner === 'string' ? h.winner : '',
+      winner: typeof h?.winner === 'string' ? normalizeWinner(h.winner) : '',
       score: typeof h?.score === 'string' ? h.score : '',
       sport: sportKey,
       competitionLevel: sportValidation.competitionLevel,

@@ -13,8 +13,15 @@ interface ScrapedFormCardProps {
 }
 
 export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTeam, awayTeam }: ScrapedFormCardProps) => {
-  const homeForm = recentForm.find(f => f.team === homeTeam);
-  const awayForm = recentForm.find(f => f.team === awayTeam);
+  // Fuzzy match helper for team names
+  const matchesTeam = (name: string, team: string): boolean => {
+    const n = name.toLowerCase().trim();
+    const t = team.toLowerCase().trim();
+    return n === t || n.includes(t) || t.includes(n);
+  };
+
+  const homeForm = recentForm.find(f => matchesTeam(f.team, homeTeam));
+  const awayForm = recentForm.find(f => matchesTeam(f.team, awayTeam));
 
   const getRecord = (games: { result: 'W' | 'L' }[] | undefined) => {
     if (!games) return { wins: 0, losses: 0 };
@@ -25,8 +32,8 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
   const homeRecord = getRecord(homeForm?.last5);
   const awayRecord = getRecord(awayForm?.last5);
 
-  const h2hHomeWins = headToHead.filter(h => h.winner === homeTeam).length;
-  const h2hAwayWins = headToHead.filter(h => h.winner === awayTeam).length;
+  const h2hHomeWins = headToHead.filter(h => matchesTeam(h.winner, homeTeam)).length;
+  const h2hAwayWins = headToHead.filter(h => matchesTeam(h.winner, awayTeam)).length;
 
   const FormDisplay = ({ form, teamName }: { form: ScrapedRecentForm | undefined; teamName: string }) => {
     const record = getRecord(form?.last5);
@@ -200,7 +207,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
                 <div key={idx} className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">{match.date}</span>
                   <span className={cn(
-                    match.winner === homeTeam ? "text-emerald-400" : "text-rose-400"
+                    matchesTeam(match.winner, homeTeam) ? "text-emerald-400" : "text-rose-400"
                   )}>
                     {match.winner} ({match.score})
                   </span>
