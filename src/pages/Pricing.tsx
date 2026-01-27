@@ -6,10 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { Check, Zap, Crown, Trophy, Loader2, Star, TrendingUp, Shield } from 'lucide-react';
+import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
 
 // Stripe price IDs for each plan
 const pricingPlans = [
@@ -81,34 +80,19 @@ const pricingPlans = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, isSubscribed } = useAuth();
-  const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
 
-  const handleSelectPlan = async (plan: typeof pricingPlans[0]) => {
+  const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
     if (!user) {
       navigate('/login', { state: { from: { pathname: '/pricing' } } });
       return;
     }
 
-    setLoadingPlanId(plan.id);
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: plan.priceId },
-      });
+    setSelectedPlan(plan);
+  };
 
-      if (error) throw error;
-      
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error('No checkout URL returned');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to start checkout. Please try again.');
-    } finally {
-      setLoadingPlanId(null);
-    }
+  const handleCheckoutClose = () => {
+    setSelectedPlan(null);
   };
 
   return (
@@ -235,11 +219,9 @@ const Pricing = () => {
                       variant={isPopular ? 'hero' : 'outline'}
                       size="lg"
                       className={`w-full ${isPopular ? 'shadow-lg shadow-primary/30' : ''}`}
-                      disabled={isSubscribed || loadingPlanId !== null}
+                      disabled={isSubscribed}
                     >
-                      {loadingPlanId === plan.id ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-                      ) : isSubscribed ? 'Already Subscribed' : plan.cta}
+                      {isSubscribed ? 'Already Subscribed' : plan.cta}
                     </Button>
                     
                     {/* Trust text */}
@@ -331,6 +313,16 @@ const Pricing = () => {
       </main>
 
       <Footer />
+
+      {/* Embedded Checkout Dialog */}
+      {selectedPlan && (
+        <EmbeddedCheckoutDialog
+          isOpen={!!selectedPlan}
+          onClose={handleCheckoutClose}
+          priceId={selectedPlan.priceId}
+          planName={selectedPlan.name}
+        />
+      )}
     </div>
   );
 };
