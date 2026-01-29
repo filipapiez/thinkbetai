@@ -17,6 +17,7 @@ const pricingPlans = [
     priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne',
     name: 'Basic',
     price: 4.99,
+    originalPrice: 16.99,
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -37,6 +38,7 @@ const pricingPlans = [
     priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY',
     name: 'Pro',
     price: 14.99,
+    originalPrice: 49.99,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -59,6 +61,7 @@ const pricingPlans = [
     priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     name: 'Insider',
     price: 49,
+    originalPrice: 163,
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -186,10 +189,16 @@ const Pricing = () => {
                   <CardContent className="flex-1 flex flex-col">
                     {/* Price */}
                     <div className="text-center mb-6 py-4 rounded-xl bg-muted/50">
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-lg text-muted-foreground">$</span>
-                        <span className="text-5xl font-bold">{plan.price}</span>
-                        <span className="text-muted-foreground">/mo</span>
+                      <Badge variant="destructive" className="mb-2 text-xs font-bold">
+                        70% OFF
+                      </Badge>
+                      <div className="flex items-baseline justify-center gap-2">
+                        <span className="text-lg text-muted-foreground line-through">${plan.originalPrice}</span>
+                        <div className="flex items-baseline">
+                          <span className="text-lg text-muted-foreground">$</span>
+                          <span className="text-5xl font-bold text-success">{plan.price}</span>
+                          <span className="text-muted-foreground">/mo</span>
+                        </div>
                       </div>
                       {plan.id === 'insider' && (
                         <p className="text-xs text-success mt-1">Best value for serious analysts</p>
