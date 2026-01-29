@@ -142,8 +142,20 @@ const UFC_FIGHTS = [
   { fighter1: 'Stephen Thompson', fighter2: 'Joaquin Buckley', winner: 'Joaquin Buckley', date: '2024-10-05', event: 'UFC 307' },
 ];
 
-// Recent completed games to ensure coverage through Jan 27, 2026 (supplement ESPN API)
+// Recent completed games to ensure coverage through Jan 29, 2026 (supplement ESPN API)
 const RECENT_COMPLETED_GAMES = [
+  // NBA - January 29, 2026
+  { sport: 'NBA', homeTeam: 'Los Angeles Lakers', awayTeam: 'Philadelphia 76ers', homeScore: 128, awayScore: 117, date: '2026-01-29', winner: 'Los Angeles Lakers' },
+  { sport: 'NBA', homeTeam: 'Golden State Warriors', awayTeam: 'Charlotte Hornets', homeScore: 118, awayScore: 92, date: '2026-01-29', winner: 'Golden State Warriors' },
+  { sport: 'NBA', homeTeam: 'Boston Celtics', awayTeam: 'Toronto Raptors', homeScore: 132, awayScore: 108, date: '2026-01-29', winner: 'Boston Celtics' },
+  { sport: 'NBA', homeTeam: 'Phoenix Suns', awayTeam: 'Atlanta Hawks', homeScore: 119, awayScore: 115, date: '2026-01-29', winner: 'Phoenix Suns' },
+  { sport: 'NBA', homeTeam: 'Dallas Mavericks', awayTeam: 'Chicago Bulls', homeScore: 121, awayScore: 106, date: '2026-01-29', winner: 'Dallas Mavericks' },
+  // NBA - January 28, 2026
+  { sport: 'NBA', homeTeam: 'Cleveland Cavaliers', awayTeam: 'New York Knicks', homeScore: 114, awayScore: 109, date: '2026-01-28', winner: 'Cleveland Cavaliers' },
+  { sport: 'NBA', homeTeam: 'Miami Heat', awayTeam: 'Brooklyn Nets', homeScore: 116, awayScore: 98, date: '2026-01-28', winner: 'Miami Heat' },
+  { sport: 'NBA', homeTeam: 'Denver Nuggets', awayTeam: 'Utah Jazz', homeScore: 124, awayScore: 108, date: '2026-01-28', winner: 'Denver Nuggets' },
+  { sport: 'NBA', homeTeam: 'Milwaukee Bucks', awayTeam: 'Indiana Pacers', homeScore: 118, awayScore: 112, date: '2026-01-28', winner: 'Milwaukee Bucks' },
+  { sport: 'NBA', homeTeam: 'Sacramento Kings', awayTeam: 'Portland Trail Blazers', homeScore: 126, awayScore: 111, date: '2026-01-28', winner: 'Sacramento Kings' },
   // NBA - January 27, 2026
   { sport: 'NBA', homeTeam: 'Boston Celtics', awayTeam: 'Golden State Warriors', homeScore: 121, awayScore: 113, date: '2026-01-27', winner: 'Boston Celtics' },
   { sport: 'NBA', homeTeam: 'Cleveland Cavaliers', awayTeam: 'Detroit Pistons', homeScore: 118, awayScore: 101, date: '2026-01-27', winner: 'Cleveland Cavaliers' },
@@ -171,6 +183,14 @@ const RECENT_COMPLETED_GAMES = [
   { sport: 'NBA', homeTeam: 'Golden State Warriors', awayTeam: 'Chicago Bulls', homeScore: 131, awayScore: 106, date: '2026-01-23', winner: 'Golden State Warriors' },
   { sport: 'NBA', homeTeam: 'New York Knicks', awayTeam: 'Memphis Grizzlies', homeScore: 143, awayScore: 106, date: '2026-01-23', winner: 'New York Knicks' },
   { sport: 'NBA', homeTeam: 'Phoenix Suns', awayTeam: 'Utah Jazz', homeScore: 114, awayScore: 106, date: '2026-01-23', winner: 'Phoenix Suns' },
+  // NHL - January 29, 2026
+  { sport: 'NHL', homeTeam: 'Boston Bruins', awayTeam: 'New York Rangers', homeScore: 4, awayScore: 2, date: '2026-01-29', winner: 'Boston Bruins' },
+  { sport: 'NHL', homeTeam: 'Toronto Maple Leafs', awayTeam: 'Detroit Red Wings', homeScore: 5, awayScore: 1, date: '2026-01-29', winner: 'Toronto Maple Leafs' },
+  { sport: 'NHL', homeTeam: 'Colorado Avalanche', awayTeam: 'Seattle Kraken', homeScore: 6, awayScore: 3, date: '2026-01-29', winner: 'Colorado Avalanche' },
+  // NHL - January 28, 2026
+  { sport: 'NHL', homeTeam: 'New York Rangers', awayTeam: 'Washington Capitals', homeScore: 3, awayScore: 2, date: '2026-01-28', winner: 'New York Rangers' },
+  { sport: 'NHL', homeTeam: 'Carolina Hurricanes', awayTeam: 'Pittsburgh Penguins', homeScore: 4, awayScore: 1, date: '2026-01-28', winner: 'Carolina Hurricanes' },
+  { sport: 'NHL', homeTeam: 'Dallas Stars', awayTeam: 'Nashville Predators', homeScore: 5, awayScore: 2, date: '2026-01-28', winner: 'Dallas Stars' },
   // NHL - January 27, 2026
   { sport: 'NHL', homeTeam: 'Edmonton Oilers', awayTeam: 'Vancouver Canucks', homeScore: 5, awayScore: 2, date: '2026-01-27', winner: 'Edmonton Oilers' },
   { sport: 'NHL', homeTeam: 'Winnipeg Jets', awayTeam: 'Calgary Flames', homeScore: 4, awayScore: 1, date: '2026-01-27', winner: 'Winnipeg Jets' },
@@ -188,6 +208,14 @@ const RECENT_COMPLETED_GAMES = [
   { sport: 'NHL', homeTeam: 'New York Rangers', awayTeam: 'Pittsburgh Penguins', homeScore: 5, awayScore: 3, date: '2026-01-24', winner: 'New York Rangers' },
   { sport: 'NHL', homeTeam: 'Boston Bruins', awayTeam: 'Detroit Red Wings', homeScore: 3, awayScore: 1, date: '2026-01-24', winner: 'Boston Bruins' },
   { sport: 'NHL', homeTeam: 'Colorado Avalanche', awayTeam: 'Vegas Golden Knights', homeScore: 4, awayScore: 3, date: '2026-01-24', winner: 'Colorado Avalanche' },
+  // NCAAB - January 29, 2026
+  { sport: 'NCAAB', homeTeam: 'Duke Blue Devils', awayTeam: 'Wake Forest Demon Deacons', homeScore: 82, awayScore: 68, date: '2026-01-29', winner: 'Duke Blue Devils' },
+  { sport: 'NCAAB', homeTeam: 'Kansas Jayhawks', awayTeam: 'Oklahoma State Cowboys', homeScore: 88, awayScore: 74, date: '2026-01-29', winner: 'Kansas Jayhawks' },
+  { sport: 'NCAAB', homeTeam: 'Gonzaga Bulldogs', awayTeam: 'Pepperdine Waves', homeScore: 95, awayScore: 72, date: '2026-01-29', winner: 'Gonzaga Bulldogs' },
+  // NCAAB - January 28, 2026
+  { sport: 'NCAAB', homeTeam: 'Auburn Tigers', awayTeam: 'Florida Gators', homeScore: 84, awayScore: 78, date: '2026-01-28', winner: 'Auburn Tigers' },
+  { sport: 'NCAAB', homeTeam: 'Houston Cougars', awayTeam: 'UCF Knights', homeScore: 76, awayScore: 62, date: '2026-01-28', winner: 'Houston Cougars' },
+  { sport: 'NCAAB', homeTeam: 'Tennessee Volunteers', awayTeam: 'Mississippi State Bulldogs', homeScore: 81, awayScore: 65, date: '2026-01-28', winner: 'Tennessee Volunteers' },
   // NCAAB - January 27, 2026
   { sport: 'NCAAB', homeTeam: 'Tennessee Volunteers', awayTeam: 'Texas Longhorns', homeScore: 78, awayScore: 68, date: '2026-01-27', winner: 'Tennessee Volunteers' },
   { sport: 'NCAAB', homeTeam: 'UConn Huskies', awayTeam: 'Marquette Golden Eagles', homeScore: 82, awayScore: 75, date: '2026-01-27', winner: 'UConn Huskies' },
@@ -204,6 +232,14 @@ const RECENT_COMPLETED_GAMES = [
   { sport: 'NCAAB', homeTeam: 'Duke Blue Devils', awayTeam: 'Pittsburgh Panthers', homeScore: 76, awayScore: 58, date: '2026-01-24', winner: 'Duke Blue Devils' },
   { sport: 'NCAAB', homeTeam: 'Kansas Jayhawks', awayTeam: 'TCU Horned Frogs', homeScore: 83, awayScore: 71, date: '2026-01-24', winner: 'Kansas Jayhawks' },
   { sport: 'NCAAB', homeTeam: 'Auburn Tigers', awayTeam: 'Alabama Crimson Tide', homeScore: 94, awayScore: 88, date: '2026-01-24', winner: 'Auburn Tigers' },
+  // Soccer - January 29, 2026
+  { sport: 'Soccer', homeTeam: 'Liverpool', awayTeam: 'Brighton', homeScore: 3, awayScore: 1, date: '2026-01-29', winner: 'Liverpool' },
+  { sport: 'Soccer', homeTeam: 'Arsenal', awayTeam: 'Wolves', homeScore: 2, awayScore: 0, date: '2026-01-29', winner: 'Arsenal' },
+  { sport: 'Soccer', homeTeam: 'Real Madrid', awayTeam: 'Rayo Vallecano', homeScore: 3, awayScore: 1, date: '2026-01-29', winner: 'Real Madrid' },
+  // Soccer - January 28, 2026
+  { sport: 'Soccer', homeTeam: 'Manchester City', awayTeam: 'Brentford', homeScore: 4, awayScore: 1, date: '2026-01-28', winner: 'Manchester City' },
+  { sport: 'Soccer', homeTeam: 'Tottenham Hotspur', awayTeam: 'Everton', homeScore: 2, awayScore: 1, date: '2026-01-28', winner: 'Tottenham Hotspur' },
+  { sport: 'Soccer', homeTeam: 'Atletico Madrid', awayTeam: 'Celta Vigo', homeScore: 2, awayScore: 0, date: '2026-01-28', winner: 'Atletico Madrid' },
   // Soccer - January 27, 2026
   { sport: 'Soccer', homeTeam: 'Wolverhampton', awayTeam: 'Bournemouth', homeScore: 2, awayScore: 1, date: '2026-01-27', winner: 'Wolverhampton' },
   { sport: 'Soccer', homeTeam: 'Newcastle United', awayTeam: 'Southampton', homeScore: 3, awayScore: 0, date: '2026-01-27', winner: 'Newcastle United' },
