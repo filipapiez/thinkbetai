@@ -26,10 +26,10 @@ export const ChatWidget = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (messageToSend?: string) => {
+    const userMessage = messageToSend?.trim() || input.trim();
+    if (!userMessage || isLoading) return;
 
-    const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
@@ -57,6 +57,11 @@ export const ChatWidget = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleQuickQuestion = (question: string) => {
+    if (isLoading) return;
+    sendMessage(question);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -126,11 +131,9 @@ export const ChatWidget = () => {
                   {quickQuestions.map((q) => (
                     <button
                       key={q}
-                      onClick={() => {
-                        setInput(q);
-                        setTimeout(() => sendMessage(), 0);
-                      }}
-                      className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                      onClick={() => handleQuickQuestion(q)}
+                      disabled={isLoading}
+                      className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
                     >
                       {q}
                     </button>
@@ -182,7 +185,7 @@ export const ChatWidget = () => {
                 maxLength={500}
               />
               <Button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading}
                 size="icon"
                 className="rounded-full h-10 w-10 shrink-0"
