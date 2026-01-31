@@ -284,17 +284,49 @@ function getEventStatus(event: any): 'scheduled' | 'live' | 'completed' {
 
 function mapSport(input: string): string {
   const lower = (input || '').toLowerCase();
+  
+  // Check soccer FIRST - catches all European "football" leagues before American football
+  // Soccer keywords: premier, liga, bundesliga, serie, ligue, mls, champions, fa cup, europa, eredivisie, efl, championship
+  if (lower.includes('soccer') || 
+      lower.includes('premier') || 
+      lower.includes('la liga') || 
+      lower.includes('bundesliga') || 
+      lower.includes('serie a') || 
+      lower.includes('ligue 1') || 
+      lower.includes('mls') || 
+      lower.includes('champions league') ||
+      lower.includes('europa') ||
+      lower.includes('fa cup') ||
+      lower.includes('efl') ||
+      lower.includes('championship') ||
+      lower.includes('eredivisie') ||
+      lower.includes('liga mx') ||
+      lower.includes('english football') ||
+      lower.includes('spanish football') ||
+      lower.includes('german football') ||
+      lower.includes('italian football') ||
+      lower.includes('french football')) {
+    return 'Soccer';
+  }
+  
+  // American Football - NFL, College Football
+  if (lower.includes('nfl') || lower.includes('ncaaf') || lower.includes('american football') || lower.includes('college football')) {
+    return 'Football';
+  }
+  
   if (lower.includes('basketball') || lower.includes('nba') || lower.includes('ncaab') || lower.includes('wnba')) return 'Basketball';
-  if (lower.includes('football') || lower.includes('nfl') || lower.includes('ncaaf')) return 'Football';
   if (lower.includes('baseball') || lower.includes('mlb')) return 'Baseball';
   if (lower.includes('hockey') || lower.includes('nhl') || lower.includes('ice')) return 'Hockey';
-  if (lower.includes('soccer') || lower.includes('premier') || lower.includes('liga') || lower.includes('bundesliga') || lower.includes('serie') || lower.includes('ligue') || lower.includes('mls') || lower.includes('champions')) return 'Soccer';
   if (lower.includes('mma') || lower.includes('ufc') || lower.includes('martial')) return 'MMA';
   if (lower.includes('boxing')) return 'Boxing';
   if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta')) return 'Tennis';
   if (lower.includes('golf') || lower.includes('pga') || lower.includes('liv')) return 'Golf';
   if (lower.includes('table tennis') || lower.includes('tabletennis') || lower.includes('ping pong') || lower.includes('ittf') || lower.includes('wtt')) return 'Table Tennis';
   if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('lol') || lower.includes('valorant') || lower.includes('esport')) return 'Esports';
+  
+  // Generic "football" without specific context - assume Soccer (international standard)
+  if (lower.includes('football')) return 'Soccer';
+  
   return 'Sports';
 }
 
