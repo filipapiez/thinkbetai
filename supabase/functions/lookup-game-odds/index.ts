@@ -50,19 +50,71 @@ function normalizeSport(value: string): string {
     .trim();
 }
 
+// Map user-facing sport names to The Odds API sport keys
 const sportKeyMap: Record<string, string> = {
+  // Basketball
   nba: "basketball_nba",
-  nfl: "americanfootball_nfl",
-  mlb: "baseball_mlb",
-  nhl: "icehockey_nhl",
+  basketball: "basketball_nba",
   ncaab: "basketball_ncaab",
-  ncaaf: "americanfootball_ncaaf",
   wnba: "basketball_wnba",
+  
+  // American Football
+  nfl: "americanfootball_nfl",
+  football: "americanfootball_nfl",
+  ncaaf: "americanfootball_ncaaf",
+  
+  // Baseball
+  mlb: "baseball_mlb",
+  baseball: "baseball_mlb",
+  
+  // Hockey
+  nhl: "icehockey_nhl",
+  hockey: "icehockey_nhl",
+  
+  // Soccer - Default to EPL, but also map specific leagues
+  soccer: "soccer_epl",
   epl: "soccer_epl",
+  premierleague: "soccer_epl",
   mls: "soccer_usa_mls",
+  laliga: "soccer_spain_la_liga",
+  bundesliga: "soccer_germany_bundesliga",
+  seriea: "soccer_italy_serie_a",
+  ligue1: "soccer_france_ligue_one",
+  championsleague: "soccer_uefa_champs_league",
   ucl: "soccer_uefa_champs_league",
+  europaleague: "soccer_uefa_europa_league",
+  eflchampionship: "soccer_efl_champ",
+  facup: "soccer_fa_cup",
+  
+  // MMA / UFC
   ufc: "mma_mixed_martial_arts",
   mma: "mma_mixed_martial_arts",
+  
+  // Boxing
+  boxing: "boxing_boxing",
+  
+  // Tennis
+  tennis: "tennis_atp_aus_open",
+  atp: "tennis_atp_aus_open",
+  wta: "tennis_wta_aus_open",
+  
+  // Golf
+  golf: "golf_pga_championship_winner",
+  pga: "golf_pga_championship_winner",
+  
+  // Rugby
+  rugby: "rugbyleague_nrl",
+  nrl: "rugbyleague_nrl",
+  
+  // AFL
+  afl: "aussierules_afl",
+  
+  // Cricket
+  cricket: "cricket_ipl",
+  ipl: "cricket_ipl",
+  
+  // Table Tennis
+  tabletennis: "tabletennis_wtt",
 };
 
 type TheOddsApiGame = {
@@ -225,22 +277,57 @@ serve(async (req) => {
       });
     }
 
-    const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(
-      sportKey,
-    )}/odds/?apiKey=${encodeURIComponent(API_KEY)}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
+    // For soccer, try multiple leagues as fallback since the exact league may not be known
+    const soccerFallbacks = [
+      "soccer_efl_champ", // EFL Championship (Southampton, Stoke, etc.)
+      "soccer_epl",
+      "soccer_spain_la_liga",
+      "soccer_germany_bundesliga",
+      "soccer_italy_serie_a",
+      "soccer_france_ligue_one",
+      "soccer_usa_mls",
+      "soccer_uefa_champs_league",
+      "soccer_uefa_europa_league",
+      "soccer_fa_cup",
+    ];
+    
+    const isSoccer = normalizedSport === "soccer" || sportKey.startsWith("soccer_");
+    const keysToTry = isSoccer ? [sportKey, ...soccerFallbacks.filter(k => k !== sportKey)] : [sportKey];
+    
+    let games: TheOddsApiGame[] = [];
+    let lastError = "";
+    
+    for (const key of keysToTry) {
+      const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(
+        key,
+      )}/odds/?apiKey=${encodeURIComponent(API_KEY)}&regions=us,uk&markets=h2h,spreads,totals&oddsFormat=american`;
 
-    const resp = await fetch(oddsUrl);
-    if (!resp.ok) {
-      console.error(`[Internal] The Odds API error: ${resp.status}`);
-      return new Response(JSON.stringify({ error: "Service temporarily unavailable" }), {
-        status: resp.status === 429 ? 429 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      try {
+        const resp = await fetch(oddsUrl);
+        if (resp.ok) {
+          const data = (await resp.json()) as TheOddsApiGame[];
+          if (Array.isArray(data) && data.length > 0) {
+            games.push(...data);
+          }
+        } else if (resp.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } else {
+          lastError = `API error: ${resp.status}`;
+        }
+      } catch (e) {
+        lastError = e instanceof Error ? e.message : "Unknown error";
+      }
+      
+      // If we found games with the primary key, no need to try fallbacks
+      if (games.length > 0 && key === sportKey) break;
     }
-
-    const games = (await resp.json()) as TheOddsApiGame[];
-    if (!Array.isArray(games) || games.length === 0) {
-      return new Response(JSON.stringify({ error: "No odds available" }), {
+    
+    if (games.length === 0) {
+      console.log(`[lookup-game-odds] No games found for ${sportKey}. Last error: ${lastError}`);
+      return new Response(JSON.stringify({ error: "No odds available", details: lastError }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
