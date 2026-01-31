@@ -1,244 +1,23 @@
 import { useState } from 'react';
-import { Send, Sparkles, Loader2, Info, AlertTriangle, TrendingUp, Target, Percent, Shield, Database } from 'lucide-react';
+import { Send, Sparkles, Loader2, Info, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { GameFacts, platformStats } from '@/lib/mockData';
-
-// Prop parsing result interface
-interface PropParsing {
-  sport: string;
-  homeTeam: string;
-  awayTeam: string;
-  player?: string;
-  marketType: 'moneyline' | 'spread' | 'total' | 'prop' | 'general';
-  stat?: string;
-  line?: number;
-  direction?: 'over' | 'under';
-}
-
-// AI Response with structured output
-interface AIResponse {
-  verdict: 'Over' | 'Under' | 'Home' | 'Away' | 'Pass' | 'Lean';
-  probability: string;
-  fairOdds?: string;
-  reasoning: string[];
-  risks: string[];
-  dataUsed: string;
-  accuracy: {
-    text: string;
-    wins: number;
-    total: number;
-    percentage: number;
-  };
-}
+import { GameFacts } from '@/lib/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
 
 interface AIQueryBarProps {
   facts: GameFacts;
 }
 
-// Parse user query to extract prop information
-const parseQuery = (query: string, facts: GameFacts): PropParsing => {
-  const lowerQuery = query.toLowerCase();
-  const { game } = facts;
-  
-  const parsing: PropParsing = {
-    sport: game.sport,
-    homeTeam: game.homeTeam.name,
-    awayTeam: game.awayTeam.name,
-    marketType: 'general',
-  };
-  
-  // Detect market type
-  if (lowerQuery.includes('over') || lowerQuery.includes('under') || lowerQuery.includes('total')) {
-    parsing.marketType = 'total';
-    parsing.direction = lowerQuery.includes('over') ? 'over' : 'under';
-  } else if (lowerQuery.includes('spread') || lowerQuery.includes('cover')) {
-    parsing.marketType = 'spread';
-  } else if (lowerQuery.includes('win') || lowerQuery.includes('moneyline') || lowerQuery.includes('ml')) {
-    parsing.marketType = 'moneyline';
-  } else if (lowerQuery.includes('points') || lowerQuery.includes('assists') || lowerQuery.includes('saves') || 
-             lowerQuery.includes('kills') || lowerQuery.includes('aces') || lowerQuery.includes('goals')) {
-    parsing.marketType = 'prop';
-  }
-  
-  // Extract line numbers
-  const lineMatch = query.match(/(\d+\.?\d*)/);
-  if (lineMatch) {
-    parsing.line = parseFloat(lineMatch[1]);
-  }
-  
-  return parsing;
-};
-
-// Get sport-specific QUALIFIED accuracy stats (GOOD bets only)
-const getQualifiedAccuracy = (sport: string): { wins: number; total: number; winRate: number } => {
-  const sportData = platformStats.sportBreakdown.find(s => s.sport === sport);
-  if (sportData) {
-    return { wins: sportData.wins, total: sportData.qualified, winRate: sportData.winRate };
-  }
-  return { wins: platformStats.correctQualified, total: platformStats.totalQualified, winRate: platformStats.qualifiedWinRate };
-};
-
-// Generate AI response based on actual game facts following system rules
-const generateAIResponse = (query: string, facts: GameFacts): AIResponse => {
-  const parsing = parseQuery(query, facts);
-  const { game, odds, injuries, recentForm, context, risk } = facts;
-  const sport = game.sport;
-  const homeTeam = game.homeTeam.name;
-  const awayTeam = game.awayTeam.name;
-  
-  // Get injuries for each team
-  const homeInjuries = injuries.filter(i => i.team === homeTeam);
-  const awayInjuries = injuries.filter(i => i.team === awayTeam);
-  const homeOut = homeInjuries.filter(i => i.status === 'Out');
-  const awayOut = awayInjuries.filter(i => i.status === 'Out');
-  const homeQuestionable = homeInjuries.filter(i => i.status === 'Questionable');
-  const awayQuestionable = awayInjuries.filter(i => i.status === 'Questionable');
-  
-  // Calculate recent form
-  const homeWins = recentForm.homeLast5.filter(g => g.result === 'W').length;
-  const awayWins = recentForm.awayLast5.filter(g => g.result === 'W').length;
-  
-  // Determine favorite and confidence
-  const homeFavorite = odds.impliedProb.homePct > odds.impliedProb.awayPct;
-  const favorite = homeFavorite ? homeTeam : awayTeam;
-  const underdog = homeFavorite ? awayTeam : homeTeam;
-  const favProb = homeFavorite ? odds.impliedProb.homePct : odds.impliedProb.awayPct;
-  
-  // Calculate line movement magnitude
-  const lineMovement = odds.lineMovement ? 
-    Math.abs(odds.lineMovement.current.home - odds.lineMovement.opening.home) : 0;
-  const significantLineMove = lineMovement >= 10;
-  
-  // Get sport-specific qualified accuracy
-  const accuracy = getQualifiedAccuracy(sport);
-  
-  // Build reasoning based on query type
-  const reasoning: string[] = [];
-  const risks: string[] = [];
-  let verdict: AIResponse['verdict'] = 'Pass';
-  let probability = '';
-  let fairOdds = '';
-  
-  // Market odds determine favorites, resolve contradictions
-  if (game.homeTeam.stats?.ranking && game.awayTeam.stats?.ranking) {
-    const homeRanked = game.homeTeam.stats.ranking;
-    const awayRanked = game.awayTeam.stats.ranking;
-    const oddsFavorite = homeFavorite ? 'home' : 'away';
-    const rankFavorite = homeRanked < awayRanked ? 'home' : 'away';
-    
-    if (oddsFavorite !== rankFavorite) {
-      reasoning.push(`⚠️ Odds contradict rankings: ${favorite} favored despite lower ranking. Possible reasons: ${context.homeIsHomeStrong ? 'home court advantage' : ''} ${significantLineMove ? '| sharp money movement' : ''} ${homeQuestionable.length + awayQuestionable.length > 0 ? '| injury uncertainty' : ''}`);
-    }
-  }
-  
-  // Moneyline/Winner questions
-  if (parsing.marketType === 'moneyline' || query.toLowerCase().includes('win')) {
-    const homeEdge = homeWins > awayWins;
-    const restAdvantage = context.restDays.home > context.restDays.away;
-    const injuryAdvantage = homeOut.length < awayOut.length;
-    
-    const factors = [homeEdge, restAdvantage, injuryAdvantage, context.homeIsHomeStrong, homeFavorite];
-    const homeFactors = factors.filter(Boolean).length;
-    
-    if (homeFactors >= 3) {
-      verdict = 'Home';
-      probability = `${homeTeam} win: ${odds.impliedProb.homePct.toFixed(1)}%`;
-    } else if (homeFactors <= 1) {
-      verdict = 'Away';
-      probability = `${awayTeam} win: ${odds.impliedProb.awayPct.toFixed(1)}%`;
-    } else {
-      verdict = 'Pass';
-      probability = `Split factors: ${odds.impliedProb.homePct.toFixed(1)}% vs ${odds.impliedProb.awayPct.toFixed(1)}%`;
-    }
-    
-    reasoning.push(`Market implied probability: ${favorite} ${favProb.toFixed(1)}%`);
-    reasoning.push(`Recent form: ${homeTeam} (${homeWins}-${5-homeWins}) vs ${awayTeam} (${awayWins}-${5-awayWins})`);
-    if (context.homeIsHomeStrong) reasoning.push(`${homeTeam} strong at home (${game.homeTeam.stats?.homeRecord || 'N/A'})`);
-    if (context.awayIsAwayStrong) reasoning.push(`${awayTeam} performing well on the road`);
-    
-    fairOdds = `Fair odds: ${favorite} approximately ${homeFavorite ? odds.moneyline.home : odds.moneyline.away}`;
-  }
-  
-  // Spread questions
-  else if (parsing.marketType === 'spread') {
-    const spreadValue = odds.spread.home;
-    const closeGame = Math.abs(spreadValue) <= 4;
-    
-    verdict = homeFavorite && homeWins >= 3 ? 'Home' : awayWins >= 3 ? 'Away' : 'Pass';
-    probability = `Cover probability: ~${closeGame ? '48-52%' : homeFavorite ? '54-58%' : '52-56%'} (close call)`;
-    
-    reasoning.push(`Spread: ${homeTeam} ${spreadValue > 0 ? '+' : ''}${spreadValue}`);
-    reasoning.push(`${closeGame ? 'Tight spread indicates competitive matchup' : 'Spread suggests clear favorite'}`);
-    if (significantLineMove) reasoning.push(`Line movement: ${lineMovement} cents since open`);
-  }
-  
-  // Total questions
-  else if (parsing.marketType === 'total') {
-    const totalLine = odds.total.line;
-    verdict = parsing.direction === 'over' ? 'Over' : 'Under';
-    probability = `${parsing.direction === 'over' ? 'Over' : 'Under'} ${totalLine}: ~52%`;
-    
-    reasoning.push(`Total set at ${totalLine} points`);
-    reasoning.push(`Both teams' scoring trends factored`);
-    if (context.backToBack.home || context.backToBack.away) {
-      reasoning.push(`Back-to-back factor may impact pace/scoring`);
-      risks.push('B2B games often lower scoring due to fatigue');
-    }
-  }
-  
-  // General/default comprehensive analysis
-  else {
-    verdict = homeFavorite && homeWins >= 3 ? 'Lean' : 'Pass';
-    probability = `${favorite} favored at ${favProb.toFixed(1)}%`;
-    
-    reasoning.push(`Market: ${favorite} ${favProb.toFixed(1)}% implied probability`);
-    reasoning.push(`Form: ${homeTeam} ${homeWins}-${5-homeWins}, ${awayTeam} ${awayWins}-${5-awayWins} (last 5)`);
-    reasoning.push(`Rest: ${homeTeam} ${context.restDays.home}d, ${awayTeam} ${context.restDays.away}d`);
-    if (significantLineMove) reasoning.push(`⚠️ Line moved ${lineMovement} cents - monitor for news`);
-  }
-  
-  // Add risks based on data
-  if (homeQuestionable.length > 0 || awayQuestionable.length > 0) {
-    risks.push(`Injury uncertainty: ${[...homeQuestionable, ...awayQuestionable].map(i => `${i.player} (${i.status})`).join(', ')}`);
-  }
-  if (significantLineMove) {
-    risks.push('Significant line movement suggests new information');
-  }
-  if (risk.level === 'High') {
-    risks.push('High volatility game - elevated uncertainty');
-  }
-  if (homeWins <= 2 && awayWins <= 2) {
-    risks.push('Both teams inconsistent recently (low sample confidence)');
-  }
-  
-  // Always add context/safety
-  if (risks.length === 0) {
-    risks.push('Standard variance applies to all predictions');
-  }
-  
-  return {
-    verdict,
-    probability,
-    fairOdds,
-    reasoning,
-    risks,
-    dataUsed: `Last 5 games + current odds + injury reports (${sport})`,
-    accuracy: {
-      text: `${sport} accuracy: ${accuracy.wins}/${accuracy.total} (${accuracy.winRate}%) — last 30 days`,
-      wins: accuracy.wins,
-      total: accuracy.total,
-      percentage: accuracy.winRate,
-    },
-  };
-};
-
 export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState<AIResponse | null>(null);
+  const [response, setResponse] = useState<string | null>(null);
+  const { user } = useAuth();
 
   // Guard against undefined facts
   if (!facts || !facts.game) {
@@ -249,44 +28,141 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
     );
   }
 
-  const { game } = facts;
+  const { game, odds } = facts;
+
+  const streamChat = async (userMessage: string) => {
+    const messages = [{ role: 'user' as const, content: userMessage }];
+    
+    // Build game context for the AI
+    const gameContext = {
+      sport: game.sport,
+      homeTeam: game.homeTeam.name,
+      awayTeam: game.awayTeam.name,
+      venue: game.venue || '',
+      startTime: game.startTime,
+      odds: odds ? {
+        moneyline: odds.moneyline,
+        spread: odds.spread,
+        total: odds.total,
+        impliedProb: odds.impliedProb,
+      } : null,
+    };
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+
+    if (!token) {
+      throw new Error('Please log in to use AI chat');
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/betting-chat`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ messages, gameContext }),
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Please log in to use AI chat');
+      }
+      if (response.status === 429) {
+        throw new Error('Too many requests. Please wait a moment.');
+      }
+      throw new Error('Failed to get AI response');
+    }
+
+    if (!response.body) {
+      throw new Error('No response body');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let textBuffer = '';
+    let fullResponse = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+
+        if (line.endsWith('\r')) line = line.slice(0, -1);
+        if (line.startsWith(':') || line.trim() === '') continue;
+        if (!line.startsWith('data: ')) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === '[DONE]') break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+          if (content) {
+            fullResponse += content;
+            setResponse(fullResponse);
+          }
+        } catch {
+          // Incomplete JSON, put it back
+          textBuffer = line + '\n' + textBuffer;
+          break;
+        }
+      }
+    }
+
+    return fullResponse;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
 
+    if (!user) {
+      toast.error('Please log in to use AI chat');
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    const aiResponse = generateAIResponse(query, facts);
-    setResponse(aiResponse);
-    setIsLoading(false);
+    setResponse(null);
+
+    try {
+      await streamChat(query);
+    } catch (error) {
+      console.error('AI chat error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to get AI response');
+      setResponse(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleQuickQuestion = async (question: string) => {
+    if (!user) {
+      toast.error('Please log in to use AI chat');
+      return;
+    }
+
     setQuery(question);
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    const aiResponse = generateAIResponse(question, facts);
-    setResponse(aiResponse);
-    setIsLoading(false);
-  };
+    setResponse(null);
 
-  const getVerdictColor = (verdict: string) => {
-    switch (verdict) {
-      case 'Over':
-      case 'Home':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'Under':
-      case 'Away':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'Pass':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'Lean':
-        return 'bg-primary/20 text-primary border-primary/30';
-      default:
-        return 'bg-muted text-muted-foreground border-border';
+    try {
+      await streamChat(question);
+    } catch (error) {
+      console.error('AI chat error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to get AI response');
+      setResponse(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -309,7 +185,7 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Ask any prop: "Will ${game.homeTeam.abbreviation} cover?" or "${game.awayTeam.abbreviation} over 2.5 goals?"...`}
+              placeholder={`Ask anything about ${game.homeTeam.abbreviation} vs ${game.awayTeam.abbreviation}...`}
               className="pl-10 bg-card/50 border-border/50 focus:border-primary"
               disabled={isLoading}
             />
@@ -327,13 +203,13 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
       {/* Quick Questions */}
       {!response && !isLoading && (
         <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-muted-foreground">Quick props:</span>
+          <span className="text-xs text-muted-foreground">Quick questions:</span>
           {[
-            `Will ${game.homeTeam.abbreviation} win?`, 
-            `Cover the spread?`, 
-            `Over/Under total?`, 
-            `Injury impact?`,
-            `Who has the edge?`
+            `Who should I bet on?`,
+            `Is the spread a good bet?`,
+            `What's the best parlay here?`,
+            `Any injury concerns?`,
+            `Over or under?`
           ].map((q) => (
             <button
               key={q}
@@ -347,75 +223,46 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
       )}
 
       {/* Loading State */}
-      {isLoading && (
+      {isLoading && !response && (
         <div className="flex items-center justify-center py-8">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <span className="text-sm">Analyzing {game.sport} match data...</span>
+            <span className="text-sm">AI is analyzing the game...</span>
           </div>
         </div>
       )}
 
       {/* AI Response Display */}
-      {response && !isLoading && (
+      {response && (
         <div className="space-y-4">
-          {/* Verdict & Probability */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge className={cn("text-sm py-1 px-3", getVerdictColor(response.verdict))}>
-              <Target className="h-3 w-3 mr-1" />
-              Verdict: {response.verdict}
-            </Badge>
-            <div className="flex items-center gap-1 text-sm">
-              <Percent className="h-4 w-4 text-primary" />
-              <span className="text-muted-foreground">{response.probability}</span>
-            </div>
+          {/* Response Header */}
+          <div className="flex items-center gap-2 text-sm text-primary">
+            <Bot className="h-4 w-4" />
+            <span className="font-medium">ThinkBetAI</span>
           </div>
 
-          {/* Reasoning */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" /> Why
-            </h4>
-            <ul className="space-y-1.5">
-              {response.reasoning.map((reason, i) => (
-                <li key={i} className="text-sm flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                  <span className="text-muted-foreground">{reason}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Risks */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-              <Shield className="h-3 w-3" /> Risks
-            </h4>
-            <ul className="space-y-1.5">
-              {response.risks.map((risk, i) => (
-                <li key={i} className="text-sm flex items-start gap-2">
-                  <AlertTriangle className="h-3 w-3 mt-0.5 text-warning shrink-0" />
-                  <span className="text-warning/80">{risk}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Data & Accuracy */}
-          <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-border text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Database className="h-3 w-3" />
-              <span>{response.dataUsed}</span>
-            </div>
-            <div className="flex items-center gap-1 text-primary">
-              <Target className="h-3 w-3" />
-              <span>{response.accuracy.text}</span>
-            </div>
+          {/* Markdown Response */}
+          <div className="prose prose-sm prose-invert max-w-none">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="text-muted-foreground mb-3 last:mb-0">{children}</p>,
+                strong: ({ children }) => <strong className="text-foreground font-semibold">{children}</strong>,
+                ul: ({ children }) => <ul className="list-disc list-inside space-y-1 text-muted-foreground mb-3">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 text-muted-foreground mb-3">{children}</ol>,
+                li: ({ children }) => <li className="text-muted-foreground">{children}</li>,
+                h1: ({ children }) => <h1 className="text-lg font-bold text-foreground mb-2">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-base font-bold text-foreground mb-2">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-sm font-bold text-foreground mb-1">{children}</h3>,
+                code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>,
+              }}
+            >
+              {response}
+            </ReactMarkdown>
           </div>
 
           {/* Disclaimer */}
           <div className="bg-muted/30 border border-border rounded-lg p-3 text-xs text-muted-foreground">
-            Historical accuracy reflects past performance and does not guarantee future results. This is informational only, not betting advice.
+            ⚠️ This is AI-generated analysis for informational purposes only, not betting advice. Always gamble responsibly.
           </div>
           
           {/* Clear button */}
