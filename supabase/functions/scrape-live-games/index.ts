@@ -393,6 +393,14 @@ function mapSport(input: string): string {
   // Politics (for betting markets)
   if (lower.includes('politic') || lower.includes('election')) return 'Politics';
   
+  // Motorsports - F1, NASCAR, IndyCar
+  if (lower.includes('formula 1') || lower.includes('f1') || lower.includes('formula one')) return 'F1';
+  if (lower.includes('nascar') || lower.includes('cup series')) return 'NASCAR';
+  if (lower.includes('indycar')) return 'IndyCar';
+  
+  // Lacrosse
+  if (lower.includes('lacrosse') || lower.includes('pll') || lower.includes('nll')) return 'Lacrosse';
+  
   // Generic "football" without specific context - assume Soccer (international standard)
   if (lower.includes('football')) return 'Soccer';
   
@@ -1627,20 +1635,71 @@ function parseTheOddsEvent(event: any, config: { sport: string; league: string; 
 async function fetchESPNGames(): Promise<ScheduledGame[]> {
   const games: ScheduledGame[] = [];
   
+  // ESPN supports 20+ popular sports with free API
   const espnSports = [
+    // American Football
     { path: 'football/nfl', sport: 'Football', league: 'NFL', popularity: 100 },
-    { path: 'basketball/nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
-    { path: 'baseball/mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
-    { path: 'hockey/nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
     { path: 'football/college-football', sport: 'Football', league: 'NCAAF', popularity: 85 },
+    
+    // Basketball
+    { path: 'basketball/nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
     { path: 'basketball/mens-college-basketball', sport: 'Basketball', league: 'NCAAB', popularity: 80 },
     { path: 'basketball/wnba', sport: 'Basketball', league: 'WNBA', popularity: 70 },
+    { path: 'basketball/womens-college-basketball', sport: 'Basketball', league: 'WCBB', popularity: 65 },
+    
+    // Baseball
+    { path: 'baseball/mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
+    { path: 'baseball/college-baseball', sport: 'Baseball', league: 'College Baseball', popularity: 60 },
+    
+    // Hockey
+    { path: 'hockey/nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
+    
+    // Soccer - Major Leagues
     { path: 'soccer/eng.1', sport: 'Soccer', league: 'EPL', popularity: 90 },
     { path: 'soccer/esp.1', sport: 'Soccer', league: 'La Liga', popularity: 85 },
     { path: 'soccer/ger.1', sport: 'Soccer', league: 'Bundesliga', popularity: 82 },
     { path: 'soccer/ita.1', sport: 'Soccer', league: 'Serie A', popularity: 80 },
+    { path: 'soccer/fra.1', sport: 'Soccer', league: 'Ligue 1', popularity: 75 },
     { path: 'soccer/usa.1', sport: 'Soccer', league: 'MLS', popularity: 65 },
+    { path: 'soccer/uefa.champions', sport: 'Soccer', league: 'Champions League', popularity: 95 },
+    { path: 'soccer/uefa.europa', sport: 'Soccer', league: 'Europa League', popularity: 78 },
+    
+    // MMA / UFC
     { path: 'mma/ufc', sport: 'MMA', league: 'UFC', popularity: 92 },
+    { path: 'mma/pfl', sport: 'MMA', league: 'PFL', popularity: 65 },
+    { path: 'mma/bellator', sport: 'MMA', league: 'Bellator', popularity: 60 },
+    
+    // Tennis
+    { path: 'tennis/atp', sport: 'Tennis', league: 'ATP', popularity: 75 },
+    { path: 'tennis/wta', sport: 'Tennis', league: 'WTA', popularity: 70 },
+    
+    // Golf
+    { path: 'golf/pga', sport: 'Golf', league: 'PGA Tour', popularity: 75 },
+    { path: 'golf/lpga', sport: 'Golf', league: 'LPGA', popularity: 60 },
+    
+    // Cricket
+    { path: 'cricket/icc', sport: 'Cricket', league: 'ICC', popularity: 70 },
+    
+    // Rugby
+    { path: 'rugby/super-rugby', sport: 'Rugby', league: 'Super Rugby', popularity: 62 },
+    { path: 'rugby/six-nations', sport: 'Rugby', league: 'Six Nations', popularity: 72 },
+    { path: 'rugby-league/nrl', sport: 'Rugby', league: 'NRL', popularity: 68 },
+    
+    // Australian Rules
+    { path: 'australian-football/afl', sport: 'AFL', league: 'AFL', popularity: 75 },
+    
+    // Boxing
+    { path: 'boxing/boxing', sport: 'Boxing', league: 'Boxing', popularity: 78 },
+    
+    // NASCAR & F1
+    { path: 'racing/nascar', sport: 'NASCAR', league: 'NASCAR Cup', popularity: 72 },
+    { path: 'racing/f1', sport: 'F1', league: 'Formula 1', popularity: 80 },
+    
+    // Lacrosse
+    { path: 'lacrosse/pll', sport: 'Lacrosse', league: 'PLL', popularity: 55 },
+    
+    // Volleyball
+    { path: 'volleyball/fivb', sport: 'Volleyball', league: 'FIVB', popularity: 55 },
   ];
 
   console.log('[ESPN] Fetching from free public API...');
