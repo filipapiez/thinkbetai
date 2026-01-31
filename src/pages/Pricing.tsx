@@ -189,9 +189,9 @@ const Pricing = () => {
                   <CardContent className="flex-1 flex flex-col">
                     {/* Price */}
                     <div className="text-center mb-6 py-4 rounded-xl bg-muted/50">
-                      <Badge variant="destructive" className="mb-2 text-xs font-bold">
-                        70% OFF
-                      </Badge>
+                      <span className="inline-block mb-2 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                        Save 70%
+                      </span>
                       <div className="flex items-baseline justify-center gap-2">
                         <span className="text-lg text-muted-foreground line-through">${plan.originalPrice}</span>
                         <div className="flex items-baseline">
