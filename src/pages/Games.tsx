@@ -14,6 +14,30 @@ import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 type TimePeriod = 'live' | 'today' | 'week' | 'month';
 
+// Keep sport filters stable and show the most popular options even when a given
+// sport has 0 games in the selected time period.
+const POPULAR_SPORT_FILTERS: string[] = [
+  'Football',
+  'Basketball',
+  'Baseball',
+  'Soccer',
+  'Hockey',
+  'MMA',
+  'Boxing',
+  'Tennis',
+  'Golf',
+  'Cricket',
+  'Rugby',
+  'AFL',
+  'Esports',
+  'NASCAR',
+  'F1',
+  'Volleyball',
+  'Handball',
+  // Keep Table Tennis available as its own category
+  'Table Tennis',
+];
+
 const Games = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
@@ -87,29 +111,41 @@ const Games = () => {
     };
   }, [games, filterByPeriod]);
 
-  // Get unique sports from data
+  // Get unique sports from data (for the selected time period), but also include
+  // a stable set of popular sports so the filter list doesn't shrink unexpectedly.
   const availableSports = useMemo(() => {
-    const sports = new Set(games.map(g => g.sport));
-    return Array.from(sports).sort();
-  }, [games]);
+    const periodSports = new Set(periodFilteredGames.map(g => g.sport).filter(Boolean));
+    const merged = new Set<string>([...POPULAR_SPORT_FILTERS, ...periodSports]);
+
+    return Array.from(merged).sort((a, b) => {
+      const ai = POPULAR_SPORT_FILTERS.indexOf(a);
+      const bi = POPULAR_SPORT_FILTERS.indexOf(b);
+      const aIn = ai !== -1;
+      const bIn = bi !== -1;
+      if (aIn && bIn) return ai - bi;
+      if (aIn) return -1;
+      if (bIn) return 1;
+      return a.localeCompare(b);
+    });
+  }, [periodFilteredGames]);
 
   // Get unique leagues from data
   const availableLeagues = useMemo(() => {
     const filteredGames = selectedSport 
-      ? games.filter(g => g.sport === selectedSport)
-      : games;
+      ? periodFilteredGames.filter(g => g.sport === selectedSport)
+      : periodFilteredGames;
     const leagues = new Set(filteredGames.map(g => g.league));
     return Array.from(leagues).sort();
-  }, [games, selectedSport]);
+  }, [periodFilteredGames, selectedSport]);
 
   // Count games per sport
   const sportCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     availableSports.forEach(sport => {
-      counts[sport] = games.filter(g => g.sport === sport).length;
+      counts[sport] = periodFilteredGames.filter(g => g.sport === sport).length;
     });
     return counts;
-  }, [games, availableSports]);
+  }, [periodFilteredGames, availableSports]);
 
   // Filter and sort games by signal (GOOD first, then BORDERLINE, then PASS)
   const filteredGames = useMemo(() => {
@@ -331,12 +367,18 @@ const Games = () => {
 
               {availableSports.map(sport => {
                 const count = sportCounts[sport] || 0;
+                const isDisabled = count === 0;
                 return (
                   <Badge
                     key={sport}
                     variant={selectedSport === sport ? 'default' : 'outline'}
-                    className="cursor-pointer hover:bg-primary/20 transition-colors"
-                    onClick={() => { 
+                    className={
+                      isDisabled
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'cursor-pointer hover:bg-primary/20 transition-colors'
+                    }
+                    onClick={() => {
+                      if (isDisabled) return;
                       setSelectedSport(selectedSport === sport ? null : sport);
                       setSelectedLeague(null);
                     }}
