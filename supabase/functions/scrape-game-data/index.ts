@@ -333,8 +333,14 @@ function safeParseToolArgs(raw: unknown): any | null {
   }
 }
 
+// More lenient date validation - accepts various date formats
 function isIsoDate(value: unknown): value is string {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || value.length < 6) return false;
+  // Accept: YYYY-MM-DD, YYYY/MM/DD, DD/MM/YYYY, MM/DD/YYYY, "Jan 15, 2025", "15 Jan 2025"
+  return /^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(value) ||
+         /^\d{1,2}[-/]\d{1,2}[-/]\d{2,4}$/.test(value) ||
+         /^[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}$/.test(value) ||
+         /^\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}$/.test(value);
 }
 
 function clampArray<T>(arr: T[], max: number) {
@@ -518,7 +524,8 @@ async function extractHistoricalDataWithAIFromSources({
         score: typeof g?.score === 'string' ? g.score : '',
         date: typeof g?.date === 'string' ? g.date : '',
       }))
-      .filter((g) => isIsoDate(g.date) && scorePattern.test(g.score));
+      // Lenient filter: accept if we have a score OR a date (not requiring both)
+      .filter((g) => (g.date && g.date.length > 0) || (g.score && g.score.length > 0));
 
     return {
       team: teamName,
@@ -552,13 +559,14 @@ async function extractHistoricalDataWithAIFromSources({
 
   const headToHead: ScrapedGameData['headToHead'] = clampArray(extracted.headToHead || [], 5)
     .map((h: any) => ({
-      date: typeof h?.date === 'string' ? h.date : '',
+      date: typeof h?.date === 'string' ? h.date : 'Unknown',
       winner: typeof h?.winner === 'string' ? normalizeWinner(h.winner) : '',
       score: typeof h?.score === 'string' ? h.score : '',
       sport: sportKey,
       competitionLevel: sportValidation.competitionLevel,
     }))
-    .filter((h: any) => isIsoDate(h.date) && scorePattern.test(h.score) && (h.winner === homeTeam || h.winner === awayTeam));
+    // Lenient filter: just need a valid winner that matches one of the teams
+    .filter((h: any) => h.winner && (h.winner === homeTeam || h.winner === awayTeam));
 
   const injuries: ScrapedGameData['injuries'] = clampArray(extracted.injuries || [], 30)
     .map((i: any) => ({
@@ -986,44 +994,40 @@ function validateH2HMatch(matchData: any, sport: string): boolean {
   return true;
 }
 
-// Get expected score pattern for each sport
+// Get expected score pattern for each sport - LENIENT version
+// Allows spaces, dashes, colons, and common variations
 function getScorePatternForSport(sportKey: string): RegExp {
+  // Unified lenient pattern that accepts most score formats
+  // Matches: "2-1", "2 - 1", "112-108", "3:1", "W", "KO", etc.
   switch (sportKey) {
     case 'nba':
     case 'ncaab':
-      return /^\d{2,3}-\d{2,3}$/; // e.g., "112-108"
+      return /^\d{2,3}\s*[-:]\s*\d{2,3}$/; // e.g., "112-108" or "112 - 108"
     case 'nfl':
     case 'ncaaf':
-      return /^\d{1,2}-\d{1,2}$/; // e.g., "28-21"
+      return /^\d{1,2}\s*[-:]\s*\d{1,2}$/; // e.g., "28-21"
     case 'nhl':
-      return /^\d{1,2}-\d{1,2}$/; // e.g., "4-2"
     case 'mlb':
-      return /^\d{1,2}-\d{1,2}$/; // e.g., "7-3"
     case 'soccer':
-      return /^\d{1,2}-\d{1,2}$/; // e.g., "2-1"
+    case 'rugby':
+    case 'snooker':
+      return /^\d{1,2}\s*[-:]\s*\d{1,2}$/; // e.g., "4-2", "2-1"
     case 'mma':
     case 'boxing':
-      return /^(W|L|KO|TKO|DEC|SUB)$/i; // Combat results
+      return /^(W|L|KO|TKO|DEC|SUB|UD|SD|MD|NC)/i; // Combat results - allow prefix matching
     case 'tennis':
-      return /^\d-\d$/; // Sets e.g., "2-1" or "3-0"
     case 'tabletennis':
     case 'wtt':
     case 'pingpong':
-      return /^\d-\d$/; // Games e.g., "3-1" or "4-2" (best of 5 or 7)
     case 'badminton':
-      return /^\d-\d$/; // Games e.g., "2-0" or "2-1" (best of 3)
-    case 'snooker':
-      return /^\d{1,2}-\d{1,2}$/; // Frames e.g., "10-6"
     case 'darts':
-      return /^\d-\d$/; // Sets e.g., "7-5"
     case 'esports':
-      return /^\d-\d$/; // Maps e.g., "3-1"
+      return /^\d\s*[-:]\s*\d$/; // Games/Sets e.g., "3-1" or "3 : 1"
     case 'cricket':
-      return /^\d{2,3}-\d{2,3}$/; // e.g., "285-241"
-    case 'rugby':
-      return /^\d{1,2}-\d{1,2}$/; // e.g., "27-18"
+      return /^\d{1,3}\s*[-:/]\s*\d{1,3}$/; // e.g., "285-241" or "285/7"
     default:
-      return /^\d+-\d+$/;
+      // Very lenient fallback - matches any score-like format
+      return /^\d+\s*[-:]\s*\d+$/;
   }
 }
 
