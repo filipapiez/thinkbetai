@@ -1269,47 +1269,197 @@ async function fetchTheOddsAPIGames(): Promise<ScheduledGame[]> {
       return [];
     }
 
-    console.log('[TheOddsAPI] Fetching live and upcoming games...');
+    console.log('[TheOddsAPI] Fetching ALL available sports...');
     
-    // Fetch multiple sports with odds
+    // Complete list of The Odds API supported sports
+    // Reference: https://the-odds-api.com/sports-odds-data/sports-apis.html
     const sports = [
+      // American Football
       { key: 'americanfootball_nfl', sport: 'Football', league: 'NFL', popularity: 100 },
-      { key: 'basketball_nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
-      { key: 'baseball_mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
-      { key: 'icehockey_nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
       { key: 'americanfootball_ncaaf', sport: 'Football', league: 'NCAAF', popularity: 85 },
+      { key: 'americanfootball_nfl_super_bowl_winner', sport: 'Football', league: 'NFL Super Bowl', popularity: 100 },
+      { key: 'americanfootball_xfl', sport: 'Football', league: 'XFL', popularity: 60 },
+      { key: 'americanfootball_ufl', sport: 'Football', league: 'UFL', popularity: 55 },
+      
+      // Basketball
+      { key: 'basketball_nba', sport: 'Basketball', league: 'NBA', popularity: 95 },
       { key: 'basketball_ncaab', sport: 'Basketball', league: 'NCAAB', popularity: 80 },
+      { key: 'basketball_wnba', sport: 'Basketball', league: 'WNBA', popularity: 70 },
+      { key: 'basketball_nba_championship_winner', sport: 'Basketball', league: 'NBA Finals', popularity: 95 },
+      { key: 'basketball_euroleague', sport: 'Basketball', league: 'EuroLeague', popularity: 65 },
+      { key: 'basketball_nbl', sport: 'Basketball', league: 'NBL Australia', popularity: 55 },
+      
+      // Baseball
+      { key: 'baseball_mlb', sport: 'Baseball', league: 'MLB', popularity: 85 },
+      { key: 'baseball_mlb_world_series_winner', sport: 'Baseball', league: 'World Series', popularity: 88 },
+      { key: 'baseball_ncaa', sport: 'Baseball', league: 'NCAA Baseball', popularity: 60 },
+      { key: 'baseball_npb', sport: 'Baseball', league: 'NPB Japan', popularity: 55 },
+      { key: 'baseball_kbo', sport: 'Baseball', league: 'KBO Korea', popularity: 50 },
+      
+      // Ice Hockey
+      { key: 'icehockey_nhl', sport: 'Hockey', league: 'NHL', popularity: 80 },
+      { key: 'icehockey_nhl_championship_winner', sport: 'Hockey', league: 'Stanley Cup', popularity: 82 },
+      { key: 'icehockey_sweden_hockey_league', sport: 'Hockey', league: 'SHL Sweden', popularity: 55 },
+      { key: 'icehockey_sweden_allsvenskan', sport: 'Hockey', league: 'HockeyAllsvenskan', popularity: 50 },
+      { key: 'icehockey_finland_liiga', sport: 'Hockey', league: 'Liiga Finland', popularity: 52 },
+      { key: 'icehockey_switzerland_nl', sport: 'Hockey', league: 'NL Switzerland', popularity: 48 },
+      
+      // Soccer - Major Leagues
       { key: 'soccer_epl', sport: 'Soccer', league: 'EPL', popularity: 90 },
       { key: 'soccer_spain_la_liga', sport: 'Soccer', league: 'La Liga', popularity: 85 },
       { key: 'soccer_germany_bundesliga', sport: 'Soccer', league: 'Bundesliga', popularity: 82 },
       { key: 'soccer_italy_serie_a', sport: 'Soccer', league: 'Serie A', popularity: 80 },
+      { key: 'soccer_france_ligue_one', sport: 'Soccer', league: 'Ligue 1', popularity: 75 },
       { key: 'soccer_usa_mls', sport: 'Soccer', league: 'MLS', popularity: 65 },
+      
+      // Soccer - European Competitions
+      { key: 'soccer_uefa_champs_league', sport: 'Soccer', league: 'Champions League', popularity: 95 },
+      { key: 'soccer_uefa_europa_league', sport: 'Soccer', league: 'Europa League', popularity: 78 },
+      { key: 'soccer_uefa_europa_conference_league', sport: 'Soccer', league: 'Conference League', popularity: 65 },
+      
+      // Soccer - Other Top Leagues
+      { key: 'soccer_netherlands_eredivisie', sport: 'Soccer', league: 'Eredivisie', popularity: 68 },
+      { key: 'soccer_portugal_primeira_liga', sport: 'Soccer', league: 'Primeira Liga', popularity: 65 },
+      { key: 'soccer_belgium_first_div', sport: 'Soccer', league: 'Belgian First Div', popularity: 58 },
+      { key: 'soccer_turkey_super_league', sport: 'Soccer', league: 'Turkish Super Lig', popularity: 60 },
+      { key: 'soccer_greece_super_league', sport: 'Soccer', league: 'Greek Super League', popularity: 52 },
+      { key: 'soccer_scotland_premiership', sport: 'Soccer', league: 'Scottish Premiership', popularity: 58 },
+      
+      // Soccer - Americas
+      { key: 'soccer_brazil_campeonato', sport: 'Soccer', league: 'Brasileirão', popularity: 72 },
+      { key: 'soccer_brazil_serie_b', sport: 'Soccer', league: 'Brasileirão B', popularity: 55 },
+      { key: 'soccer_argentina_primera_division', sport: 'Soccer', league: 'Liga Argentina', popularity: 68 },
+      { key: 'soccer_mexico_ligamx', sport: 'Soccer', league: 'Liga MX', popularity: 70 },
+      { key: 'soccer_conmebol_copa_libertadores', sport: 'Soccer', league: 'Copa Libertadores', popularity: 75 },
+      
+      // Soccer - Asia & Australia
+      { key: 'soccer_australia_aleague', sport: 'Soccer', league: 'A-League', popularity: 50 },
+      { key: 'soccer_japan_j_league', sport: 'Soccer', league: 'J-League', popularity: 55 },
+      { key: 'soccer_korea_kleague1', sport: 'Soccer', league: 'K-League', popularity: 52 },
+      { key: 'soccer_china_superleague', sport: 'Soccer', league: 'Chinese Super League', popularity: 48 },
+      
+      // Soccer - English Lower Divisions
+      { key: 'soccer_england_efl_cup', sport: 'Soccer', league: 'EFL Cup', popularity: 68 },
+      { key: 'soccer_fa_cup', sport: 'Soccer', league: 'FA Cup', popularity: 75 },
+      { key: 'soccer_england_league1', sport: 'Soccer', league: 'EFL League One', popularity: 55 },
+      { key: 'soccer_england_league2', sport: 'Soccer', league: 'EFL League Two', popularity: 50 },
+      { key: 'soccer_efl_champ', sport: 'Soccer', league: 'EFL Championship', popularity: 65 },
+      
+      // Soccer - Germany Lower Divisions
+      { key: 'soccer_germany_bundesliga2', sport: 'Soccer', league: 'Bundesliga 2', popularity: 58 },
+      
+      // Soccer - Italy Lower Divisions
+      { key: 'soccer_italy_serie_b', sport: 'Soccer', league: 'Serie B', popularity: 52 },
+      
+      // Soccer - Spain Lower Divisions
+      { key: 'soccer_spain_segunda_division', sport: 'Soccer', league: 'La Liga 2', popularity: 55 },
+      
+      // MMA / UFC
       { key: 'mma_mixed_martial_arts', sport: 'MMA', league: 'UFC', popularity: 92 },
-      { key: 'tennis_atp_aus_open', sport: 'Tennis', league: 'ATP', popularity: 70 },
+      
+      // Boxing
+      { key: 'boxing_boxing', sport: 'Boxing', league: 'Boxing', popularity: 78 },
+      
+      // Tennis
+      { key: 'tennis_atp_french_open', sport: 'Tennis', league: 'French Open', popularity: 80 },
+      { key: 'tennis_atp_aus_open', sport: 'Tennis', league: 'Australian Open', popularity: 80 },
+      { key: 'tennis_atp_us_open', sport: 'Tennis', league: 'US Open', popularity: 80 },
+      { key: 'tennis_atp_wimbledon', sport: 'Tennis', league: 'Wimbledon', popularity: 85 },
+      { key: 'tennis_wta_french_open', sport: 'Tennis', league: 'WTA French Open', popularity: 72 },
+      { key: 'tennis_wta_aus_open', sport: 'Tennis', league: 'WTA Australian Open', popularity: 72 },
+      { key: 'tennis_wta_us_open', sport: 'Tennis', league: 'WTA US Open', popularity: 72 },
+      { key: 'tennis_wta_wimbledon', sport: 'Tennis', league: 'WTA Wimbledon', popularity: 75 },
+      
+      // Golf
+      { key: 'golf_pga_championship_winner', sport: 'Golf', league: 'PGA Championship', popularity: 75 },
+      { key: 'golf_masters_tournament_winner', sport: 'Golf', league: 'The Masters', popularity: 80 },
+      { key: 'golf_the_open_championship_winner', sport: 'Golf', league: 'The Open', popularity: 78 },
+      { key: 'golf_us_open_winner', sport: 'Golf', league: 'US Open Golf', popularity: 76 },
+      
+      // Cricket
+      { key: 'cricket_ipl', sport: 'Cricket', league: 'IPL', popularity: 82 },
+      { key: 'cricket_big_bash', sport: 'Cricket', league: 'Big Bash', popularity: 65 },
+      { key: 'cricket_test_match', sport: 'Cricket', league: 'Test Cricket', popularity: 70 },
+      { key: 'cricket_odi', sport: 'Cricket', league: 'ODI Cricket', popularity: 72 },
+      { key: 'cricket_t20i', sport: 'Cricket', league: 'T20 International', popularity: 75 },
+      { key: 'cricket_psl', sport: 'Cricket', league: 'Pakistan Super League', popularity: 60 },
+      
+      // Rugby
+      { key: 'rugbyunion_six_nations', sport: 'Rugby', league: 'Six Nations', popularity: 72 },
+      { key: 'rugbyleague_nrl', sport: 'Rugby', league: 'NRL', popularity: 68 },
+      { key: 'rugbyunion_super_rugby', sport: 'Rugby', league: 'Super Rugby', popularity: 62 },
+      
+      // Australian Rules
+      { key: 'aussierules_afl', sport: 'AFL', league: 'AFL', popularity: 75 },
+      
+      // Darts
+      { key: 'darts_pdc_world_championship', sport: 'Darts', league: 'PDC World Championship', popularity: 55 },
+      
+      // Snooker
+      { key: 'snooker_world_championship', sport: 'Snooker', league: 'World Snooker', popularity: 52 },
+      
+      // Table Tennis
+      { key: 'tabletennis_wtt', sport: 'Table Tennis', league: 'WTT', popularity: 58 },
+      
+      // Esports
+      { key: 'esports_lol', sport: 'Esports', league: 'League of Legends', popularity: 75 },
+      { key: 'esports_csgo', sport: 'Esports', league: 'CS2', popularity: 72 },
+      { key: 'esports_dota2', sport: 'Esports', league: 'Dota 2', popularity: 68 },
+      { key: 'esports_valorant', sport: 'Esports', league: 'Valorant', popularity: 70 },
+      
+      // Handball
+      { key: 'handball_germany_bundesliga', sport: 'Handball', league: 'Handball Bundesliga', popularity: 50 },
+      
+      // Volleyball
+      { key: 'volleyball_italy_superlega', sport: 'Volleyball', league: 'Superlega Italy', popularity: 48 },
+      
+      // Politics & Entertainment (if available)
+      { key: 'politics_us_presidential_election_winner', sport: 'Politics', league: 'US Election', popularity: 85 },
     ];
 
-    for (const sportConfig of sports) {
-      try {
-        const response = await fetch(
-          `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`,
-          { headers: { 'Accept': 'application/json' } }
-        );
+    // Fetch in batches to avoid overwhelming the API
+    const batchSize = 10;
+    const batches = [];
+    for (let i = 0; i < sports.length; i += batchSize) {
+      batches.push(sports.slice(i, i + batchSize));
+    }
 
-        if (!response.ok) {
-          if (response.status === 404) continue; // Sport not in season
-          console.log(`[TheOddsAPI] ${sportConfig.league} error: ${response.status}`);
-          continue;
+    for (const batch of batches) {
+      const batchPromises = batch.map(async (sportConfig) => {
+        try {
+          const response = await fetch(
+            `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us,uk,eu&markets=h2h,spreads,totals&oddsFormat=american`,
+            { headers: { 'Accept': 'application/json' } }
+          );
+
+          if (!response.ok) {
+            if (response.status === 404 || response.status === 422) return []; // Sport not in season or invalid
+            if (response.status === 401) {
+              console.log(`[TheOddsAPI] Auth error - check API key`);
+              return [];
+            }
+            return [];
+          }
+
+          const events = await response.json();
+          if (events.length > 0) {
+            console.log(`[TheOddsAPI] Found ${events.length} ${sportConfig.league} events`);
+          }
+
+          const parsedGames: ScheduledGame[] = [];
+          for (const event of events) {
+            const game = parseTheOddsEvent(event, sportConfig);
+            if (game) parsedGames.push(game);
+          }
+          return parsedGames;
+        } catch (e) {
+          return [];
         }
+      });
 
-        const events = await response.json();
-        console.log(`[TheOddsAPI] Found ${events.length} ${sportConfig.league} events`);
-
-        for (const event of events) {
-          const game = parseTheOddsEvent(event, sportConfig);
-          if (game) games.push(game);
-        }
-      } catch (e) {
-        console.log(`[TheOddsAPI] Error fetching ${sportConfig.league}:`, e);
+      const batchResults = await Promise.all(batchPromises);
+      for (const result of batchResults) {
+        games.push(...result);
       }
     }
 
