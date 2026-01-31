@@ -286,43 +286,112 @@ function mapSport(input: string): string {
   const lower = (input || '').toLowerCase();
   
   // Check soccer FIRST - catches all European "football" leagues before American football
-  // Soccer keywords: premier, liga, bundesliga, serie, ligue, mls, champions, fa cup, europa, eredivisie, efl, championship
   if (lower.includes('soccer') || 
       lower.includes('premier') || 
       lower.includes('la liga') || 
       lower.includes('bundesliga') || 
       lower.includes('serie a') || 
+      lower.includes('serie b') ||
       lower.includes('ligue 1') || 
+      lower.includes('ligue one') ||
       lower.includes('mls') || 
       lower.includes('champions league') ||
       lower.includes('europa') ||
+      lower.includes('conference league') ||
       lower.includes('fa cup') ||
       lower.includes('efl') ||
       lower.includes('championship') ||
       lower.includes('eredivisie') ||
       lower.includes('liga mx') ||
-      lower.includes('english football') ||
-      lower.includes('spanish football') ||
-      lower.includes('german football') ||
-      lower.includes('italian football') ||
-      lower.includes('french football')) {
+      lower.includes('libertadores') ||
+      lower.includes('brasileir') ||
+      lower.includes('argentina') ||
+      lower.includes('a-league') ||
+      lower.includes('j-league') ||
+      lower.includes('k-league') ||
+      lower.includes('super league') ||
+      lower.includes('primeira') ||
+      lower.includes('turkish') ||
+      lower.includes('greek') ||
+      lower.includes('scottish') ||
+      lower.includes('belgian')) {
     return 'Soccer';
   }
   
-  // American Football - NFL, College Football
-  if (lower.includes('nfl') || lower.includes('ncaaf') || lower.includes('american football') || lower.includes('college football')) {
+  // American Football - NFL, College Football, XFL, UFL
+  if (lower.includes('nfl') || lower.includes('ncaaf') || lower.includes('american football') || 
+      lower.includes('college football') || lower.includes('xfl') || lower.includes('ufl') ||
+      lower.includes('super bowl')) {
     return 'Football';
   }
   
-  if (lower.includes('basketball') || lower.includes('nba') || lower.includes('ncaab') || lower.includes('wnba')) return 'Basketball';
-  if (lower.includes('baseball') || lower.includes('mlb')) return 'Baseball';
-  if (lower.includes('hockey') || lower.includes('nhl') || lower.includes('ice')) return 'Hockey';
-  if (lower.includes('mma') || lower.includes('ufc') || lower.includes('martial')) return 'MMA';
+  // Basketball
+  if (lower.includes('basketball') || lower.includes('nba') || lower.includes('ncaab') || 
+      lower.includes('wnba') || lower.includes('euroleague') || lower.includes('nbl') ||
+      lower.includes('nba finals')) return 'Basketball';
+  
+  // Baseball
+  if (lower.includes('baseball') || lower.includes('mlb') || lower.includes('world series') ||
+      lower.includes('npb') || lower.includes('kbo')) return 'Baseball';
+  
+  // Hockey - NHL and European leagues
+  if (lower.includes('hockey') || lower.includes('nhl') || lower.includes('ice') || 
+      lower.includes('stanley cup') || lower.includes('shl') || lower.includes('liiga') ||
+      lower.includes('allsvenskan') || lower.includes('switzerland nl')) return 'Hockey';
+  
+  // MMA/UFC
+  if (lower.includes('mma') || lower.includes('ufc') || lower.includes('martial') ||
+      lower.includes('mixed martial')) return 'MMA';
+  
+  // Boxing
   if (lower.includes('boxing')) return 'Boxing';
-  if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta')) return 'Tennis';
-  if (lower.includes('golf') || lower.includes('pga') || lower.includes('liv')) return 'Golf';
-  if (lower.includes('table tennis') || lower.includes('tabletennis') || lower.includes('ping pong') || lower.includes('ittf') || lower.includes('wtt')) return 'Table Tennis';
-  if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('lol') || lower.includes('valorant') || lower.includes('esport')) return 'Esports';
+  
+  // Tennis - Grand Slams and tours
+  if (lower.includes('tennis') || lower.includes('atp') || lower.includes('wta') ||
+      lower.includes('french open') || lower.includes('australian open') ||
+      lower.includes('us open') || lower.includes('wimbledon')) return 'Tennis';
+  
+  // Golf
+  if (lower.includes('golf') || lower.includes('pga') || lower.includes('liv') ||
+      lower.includes('masters') || lower.includes('the open')) return 'Golf';
+  
+  // Cricket
+  if (lower.includes('cricket') || lower.includes('ipl') || lower.includes('big bash') ||
+      lower.includes('test') || lower.includes('odi') || lower.includes('t20') ||
+      lower.includes('psl')) return 'Cricket';
+  
+  // Rugby
+  if (lower.includes('rugby') || lower.includes('six nations') || lower.includes('nrl') ||
+      lower.includes('super rugby')) return 'Rugby';
+  
+  // AFL
+  if (lower.includes('afl') || lower.includes('aussie rules') || 
+      lower.includes('australian rules')) return 'AFL';
+  
+  // Darts
+  if (lower.includes('darts') || lower.includes('pdc')) return 'Darts';
+  
+  // Snooker
+  if (lower.includes('snooker')) return 'Snooker';
+  
+  // Table Tennis
+  if (lower.includes('table tennis') || lower.includes('tabletennis') || 
+      lower.includes('ping pong') || lower.includes('ittf') || lower.includes('wtt')) return 'Table Tennis';
+  
+  // Esports
+  if (lower.includes('cs2') || lower.includes('counter-strike') || lower.includes('csgo') ||
+      lower.includes('lol') || lower.includes('league of legends') ||
+      lower.includes('valorant') || lower.includes('dota') ||
+      lower.includes('esport')) return 'Esports';
+  
+  // Handball
+  if (lower.includes('handball')) return 'Handball';
+  
+  // Volleyball
+  if (lower.includes('volleyball') || lower.includes('superlega')) return 'Volleyball';
+  
+  // Politics (for betting markets)
+  if (lower.includes('politic') || lower.includes('election')) return 'Politics';
   
   // Generic "football" without specific context - assume Soccer (international standard)
   if (lower.includes('football')) return 'Soccer';
