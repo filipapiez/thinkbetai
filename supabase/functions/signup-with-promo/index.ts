@@ -10,6 +10,8 @@ const corsHeaders = {
 interface SignupRequest {
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
   promoCode?: string;
 }
 
@@ -20,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, password, promoCode }: SignupRequest = await req.json();
+    const { email, password, firstName, lastName, promoCode }: SignupRequest = await req.json();
 
     // Validate inputs
     if (!email || !password) {
@@ -72,11 +74,15 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("id", codeData.id);
     }
 
-    // Create the auth user
+    // Create the auth user with metadata for first/last name
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email.trim(),
       password,
       email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        first_name: firstName?.trim() || null,
+        last_name: lastName?.trim() || null,
+      },
     });
 
     if (authError) {
