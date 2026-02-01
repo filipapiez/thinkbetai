@@ -24,7 +24,7 @@ import WhatIsAISportsBetting from "./pages/WhatIsAISportsBetting";
 import AISportsPicks from "./pages/AISportsPicks";
 import FAQ from "./pages/FAQ";
 import Login from "./pages/Login";
-import Paywall from "./pages/Paywall";
+
 import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
@@ -58,16 +58,12 @@ const App = () => (
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/paywall" element={<Paywall />} />
+              
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/bet-history" element={<BetHistory />} />
               
               {/* Protected routes - require auth + subscription */}
-              <Route path="/games" element={
-                <ProtectedRoute requireSubscription>
-                  <Games />
-                </ProtectedRoute>
-              } />
+              <Route path="/games" element={<Games />} />
               <Route path="/games/:gameId" element={
                 <ProtectedRoute requireSubscription>
                   <GameDetail />

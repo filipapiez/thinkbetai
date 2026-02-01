@@ -24,9 +24,9 @@ export const ProtectedRoute = ({ children, requireSubscription = false }: Protec
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Logged in but needs subscription and doesn't have one → redirect to paywall
+  // Logged in but needs subscription and doesn't have one → redirect to pricing
   if (requireSubscription && !isSubscribed) {
-    return <Navigate to="/paywall" state={{ from: location }} replace />;
+    return <Navigate to="/pricing" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
