@@ -54,13 +54,28 @@ const BetHistory = () => {
   const { data: historicalBets = [], isLoading } = useQuery({
     queryKey: ["historical-bets"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("historical_bets")
-        .select("*")
-        .order("date", { ascending: false });
+      // Fetch all records by paginating through the data
+      const allBets: HistoricalBet[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from("historical_bets")
+          .select("*")
+          .order("date", { ascending: false })
+          .range(from, from + batchSize - 1);
 
-      if (error) throw error;
-      return data as HistoricalBet[];
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allBets.push(...(data as HistoricalBet[]));
+        
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+      
+      return allBets;
     },
   });
 
