@@ -10,6 +10,7 @@ interface Profile {
   access_type: string | null;
   subscription_status: string | null;
   promo_used: string | null;
+  trial_ends_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -174,7 +175,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true;
+  // Check if user has active subscription, access, or is in trial period
+  const isInTrial = profile?.trial_ends_at ? new Date(profile.trial_ends_at) > new Date() : false;
+  const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true || isInTrial;
 
   return (
     <AuthContext.Provider value={{
