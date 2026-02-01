@@ -25,6 +25,7 @@ const Login = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [promoCode, setPromoCode] = useState('');
@@ -64,6 +65,10 @@ const Login = () => {
     }
 
     if (isSignup) {
+      if (password !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return false;
+      }
       try {
         nameSchema.parse(firstName.trim());
       } catch (error) {
@@ -319,6 +324,22 @@ const Login = () => {
                           placeholder="Create a password (min 6 chars)"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10"
+                          disabled={isLoading}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirm-password">Confirm Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          placeholder="Confirm your password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
                           className="pl-10"
                           disabled={isLoading}
                           required
