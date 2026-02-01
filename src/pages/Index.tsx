@@ -258,6 +258,13 @@ const Index = () => {
                 </Button>
               </div>
 
+              {/* Trial Badge */}
+              <div className="flex justify-center mt-4 animate-fade-in" style={{ animationDelay: '250ms' }}>
+                <span className="text-sm text-muted-foreground">
+                  ✨ <span className="font-semibold text-primary">7 days free trial</span> — no credit card needed
+                </span>
+              </div>
+
               {/* Trust Indicators */}
               <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
                 <div className="flex items-center gap-2">
