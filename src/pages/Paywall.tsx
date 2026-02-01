@@ -31,6 +31,11 @@ const Paywall = () => {
     }
   }, [user, isSubscribed, navigate, from]);
 
+  // Don't render anything while redirecting
+  if (!user) {
+    return null;
+  }
+
   const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setPromoError('');
@@ -186,7 +191,7 @@ const Paywall = () => {
 
             {/* Already logged in info */}
             <div className="text-center text-sm text-muted-foreground">
-              Logged in as <span className="font-medium">{user.email}</span>
+              Logged in as <span className="font-medium">{user?.email}</span>
               <Button variant="link" className="text-xs p-0 h-auto ml-2" onClick={signOut}>
                 Sign out
               </Button>
