@@ -288,55 +288,55 @@ const Games = () => {
                 </span>
               </div>
               
-              <div className="grid grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
                 {/* GOOD */}
                 <button
                   onClick={() => setSelectedSignal(selectedSignal === 'GOOD' ? null : 'GOOD')}
-                  className={`p-4 rounded-lg text-center transition-all ${
+                  className={`p-3 sm:p-4 rounded-lg text-center transition-all ${
                     selectedSignal === 'GOOD' 
                       ? 'bg-emerald-500/30 border-2 border-emerald-500' 
                       : 'bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20'
                   }`}
                 >
-                  <div className="text-2xl font-bold text-emerald-400">{signalCounts.GOOD}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-400">{signalCounts.GOOD}</div>
                   <div className="text-xs text-emerald-400 font-medium">GOOD</div>
                 </button>
                 
                 {/* BORDERLINE */}
                 <button
                   onClick={() => setSelectedSignal(selectedSignal === 'BORDERLINE' ? null : 'BORDERLINE')}
-                  className={`p-4 rounded-lg text-center transition-all ${
+                  className={`p-3 sm:p-4 rounded-lg text-center transition-all ${
                     selectedSignal === 'BORDERLINE' 
                       ? 'bg-amber-500/30 border-2 border-amber-500' 
                       : 'bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20'
                   }`}
                 >
-                  <div className="text-2xl font-bold text-amber-400">{signalCounts.BORDERLINE}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-amber-400">{signalCounts.BORDERLINE}</div>
                   <div className="text-xs text-amber-400 font-medium">BORDERLINE</div>
                 </button>
                 
                 {/* PASS */}
                 <button
                   onClick={() => setSelectedSignal(selectedSignal === 'PASS' ? null : 'PASS')}
-                  className={`p-4 rounded-lg text-center transition-all ${
+                  className={`p-3 sm:p-4 rounded-lg text-center transition-all ${
                     selectedSignal === 'PASS' 
                       ? 'bg-red-500/30 border-2 border-red-500' 
                       : 'bg-red-500/10 border border-red-500/30 hover:bg-red-500/20'
                   }`}
                 >
-                  <div className="text-2xl font-bold text-red-400">{signalCounts.PASS}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-red-400">{signalCounts.PASS}</div>
                   <div className="text-xs text-red-400 font-medium">PASS</div>
                 </button>
                 
                 {/* TOTAL */}
-                <div className="p-4 rounded-lg text-center bg-muted/30 border border-border">
-                  <div className="text-2xl font-bold">{periodFilteredGames.length}</div>
+                <div className="p-3 sm:p-4 rounded-lg text-center bg-muted/30 border border-border">
+                  <div className="text-xl sm:text-2xl font-bold">{periodFilteredGames.length}</div>
                   <div className="text-xs text-muted-foreground font-medium">TOTAL</div>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Info className="h-4 w-4" />
+              <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                <Info className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>GOOD + BORDERLINE + PASS = TOTAL. Only GOOD and BORDERLINE are recommended bets.</span>
               </div>
             </CardContent>
@@ -357,42 +357,44 @@ const Games = () => {
             </div>
 
             {/* Sport Filter */}
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2">
-                <Filter className="h-4 w-4" />
-                <span>Sport:</span>
-              </div>
-              
-              <Badge
-                variant={selectedSport === null ? 'default' : 'outline'}
-                className="cursor-pointer hover:bg-primary/20 transition-colors"
-                onClick={() => { setSelectedSport(null); setSelectedLeague(null); }}
-              >
-                All Sports ({periodFilteredGames.length})
-              </Badge>
+            <div className="overflow-x-auto -mx-4 px-4 pb-2">
+              <div className="flex gap-2 min-w-max">
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mr-2 shrink-0">
+                  <Filter className="h-4 w-4" />
+                  <span>Sport:</span>
+                </div>
+                
+                <Badge
+                  variant={selectedSport === null ? 'default' : 'outline'}
+                  className="cursor-pointer hover:bg-primary/20 transition-colors shrink-0"
+                  onClick={() => { setSelectedSport(null); setSelectedLeague(null); }}
+                >
+                  All ({periodFilteredGames.length})
+                </Badge>
 
-              {availableSports.map(sport => {
-                const count = sportCounts[sport] || 0;
-                const isDisabled = count === 0;
-                return (
-                  <Badge
-                    key={sport}
-                    variant={selectedSport === sport ? 'default' : 'outline'}
-                    className={
-                      isDisabled
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'cursor-pointer hover:bg-primary/20 transition-colors'
-                    }
-                    onClick={() => {
-                      if (isDisabled) return;
-                      setSelectedSport(selectedSport === sport ? null : sport);
-                      setSelectedLeague(null);
-                    }}
-                  >
-                    {sport} ({count})
-                  </Badge>
-                );
-              })}
+                {availableSports.map(sport => {
+                  const count = sportCounts[sport] || 0;
+                  const isDisabled = count === 0;
+                  return (
+                    <Badge
+                      key={sport}
+                      variant={selectedSport === sport ? 'default' : 'outline'}
+                      className={`shrink-0 ${
+                        isDisabled
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer hover:bg-primary/20 transition-colors'
+                      }`}
+                      onClick={() => {
+                        if (isDisabled) return;
+                        setSelectedSport(selectedSport === sport ? null : sport);
+                        setSelectedLeague(null);
+                      }}
+                    >
+                      {sport} ({count})
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
 
             {/* League Filter (shows when sport selected) */}

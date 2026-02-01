@@ -24,8 +24,6 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
-const SAMPLE_PICKS_COUNT = 2;
-
 const Picks = () => {
   const navigate = useNavigate();
   const { isSubscribed, user } = useAuth();
@@ -210,39 +208,39 @@ const Picks = () => {
             </div>
           </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          {/* Summary Cards - 2x2 on mobile, 5 cols on desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-6">
             <Card className="bg-card border-border">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-400">{signalCounts.GOOD}</div>
-                <div className="text-xs text-muted-foreground">GOOD Picks</div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-emerald-400">{signalCounts.GOOD}</div>
+                <div className="text-xs text-muted-foreground">GOOD</div>
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-amber-400">{signalCounts.BORDERLINE}</div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-amber-400">{signalCounts.BORDERLINE}</div>
                 <div className="text-xs text-muted-foreground">BORDERLINE</div>
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-400">{signalCounts.MORE}</div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-emerald-400">{signalCounts.MORE}</div>
                 <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                   <TrendingUp className="h-3 w-3" /> MORE
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-card border-border">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-red-400">{signalCounts.LESS}</div>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold text-red-400">{signalCounts.LESS}</div>
                 <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                   <TrendingDown className="h-3 w-3" /> LESS
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-card border-border">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">{picks.length}</div>
+            <Card className="bg-card border-border col-span-2 sm:col-span-1">
+              <CardContent className="p-3 sm:p-4 text-center">
+                <div className="text-xl sm:text-2xl font-bold">{picks.length}</div>
                 <div className="text-xs text-muted-foreground">TOTAL</div>
               </CardContent>
             </Card>
@@ -569,91 +567,66 @@ const Picks = () => {
             </div>
           )}
 
-          {/* Picks Grid */}
-          {filteredPicks.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPicks.map((pick, index) => {
-                  const isLocked = !isSubscribed && index >= SAMPLE_PICKS_COUNT;
-                  
-                  return (
-                    <div key={pick.id} className="animate-slide-up relative" style={{ animationDelay: `${index * 30}ms` }}>
-                      {isLocked ? (
-                        <div className="relative">
-                          {/* Blurred card */}
-                          <div className="blur-[6px] pointer-events-none select-none">
-                            <PickCard pick={pick} />
-                          </div>
-                          {/* Lock overlay */}
-                          <div 
-                            className="absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-background/50"
-                            onClick={() => navigate(user ? '/paywall' : '/login', { state: { from: { pathname: '/picks' } } })}
-                          >
-                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center mb-2">
-                              <Lock className="h-5 w-5 text-primary" />
-                            </div>
-                            <span className="text-sm font-medium text-primary">Unlock Pick</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <PickCard 
-                          pick={pick} 
-                          isSelected={selectedPickIds.has(pick.id)}
-                          onSelect={isSubscribed ? handleSelectPick : undefined}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Unlock Access for non-subscribers */}
+          {!isSubscribed && filteredPicks.length > 0 && (
+            <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
+              <CardContent className="py-12 sm:py-16 text-center px-4">
+                <div className="inline-flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-primary/20 mb-4 sm:mb-6">
+                  <Lock className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold mb-3">
+                  Unlock Access
+                </h3>
+                
+                {/* Win Rate Stats */}
+                <div className="flex items-center justify-center gap-4 sm:gap-6 my-6 py-4 px-4 sm:px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-success">82.4%</div>
+                    <div className="text-xs text-muted-foreground">Win Rate</div>
+                  </div>
+                  <div className="h-10 w-px bg-border" />
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
+                    <div className="text-xs text-muted-foreground">Verified Picks</div>
+                  </div>
+                </div>
+                
+                <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto">
+                  Get full access to {filteredPicks.length} AI-powered picks, parlays, and real-time analysis with a subscription.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button 
+                    variant="hero" 
+                    size="lg"
+                    onClick={() => navigate(user ? '/pricing' : '/login', { state: { from: { pathname: '/picks' } } })}
+                  >
+                    {user ? 'Unlock Full Access' : 'Sign Up to Unlock'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    View Pricing
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Paywall CTA for non-subscribers */}
-              {!isSubscribed && filteredPicks.length > SAMPLE_PICKS_COUNT && (
-                <Card className="mt-8 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
-                  <CardContent className="py-10 text-center">
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 mb-4">
-                      <Lock className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">
-                      Unlock All {filteredPicks.length} Picks
-                    </h3>
-                    
-                    {/* Win Rate Stats */}
-                    <div className="flex items-center justify-center gap-4 sm:gap-6 my-6 py-4 px-4 sm:px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-success">82.4%</div>
-                        <div className="text-xs text-muted-foreground">Win Rate</div>
-                      </div>
-                      <div className="h-10 w-px bg-border" />
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
-                        <div className="text-xs text-muted-foreground">Verified Picks</div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Get full access to all AI-powered picks, parlays, and real-time analysis with a subscription.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button 
-                        variant="hero" 
-                        size="lg"
-                        onClick={() => navigate(user ? '/paywall' : '/login', { state: { from: { pathname: '/picks' } } })}
-                      >
-                        {user ? 'Unlock Full Access' : 'Sign Up to Unlock'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="lg"
-                        onClick={() => navigate('/pricing')}
-                      >
-                        View Pricing
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
+          {/* Picks Grid - only for subscribers */}
+          {isSubscribed && filteredPicks.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredPicks.map((pick, index) => (
+                <div key={pick.id} className="animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
+                  <PickCard 
+                    pick={pick} 
+                    isSelected={selectedPickIds.has(pick.id)}
+                    onSelect={handleSelectPick}
+                  />
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Results Count */}
