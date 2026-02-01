@@ -206,6 +206,7 @@ export type Database = {
           id: string
           promo_used: string | null
           subscription_status: string | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
         }
@@ -217,6 +218,7 @@ export type Database = {
           id?: string
           promo_used?: string | null
           subscription_status?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -228,6 +230,7 @@ export type Database = {
           id?: string
           promo_used?: string | null
           subscription_status?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
         }
