@@ -1880,19 +1880,15 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate user
+    // Try to authenticate user (optional - allow anonymous access for free preview)
     const auth = await authenticateUser(req);
-    if (!auth) {
-      console.log('[Auth] Unauthorized request - no valid token');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized', success: false }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    
+    // Use user ID for rate limiting if authenticated, otherwise use IP
+    const rateLimitKey = auth?.userId || req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'anonymous';
 
     // Check rate limit
-    if (!checkRateLimit(auth.userId)) {
-      console.log('[Rate Limit] User exceeded rate limit:', auth.userId);
+    if (!checkRateLimit(rateLimitKey)) {
+      console.log('[Rate Limit] Rate limit exceeded for:', rateLimitKey);
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Please try again later.', success: false }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
