@@ -13,7 +13,7 @@ import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Cloc
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 import { useAuth } from '@/contexts/AuthContext';
 
-const SAMPLE_GAMES_COUNT = 2;
+
 
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 type TimePeriod = 'live' | 'today' | 'week' | 'month';
@@ -485,87 +485,62 @@ const Games = () => {
             </div>
           )}
 
-          {/* Games Grid */}
-          {filteredGames.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredGames.map((game, index) => {
-                  const isLocked = !isSubscribed && index >= SAMPLE_GAMES_COUNT;
-                  
-                  return (
-                    <div key={`${game.id}-${index}`} className="animate-slide-up relative" style={{ animationDelay: `${index * 50}ms` }}>
-                      {isLocked ? (
-                        <div className="relative">
-                          {/* Blurred card */}
-                          <div className="blur-[6px] pointer-events-none select-none">
-                            <PopularGameCard game={game} rank={index + 1} />
-                          </div>
-                          {/* Lock overlay */}
-                          <div 
-                            className="absolute inset-0 bg-background/60 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-background/50"
-                            onClick={() => navigate(user ? '/pricing' : '/login', { state: { from: { pathname: '/games' } } })}
-                          >
-                            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center mb-2">
-                              <Lock className="h-5 w-5 text-primary" />
-                            </div>
-                            <span className="text-sm font-medium text-primary">Unlock Game</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <PopularGameCard game={game} rank={index + 1} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+          {/* Unlock Access for non-subscribers */}
+          {!isSubscribed && filteredGames.length > 0 && (
+            <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
+              <CardContent className="py-16 text-center">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20 mb-6">
+                  <Lock className="h-10 w-10 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">
+                  Unlock Access
+                </h3>
+                
+                {/* Win Rate Stats */}
+                <div className="flex items-center justify-center gap-4 sm:gap-6 my-6 py-4 px-4 sm:px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-success">82.4%</div>
+                    <div className="text-xs text-muted-foreground">Win Rate</div>
+                  </div>
+                  <div className="h-10 w-px bg-border" />
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
+                    <div className="text-xs text-muted-foreground">Verified Picks</div>
+                  </div>
+                </div>
+                
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Get full access to {filteredGames.length} AI-powered game analyses, predictions, and real-time odds with a subscription.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button 
+                    variant="hero" 
+                    size="lg"
+                    onClick={() => navigate(user ? '/pricing' : '/login', { state: { from: { pathname: '/games' } } })}
+                  >
+                    {user ? 'Unlock Full Access' : 'Sign Up to Unlock'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    onClick={() => navigate('/pricing')}
+                  >
+                    View Pricing
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-              {/* Paywall CTA for non-subscribers */}
-              {!isSubscribed && filteredGames.length > SAMPLE_GAMES_COUNT && (
-                <Card className="mt-8 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
-                  <CardContent className="py-10 text-center">
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 mb-4">
-                      <Lock className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">
-                      Unlock All {filteredGames.length} Games
-                    </h3>
-                    
-                    {/* Win Rate Stats */}
-                    <div className="flex items-center justify-center gap-4 sm:gap-6 my-6 py-4 px-4 sm:px-6 bg-card/50 rounded-xl border border-border/50 max-w-sm mx-auto">
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-success">82.4%</div>
-                        <div className="text-xs text-muted-foreground">Win Rate</div>
-                      </div>
-                      <div className="h-10 w-px bg-border" />
-                      <div className="text-center">
-                        <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
-                        <div className="text-xs text-muted-foreground">Verified Picks</div>
-                      </div>
-                    </div>
-                    
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Get full access to all AI-powered game analysis, predictions, and real-time odds with a subscription.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button 
-                        variant="hero" 
-                        size="lg"
-                        onClick={() => navigate(user ? '/pricing' : '/login', { state: { from: { pathname: '/games' } } })}
-                      >
-                        {user ? 'Unlock Full Access' : 'Sign Up to Unlock'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="lg"
-                        onClick={() => navigate('/pricing')}
-                      >
-                        View Pricing
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
+          {/* Games Grid - only for subscribers */}
+          {isSubscribed && filteredGames.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredGames.map((game, index) => (
+                <div key={`${game.id}-${index}`} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
+                  <PopularGameCard game={game} rank={index + 1} />
+                </div>
+              ))}
+            </div>
           )}
 
           {/* Results Count & Disclaimer */}
