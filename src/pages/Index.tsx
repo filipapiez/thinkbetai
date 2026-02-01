@@ -308,29 +308,19 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Urgency Banner */}
+        {/* Live Viewers Banner */}
         <section className="py-4 bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 border-y border-primary/20">
           <div className="container">
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2 text-primary font-semibold">
-                <Zap className="h-4 w-4" />
-                <span>Today's Games Loading Now</span>
-              </div>
-              <div className="hidden md:block w-px h-4 bg-primary/30" />
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                </span>
-                <span className="text-xs font-semibold text-red-400 uppercase">Live</span>
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground"><span className="font-semibold text-foreground transition-all duration-300">{viewerCount.toLocaleString()}</span> users viewing picks right now</span>
-              </div>
-              <div className="hidden md:block w-px h-4 bg-primary/30" />
-              <Link to="/picks" className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold transition-colors">
-                View Today's Top Picks
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+            <div className="flex items-center justify-center gap-3 text-sm">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              </span>
+              <span className="text-sm font-semibold text-red-400 uppercase">Live</span>
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground transition-all duration-300">{viewerCount.toLocaleString()}</span> users viewing picks right now
+              </span>
             </div>
           </div>
         </section>
