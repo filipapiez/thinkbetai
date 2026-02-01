@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,17 +22,14 @@ const Paywall = () => {
 
   const from = (location.state as any)?.from?.pathname || '/games';
 
-  // If already subscribed, redirect
-  if (isSubscribed) {
-    navigate(from, { replace: true });
-    return null;
-  }
-
-  // If not logged in, redirect to login
-  if (!user) {
-    navigate('/login', { replace: true });
-    return null;
-  }
+  // Redirect if already subscribed or not logged in
+  useEffect(() => {
+    if (isSubscribed) {
+      navigate(from, { replace: true });
+    } else if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, isSubscribed, navigate, from]);
 
   const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
