@@ -251,8 +251,9 @@ const Index = () => {
                 </Button>
                 <Button variant="glass" size="xl" asChild className="group">
                   <Link to="/games" className="flex items-center">
-                    <DollarSign className="h-5 w-5 mr-2" />
-                    Start from $4.99/mo
+                    <Zap className="h-5 w-5 mr-2" />
+                    Unlock 70% Off
+                    <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               </div>
