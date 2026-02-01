@@ -202,8 +202,10 @@ export type Database = {
           access_type: string | null
           created_at: string
           email: string | null
+          first_name: string | null
           has_access: boolean
           id: string
+          last_name: string | null
           promo_used: string | null
           subscription_status: string | null
           trial_ends_at: string | null
@@ -214,8 +216,10 @@ export type Database = {
           access_type?: string | null
           created_at?: string
           email?: string | null
+          first_name?: string | null
           has_access?: boolean
           id?: string
+          last_name?: string | null
           promo_used?: string | null
           subscription_status?: string | null
           trial_ends_at?: string | null
@@ -226,8 +230,10 @@ export type Database = {
           access_type?: string | null
           created_at?: string
           email?: string | null
+          first_name?: string | null
           has_access?: boolean
           id?: string
+          last_name?: string | null
           promo_used?: string | null
           subscription_status?: string | null
           trial_ends_at?: string | null

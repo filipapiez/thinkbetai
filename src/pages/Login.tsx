@@ -16,6 +16,7 @@ import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const nameSchema = z.string().min(1, 'This field is required').max(50, 'Name is too long');
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,6 +25,8 @@ const Login = () => {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [promoCode, setPromoCode] = useState('');
   const [promoError, setPromoError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +44,7 @@ const Login = () => {
     }
   }, [user, isSubscribed, navigate, from]);
 
-  const validateInputs = (): boolean => {
+  const validateInputs = (isSignup = false): boolean => {
     try {
       emailSchema.parse(email);
     } catch (error) {
@@ -57,6 +60,25 @@ const Login = () => {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
         return false;
+      }
+    }
+
+    if (isSignup) {
+      try {
+        nameSchema.parse(firstName.trim());
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          toast.error('First name is required');
+          return false;
+        }
+      }
+      try {
+        nameSchema.parse(lastName.trim());
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          toast.error('Last name is required');
+          return false;
+        }
       }
     }
     
@@ -93,7 +115,7 @@ const Login = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateInputs()) return;
+    if (!validateInputs(true)) return;
     
     // Clear previous promo error
     setPromoError('');
@@ -105,6 +127,8 @@ const Login = () => {
         body: {
           email: email.trim(),
           password,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           promoCode: promoCode.trim(),
         },
       });
@@ -243,6 +267,32 @@ const Login = () => {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="first-name">First Name</Label>
+                        <Input
+                          id="first-name"
+                          type="text"
+                          placeholder="John"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          disabled={isLoading}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="last-name">Last Name</Label>
+                        <Input
+                          id="last-name"
+                          type="text"
+                          placeholder="Doe"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          disabled={isLoading}
+                          required
+                        />
+                      </div>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <div className="relative">
