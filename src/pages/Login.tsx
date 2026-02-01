@@ -36,7 +36,7 @@ const Login = () => {
       if (isSubscribed) {
         navigate(from, { replace: true });
       } else {
-        navigate('/paywall', { replace: true });
+        navigate('/pricing', { replace: true });
       }
     }
   }, [user, isSubscribed, navigate, from]);
