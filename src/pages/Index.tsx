@@ -258,13 +258,6 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Trial Badge */}
-              <div className="flex justify-center mt-4 animate-fade-in" style={{ animationDelay: '250ms' }}>
-                <span className="text-sm text-muted-foreground">
-                  ✨ <span className="font-semibold text-primary">7 days free trial</span> — no credit card needed
-                </span>
-              </div>
-
               {/* Trust Indicators */}
               <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
                 <div className="flex items-center gap-2">
@@ -575,13 +568,13 @@ const Index = () => {
                 <Button variant="hero" size="xl" asChild className="group text-lg">
                   <Link to="/pricing">
                     <Sparkles className="h-5 w-5 mr-2" />
-                    Start Your Free Trial
+                    Get Started Now
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               </div>
               <p className="mt-6 text-sm text-muted-foreground">
-                No credit card required • Cancel anytime • 100% money-back guarantee
+                Cancel anytime • 100% money-back guarantee
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm px-4">
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
