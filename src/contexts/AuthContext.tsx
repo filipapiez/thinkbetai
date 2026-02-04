@@ -175,9 +175,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check if user has active subscription, access, or is in trial period
-  const isInTrial = profile?.trial_ends_at ? new Date(profile.trial_ends_at) > new Date() : false;
-  const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true || isInTrial;
+  // Check if user has active subscription or access
+  const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true;
 
   return (
     <AuthContext.Provider value={{

@@ -54,8 +54,8 @@ const faqData: FAQItem[] = [
   },
   {
     category: 'Getting Started',
-    question: 'Is there a free trial available?',
-    answer: 'Yes! New users can explore our platform and see sample AI predictions before subscribing. We offer various plans starting at $49/month with full access to all sports coverage, AI analysis, and features like injury reports and real-time odds tracking.'
+    question: 'What subscription plans are available?',
+    answer: 'We offer various plans starting at $49/month with full access to all sports coverage, AI analysis, and features like injury reports and real-time odds tracking. Visit our pricing page to see all available options.'
   },
   {
     category: 'Getting Started',
