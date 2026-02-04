@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
+import WorkflowDemo from '@/components/WorkflowDemo';
 
 import { platformStats } from '@/lib/mockData';
 import { 
@@ -322,6 +323,25 @@ const Index = () => {
                 <span className="font-semibold text-foreground transition-all duration-300">{viewerCount.toLocaleString()}</span> users viewing picks right now
               </span>
             </div>
+          </div>
+        </section>
+
+        {/* How It Works - Interactive Demo */}
+        <section className="py-16 md:py-24 border-t border-border/40">
+          <div className="container">
+            <div className="text-center mb-12">
+              <Badge variant="outline" className="px-4 py-1.5 mb-4 border-primary/30 text-primary">
+                <Zap className="h-3.5 w-3.5 mr-2" />
+                How It Works
+              </Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-3">
+                See the AI in <span className="text-gradient">Action</span>
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                From real-time data to winning picks in seconds. Watch how our AI processes thousands of data points.
+              </p>
+            </div>
+            <WorkflowDemo />
           </div>
         </section>
 
