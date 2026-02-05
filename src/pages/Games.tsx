@@ -119,11 +119,20 @@ const Games = () => {
 
   // Get unique sports from data (for the selected time period), but also include
   // a stable set of popular sports so the filter list doesn't shrink unexpectedly.
+  // Sports with available games appear FIRST, unavailable sports at the end.
   const availableSports = useMemo(() => {
     const periodSports = new Set(periodFilteredGames.map(g => g.sport).filter(Boolean));
     const merged = new Set<string>([...POPULAR_SPORT_FILTERS, ...periodSports]);
 
     return Array.from(merged).sort((a, b) => {
+      const aHasGames = periodSports.has(a);
+      const bHasGames = periodSports.has(b);
+      
+      // Sports with games come first
+      if (aHasGames && !bHasGames) return -1;
+      if (!aHasGames && bHasGames) return 1;
+      
+      // Within same availability, sort by popularity order
       const ai = POPULAR_SPORT_FILTERS.indexOf(a);
       const bi = POPULAR_SPORT_FILTERS.indexOf(b);
       const aIn = ai !== -1;
