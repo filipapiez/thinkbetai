@@ -34,7 +34,7 @@ const steps = [
     icon: Target,
     color: 'from-emerald-500 to-teal-500',
     details: [
-      { label: 'Win Rate', value: '67%' },
+      { label: 'Win Rate', value: '81%' },
       { label: 'Avg Edge', value: '+4.2%' },
       { label: "Today's Picks", value: '23 live' },
     ]
@@ -168,27 +168,41 @@ const WorkflowDemo = () => {
 
 // Visual Components for each step
 const DataCollectionVisual = () => (
-  <div className="flex items-center justify-center gap-4 sm:gap-8">
-    {[
-      { icon: TrendingUp, label: 'Odds', delay: 0 },
-      { icon: Shield, label: 'Injuries', delay: 100 },
-      { icon: Zap, label: 'Stats', delay: 200 },
-    ].map((item) => (
-      <div
-        key={item.label}
-        className="flex flex-col items-center gap-2 animate-fade-in"
-        style={{ animationDelay: `${item.delay}ms` }}
-      >
-        <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center animate-pulse">
-          <item.icon className="h-7 w-7 sm:h-8 sm:w-8 text-blue-400" />
+  <div className="space-y-6">
+    {/* Data Sources Grid */}
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      {[
+        { icon: TrendingUp, label: 'Live Odds', sublabel: '12 sportsbooks', color: 'from-blue-500 to-blue-600' },
+        { icon: Shield, label: 'Injuries', sublabel: 'Real-time updates', color: 'from-red-500 to-rose-600' },
+        { icon: Zap, label: 'Player Stats', sublabel: '10K+ players', color: 'from-amber-500 to-orange-600' },
+        { icon: Database, label: 'Historical', sublabel: '5 years data', color: 'from-purple-500 to-violet-600' },
+      ].map((item, i) => (
+        <div
+          key={item.label}
+          className="relative p-3 sm:p-4 rounded-xl bg-card border border-border/50 animate-fade-in overflow-hidden group hover:border-blue-500/50 transition-colors"
+          style={{ animationDelay: `${i * 100}ms` }}
+        >
+          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity", item.color)} />
+          <div className={cn("h-10 w-10 rounded-lg bg-gradient-to-br flex items-center justify-center mb-2", item.color)}>
+            <item.icon className="h-5 w-5 text-white" />
+          </div>
+          <p className="text-sm font-semibold">{item.label}</p>
+          <p className="text-xs text-muted-foreground">{item.sublabel}</p>
+          {/* Pulse indicator */}
+          <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
-        <span className="text-xs sm:text-sm text-muted-foreground">{item.label}</span>
-        <div className="h-8 w-0.5 bg-gradient-to-b from-blue-500/50 to-transparent" />
+      ))}
+    </div>
+    
+    {/* Live Feed Simulation */}
+    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30">
+        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <span className="text-blue-400">50+ sources connected</span>
       </div>
-    ))}
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-        <Database className="h-6 w-6 text-white" />
+      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="text-emerald-400">Updating every 30s</span>
       </div>
     </div>
   </div>
@@ -232,37 +246,81 @@ const AIAnalysisVisual = () => (
 );
 
 const SmartPicksVisual = () => (
-  <div className="flex items-center justify-center">
-    <div className="w-full max-w-sm p-4 rounded-xl bg-card border border-emerald-500/30 shadow-lg">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-mono px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400">
-          TOP PICK
-        </span>
-        <span className="text-xs text-muted-foreground">NBA • Tonight</span>
-      </div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-center">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs mx-auto mb-1">
-            LAL
-          </div>
-          <p className="text-xs">Lakers</p>
+  <div className="w-full max-w-lg mx-auto">
+    {/* Game Card Example */}
+    <div className="rounded-xl bg-card border border-border/50 overflow-hidden shadow-xl">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-emerald-500/10 to-transparent border-b border-border/50">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            TOP PICK
+          </span>
+          <span className="text-xs text-muted-foreground">NBA • Today 7:30 PM</span>
         </div>
-        <div className="text-lg font-bold text-muted-foreground">vs</div>
-        <div className="text-center">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-xs mx-auto mb-1">
-            BOS
-          </div>
-          <p className="text-xs">Celtics</p>
+        <div className="flex items-center gap-1 text-xs">
+          <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-red-400">LIVE</span>
         </div>
       </div>
-      <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-        <div>
-          <p className="text-sm font-bold text-emerald-400">Celtics -4.5</p>
-          <p className="text-xs text-muted-foreground">AI Pick</p>
+      
+      {/* Teams */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              LAL
+            </div>
+            <div>
+              <p className="font-semibold">Los Angeles Lakers</p>
+              <p className="text-xs text-muted-foreground">32-18 • Home</p>
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-muted-foreground">-</p>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-bold text-primary">78%</p>
-          <p className="text-xs text-muted-foreground">Confidence</p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              BOS
+            </div>
+            <div>
+              <p className="font-semibold">Boston Celtics</p>
+              <p className="text-xs text-muted-foreground">38-12 • Away</p>
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-muted-foreground">-</p>
+        </div>
+      </div>
+      
+      {/* AI Pick Section */}
+      <div className="px-4 pb-4">
+        <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">AI Recommendation</p>
+              <p className="text-lg font-bold text-emerald-400">Boston Celtics -4.5</p>
+            </div>
+            <div className="text-right">
+              <p className="text-3xl font-bold text-primary">81%</p>
+              <p className="text-xs text-muted-foreground">Win Probability</p>
+            </div>
+          </div>
+          
+          {/* Metrics */}
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-emerald-500/20">
+            <div className="text-center">
+              <p className="text-sm font-bold text-primary">+5.2%</p>
+              <p className="text-[10px] text-muted-foreground">Edge</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-primary">-110</p>
+              <p className="text-[10px] text-muted-foreground">Odds</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-bold text-emerald-400">Strong</p>
+              <p className="text-[10px] text-muted-foreground">Signal</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
