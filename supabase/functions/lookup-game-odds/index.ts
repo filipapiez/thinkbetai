@@ -57,6 +57,7 @@ const sportKeyMap: Record<string, string> = {
   basketball: "basketball_nba",
   ncaab: "basketball_ncaab",
   wnba: "basketball_wnba",
+  euroleague: "basketball_euroleague",
   
   // American Football
   nfl: "americanfootball_nfl",
@@ -113,9 +114,53 @@ const sportKeyMap: Record<string, string> = {
   cricket: "cricket_ipl",
   ipl: "cricket_ipl",
   
-  // Table Tennis
+  // Table Tennis - map all WTT variants
   tabletennis: "tabletennis_wtt",
+  wtt: "tabletennis_wtt",
+  wttfeeder: "tabletennis_wtt",
 };
+
+// Extract base sport from complex sport names (e.g., "wttfeederantalya" -> "wtt")
+function extractBaseSport(sportKey: string): string | null {
+  const normalized = sportKey.toLowerCase();
+  
+  // Table tennis variants
+  if (normalized.includes("wtt") || normalized.includes("tabletennis")) {
+    return "tabletennis_wtt";
+  }
+  
+  // Tennis variants
+  if (normalized.includes("atp") || normalized.includes("wta") || normalized.includes("tennis")) {
+    return "tennis_atp_aus_open";
+  }
+  
+  // Soccer/football variants
+  if (normalized.includes("soccer") || normalized.includes("football") && !normalized.includes("american")) {
+    return "soccer_epl";
+  }
+  
+  // Basketball variants
+  if (normalized.includes("basketball") || normalized.includes("nba") || normalized.includes("ncaab")) {
+    return "basketball_nba";
+  }
+  
+  // Hockey variants
+  if (normalized.includes("hockey") || normalized.includes("nhl")) {
+    return "icehockey_nhl";
+  }
+  
+  // Baseball variants
+  if (normalized.includes("baseball") || normalized.includes("mlb")) {
+    return "baseball_mlb";
+  }
+  
+  // MMA/UFC variants
+  if (normalized.includes("ufc") || normalized.includes("mma")) {
+    return "mma_mixed_martial_arts";
+  }
+  
+  return null;
+}
 
 type TheOddsApiGame = {
   id: string;
@@ -259,7 +304,8 @@ serve(async (req) => {
     }
 
     const normalizedSport = normalizeSport(sportRaw);
-    const sportKey = sportKeyMap[normalizedSport] || normalizedSport;
+    // Try direct mapping first, then extract base sport for complex names
+    let sportKey = sportKeyMap[normalizedSport] || extractBaseSport(normalizedSport) || normalizedSport;
 
     // Basic guardrail (avoid garbage inputs)
     if (!sportKey || sportKey.length > 60) {
@@ -267,6 +313,19 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    
+    console.log(`[lookup-game-odds] Sport mapping: "${sportRaw}" -> "${sportKey}"`);
+    
+    // Check if we have a valid API sport key format (should contain underscore for most sports)
+    const isValidApiKey = sportKey.includes("_") || sportKeyMap[sportKey];
+    if (!isValidApiKey) {
+      // Try to extract base sport one more time
+      const baseSport = extractBaseSport(sportRaw);
+      if (baseSport) {
+        sportKey = baseSport;
+        console.log(`[lookup-game-odds] Fallback sport mapping: "${sportRaw}" -> "${sportKey}"`);
+      }
     }
 
     const cacheKey = `${sportKey}:${normalizeTeam(homeTeam)}:${normalizeTeam(awayTeam)}:${commenceTime?.slice(0, 10) ?? ""}`;
