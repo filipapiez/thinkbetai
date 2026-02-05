@@ -120,7 +120,7 @@ const PlayerStatsBadge = ({ team }: { team: LiveTeam }) => {
   );
 };
 
-// Get position label based on sport - returns null for individual sports
+// Get position label based on sport - only show for combat sports
 const getPositionLabel = (sport: string, isHome: boolean): string | null => {
   const sportLower = sport.toLowerCase();
   
@@ -129,18 +129,8 @@ const getPositionLabel = (sport: string, isHome: boolean): string | null => {
     return isHome ? 'Red Corner' : 'Blue Corner';
   }
   
-  // Individual sports don't have home/away
-  const individualSports = [
-    'tennis', 'table tennis', 'atp', 'wta', 'wtt',
-    'golf', 'pga', 'lpga',
-    'esports', 'darts', 'snooker', 'badminton', 'pool'
-  ];
-  if (individualSports.some(s => sportLower.includes(s))) {
-    return null;
-  }
-  
-  // Team sports use home/away
-  return isHome ? 'Home' : 'Away';
+  // All other sports - no home/away labels (data doesn't reliably match)
+  return null;
 };
 
 // Check if sport is a combat sport
