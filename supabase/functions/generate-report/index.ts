@@ -39,34 +39,29 @@ serve(async (req) => {
   }
 
   try {
-    // Authentication check
+    // Authentication is optional - log user if authenticated
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error("No authorization header provided");
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let userId = 'anonymous';
+    
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const supabase = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          Deno.env.get('SUPABASE_ANON_KEY')!,
+          { global: { headers: { Authorization: authHeader } } }
+        );
+
+        const token = authHeader.replace('Bearer ', '');
+        const { data: userData } = await supabase.auth.getUser(token);
+        if (userData?.user?.id) {
+          userId = userData.user.id;
+        }
+      } catch (authErr) {
+        console.log("Auth check failed, proceeding as anonymous:", authErr);
+      }
     }
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      console.error("Authentication failed:", claimsError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const userId = claimsData.claims.sub;
-    console.log(`Authenticated user: ${userId}`);
+    
+    console.log(`User: ${userId}`);
 
     const gameData: GameData = await req.json();
     
