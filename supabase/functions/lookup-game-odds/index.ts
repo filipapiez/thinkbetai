@@ -2,12 +2,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+"Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Rate limiting (per IP)
+// Rate limiting (per IP) - more generous limits
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 30;
+const RATE_LIMIT = 60; // Increased from 30
 const RATE_WINDOW_MS = 60 * 1000;
 
 function getClientIP(req: Request): string {
@@ -32,9 +32,17 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
-// Simple in-memory cache to reduce upstream calls
+// In-memory cache - match-level with longer TTL
 const cache = new Map<string, { data: unknown; ts: number }>();
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes (increased from 5)
+
+// Sport-level cache for API responses (reduces duplicate calls)
+const sportCache = new Map<string, { games: TheOddsApiGame[]; ts: number }>();
+const SPORT_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// Track upstream rate limit state
+let upstreamRateLimited = false;
+let upstreamRateLimitUntil = 0;
 
 function normalizeTeam(value: string): string {
   return value
@@ -160,6 +168,48 @@ function extractBaseSport(sportKey: string): string | null {
   }
   
   return null;
+}
+
+// Helper to fetch with sport-level caching
+async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOddsApiGame[]> {
+  const cached = sportCache.get(sportKey);
+  if (cached && Date.now() - cached.ts < SPORT_CACHE_TTL_MS) {
+    console.log(`[lookup-game-odds] Using cached data for ${sportKey}`);
+    return cached.games;
+  }
+
+  // Check if we're rate limited upstream
+  if (upstreamRateLimited && Date.now() < upstreamRateLimitUntil) {
+    console.log(`[lookup-game-odds] Upstream rate limited, using stale cache if available`);
+    return cached?.games || [];
+  }
+
+  const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(
+    sportKey
+  )}/odds/?apiKey=${encodeURIComponent(apiKey)}&regions=us,uk&markets=h2h,spreads,totals&oddsFormat=american`;
+
+  try {
+    const resp = await fetch(oddsUrl);
+    if (resp.ok) {
+      const data = (await resp.json()) as TheOddsApiGame[];
+      if (Array.isArray(data)) {
+        sportCache.set(sportKey, { games: data, ts: Date.now() });
+        upstreamRateLimited = false;
+        return data;
+      }
+    } else if (resp.status === 429) {
+      console.log(`[lookup-game-odds] Upstream rate limit hit for ${sportKey}`);
+      upstreamRateLimited = true;
+      upstreamRateLimitUntil = Date.now() + 60 * 1000; // Back off for 1 minute
+      return cached?.games || [];
+    } else {
+      console.log(`[lookup-game-odds] API error ${resp.status} for ${sportKey}`);
+    }
+  } catch (e) {
+    console.error(`[lookup-game-odds] Fetch error for ${sportKey}:`, e);
+  }
+
+  return cached?.games || [];
 }
 
 type TheOddsApiGame = {
@@ -354,39 +404,20 @@ serve(async (req) => {
     const keysToTry = isSoccer ? [sportKey, ...soccerFallbacks.filter(k => k !== sportKey)] : [sportKey];
     
     let games: TheOddsApiGame[] = [];
-    let lastError = "";
     
+    // Use the cached sport fetch helper (handles rate limits gracefully)
     for (const key of keysToTry) {
-      const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(
-        key,
-      )}/odds/?apiKey=${encodeURIComponent(API_KEY)}&regions=us,uk&markets=h2h,spreads,totals&oddsFormat=american`;
-
-      try {
-        const resp = await fetch(oddsUrl);
-        if (resp.ok) {
-          const data = (await resp.json()) as TheOddsApiGame[];
-          if (Array.isArray(data) && data.length > 0) {
-            games.push(...data);
-          }
-        } else if (resp.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        } else {
-          lastError = `API error: ${resp.status}`;
-        }
-      } catch (e) {
-        lastError = e instanceof Error ? e.message : "Unknown error";
+      const sportGames = await fetchSportOdds(key, API_KEY);
+      if (sportGames.length > 0) {
+        games.push(...sportGames);
       }
-      
       // If we found games with the primary key, no need to try fallbacks
       if (games.length > 0 && key === sportKey) break;
     }
     
     if (games.length === 0) {
-      console.log(`[lookup-game-odds] No games found for ${sportKey}. Last error: ${lastError}`);
-      return new Response(JSON.stringify({ error: "No odds available", details: lastError }), {
+      console.log(`[lookup-game-odds] No games found for ${sportKey}`);
+      return new Response(JSON.stringify({ error: "No odds available", rateLimited: upstreamRateLimited }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
