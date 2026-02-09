@@ -8,6 +8,7 @@ import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
+import WhyThinkBetAI from '@/components/WhyThinkBetAI';
 
 import { platformStats } from '@/lib/mockData';
 import { 
@@ -412,6 +413,9 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Why ThinkBetAI Section */}
+        <WhyThinkBetAI />
 
         {/* Features Section */}
         <section className="py-16 md:py-24 border-t border-border/40">
