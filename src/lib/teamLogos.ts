@@ -567,6 +567,50 @@ function normalizeSport(sport: string): string {
   return sportMap[sportLower] || sportLower;
 }
 
+// Common abbreviation patterns for auto-guessing ESPN logo URLs
+// For US pro sports, ESPN typically uses 2-3 letter city/team abbreviations
+const autoGuessAbbreviations: Record<string, Record<string, string>> = {
+  nba: {
+    'hawks': 'atl', 'celtics': 'bos', 'nets': 'bkn', 'hornets': 'cha',
+    'bulls': 'chi', 'cavaliers': 'cle', 'mavericks': 'dal', 'nuggets': 'den',
+    'pistons': 'det', 'warriors': 'gs', 'rockets': 'hou', 'pacers': 'ind',
+    'clippers': 'lac', 'lakers': 'lal', 'grizzlies': 'mem', 'heat': 'mia',
+    'bucks': 'mil', 'timberwolves': 'min', 'pelicans': 'no', 'knicks': 'ny',
+    'thunder': 'okc', 'magic': 'orl', '76ers': 'phi', 'suns': 'phx',
+    'trail blazers': 'por', 'blazers': 'por', 'kings': 'sac', 'spurs': 'sa',
+    'raptors': 'tor', 'jazz': 'utah', 'wizards': 'wsh',
+  },
+  nfl: {
+    'cardinals': 'ari', 'falcons': 'atl', 'ravens': 'bal', 'bills': 'buf',
+    'panthers': 'car', 'bears': 'chi', 'bengals': 'cin', 'browns': 'cle',
+    'cowboys': 'dal', 'broncos': 'den', 'lions': 'det', 'packers': 'gb',
+    'texans': 'hou', 'colts': 'ind', 'jaguars': 'jax', 'chiefs': 'kc',
+    'raiders': 'lv', 'chargers': 'lac', 'rams': 'lar', 'dolphins': 'mia',
+    'vikings': 'min', 'patriots': 'ne', 'saints': 'no', 'giants': 'nyg',
+    'jets': 'nyj', 'eagles': 'phi', 'steelers': 'pit', '49ers': 'sf',
+    'seahawks': 'sea', 'buccaneers': 'tb', 'titans': 'ten', 'commanders': 'wsh',
+  },
+  mlb: {
+    'diamondbacks': 'ari', 'braves': 'atl', 'orioles': 'bal', 'red sox': 'bos',
+    'cubs': 'chc', 'white sox': 'chw', 'reds': 'cin', 'guardians': 'cle',
+    'rockies': 'col', 'tigers': 'det', 'astros': 'hou', 'royals': 'kc',
+    'angels': 'laa', 'dodgers': 'lad', 'marlins': 'mia', 'brewers': 'mil',
+    'twins': 'min', 'mets': 'nym', 'yankees': 'nyy', 'athletics': 'oak',
+    'phillies': 'phi', 'pirates': 'pit', 'padres': 'sd', 'mariners': 'sea',
+    'rays': 'tb', 'rangers': 'tex', 'blue jays': 'tor', 'nationals': 'wsh',
+  },
+  nhl: {
+    'ducks': 'ana', 'bruins': 'bos', 'sabres': 'buf', 'flames': 'cgy',
+    'hurricanes': 'car', 'blackhawks': 'chi', 'avalanche': 'col',
+    'blue jackets': 'cbj', 'stars': 'dal', 'red wings': 'det', 'oilers': 'edm',
+    'panthers': 'fla', 'wild': 'min', 'canadiens': 'mtl', 'predators': 'nsh',
+    'devils': 'nj', 'islanders': 'nyi', 'rangers': 'nyr', 'senators': 'ott',
+    'flyers': 'phi', 'penguins': 'pit', 'sharks': 'sj', 'kraken': 'sea',
+    'blues': 'stl', 'lightning': 'tb', 'maple leafs': 'tor',
+    'canucks': 'van', 'golden knights': 'vgk', 'capitals': 'wsh', 'jets': 'wpg',
+  },
+};
+
 // Try to get team ID from mapping or derive from team name
 function getTeamId(teamName: string, sport: string): string | null {
   const normalizedSport = normalizeSport(sport);
@@ -583,6 +627,16 @@ function getTeamId(teamName: string, sport: string): string | null {
     for (const [key, value] of Object.entries(sportMappings)) {
       if (normalizedTeam.includes(key) || key.includes(normalizedTeam)) {
         return value;
+      }
+    }
+  }
+  
+  // Auto-guess: try matching by nickname (last word(s) of team name)
+  const guesses = autoGuessAbbreviations[normalizedSport];
+  if (guesses) {
+    for (const [nickname, id] of Object.entries(guesses)) {
+      if (normalizedTeam.endsWith(nickname) || normalizedTeam.includes(nickname)) {
+        return id;
       }
     }
   }
