@@ -22,6 +22,10 @@ import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import WhatIsAISportsBetting from "./pages/WhatIsAISportsBetting";
 import AISportsPicks from "./pages/AISportsPicks";
+import BestAIBettingApp from "./pages/BestAIBettingApp";
+import FreeAIPredictions from "./pages/FreeAIPredictions";
+import AINFLPicks from "./pages/AINFLPicks";
+import AIParlayBuilder from "./pages/AIParlayBuilder";
 import FAQ from "./pages/FAQ";
 import Login from "./pages/Login";
 
@@ -55,6 +59,10 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
               <Route path="/ai-sports-picks" element={<AISportsPicks />} />
+              <Route path="/best-ai-betting-app" element={<BestAIBettingApp />} />
+              <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
+              <Route path="/ai-nfl-picks" element={<AINFLPicks />} />
+              <Route path="/ai-parlay-builder" element={<AIParlayBuilder />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />

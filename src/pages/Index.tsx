@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -174,9 +175,46 @@ const Index = () => {
     },
   ];
 
+  // Review structured data for testimonials
+  const reviewStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "ThinkBetAI",
+    "description": "AI-powered sports betting predictions and analytics platform",
+    "brand": {
+      "@type": "Brand",
+      "name": "ThinkBetAI"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "2400",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": testimonials.slice(0, 5).map((t, i) => ({
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": t.author
+      },
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": t.rating.toString(),
+        "bestRating": "5"
+      },
+      "reviewBody": t.quote
+    }))
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(reviewStructuredData)}
+        </script>
+      </Helmet>
       <Header />
       
       <main className="flex-1">
