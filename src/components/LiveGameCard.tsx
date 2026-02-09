@@ -6,6 +6,7 @@ import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap, P
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { LiveTeam } from '@/lib/liveTypes';
+import { TeamLogo } from '@/components/TeamLogo';
 
 interface LiveGameCardProps {
   game: LiveGame;
@@ -199,13 +200,16 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
           <div className="flex items-center justify-between gap-4 mb-4">
             {/* Home/Red Corner Team */}
             <div className="flex-1 text-center">
-              <div className={cn(
-                "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
-                isCombatSport(game.sport) && "border-2 border-red-500/50"
-              )}>
-                {game.homeTeam.abbreviation}
-              </div>
+              <TeamLogo
+                teamName={game.homeTeam.name}
+                abbreviation={game.homeTeam.abbreviation}
+                sport={game.sportKey || game.sport}
+                className={cn(
+                  "mx-auto mb-2",
+                  qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
+                  isCombatSport(game.sport) && "border-2 border-red-500/50"
+                )}
+              />
               <p className="text-sm font-medium truncate">{game.homeTeam.name}</p>
               <div className="flex flex-col items-center gap-1">
                 {getPositionLabel(game.sport, true) && (
@@ -231,13 +235,16 @@ export const LiveGameCard = ({ game }: LiveGameCardProps) => {
 
             {/* Away/Blue Corner Team */}
             <div className="flex-1 text-center">
-              <div className={cn(
-                "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
-                isCombatSport(game.sport) && "border-2 border-blue-500/50"
-              )}>
-                {game.awayTeam.abbreviation}
-              </div>
+              <TeamLogo
+                teamName={game.awayTeam.name}
+                abbreviation={game.awayTeam.abbreviation}
+                sport={game.sportKey || game.sport}
+                className={cn(
+                  "mx-auto mb-2",
+                  qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50",
+                  isCombatSport(game.sport) && "border-2 border-blue-500/50"
+                )}
+              />
               <p className="text-sm font-medium truncate">{game.awayTeam.name}</p>
               <div className="flex flex-col items-center gap-1">
                 {getPositionLabel(game.sport, false) && (
