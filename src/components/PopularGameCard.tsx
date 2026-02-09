@@ -3,6 +3,19 @@ import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+
+// Get position label based on sport - only show for combat sports
+const getPositionLabel = (sport: string, isHome: boolean): string | null => {
+  const sportLower = sport.toLowerCase();
+  
+  // Combat sports use corners
+  if (['ufc', 'mma', 'boxing'].includes(sportLower)) {
+    return isHome ? 'Red Corner' : 'Blue Corner';
+  }
+  
+  // All other sports - no home/away labels (data doesn't reliably match)
+  return null;
+};
 import { cn } from '@/lib/utils';
 import { PopularGame } from '@/hooks/usePopularGames';
 
@@ -207,7 +220,9 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
                 <p className="text-sm font-medium truncate" title={game.homeTeam}>
                   {game.homeTeam}
                 </p>
-                <p className="text-xs text-muted-foreground">Home</p>
+                {getPositionLabel(game.sport, true) && (
+                  <p className="text-xs text-muted-foreground">{getPositionLabel(game.sport, true)}</p>
+                )}
                 {hasOdds && game.odds?.moneyline && (
                   <p className={cn(
                     "text-lg font-bold font-mono mt-1",
@@ -238,7 +253,9 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
                 <p className="text-sm font-medium truncate" title={game.awayTeam}>
                   {game.awayTeam}
                 </p>
-                <p className="text-xs text-muted-foreground">Away</p>
+                {getPositionLabel(game.sport, false) && (
+                  <p className="text-xs text-muted-foreground">{getPositionLabel(game.sport, false)}</p>
+                )}
                 {hasOdds && game.odds?.moneyline && (
                   <p className={cn(
                     "text-lg font-bold font-mono mt-1",
