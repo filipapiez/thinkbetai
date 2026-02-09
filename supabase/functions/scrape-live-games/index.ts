@@ -1093,7 +1093,7 @@ async function fetchUFCGames(): Promise<ScheduledGame[]> {
 }
 
 // ============================================================================
-// TENNIS (ATP/WTA) INTEGRATION via SportsGameOdds API
+// TENNIS (ATP/WTA) INTEGRATION via SportsGameOdds API + TheOddsAPI fallback
 // ============================================================================
 
 async function fetchTennisGames(): Promise<ScheduledGame[]> {
@@ -1101,45 +1101,178 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
   
   try {
     const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
-    if (!apiKey) {
-      console.log('[Tennis] No SPORTSGAMEODDS_API_KEY configured');
-      return [];
+    let sportsGameOddsSuccess = false;
+    
+    if (apiKey) {
+      console.log('[Tennis] Fetching ATP and WTA from SportsGameOdds API...');
+      
+      const [atpResponse, wtaResponse] = await Promise.all([
+        fetch('https://api.sportsgameodds.com/v2/events?leagueID=ATP&oddsAvailable=true&limit=20', 
+          { headers: { 'x-api-key': apiKey } }),
+        fetch('https://api.sportsgameodds.com/v2/events?leagueID=WTA&oddsAvailable=true&limit=20', 
+          { headers: { 'x-api-key': apiKey } }),
+      ]);
+
+      const processResponse = async (response: Response, league: string, popularity: number) => {
+        if (!response.ok) {
+          console.error(`[Tennis] ${league} API error: ${response.status}`);
+          return false;
+        }
+
+        const data = await response.json();
+        const events = data?.data || data?.events || [];
+        console.log(`[Tennis] Found ${events.length} ${league} events`);
+
+        for (const event of events) {
+          const game = parseAPIEvent(event, 'Tennis', league, popularity);
+          if (game) games.push(game);
+        }
+        return events.length > 0;
+      };
+
+      const [atpSuccess, wtaSuccess] = await Promise.all([
+        processResponse(atpResponse, 'ATP', 70),
+        processResponse(wtaResponse, 'WTA', 65),
+      ]);
+      
+      sportsGameOddsSuccess = atpSuccess || wtaSuccess;
     }
 
-    console.log('[Tennis] Fetching ATP and WTA from SportsGameOdds API...');
-    
-    const [atpResponse, wtaResponse] = await Promise.all([
-      fetch('https://api.sportsgameodds.com/v2/events?leagueID=ATP&oddsAvailable=true&limit=20', 
-        { headers: { 'x-api-key': apiKey } }),
-      fetch('https://api.sportsgameodds.com/v2/events?leagueID=WTA&oddsAvailable=true&limit=20', 
-        { headers: { 'x-api-key': apiKey } }),
-    ]);
+    // Fallback to TheOddsAPI if SportsGameOdds failed or returned no games
+    if (!sportsGameOddsSuccess || games.length === 0) {
+      const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
+      if (oddsApiKey) {
+        console.log('[Tennis] Trying TheOddsAPI as fallback...');
+        
+        const tennisKeys = [
+          { key: 'tennis_atp_french_open', league: 'French Open', popularity: 80 },
+          { key: 'tennis_atp_aus_open', league: 'Australian Open', popularity: 80 },
+          { key: 'tennis_atp_us_open', league: 'US Open', popularity: 80 },
+          { key: 'tennis_atp_wimbledon', league: 'Wimbledon', popularity: 85 },
+          { key: 'tennis_wta_french_open', league: 'WTA French Open', popularity: 72 },
+          { key: 'tennis_wta_aus_open', league: 'WTA Australian Open', popularity: 72 },
+          { key: 'tennis_wta_us_open', league: 'WTA US Open', popularity: 72 },
+          { key: 'tennis_wta_wimbledon', league: 'WTA Wimbledon', popularity: 75 },
+        ];
+        
+        for (const config of tennisKeys) {
+          try {
+            const response = await fetch(
+              `https://api.the-odds-api.com/v4/sports/${config.key}/odds/?apiKey=${oddsApiKey}&regions=us,uk&markets=h2h&oddsFormat=american`,
+              { headers: { 'Accept': 'application/json' } }
+            );
 
-    const processResponse = async (response: Response, league: string, popularity: number) => {
-      if (!response.ok) {
-        console.error(`[Tennis] ${league} API error: ${response.status}`);
-        return;
+            if (response.ok) {
+              const events = await response.json();
+              if (events.length > 0) {
+                console.log(`[Tennis] Found ${events.length} ${config.league} events from TheOddsAPI`);
+                
+                for (const event of events) {
+                  const game = parseTheOddsEventSimple(event, 'Tennis', config.league, config.popularity);
+                  if (game) games.push(game);
+                }
+              }
+            }
+          } catch (e) {
+            // Continue to next tournament
+          }
+        }
       }
+    }
 
-      const data = await response.json();
-      const events = data?.data || data?.events || [];
-      console.log(`[Tennis] Found ${events.length} ${league} events`);
-
-      for (const event of events) {
-        const game = parseAPIEvent(event, 'Tennis', league, popularity);
-        if (game) games.push(game);
-      }
-    };
-
-    await Promise.all([
-      processResponse(atpResponse, 'ATP', 70),
-      processResponse(wtaResponse, 'WTA', 65),
-    ]);
-
+    console.log(`[Tennis] Total games fetched: ${games.length}`);
     return games;
   } catch (error) {
     console.error('[Tennis] Error fetching games:', error);
-  return [];
+    return [];
+  }
+}
+
+// Helper to parse TheOddsAPI events (simpler version without full config object)
+function parseTheOddsEventSimple(event: any, sport: string, league: string, popularity: number): ScheduledGame | null {
+  try {
+    const homeTeam = event.home_team || '';
+    const awayTeam = event.away_team || '';
+    
+    if (!homeTeam || !awayTeam || !event.commence_time) return null;
+
+    const odds: ScheduledGame['odds'] = {};
+    const bookmakers = event.bookmakers || [];
+    
+    if (bookmakers.length > 0) {
+      const primaryBook = bookmakers[0];
+      const markets = primaryBook.markets || [];
+      
+      for (const market of markets) {
+        if (market.key === 'h2h') {
+          const homeOutcome = market.outcomes?.find((o: any) => o.name === homeTeam);
+          const awayOutcome = market.outcomes?.find((o: any) => o.name === awayTeam);
+          
+          if (homeOutcome && awayOutcome) {
+            odds.moneyline = {
+              home: homeOutcome.price || 0,
+              away: awayOutcome.price || 0,
+            };
+          }
+        }
+      }
+    }
+
+    return {
+      id: `tennis_${event.id || Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      sport,
+      league,
+      homeTeam,
+      awayTeam,
+      startTime: event.commence_time,
+      popularityScore: popularity,
+      status: 'scheduled',
+      odds: Object.keys(odds).length > 0 ? odds : undefined,
+      hasOdds: Object.keys(odds).length > 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// BOXING INTEGRATION via TheOddsAPI
+// ============================================================================
+
+async function fetchBoxingGames(): Promise<ScheduledGame[]> {
+  const games: ScheduledGame[] = [];
+  
+  try {
+    const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (!oddsApiKey) {
+      console.log('[Boxing] No THE_ODDS_API_KEY configured');
+      return [];
+    }
+
+    console.log('[Boxing] Fetching from TheOddsAPI...');
+    
+    const response = await fetch(
+      `https://api.the-odds-api.com/v4/sports/boxing_boxing/odds/?apiKey=${oddsApiKey}&regions=us,uk&markets=h2h&oddsFormat=american`,
+      { headers: { 'Accept': 'application/json' } }
+    );
+
+    if (response.ok) {
+      const events = await response.json();
+      console.log(`[Boxing] Found ${events.length} events from TheOddsAPI`);
+
+      for (const event of events) {
+        const game = parseTheOddsEventSimple(event, 'Boxing', 'Boxing', 78);
+        if (game) games.push(game);
+      }
+    } else if (response.status !== 404 && response.status !== 422) {
+      console.error(`[Boxing] API error: ${response.status}`);
+    }
+
+    console.log(`[Boxing] Total games fetched: ${games.length}`);
+    return games;
+  } catch (error) {
+    console.error('[Boxing] Error fetching games:', error);
+    return [];
   }
 }
 
@@ -1846,6 +1979,7 @@ Deno.serve(async (req) => {
       ufcGames, 
       tennisGames,
       tableTennisGames,
+      boxingGames,
       theOddsGames,
       espnGames,
     ] = await Promise.all([
@@ -1859,6 +1993,7 @@ Deno.serve(async (req) => {
       fetchUFCGames(),
       fetchTennisGames(),
       fetchTableTennisGames(),
+      fetchBoxingGames(),
       fetchTheOddsAPIGames(),
       fetchESPNGames(),
     ]);
@@ -1874,11 +2009,12 @@ Deno.serve(async (req) => {
       ...ufcGames, 
       ...tennisGames,
       ...tableTennisGames,
+      ...boxingGames,
       ...theOddsGames,
       ...espnGames,
     ];
     
-    console.log(`[API] Total fetched: ${allGames.length} games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TableTennis: ${tableTennisGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
+    console.log(`[API] Total fetched: ${allGames.length} games (Sportsbook: ${sportsbookGames.length}, NFL: ${nflGames.length}, NBA: ${nbaGames.length}, NHL: ${nhlGames.length}, MLB: ${mlbGames.length}, NCAAB: ${ncaabGames.length}, NCAAF: ${ncaafGames.length}, UFC: ${ufcGames.length}, Tennis: ${tennisGames.length}, TableTennis: ${tableTennisGames.length}, Boxing: ${boxingGames.length}, TheOddsAPI: ${theOddsGames.length}, ESPN: ${espnGames.length})`);
 
     // Filter out completed games and games with past dates (allow games from today onwards or live games)
     const now = new Date();
