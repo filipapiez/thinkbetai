@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Link } from 'react-router-dom';
 import { 
   Heart, 
@@ -30,6 +31,10 @@ const AboutPage = () => {
       <Header />
       
       <main className="flex-1">
+        {/* Breadcrumb */}
+        <div className="container pt-6">
+          <Breadcrumb items={[{ label: 'About' }]} />
+        </div>
         {/* Hero Section */}
         <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />

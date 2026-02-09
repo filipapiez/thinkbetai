@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Calendar, Clock, ArrowRight, TrendingUp } from 'lucide-react';
 import { blogPosts } from '@/lib/blogData';
 
@@ -23,6 +24,9 @@ const Blog = () => {
       <Header />
       
       <main className="container py-12">
+        {/* Breadcrumb */}
+        <Breadcrumb items={[{ label: 'Blog' }]} className="mb-8" />
+        
         {/* Hero Section */}
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">

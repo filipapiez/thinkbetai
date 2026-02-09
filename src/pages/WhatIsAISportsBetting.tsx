@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Brain, BarChart3, Database, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,14 +47,14 @@ const WhatIsAISportsBetting = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-12 max-w-4xl">
-        {/* Breadcrumb */}
-        <nav className="mb-8">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-            Home
-          </Link>
-          <span className="mx-2 text-muted-foreground">/</span>
-          <span className="text-foreground">What Is AI Sports Betting</span>
-        </nav>
+        {/* Breadcrumb with Schema */}
+        <Breadcrumb 
+          items={[
+            { label: 'Blog', href: '/blog' },
+            { label: 'What Is AI Sports Betting' }
+          ]} 
+          className="mb-8"
+        />
 
         {/* Hero */}
         <header className="mb-12">

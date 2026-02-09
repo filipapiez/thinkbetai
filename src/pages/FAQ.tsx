@@ -1,6 +1,7 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -170,6 +171,11 @@ const FAQ = () => {
       <Header />
       
       <main className="flex-1">
+        {/* Breadcrumb */}
+        <div className="container max-w-4xl pt-8">
+          <Breadcrumb items={[{ label: 'FAQ' }]} />
+        </div>
+        
         {/* Hero Section */}
         <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
