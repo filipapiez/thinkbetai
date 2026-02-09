@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
@@ -110,6 +111,9 @@ const Pricing = () => {
       
       <main className="flex-1 py-12 md:py-20">
         <div className="container">
+          {/* Breadcrumb */}
+          <Breadcrumb items={[{ label: 'Pricing' }]} className="mb-8" />
+          
           {/* Header */}
           <div className="text-center mb-8 md:mb-16">
             <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
