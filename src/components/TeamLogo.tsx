@@ -8,7 +8,20 @@ interface TeamLogoProps {
   sport: string;
   className?: string;
   showBorder?: boolean;
-  borderColor?: string; // For combat sports corner colors
+  borderColor?: string;
+}
+
+// Generate a consistent color from team name for fallback styling
+function getTeamColor(teamName: string): { bg: string; text: string } {
+  let hash = 0;
+  for (let i = 0; i < teamName.length; i++) {
+    hash = teamName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return {
+    bg: `hsl(${hue}, 45%, 25%)`,
+    text: `hsl(${hue}, 60%, 75%)`,
+  };
 }
 
 export const TeamLogo = ({
@@ -26,25 +39,27 @@ export const TeamLogo = ({
   const supportsLogos = sportSupportsLogos(sport);
   const isIndividual = isIndividualSportForLogos(sport);
   const hasLogo = logoUrl && supportsLogos && !isIndividual;
-  const isCombat = isCombatSportForLogos(sport);
-  
-  // Show logo if available, otherwise show abbreviation
   const showImage = hasLogo && !imageError;
   
+  const teamColor = getTeamColor(teamName);
+
   return (
     <div
       className={cn(
-        "w-14 h-14 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center overflow-hidden",
+        "w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden shrink-0",
         showBorder && borderColor,
         className
       )}
+      style={!showImage ? { background: `linear-gradient(135deg, ${teamColor.bg}, hsl(var(--muted)))` } : undefined}
     >
       {showImage ? (
         <>
-          {/* Skeleton while loading */}
           {!imageLoaded && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xl font-bold text-muted-foreground">
+              <span
+                className="text-base font-bold tracking-tight"
+                style={{ color: teamColor.text }}
+              >
                 {abbreviation}
               </span>
             </div>
@@ -62,7 +77,10 @@ export const TeamLogo = ({
           />
         </>
       ) : (
-        <span className="text-xl font-bold">
+        <span
+          className="text-base font-bold tracking-tight drop-shadow-sm"
+          style={{ color: teamColor.text }}
+        >
           {abbreviation}
         </span>
       )}
