@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Calendar, Clock, ArrowLeft, ArrowRight, User, Share2 } from 'lucide-react';
 import { getBlogPostBySlug, getRelatedPosts } from '@/lib/blogData';
 
@@ -57,6 +58,37 @@ const BlogPost = () => {
     }
   };
 
+  // Generate Article structured data for SEO
+  const articleStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.excerpt,
+    "image": post.image,
+    "author": {
+      "@type": "Organization",
+      "name": post.author,
+      "url": "https://thinkbetai.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "ThinkBetAI",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://thinkbetai.com/thinkbetai-logo.png"
+      }
+    },
+    "datePublished": post.publishedAt,
+    "dateModified": post.publishedAt,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://thinkbetai.com/blog/${post.slug}`
+    },
+    "keywords": post.tags.join(', '),
+    "articleSection": post.category,
+    "wordCount": post.content.split(/\s+/).length
+  };
+
   // Generate FAQ structured data
   const faqStructuredData = faqs ? {
     "@context": "https://schema.org",
@@ -83,24 +115,27 @@ const BlogPost = () => {
         publishedTime={post.publishedAt}
         image={post.image}
       />
-      {faqStructuredData && (
-        <Helmet>
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(articleStructuredData)}
+        </script>
+        {faqStructuredData && (
           <script type="application/ld+json">
             {JSON.stringify(faqStructuredData)}
           </script>
-        </Helmet>
-      )}
+        )}
+      </Helmet>
       <Header />
       
       <main className="container py-8 md:py-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <span>/</span>
-          <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
-          <span>/</span>
-          <span className="text-foreground truncate">{post.title}</span>
-        </nav>
+        {/* Breadcrumb with Schema */}
+        <Breadcrumb 
+          items={[
+            { label: 'Blog', href: '/blog' },
+            { label: post.title }
+          ]} 
+          className="mb-8"
+        />
 
         <div className="grid lg:grid-cols-[1fr_300px] gap-12">
           {/* Main Content */}
