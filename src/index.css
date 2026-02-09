@@ -142,6 +142,10 @@
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out forwards;
   }
+
+  .animate-feature-slide-in {
+    animation: featureSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 }
 
 @layer utilities {
@@ -164,6 +168,17 @@
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+
+  @keyframes featureSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   @keyframes shimmer {
