@@ -274,8 +274,9 @@ const teamIdMappings: Record<string, Record<string, string>> = {
 function normalizeSport(sport: string): string {
   const sportLower = sport.toLowerCase().trim();
   
-  // Map common variations
+  // Map common variations - including display names from useLiveGames
   const sportMap: Record<string, string> = {
+    // API keys
     'basketball_nba': 'nba',
     'americanfootball_nfl': 'nfl',
     'baseball_mlb': 'mlb',
@@ -285,6 +286,16 @@ function normalizeSport(sport: string): string {
     'soccer_england_epl': 'premier league',
     'soccer_usa_mls': 'mls',
     'soccer_uefa_champs_league': 'champions league',
+    // Display names from useLiveGames sportDisplayNames
+    'premier league': 'premier league',
+    'la liga': 'premier league', // Use same soccer config
+    'bundesliga': 'premier league',
+    'serie a': 'premier league',
+    'ligue 1': 'premier league',
+    'champions league': 'champions league',
+    'ncaab': 'ncaab',
+    'ncaaf': 'ncaaf',
+    'wnba': 'wnba',
   };
   
   return sportMap[sportLower] || sportLower;

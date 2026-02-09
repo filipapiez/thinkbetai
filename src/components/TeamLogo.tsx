@@ -23,7 +23,9 @@ export const TeamLogo = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   
   const logoUrl = getTeamLogoUrl(teamName, sport);
-  const hasLogo = logoUrl && sportSupportsLogos(sport) && !isIndividualSportForLogos(sport);
+  const supportsLogos = sportSupportsLogos(sport);
+  const isIndividual = isIndividualSportForLogos(sport);
+  const hasLogo = logoUrl && supportsLogos && !isIndividual;
   const isCombat = isCombatSportForLogos(sport);
   
   // Show logo if available, otherwise show abbreviation
