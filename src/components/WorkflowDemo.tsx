@@ -246,79 +246,114 @@ const AIAnalysisVisual = () => (
 );
 
 const SmartPicksVisual = () => (
-  <div className="w-full max-w-lg mx-auto">
-    {/* Game Card Example */}
-    <div className="rounded-xl bg-card border border-border/50 overflow-hidden shadow-xl">
+  <div className="w-full max-w-2xl mx-auto">
+    {/* Game Card Example - Larger and more detailed */}
+    <div className="rounded-2xl bg-card border border-border/50 overflow-hidden shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-emerald-500/10 to-transparent border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-            TOP PICK
+      <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border-b border-border/50">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            ⭐ TOP PICK
           </span>
-          <span className="text-xs text-muted-foreground">NBA • Today 7:30 PM</span>
+          <span className="text-sm text-muted-foreground">NBA • Feb 9, 2026 • 7:30 PM EST</span>
         </div>
-        <div className="flex items-center gap-1 text-xs">
-          <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-red-400">LIVE</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">Spread</span>
         </div>
       </div>
       
-      {/* Teams */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+      {/* Teams - Larger */}
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg shadow-xl shadow-amber-500/20">
               LAL
             </div>
             <div>
-              <p className="font-semibold">Los Angeles Lakers</p>
-              <p className="text-xs text-muted-foreground">32-18 • Home</p>
+              <p className="text-lg font-bold">Los Angeles Lakers</p>
+              <p className="text-sm text-muted-foreground">32-18 • Home • 5-2 L7</p>
             </div>
           </div>
-          <p className="text-2xl font-bold text-muted-foreground">-</p>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">Spread</p>
+            <p className="text-xl font-bold">+4.5</p>
+          </div>
         </div>
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+        <div className="flex items-center justify-center my-4">
+          <div className="w-full h-px bg-border" />
+          <span className="px-4 text-sm font-medium text-muted-foreground">VS</span>
+          <div className="w-full h-px bg-border" />
+        </div>
+        
+        <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center gap-4">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-xl shadow-emerald-500/20">
               BOS
             </div>
             <div>
-              <p className="font-semibold">Boston Celtics</p>
-              <p className="text-xs text-muted-foreground">38-12 • Away</p>
+              <p className="text-lg font-bold">Boston Celtics</p>
+              <p className="text-sm text-muted-foreground">38-12 • Away • 6-1 L7</p>
             </div>
           </div>
-          <p className="text-2xl font-bold text-muted-foreground">-</p>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">Spread</p>
+            <p className="text-xl font-bold text-emerald-400">-4.5 ✓</p>
+          </div>
         </div>
       </div>
       
-      {/* AI Pick Section */}
-      <div className="px-4 pb-4">
-        <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30">
-          <div className="flex items-center justify-between mb-3">
+      {/* AI Pick Section - Expanded */}
+      <div className="px-6 pb-6">
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/30">
+          <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">AI Recommendation</p>
-              <p className="text-lg font-bold text-emerald-400">Boston Celtics -4.5</p>
+              <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">AI Recommendation</p>
+              <p className="text-2xl font-bold text-emerald-400">Boston Celtics -4.5</p>
+              <p className="text-sm text-muted-foreground mt-1">Best odds at DraftKings: -110</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-primary">81%</p>
+            <div className="text-right bg-background/50 rounded-xl p-3 border border-emerald-500/20">
+              <p className="text-4xl font-bold text-primary">81%</p>
               <p className="text-xs text-muted-foreground">Win Probability</p>
             </div>
           </div>
           
+          {/* Key Factors */}
+          <div className="mb-4 p-3 rounded-xl bg-background/40 border border-border/50">
+            <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Key Factors</p>
+            <ul className="space-y-1 text-sm text-foreground/80">
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Celtics 8-2 ATS in last 10 road games
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Lakers missing AD (ankle) - confirmed out
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Boston averages +6.2 margin vs West teams
+              </li>
+            </ul>
+          </div>
+          
           {/* Metrics */}
-          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-emerald-500/20">
-            <div className="text-center">
-              <p className="text-sm font-bold text-primary">+5.2%</p>
-              <p className="text-[10px] text-muted-foreground">Edge</p>
+          <div className="grid grid-cols-4 gap-3 pt-4 border-t border-emerald-500/20">
+            <div className="text-center p-2 rounded-lg bg-background/40">
+              <p className="text-lg font-bold text-emerald-400">+5.2%</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Edge</p>
             </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-primary">-110</p>
-              <p className="text-[10px] text-muted-foreground">Odds</p>
+            <div className="text-center p-2 rounded-lg bg-background/40">
+              <p className="text-lg font-bold text-primary">-110</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Odds</p>
             </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-emerald-400">Strong</p>
-              <p className="text-[10px] text-muted-foreground">Signal</p>
+            <div className="text-center p-2 rounded-lg bg-background/40">
+              <p className="text-lg font-bold text-primary">2.3u</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Rec Bet</p>
+            </div>
+            <div className="text-center p-2 rounded-lg bg-background/40">
+              <p className="text-lg font-bold text-emerald-400">A+</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Grade</p>
             </div>
           </div>
         </div>
