@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
 
 // Get position label based on sport - only show for combat sports
 const getPositionLabel = (sport: string, isHome: boolean): string | null => {
@@ -214,9 +215,12 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
             <div className="flex items-center justify-between gap-4 mb-4">
               {/* Home Team */}
               <div className="flex-1 text-center">
-                <div className="w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold">
-                  {getAbbreviation(game.homeTeam)}
-                </div>
+                <TeamLogo
+                  teamName={game.homeTeam}
+                  abbreviation={getAbbreviation(game.homeTeam)}
+                  sport={game.league || game.sport}
+                  className="mx-auto mb-2"
+                />
                 <p className="text-sm font-medium truncate" title={game.homeTeam}>
                   {game.homeTeam}
                 </p>
@@ -247,9 +251,12 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
 
               {/* Away Team */}
               <div className="flex-1 text-center">
-                <div className="w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold">
-                  {getAbbreviation(game.awayTeam)}
-                </div>
+                <TeamLogo
+                  teamName={game.awayTeam}
+                  abbreviation={getAbbreviation(game.awayTeam)}
+                  sport={game.league || game.sport}
+                  className="mx-auto mb-2"
+                />
                 <p className="text-sm font-medium truncate" title={game.awayTeam}>
                   {game.awayTeam}
                 </p>
