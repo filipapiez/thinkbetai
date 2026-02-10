@@ -52,13 +52,13 @@ const WorkflowDemo = () => {
   return (
     <div className="w-full max-w-5xl mx-auto">
       {/* Step Indicators */}
-      <div className="flex items-center justify-center mb-10">
+      <div className="flex items-center justify-center mb-6 sm:mb-10 overflow-x-auto px-2">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center">
+          <div key={step.id} className="flex items-center shrink-0">
             <motion.button
               onClick={() => setActiveStep(step.id)}
               className={cn(
-                "relative flex flex-col items-center gap-2 px-4 sm:px-8 py-3 rounded-2xl transition-all duration-300",
+                "relative flex flex-col items-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-2 sm:py-3 rounded-2xl transition-all duration-300",
                 activeStep === step.id
                   ? "bg-card border border-primary/30 shadow-lg shadow-primary/10"
                   : "hover:bg-card/50"
@@ -69,7 +69,7 @@ const WorkflowDemo = () => {
               {/* Step Number Badge */}
               <motion.div
                 className={cn(
-                  "absolute -top-2 -left-2 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold",
+                  "absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold",
                   activeStep === step.id
                     ? "bg-primary text-primary-foreground"
                     : activeStep > step.id
@@ -79,13 +79,13 @@ const WorkflowDemo = () => {
                 animate={activeStep === step.id ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.5 }}
               >
-                {activeStep > step.id ? <CheckCircle2 className="h-4 w-4" /> : step.id}
+                {activeStep > step.id ? <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" /> : step.id}
               </motion.div>
 
               {/* Icon */}
               <motion.div
                 className={cn(
-                  "h-12 w-12 rounded-xl flex items-center justify-center",
+                  "h-9 w-9 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center",
                   activeStep === step.id
                     ? `bg-gradient-to-br ${step.color}`
                     : "bg-muted"
@@ -104,13 +104,13 @@ const WorkflowDemo = () => {
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <step.icon className={cn(
-                  "h-6 w-6 transition-colors",
+                  "h-4 w-4 sm:h-6 sm:w-6 transition-colors",
                   activeStep === step.id ? "text-white" : "text-muted-foreground"
                 )} />
               </motion.div>
 
               <span className={cn(
-                "text-[11px] sm:text-sm font-semibold transition-colors text-center leading-tight",
+                "text-[10px] sm:text-sm font-semibold transition-colors text-center leading-tight max-w-[70px] sm:max-w-none",
                 activeStep === step.id ? "text-foreground" : "text-muted-foreground"
               )}>
                 {step.id === 1 ? 'Data Processing' : step.id === 2 ? 'AI Insights' : 'Smart Decisions'}
@@ -119,10 +119,10 @@ const WorkflowDemo = () => {
 
             {/* Arrow Connector */}
             {index < steps.length - 1 && (
-              <div className="flex items-center mx-2 sm:mx-4">
+              <div className="flex items-center mx-1 sm:mx-4">
                 <motion.div
                   className={cn(
-                    "w-8 sm:w-12 h-0.5",
+                    "w-4 sm:w-12 h-0.5",
                     activeStep > step.id ? "bg-emerald-500" : "bg-border"
                   )}
                   animate={
@@ -133,7 +133,7 @@ const WorkflowDemo = () => {
                   transition={{ duration: 0.5 }}
                 />
                 <ArrowRight className={cn(
-                  "h-4 w-4 -ml-1",
+                  "h-3 w-3 sm:h-4 sm:w-4 -ml-1",
                   activeStep > step.id ? "text-emerald-500" : "text-muted-foreground"
                 )} />
               </div>
@@ -156,12 +156,12 @@ const WorkflowDemo = () => {
           layoutId="step-accent"
         />
 
-        <div className="p-6 sm:p-10">
+        <div className="p-4 sm:p-6 md:p-10">
           {/* Header */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeStep}
-              className="text-center mb-8"
+              className="text-center mb-6 sm:mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -169,7 +169,7 @@ const WorkflowDemo = () => {
             >
               <motion.div
                 className={cn(
-                  "inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br mb-4",
+                  "inline-flex items-center justify-center h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br mb-3 sm:mb-4",
                   currentStep.color
                 )}
                 animate={{
@@ -181,30 +181,30 @@ const WorkflowDemo = () => {
                 }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                <currentStep.icon className="h-8 w-8 text-white" />
+                <currentStep.icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </motion.div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-2">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
                 Step {currentStep.id}: {currentStep.title}
               </h3>
-              <p className="text-muted-foreground max-w-lg mx-auto">
+              <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
                 {currentStep.description}
               </p>
             </motion.div>
           </AnimatePresence>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 sm:gap-6 mb-8">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-6 sm:mb-8">
             {currentStep.details.map((detail, i) => (
               <motion.div
                 key={`${activeStep}-${detail.label}`}
-                className="text-center p-4 sm:p-6 rounded-xl bg-background/60 border border-border/50"
+                className="text-center p-3 sm:p-4 md:p-6 rounded-xl bg-background/60 border border-border/50"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.1, type: 'spring', stiffness: 200 }}
                 whileHover={{ y: -4, borderColor: 'hsl(174 72% 50% / 0.4)' }}
               >
                 <motion.p
-                  className="text-2xl sm:text-3xl font-bold text-primary mb-1"
+                  className="text-lg sm:text-2xl md:text-3xl font-bold text-primary mb-1"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.15 + 0.2 }}

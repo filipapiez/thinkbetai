@@ -49,7 +49,7 @@ const DataCollectionVisual = () => {
   return (
     <div className="space-y-5">
       {/* Main visualization — radial convergence */}
-      <div className="relative h-64 sm:h-72 overflow-hidden rounded-2xl bg-gradient-to-br from-background/90 via-background/60 to-blue-500/5 border border-border/30">
+      <div className="relative h-48 sm:h-64 md:h-72 overflow-hidden rounded-2xl bg-gradient-to-br from-background/90 via-background/60 to-blue-500/5 border border-border/30">
 
         {/* Subtle grid background */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -148,11 +148,11 @@ const DataCollectionVisual = () => {
             style={{ left: `${sourcePositions[i].x}%`, top: `${sourcePositions[i].y}%`, transform: 'translate(-50%, -50%)' }}
           >
             <motion.div
-              className={cn("h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", src.color)}
+              className={cn("h-8 w-8 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", src.color)}
               animate={{ scale: [1, 1.08, 1] }}
               transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
             >
-              <src.icon className="h-5 w-5 text-white" />
+              <src.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </motion.div>
             <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground hidden sm:block">{src.label}</span>
           </motion.div>
@@ -177,7 +177,7 @@ const DataCollectionVisual = () => {
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-primary/60" />
           </motion.div>
           <motion.div
-            className="h-16 w-16 sm:h-18 sm:w-18 rounded-2xl bg-gradient-to-br from-primary via-cyan-500 to-emerald-500 flex items-center justify-center shadow-2xl"
+            className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-primary via-cyan-500 to-emerald-500 flex items-center justify-center shadow-2xl"
             animate={{
               boxShadow: [
                 '0 0 15px hsl(174 72% 50% / 0.2)',
@@ -187,16 +187,16 @@ const DataCollectionVisual = () => {
             }}
             transition={{ duration: 3, repeat: Infinity }}
           >
-            <Server className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+            <Server className="h-5 w-5 sm:h-7 sm:w-7 text-white" />
           </motion.div>
         </motion.div>
 
         {/* Output labels */}
-        <div className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 z-10">
+        <div className="absolute right-2 sm:right-3 md:right-6 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 sm:gap-2.5 z-10">
           {['Spread', 'Totals', 'Props'].map((label, i) => (
             <motion.div
               key={label}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8 + i * 0.15 }}
@@ -206,7 +206,7 @@ const DataCollectionVisual = () => {
                 animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
                 transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
               />
-              <span className="text-xs font-mono text-emerald-400">{label}</span>
+              <span className="text-[10px] sm:text-xs font-mono text-emerald-400">{label}</span>
             </motion.div>
           ))}
         </div>
@@ -225,7 +225,7 @@ const DataCollectionVisual = () => {
       </div>
 
       {/* Live data feed ticker */}
-      <div className="relative overflow-hidden rounded-xl bg-card/60 border border-border/50 p-3">
+      <div className="relative overflow-hidden rounded-xl bg-card/60 border border-border/50 p-2 sm:p-3">
         <div className="flex items-center gap-2 mb-2">
           <motion.div
             className="h-2 w-2 rounded-full bg-emerald-500"
@@ -234,7 +234,7 @@ const DataCollectionVisual = () => {
           />
           <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Live Data Feed</span>
         </div>
-        <div className="relative h-24 overflow-hidden">
+        <div className="relative h-20 sm:h-24 overflow-hidden">
           {feedItems.map((item, i) => (
             <motion.div
               key={`${item.text}-${i}`}
