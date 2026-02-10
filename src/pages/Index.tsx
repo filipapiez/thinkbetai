@@ -283,7 +283,7 @@ const Index = () => {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '200ms' }}>
                 <Button variant="hero" size="xl" asChild className="group relative overflow-hidden">
-                  <Link to="/games" className="flex items-center">
+                  <Link to="/pricing" className="flex items-center">
                     <Sparkles className="h-5 w-5 mr-2 group-hover:animate-pulse" />
                     Get Today's Picks
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
