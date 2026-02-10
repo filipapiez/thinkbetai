@@ -285,12 +285,12 @@ const Index = () => {
                 <Button variant="hero" size="xl" asChild className="group relative overflow-hidden">
                   <Link to="/games" className="flex items-center">
                     <Sparkles className="h-5 w-5 mr-2 group-hover:animate-pulse" />
-                    Get Today's Picks Free
+                    Get Today's Picks
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
                 <Button variant="glass" size="xl" asChild className="group">
-                  <Link to="/games" className="flex items-center">
+                  <Link to="/pricing" className="flex items-center">
                     <Zap className="h-5 w-5 mr-2" />
                     Unlock 70% Off
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
