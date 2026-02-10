@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, Shield, Zap, Database, Activity, Wifi, Radio } from 'lucide-react';
+import { TrendingUp, Shield, Zap, Database, Activity, Wifi, Radio, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
 const dataSources = [
-  { icon: TrendingUp, label: 'Live Odds', sublabel: '12 sportsbooks', color: 'from-blue-500 to-cyan-500' },
-  { icon: Shield, label: 'Injuries', sublabel: 'Real-time updates', color: 'from-red-500 to-rose-500' },
-  { icon: Zap, label: 'Player Stats', sublabel: '10K+ players', color: 'from-amber-500 to-orange-500' },
-  { icon: Database, label: 'Historical', sublabel: '5 years data', color: 'from-purple-500 to-violet-500' },
+  { icon: TrendingUp, label: 'Live Odds', color: 'from-blue-500 to-cyan-500', dot: 'bg-blue-400' },
+  { icon: Shield, label: 'Injuries', color: 'from-red-500 to-rose-500', dot: 'bg-red-400' },
+  { icon: Zap, label: 'Player Stats', color: 'from-amber-500 to-orange-500', dot: 'bg-amber-400' },
+  { icon: Database, label: 'Historical', color: 'from-purple-500 to-violet-500', dot: 'bg-purple-400' },
 ];
 
 const feedItems = [
@@ -23,144 +23,204 @@ const feedItems = [
 
 const DataCollectionVisual = () => {
   const [activeFeed, setActiveFeed] = useState(0);
+  const [processedCount, setProcessedCount] = useState(47293);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const feedInterval = setInterval(() => {
       setActiveFeed(prev => (prev + 1) % feedItems.length);
     }, 1800);
-    return () => clearInterval(interval);
+    const countInterval = setInterval(() => {
+      setProcessedCount(prev => prev + Math.floor(Math.random() * 50 + 10));
+    }, 200);
+    return () => { clearInterval(feedInterval); clearInterval(countInterval); };
   }, []);
 
+  // Positions for the 4 source icons around a semicircle (left side)
+  const sourcePositions = [
+    { x: 8, y: 15 },
+    { x: 5, y: 38 },
+    { x: 5, y: 62 },
+    { x: 8, y: 85 },
+  ];
+
+  const hubX = 50;
+  const hubY = 50;
+
   return (
-    <div className="space-y-6">
-      {/* Main visualization — data pipeline flow */}
-      <div className="relative h-56 sm:h-64 overflow-hidden rounded-2xl bg-gradient-to-br from-background/80 to-blue-500/5 border border-border/30">
-        
-        {/* Horizontal flowing data streams */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={`stream-${i}`}
-            className="absolute h-[2px] rounded-full"
-            style={{
-              top: `${15 + i * 14}%`,
-              background: `linear-gradient(90deg, transparent, ${
-                ['hsl(210,100%,60%)', 'hsl(0,80%,60%)', 'hsl(38,92%,50%)', 'hsl(270,60%,60%)', 'hsl(174,72%,50%)', 'hsl(142,76%,50%)'][i]
-              }, transparent)`,
-              width: `${60 + Math.random() * 30}%`,
-            }}
-            animate={{
-              x: ['-30%', '130%'],
-              opacity: [0, 0.8, 0],
-            }}
-            transition={{
-              duration: 2.5 + Math.random() * 1.5,
-              repeat: Infinity,
-              delay: i * 0.4,
-              ease: 'linear',
-            }}
-          />
-        ))}
+    <div className="space-y-5">
+      {/* Main visualization — radial convergence */}
+      <div className="relative h-64 sm:h-72 overflow-hidden rounded-2xl bg-gradient-to-br from-background/90 via-background/60 to-blue-500/5 border border-border/30">
 
-        {/* Data source icons on the left */}
-        <div className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
-          {dataSources.map((src, i) => (
-            <motion.div
-              key={src.label}
-              className={cn("h-10 w-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", src.color)}
-              animate={{
-                scale: [1, 1.15, 1],
-                boxShadow: [
-                  '0 0 8px hsl(210 100% 50% / 0.2)',
-                  '0 0 20px hsl(210 100% 50% / 0.5)',
-                  '0 0 8px hsl(210 100% 50% / 0.2)',
-                ],
-              }}
-              transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-            >
-              <src.icon className="h-5 w-5 text-white" />
-            </motion.div>
-          ))}
-        </div>
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'linear-gradient(hsl(210 100% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(210 100% 60%) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }} />
 
-        {/* Converging lines from sources to processor */}
-        <svg className="absolute inset-0 w-full h-full z-0" preserveAspectRatio="none">
+        {/* SVG paths + animated packets */}
+        <svg className="absolute inset-0 w-full h-full z-[1]" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
-            <linearGradient id="pipe-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(210, 100%, 60%)" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="hsl(174, 72%, 50%)" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="hsl(142, 76%, 50%)" stopOpacity="0.4" />
-            </linearGradient>
+            {dataSources.map((_, i) => (
+              <linearGradient key={`grad-${i}`} id={`path-grad-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor={['hsl(210,100%,60%)', 'hsl(0,80%,60%)', 'hsl(38,92%,50%)', 'hsl(270,60%,60%)'][i]} stopOpacity="0.6" />
+                <stop offset="100%" stopColor="hsl(174, 72%, 50%)" stopOpacity="0.8" />
+              </linearGradient>
+            ))}
           </defs>
-          {dataSources.map((_, i) => (
-            <motion.path
-              key={`path-${i}`}
-              d={`M ${15} ${22 + i * 16} Q ${50} ${22 + i * 16}, ${65} 50`}
-              fill="none"
-              stroke="url(#pipe-grad)"
-              strokeWidth="1.5"
-              animate={{
-                opacity: [0.1, 0.6, 0.1],
-                strokeWidth: [1, 2.5, 1],
-              }}
-              transition={{ duration: 2, repeat: Infinity, delay: i * 0.25 }}
-              style={{ vectorEffect: 'non-scaling-stroke' }}
-            />
+
+          {/* Connection paths */}
+          {sourcePositions.map((pos, i) => {
+            const midX = (pos.x + hubX) / 2 + 5;
+            return (
+              <g key={`connection-${i}`}>
+                <motion.path
+                  d={`M ${pos.x + 5} ${pos.y} Q ${midX} ${pos.y}, ${hubX} ${hubY}`}
+                  fill="none"
+                  stroke={`url(#path-grad-${i})`}
+                  strokeWidth="0.4"
+                  animate={{ opacity: [0.2, 0.5, 0.2] }}
+                  transition={{ duration: 3, repeat: Infinity, delay: i * 0.4 }}
+                  style={{ vectorEffect: 'non-scaling-stroke' }}
+                />
+                {/* Traveling data packets */}
+                {[0, 1, 2].map(j => (
+                  <motion.circle
+                    key={`packet-${i}-${j}`}
+                    r="0.8"
+                    fill={['hsl(210,100%,70%)', 'hsl(0,80%,70%)', 'hsl(38,92%,60%)', 'hsl(270,60%,70%)'][i]}
+                    animate={{
+                      offsetDistance: ['0%', '100%'],
+                      opacity: [0, 1, 1, 0],
+                    }}
+                    transition={{
+                      duration: 1.8 + j * 0.3,
+                      repeat: Infinity,
+                      delay: i * 0.5 + j * 0.6,
+                      ease: 'easeInOut',
+                    }}
+                    style={{
+                      offsetPath: `path("M ${pos.x + 5} ${pos.y} Q ${midX} ${pos.y}, ${hubX} ${hubY}")`,
+                    }}
+                  />
+                ))}
+              </g>
+            );
+          })}
+
+          {/* Output paths from hub to right */}
+          {[35, 50, 65].map((y, i) => (
+            <g key={`out-${i}`}>
+              <motion.path
+                d={`M ${hubX + 5} ${hubY} Q ${75} ${y}, ${90} ${y}`}
+                fill="none"
+                stroke="hsl(142, 76%, 50%)"
+                strokeWidth="0.3"
+                animate={{ opacity: [0.15, 0.4, 0.15] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.3 }}
+                style={{ vectorEffect: 'non-scaling-stroke' }}
+              />
+              <motion.circle
+                r="0.6"
+                fill="hsl(142, 76%, 60%)"
+                animate={{
+                  offsetDistance: ['0%', '100%'],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: 0.8 + i * 0.4,
+                  ease: 'easeInOut',
+                }}
+                style={{
+                  offsetPath: `path("M ${hubX + 5} ${hubY} Q ${75} ${y}, ${90} ${y}")`,
+                }}
+              />
+            </g>
           ))}
         </svg>
 
-        {/* Central processor */}
-        <motion.div
-          className="absolute left-[60%] sm:left-[65%] top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-        >
+        {/* Source icons */}
+        {dataSources.map((src, i) => (
           <motion.div
-            className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-2xl"
-            animate={{
-              boxShadow: [
-                '0 0 20px hsl(174 72% 50% / 0.3)',
-                '0 0 50px hsl(174 72% 50% / 0.6)',
-                '0 0 20px hsl(174 72% 50% / 0.3)',
-              ],
-              rotate: [0, 2, -2, 0],
-            }}
-            transition={{ duration: 4, repeat: Infinity }}
+            key={src.label}
+            className="absolute z-10 flex flex-col items-center gap-1"
+            style={{ left: `${sourcePositions[i].x}%`, top: `${sourcePositions[i].y}%`, transform: 'translate(-50%, -50%)' }}
           >
-            <Database className="h-9 w-9 text-white" />
+            <motion.div
+              className={cn("h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", src.color)}
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
+            >
+              <src.icon className="h-5 w-5 text-white" />
+            </motion.div>
+            <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground hidden sm:block">{src.label}</span>
+          </motion.div>
+        ))}
+
+        {/* Central hub */}
+        <motion.div
+          className="absolute z-20"
+          style={{ left: `${hubX}%`, top: `${hubY}%`, transform: 'translate(-50%, -50%)' }}
+        >
+          {/* Outer ring */}
+          <motion.div
+            className="absolute -inset-4 rounded-full border border-primary/20"
+            animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute -inset-2 rounded-full border border-primary/30"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          >
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-primary/60" />
           </motion.div>
           <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-primary/50"
-            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
+            className="h-16 w-16 sm:h-18 sm:w-18 rounded-2xl bg-gradient-to-br from-primary via-cyan-500 to-emerald-500 flex items-center justify-center shadow-2xl"
+            animate={{
+              boxShadow: [
+                '0 0 15px hsl(174 72% 50% / 0.2)',
+                '0 0 40px hsl(174 72% 50% / 0.5)',
+                '0 0 15px hsl(174 72% 50% / 0.2)',
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <Server className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+          </motion.div>
         </motion.div>
 
-        {/* Output lines from processor to right */}
-        <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+        {/* Output labels */}
+        <div className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 flex flex-col gap-2.5 z-10">
           {['Spread', 'Totals', 'Props'].map((label, i) => (
             <motion.div
               key={label}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.2 }}
+              transition={{ delay: 0.8 + i * 0.15 }}
             >
               <motion.div
                 className="h-1.5 w-1.5 rounded-full bg-emerald-400"
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                animate={{ scale: [1, 1.5, 1], opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
               />
               <span className="text-xs font-mono text-emerald-400">{label}</span>
             </motion.div>
           ))}
         </div>
 
-        {/* Throughput counter */}
+        {/* Live counter */}
         <motion.div
-          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card/80 border border-border/50 backdrop-blur-sm z-20"
-          animate={{ opacity: [0.7, 1, 0.7] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-1.5 rounded-full bg-card/80 border border-border/50 backdrop-blur-sm z-20"
         >
-          <Activity className="h-3.5 w-3.5 text-emerald-400" />
-          <span className="text-xs font-mono text-emerald-400">47,293 events/sec</span>
+          <motion.div
+            className="h-2 w-2 rounded-full bg-emerald-500"
+            animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          />
+          <span className="text-xs font-mono text-emerald-400">{processedCount.toLocaleString()} events/sec</span>
         </motion.div>
       </div>
 
