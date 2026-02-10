@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Zap, CheckCircle2, Cpu, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Brain, Zap, CheckCircle2, Cpu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -43,164 +43,98 @@ const AIAnalysisVisual = () => {
 
   return (
     <div className="space-y-6">
-      {/* Neural network hero visualization */}
-      <div className="relative h-52 sm:h-60 overflow-hidden rounded-2xl bg-gradient-to-br from-background/80 to-purple-500/5 border border-border/30">
-        {/* Matrix-style data rain */}
-        {[...Array(15)].map((_, i) => (
+      {/* Main visualization — AI decision matrix */}
+      <div className="relative h-56 sm:h-64 overflow-hidden rounded-2xl bg-gradient-to-br from-background/80 to-purple-500/5 border border-border/30">
+        
+        {/* Animated grid background */}
+        <div className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage: 'linear-gradient(hsl(270 60% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(270 60% 60%) 1px, transparent 1px)',
+            backgroundSize: '30px 30px',
+          }}
+        />
+
+        {/* Scanning horizontal line */}
+        <motion.div
+          className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400/60 to-transparent z-10"
+          animate={{ y: ['0%', '100%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          style={{ boxShadow: '0 0 20px 4px hsl(270 60% 60% / 0.3)' }}
+        />
+
+        {/* Floating data points being analyzed */}
+        {[...Array(20)].map((_, i) => (
           <motion.div
-            key={`rain-${i}`}
-            className="absolute text-[10px] font-mono text-primary/30 select-none"
-            style={{ left: `${5 + (i / 15) * 90}%` }}
+            key={`dot-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: 4 + Math.random() * 6,
+              height: 4 + Math.random() * 6,
+              left: `${10 + Math.random() * 80}%`,
+              top: `${10 + Math.random() * 80}%`,
+              background: i % 3 === 0 ? 'hsl(270, 60%, 60%)' : i % 3 === 1 ? 'hsl(330, 80%, 60%)' : 'hsl(210, 100%, 60%)',
+            }}
             animate={{
-              y: ['-20%', '120%'],
-              opacity: [0, 0.6, 0],
+              opacity: [0.2, 0.8, 0.2],
+              scale: [0.8, 1.4, 0.8],
+              y: [0, -8, 0],
             }}
             transition={{
               duration: 2 + Math.random() * 2,
               repeat: Infinity,
               delay: Math.random() * 3,
-              ease: 'linear',
             }}
-          >
-            {['0.87', '1.05', '-4.5', '223', '0.91', '+3.2', '81%', '-110', '2.3u', 'A+', '0.72', '88%', '-185', '0.65', '+5.2'][i]}
-          </motion.div>
+          />
         ))}
 
-        {/* Neural network — 3 layers with animated connections */}
-        <svg className="absolute inset-0 w-full h-full z-0" style={{ overflow: 'visible' }}>
-          <defs>
-            <linearGradient id="nn-grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(210, 100%, 60%)" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="hsl(270, 60%, 60%)" stopOpacity="0.6" />
-            </linearGradient>
-            <linearGradient id="nn-grad2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(270, 60%, 60%)" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="hsl(142, 76%, 50%)" stopOpacity="0.6" />
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-
-          {/* Input → Hidden connections */}
-          {[0, 1, 2, 3, 4].map(li =>
-            [0, 1, 2, 3].map(mi => (
-              <motion.line
-                key={`l${li}-m${mi}`}
-                x1="12%" y1={`${12 + li * 19}%`}
-                x2="50%" y2={`${18 + mi * 20}%`}
-                stroke="url(#nn-grad1)"
-                strokeWidth="1"
+        {/* Central AI brain with rotating analysis ring */}
+        <motion.div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+          {/* Rotating outer ring with dashes */}
+          <motion.div
+            className="absolute -inset-6 rounded-full border-2 border-dashed border-purple-400/40"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute -inset-12 rounded-full border border-dashed border-pink-400/20"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+          />
+          
+          {/* Orbiting analysis indicators */}
+          {[0, 1, 2, 3].map(i => {
+            const angle = (i / 4) * Math.PI * 2;
+            return (
+              <motion.div
+                key={`orbit-${i}`}
+                className="absolute left-1/2 top-1/2 h-3 w-3 rounded-full bg-purple-400 z-30"
                 animate={{
-                  opacity: [0, 0.5, 0],
-                  strokeWidth: [0.5, 2, 0.5],
+                  x: [Math.cos(angle) * 48 - 6, Math.cos(angle + Math.PI * 2) * 48 - 6],
+                  y: [Math.sin(angle) * 48 - 6, Math.sin(angle + Math.PI * 2) * 48 - 6],
                 }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: (li * 0.15) + (mi * 0.1),
-                  ease: 'easeInOut',
+                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                style={{
+                  boxShadow: '0 0 10px hsl(270 60% 60% / 0.6)',
                 }}
               />
-            ))
-          )}
+            );
+          })}
 
-          {/* Hidden → Output connections */}
-          {[0, 1, 2, 3].map(mi =>
-            [0, 1, 2].map(ri => (
-              <motion.line
-                key={`m${mi}-r${ri}`}
-                x1="50%" y1={`${18 + mi * 20}%`}
-                x2="88%" y2={`${25 + ri * 25}%`}
-                stroke="url(#nn-grad2)"
-                strokeWidth="1.5"
-                animate={{
-                  opacity: [0, 0.6, 0],
-                  strokeWidth: [0.5, 2.5, 0.5],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: mi * 0.2 + 0.6,
-                  ease: 'easeInOut',
-                }}
-              />
-            ))
-          )}
-        </svg>
-
-        {/* Input layer nodes */}
-        {[0, 1, 2, 3, 4].map(i => (
-          <motion.div
-            key={`in-${i}`}
-            className="absolute left-[10%] w-4 h-4 rounded-full bg-blue-500/80 z-10"
-            style={{ top: `${10 + i * 19}%` }}
-            animate={{
-              boxShadow: ['0 0 8px hsl(210 100% 50% / 0.3)', '0 0 24px hsl(210 100% 50% / 0.8)', '0 0 8px hsl(210 100% 50% / 0.3)'],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.15 }}
-          />
-        ))}
-
-        {/* Hidden layer nodes */}
-        {[0, 1, 2, 3].map(i => (
-          <motion.div
-            key={`hid-${i}`}
-            className="absolute left-[48%] w-5 h-5 rounded-full bg-purple-500/80 z-10"
-            style={{ top: `${16 + i * 20}%` }}
-            animate={{
-              boxShadow: ['0 0 10px hsl(270 60% 50% / 0.3)', '0 0 30px hsl(270 60% 50% / 0.9)', '0 0 10px hsl(270 60% 50% / 0.3)'],
-              scale: [1, 1.4, 1],
-            }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 + 0.3 }}
-          />
-        ))}
-
-        {/* Output layer nodes */}
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={`out-${i}`}
-            className="absolute left-[86%] w-6 h-6 rounded-full bg-emerald-500/80 z-10"
-            style={{ top: `${23 + i * 25}%` }}
-            animate={{
-              boxShadow: ['0 0 12px hsl(142 76% 36% / 0.3)', '0 0 36px hsl(142 76% 36% / 0.9)', '0 0 12px hsl(142 76% 36% / 0.3)'],
-              scale: [1, 1.3, 1],
-            }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.25 + 0.8 }}
-          />
-        ))}
-
-        {/* Central brain with energy ring */}
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-        >
+          {/* Core brain */}
           <motion.div
             className="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl"
             animate={{
               boxShadow: [
-                '0 0 30px hsl(270 60% 50% / 0.3), 0 0 60px hsl(270 60% 50% / 0.1)',
-                '0 0 50px hsl(270 60% 50% / 0.7), 0 0 100px hsl(270 60% 50% / 0.2)',
-                '0 0 30px hsl(270 60% 50% / 0.3), 0 0 60px hsl(270 60% 50% / 0.1)',
+                '0 0 30px hsl(270 60% 50% / 0.3)',
+                '0 0 60px hsl(270 60% 50% / 0.6)',
+                '0 0 30px hsl(270 60% 50% / 0.3)',
               ],
-              rotate: [0, 3, -3, 0],
             }}
-            transition={{ duration: 4, repeat: Infinity }}
+            transition={{ duration: 3, repeat: Infinity }}
           >
             <Brain className="h-10 w-10 text-white" />
           </motion.div>
-          {/* Energy rings */}
-          <motion.div
-            className="absolute inset-0 rounded-2xl border-2 border-purple-400/50"
-            animate={{ scale: [1, 1.8], opacity: [0.5, 0], rotate: [0, 90] }}
-            transition={{ duration: 2.5, repeat: Infinity }}
-          />
-          <motion.div
-            className="absolute inset-0 rounded-2xl border border-pink-400/30"
-            animate={{ scale: [1, 2.2], opacity: [0.3, 0], rotate: [0, -45] }}
-            transition={{ duration: 2.5, repeat: Infinity, delay: 0.8 }}
-          />
+          
           {/* Status badge */}
           <motion.div
             className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center"
@@ -282,7 +216,6 @@ const AIAnalysisVisual = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
           >
-            {/* Progress fill */}
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-primary/5 to-emerald-500/5"
               initial={{ scaleX: 0 }}
@@ -290,7 +223,6 @@ const AIAnalysisVisual = () => {
               style={{ transformOrigin: 'left' }}
               transition={{ duration: 0.6, delay: i * 0.2 }}
             />
-
             <motion.div
               className="relative z-10"
               animate={completedSteps > i ? { scale: [1, 1.3, 1], rotate: [0, 10, 0] } : {}}
