@@ -188,8 +188,8 @@ const DataCollectionVisual = () => (
           </div>
           <p className="text-sm font-semibold">{item.label}</p>
           <p className="text-xs text-muted-foreground">{item.sublabel}</p>
-          {/* Pulse indicator */}
-          <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          {/* Status indicator */}
+          <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500" />
         </div>
       ))}
     </div>
@@ -197,11 +197,11 @@ const DataCollectionVisual = () => (
     {/* Live Feed Simulation */}
     <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30">
-        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
         <span className="text-blue-400">50+ sources connected</span>
       </div>
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         <span className="text-emerald-400">Updating every 30s</span>
       </div>
     </div>
@@ -209,36 +209,28 @@ const DataCollectionVisual = () => (
 );
 
 const AIAnalysisVisual = () => (
-  <div className="flex items-center justify-center">
+  <div className="flex items-center justify-center gap-8 sm:gap-12">
     <div className="relative">
-      {/* Central Brain */}
-      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-xl shadow-purple-500/30 animate-pulse">
+      <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-xl shadow-purple-500/20">
         <Brain className="h-10 w-10 text-white" />
       </div>
-      {/* Orbiting dots */}
-      {[0, 60, 120, 180, 240, 300].map((deg, i) => (
-        <div
-          key={deg}
-          className="absolute h-3 w-3 rounded-full bg-purple-400"
-          style={{
-            top: '50%',
-            left: '50%',
-            transform: `rotate(${deg}deg) translateX(50px) translateY(-50%)`,
-            animation: `pulse 2s ease-in-out ${i * 0.2}s infinite`,
-          }}
-        />
-      ))}
+      <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center">
+        <Zap className="h-3 w-3 text-white" />
+      </div>
     </div>
-    <div className="ml-8 sm:ml-12 space-y-2">
-      {['Pattern matching...', 'Edge calculation...', 'Confidence scoring...'].map((text, i) => (
+    <div className="space-y-3">
+      {[
+        { text: 'Pattern matching', status: 'complete' },
+        { text: 'Edge calculation', status: 'complete' },
+        { text: 'Confidence scoring', status: 'complete' },
+      ].map((item, i) => (
         <div
-          key={text}
-          className="flex items-center gap-2 text-sm animate-fade-in"
-          style={{ animationDelay: `${i * 200}ms` }}
+          key={item.text}
+          className="flex items-center gap-3 text-sm"
         >
-          <div className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="text-muted-foreground">{text}</span>
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+          <span className="text-foreground/80">{item.text}</span>
+          <span className="text-xs text-emerald-400 font-medium ml-auto">Done</span>
         </div>
       ))}
     </div>
