@@ -9,8 +9,8 @@ import SmartPicksVisual from './workflow/SmartPicksVisual';
 const steps = [
   {
     id: 1,
-    title: 'Collect Data',
-    description: 'We pull real-time odds, injuries, stats & trends from 50+ sources',
+    title: 'Intelligent Data Processing',
+    description: 'ThinkBetAI leverages advanced AI models to analyze thousands of historical and real-time data points across leagues, teams, and player performance. By continuously evaluating patterns, trends, and probabilities, the platform uncovers opportunities that are often missed through manual research.',
     icon: Database,
     color: 'from-blue-500 to-cyan-500',
     details: [
@@ -21,8 +21,8 @@ const steps = [
   },
   {
     id: 2,
-    title: 'AI Analysis',
-    description: 'Our models analyze patterns, edges & value across every game',
+    title: 'Actionable, Data-Driven Insights',
+    description: 'Our system transforms complex analytics into clear, structured predictions and insights. Each recommendation is supported by measurable data, allowing you to quickly understand the reasoning behind every pick without spending hours reviewing statistics yourself.',
     icon: Brain,
     color: 'from-purple-500 to-pink-500',
     details: [
@@ -33,8 +33,8 @@ const steps = [
   },
   {
     id: 3,
-    title: 'Smart Picks',
-    description: 'Get high-confidence picks with clear reasoning & edge metrics',
+    title: 'Smarter, Strategy-Focused Decision Making',
+    description: 'With AI-powered analysis at your fingertips, you can approach betting with a disciplined, data-first strategy. ThinkBetAI helps users reduce emotional decision-making, stay consistent, and make more informed choices over time.',
     icon: Target,
     color: 'from-emerald-500 to-teal-500',
     details: [
@@ -110,10 +110,10 @@ const WorkflowDemo = () => {
               </motion.div>
 
               <span className={cn(
-                "text-sm font-semibold transition-colors",
+                "text-[11px] sm:text-sm font-semibold transition-colors text-center leading-tight",
                 activeStep === step.id ? "text-foreground" : "text-muted-foreground"
               )}>
-                {step.title}
+                {step.id === 1 ? 'Data Processing' : step.id === 2 ? 'AI Insights' : 'Smart Decisions'}
               </span>
             </motion.button>
 
