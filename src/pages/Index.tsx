@@ -421,17 +421,16 @@ const Index = () => {
                     {/* Animated gradient line */}
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
-                    {/* Number badge with pulse effect */}
-                    <div className="relative inline-flex mb-4">
-                      <span className="absolute inset-0 bg-primary/20 rounded-full blur-md animate-pulse" />
-                      <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30">
+                    {/* Number badge */}
+                    <div className="inline-flex mb-4">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30">
                         <span className="text-base font-bold text-primary">{feature.number}</span>
                       </div>
                     </div>
 
-                    {/* Icon with float animation */}
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="h-6 w-6 text-primary animate-float" style={{ animationDelay: `${index * 200}ms` }} />
+                    {/* Icon */}
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 mb-4 group-hover:scale-105 transition-transform duration-300">
+                      <feature.icon className="h-6 w-6 text-primary" />
                     </div>
 
                     <h3 className="text-lg md:text-xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">
