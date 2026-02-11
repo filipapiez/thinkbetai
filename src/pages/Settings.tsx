@@ -6,8 +6,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Settings2, Check, Bell, Palette, Database } from 'lucide-react';
+import { Settings2, Check, Bell, Palette, Database, Moon, Sun, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 
 interface SportConfig {
   id: string;
@@ -52,10 +53,15 @@ const SettingsPage = () => {
     }
     return defaultSports;
   });
+  const { theme, setTheme } = useTheme();
 
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
 
+  const themeOptions: { value: ThemeMode; label: string; description: string; icon: React.ReactNode }[] = [
+    { value: 'dark', label: 'Dark', description: 'Dark background with teal accents', icon: <Moon className="h-5 w-5" /> },
+    { value: 'light', label: 'Light', description: 'Warm cream with teal accents', icon: <Sun className="h-5 w-5" /> },
+    { value: 'purple', label: 'Purple', description: 'Dark background with purple accents', icon: <Sparkles className="h-5 w-5" /> },
+  ];
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...enabledSports]));
   }, [enabledSports]);
@@ -194,21 +200,38 @@ const SettingsPage = () => {
                 Appearance
               </CardTitle>
               <CardDescription>
-                Customize how the app looks
+                Choose your preferred theme
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div>
-                  <p className="font-medium">Dark Mode</p>
-                  <p className="text-sm text-muted-foreground">
-                    Use dark theme for the interface
-                  </p>
-                </div>
-                <Switch
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
-                />
+              <div className="grid gap-3">
+                {themeOptions.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setTheme(opt.value);
+                      toast.success(`Switched to ${opt.label} theme`);
+                    }}
+                    className={`flex items-center justify-between p-3 rounded-lg transition-colors text-left w-full ${
+                      theme === opt.value
+                        ? 'bg-primary/15 border border-primary/40'
+                        : 'bg-muted/30 hover:bg-muted/50 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${theme === opt.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                        {opt.icon}
+                      </div>
+                      <div>
+                        <p className="font-medium">{opt.label}</p>
+                        <p className="text-sm text-muted-foreground">{opt.description}</p>
+                      </div>
+                    </div>
+                    {theme === opt.value && (
+                      <Check className="h-5 w-5 text-primary" />
+                    )}
+                  </button>
+                ))}
               </div>
             </CardContent>
           </Card>
