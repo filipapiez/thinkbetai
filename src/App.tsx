@@ -46,11 +46,11 @@ const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AuthProvider>
           <ThemeProvider>
+          <Toaster />
+          <Sonner />
           <AnalyticsWrapper>
             <Routes>
               {/* Public routes */}
