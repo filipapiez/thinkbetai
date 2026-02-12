@@ -6,6 +6,7 @@ import { Calendar, MapPin, ChevronRight, TrendingUp, TrendingDown, Minus, Zap, T
 import { calculateBetQualification, BetSignal, BetQualification } from '@/lib/betQualification';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { TeamLogo } from '@/components/TeamLogo';
 
 interface GameCardProps {
   game: Game;
@@ -190,12 +191,15 @@ export const GameCard = ({ game }: GameCardProps) => {
           <div className="flex items-center justify-between gap-4 mb-4">
             {/* Player/Team 1 */}
             <div className="flex-1 text-center">
-              <div className={cn(
-                "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
-              )}>
-                {game.homeTeam.abbreviation}
-              </div>
+              <TeamLogo
+                teamName={game.homeTeam.name}
+                abbreviation={game.homeTeam.abbreviation}
+                sport={game.sport}
+                className={cn(
+                  "mx-auto mb-2",
+                  qualification.pick === 'home' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
+                )}
+              />
               <p className="text-sm font-medium truncate">{game.homeTeam.name}</p>
               <div className="flex flex-col items-center gap-1 mt-1">
                 {homeLabel && <p className="text-xs text-muted-foreground">{homeLabel}</p>}
@@ -213,12 +217,15 @@ export const GameCard = ({ game }: GameCardProps) => {
 
             {/* Player/Team 2 */}
             <div className="flex-1 text-center">
-              <div className={cn(
-                "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-xl font-bold",
-                qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
-              )}>
-                {game.awayTeam.abbreviation}
-              </div>
+              <TeamLogo
+                teamName={game.awayTeam.name}
+                abbreviation={game.awayTeam.abbreviation}
+                sport={game.sport}
+                className={cn(
+                  "mx-auto mb-2",
+                  qualification.pick === 'away' && qualification.signal === 'GOOD' && "ring-2 ring-emerald-500/50"
+                )}
+              />
               <p className="text-sm font-medium truncate">{game.awayTeam.name}</p>
               <div className="flex flex-col items-center gap-1 mt-1">
                 {awayLabel && <p className="text-xs text-muted-foreground">{awayLabel}</p>}
