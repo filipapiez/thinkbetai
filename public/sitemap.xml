@@ -1,212 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- English (default) -->
   <url>
     <loc>https://thinkbetai.com/</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <image:image>
-      <image:loc>https://thinkbetai.com/og-image.png</image:loc>
-      <image:title>ThinkBetAI - AI Betting Platform</image:title>
-      <image:caption>The #1 AI betting platform for sports betting predictions</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/games</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>hourly</changefreq>
-    <priority>0.95</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/chat</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/how-ai-is-revolutionizing-sports-betting</loc>
-    <lastmod>2026-01-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/ai-betting-predictions-explained</loc>
-    <lastmod>2026-01-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/best-ai-betting-strategies-2026</loc>
-    <lastmod>2025-12-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/nba-ai-betting-guide</loc>
-    <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/nfl-ai-betting-predictions</loc>
-    <lastmod>2025-12-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/mlb-ai-betting-predictions-2026</loc>
-    <lastmod>2025-12-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/ufc-mma-ai-betting-guide</loc>
-    <lastmod>2025-12-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/parlay-betting-ai-strategies</loc>
-    <lastmod>2025-11-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/live-betting-ai-guide</loc>
-    <lastmod>2025-11-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/bankroll-management-ai-betting</loc>
-    <lastmod>2025-11-15</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/faq</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/what-is-ai-sports-betting</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/ai-sports-picks</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>hourly</changefreq>
-    <priority>0.98</priority>
-    <image:image>
-      <image:loc>https://thinkbetai.com/og-image.png</image:loc>
-      <image:title>AI Sports Picks - Free Daily AI Predictions</image:title>
-      <image:caption>Get AI-powered sports betting picks with 83%+ accuracy for NFL, NBA, MLB, NHL, UFC and more</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/is-ai-betting-legal</loc>
-    <lastmod>2026-01-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/how-ai-is-used-in-sports-betting</loc>
-    <lastmod>2026-01-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/can-ai-predict-sports-outcomes</loc>
-    <lastmod>2026-01-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/ai-betting-myths-vs-reality</loc>
-    <lastmod>2026-01-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/best-ai-platform-for-sports-betting-2026</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/best-ai-platforms-for-sports-betting-what-matters</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/best-ai-betting-tools-compared</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/which-ai-platform-is-best-for-sports-betting</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/blog/best-ai-software-for-sports-betting-analysis</loc>
-    <lastmod>2026-01-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://thinkbetai.com/" />
   </url>
   <url>
     <loc>https://thinkbetai.com/pricing</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/pricing" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/pricing" />
+  </url>
+  <url>
+    <loc>https://thinkbetai.com/faq</loc>
+    <lastmod>2026-02-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/faq" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/faq" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/faq" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/faq" />
   </url>
   <url>
     <loc>https://thinkbetai.com/best-ai-betting-app</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/best-ai-betting-app" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/best-ai-betting-app" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/best-ai-betting-app" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/best-ai-betting-app" />
   </url>
   <url>
     <loc>https://thinkbetai.com/free-ai-predictions</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/free-ai-predictions" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/free-ai-predictions" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/free-ai-predictions" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/free-ai-predictions" />
   </url>
   <url>
     <loc>https://thinkbetai.com/ai-nfl-picks</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/ai-nfl-picks" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/ai-nfl-picks" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/ai-nfl-picks" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/ai-nfl-picks" />
   </url>
   <url>
     <loc>https://thinkbetai.com/ai-parlay-builder</loc>
-    <lastmod>2026-02-09</lastmod>
+    <lastmod>2026-02-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/ai-parlay-builder" />
+    <xhtml:link rel="alternate" hreflang="pl" href="https://thinkbetai.com/pl/ai-parlay-builder" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://thinkbetai.com/fr/ai-parlay-builder" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://thinkbetai.com/de/ai-parlay-builder" />
   </url>
-  <url>
-    <loc>https://thinkbetai.com/about</loc>
-    <lastmod>2026-02-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://thinkbetai.com/login</loc>
-    <lastmod>2026-02-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
+
+  <!-- Polish locale pages -->
+  <url><loc>https://thinkbetai.com/pl</loc><lastmod>2026-02-12</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/pl/pricing</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/pl/faq</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/pl/best-ai-betting-app</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/pl/free-ai-predictions</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/pl/ai-nfl-picks</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/pl/ai-parlay-builder</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <!-- French locale pages -->
+  <url><loc>https://thinkbetai.com/fr</loc><lastmod>2026-02-12</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/fr/pricing</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/fr/faq</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/fr/best-ai-betting-app</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/fr/free-ai-predictions</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/fr/ai-nfl-picks</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/fr/ai-parlay-builder</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <!-- German locale pages -->
+  <url><loc>https://thinkbetai.com/de</loc><lastmod>2026-02-12</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/de/pricing</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/de/faq</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/de/best-ai-betting-app</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/de/free-ai-predictions</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/de/ai-nfl-picks</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://thinkbetai.com/de/ai-parlay-builder</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
+
+  <!-- Existing non-localized pages -->
+  <url><loc>https://thinkbetai.com/games</loc><lastmod>2026-01-12</lastmod><changefreq>hourly</changefreq><priority>0.95</priority></url>
+  <url><loc>https://thinkbetai.com/chat</loc><lastmod>2026-01-12</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/blog</loc><lastmod>2026-01-12</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/ai-sports-picks</loc><lastmod>2026-01-12</lastmod><changefreq>hourly</changefreq><priority>0.98</priority></url>
+  <url><loc>https://thinkbetai.com/what-is-ai-sports-betting</loc><lastmod>2026-01-12</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/about</loc><lastmod>2026-02-09</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://thinkbetai.com/login</loc><lastmod>2026-02-09</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://thinkbetai.com/blog/how-ai-is-revolutionizing-sports-betting</loc><lastmod>2026-01-05</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/ai-betting-predictions-explained</loc><lastmod>2026-01-03</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/best-ai-betting-strategies-2026</loc><lastmod>2025-12-28</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/is-ai-betting-legal</loc><lastmod>2026-01-10</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/how-ai-is-used-in-sports-betting</loc><lastmod>2026-01-09</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/can-ai-predict-sports-outcomes</loc><lastmod>2026-01-08</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/ai-betting-myths-vs-reality</loc><lastmod>2026-01-07</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/blog/is-there-an-ai-betting-platform</loc><lastmod>2026-01-12</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
 </urlset>
