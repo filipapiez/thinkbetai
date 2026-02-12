@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Settings2, Check, Bell, Palette, Database, Moon, Sun, Sparkles } from 'lucide-react';
+import { Settings2, Check, Bell, Palette, Database, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 
@@ -59,8 +59,7 @@ const SettingsPage = () => {
 
   const themeOptions: { value: ThemeMode; label: string; description: string; icon: React.ReactNode }[] = [
     { value: 'dark', label: 'Dark', description: 'Dark background with teal accents', icon: <Moon className="h-5 w-5" /> },
-    { value: 'light', label: 'Light', description: 'Warm cream with teal accents', icon: <Sun className="h-5 w-5" /> },
-    { value: 'purple', label: 'Purple', description: 'Dark background with purple accents', icon: <Sparkles className="h-5 w-5" /> },
+    { value: 'light', label: 'Light', description: 'Clean, bright theme with warm tones', icon: <Sun className="h-5 w-5" /> },
   ];
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...enabledSports]));

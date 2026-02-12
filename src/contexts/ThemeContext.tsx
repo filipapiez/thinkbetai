@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type ThemeMode = 'dark' | 'light' | 'purple';
+export type ThemeMode = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: ThemeMode;
@@ -15,7 +15,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     try {
       const saved = localStorage.getItem(THEME_KEY);
-      if (saved === 'dark' || saved === 'light' || saved === 'purple') return saved;
+      if (saved === 'dark' || saved === 'light') return saved;
     } catch {}
     return 'dark';
   });
@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem(THEME_KEY, theme);
     const root = document.documentElement;
-    root.classList.remove('theme-dark', 'theme-light', 'theme-purple');
+    root.classList.remove('theme-dark', 'theme-light');
     root.classList.add(`theme-${theme}`);
   }, [theme]);
 
