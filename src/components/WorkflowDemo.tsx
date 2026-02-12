@@ -52,13 +52,18 @@ const WorkflowDemo = () => {
   return (
     <div className="w-full max-w-5xl mx-auto">
       {/* Step Indicators */}
-      <div className="flex items-center justify-center mb-6 sm:mb-10 overflow-x-auto px-2">
+      <div
+        className="flex items-center justify-center mb-6 sm:mb-10 overflow-x-auto px-2"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
+        <style>{`.workflow-steps::-webkit-scrollbar { display: none; }`}</style>
+        <div className="workflow-steps flex items-center shrink-0">
         {steps.map((step, index) => (
           <div key={step.id} className="flex items-center shrink-0">
             <motion.button
               onClick={() => setActiveStep(step.id)}
               className={cn(
-                "relative flex flex-col items-center gap-1.5 sm:gap-2 px-3 sm:px-8 py-2 sm:py-3 rounded-2xl transition-all duration-300",
+                "relative flex flex-col items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-2xl transition-all duration-300",
                 activeStep === step.id
                   ? "bg-card border border-primary/30 shadow-lg shadow-primary/10"
                   : "hover:bg-card/50"
@@ -85,7 +90,7 @@ const WorkflowDemo = () => {
               {/* Icon */}
               <motion.div
                 className={cn(
-                  "h-9 w-9 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center",
+                  "h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center",
                   activeStep === step.id
                     ? `bg-gradient-to-br ${step.color}`
                     : "bg-muted"
@@ -104,13 +109,13 @@ const WorkflowDemo = () => {
                 transition={{ duration: 2, repeat: Infinity }}
               >
                 <step.icon className={cn(
-                  "h-4 w-4 sm:h-6 sm:w-6 transition-colors",
+                  "h-5 w-5 sm:h-6 sm:w-6 transition-colors",
                   activeStep === step.id ? "text-white" : "text-muted-foreground"
                 )} />
               </motion.div>
 
               <span className={cn(
-                "text-[10px] sm:text-sm font-semibold transition-colors text-center leading-tight max-w-[70px] sm:max-w-none",
+                "text-[11px] sm:text-sm font-semibold transition-colors text-center leading-tight max-w-[80px] sm:max-w-none",
                 activeStep === step.id ? "text-foreground" : "text-muted-foreground"
               )}>
                 {step.id === 1 ? 'Data Processing' : step.id === 2 ? 'AI Insights' : 'Smart Decisions'}
@@ -122,7 +127,7 @@ const WorkflowDemo = () => {
               <div className="flex items-center mx-1 sm:mx-4">
                 <motion.div
                   className={cn(
-                    "w-4 sm:w-12 h-0.5",
+                    "w-6 sm:w-12 h-0.5",
                     activeStep > step.id ? "bg-emerald-500" : "bg-border"
                   )}
                   animate={
@@ -140,6 +145,7 @@ const WorkflowDemo = () => {
             )}
           </div>
         ))}
+        </div>
       </div>
 
       {/* Content Card */}
