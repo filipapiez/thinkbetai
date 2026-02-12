@@ -641,7 +641,7 @@ const Index = () => {
                 </Button>
               </div>
               <p className="mt-6 text-sm text-muted-foreground">
-                Cancel anytime • 100% money-back guarantee
+                Cancel anytime
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm px-4">
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
