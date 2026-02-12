@@ -52,99 +52,95 @@ const WorkflowDemo = () => {
   return (
     <div className="w-full max-w-5xl mx-auto">
       {/* Step Indicators */}
-      <div
-        className="flex items-center justify-center mb-6 sm:mb-10 overflow-x-auto px-2"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-      >
-        <style>{`.workflow-steps::-webkit-scrollbar { display: none; }`}</style>
-        <div className="workflow-steps flex items-center shrink-0">
-        {steps.map((step, index) => (
-          <div key={step.id} className="flex items-center shrink-0">
-            <motion.button
-              onClick={() => setActiveStep(step.id)}
-              className={cn(
-                "relative flex flex-col items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-2xl transition-all duration-300",
-                activeStep === step.id
-                  ? "bg-card border border-primary/30 shadow-lg shadow-primary/10"
-                  : "hover:bg-card/50"
-              )}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              {/* Step Number Badge */}
-              <motion.div
+      <div className="flex items-center justify-center mb-8 sm:mb-12 px-2">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center gap-2 sm:gap-3">
+              <motion.button
+                onClick={() => setActiveStep(step.id)}
                 className={cn(
-                  "absolute -top-1.5 -left-1.5 sm:-top-2 sm:-left-2 h-5 w-5 sm:h-6 sm:w-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold",
+                  "relative flex flex-col items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl transition-all duration-300 min-w-[90px] sm:min-w-[120px]",
                   activeStep === step.id
-                    ? "bg-primary text-primary-foreground"
-                    : activeStep > step.id
-                      ? "bg-emerald-500 text-white"
-                      : "bg-muted text-muted-foreground"
+                    ? "bg-card border border-primary/30 shadow-lg shadow-primary/10"
+                    : "hover:bg-card/50"
                 )}
-                animate={activeStep === step.id ? { scale: [1, 1.2, 1] } : {}}
-                transition={{ duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
               >
-                {activeStep > step.id ? <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4" /> : step.id}
-              </motion.div>
-
-              {/* Icon */}
-              <motion.div
-                className={cn(
-                  "h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center",
-                  activeStep === step.id
-                    ? `bg-gradient-to-br ${step.color}`
-                    : "bg-muted"
-                )}
-                animate={
-                  activeStep === step.id
-                    ? {
-                        boxShadow: [
-                          '0 0 0px transparent',
-                          '0 0 30px hsl(174 72% 50% / 0.3)',
-                          '0 0 0px transparent',
-                        ],
-                      }
-                    : {}
-                }
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <step.icon className={cn(
-                  "h-5 w-5 sm:h-6 sm:w-6 transition-colors",
-                  activeStep === step.id ? "text-white" : "text-muted-foreground"
-                )} />
-              </motion.div>
-
-              <span className={cn(
-                "text-[11px] sm:text-sm font-semibold transition-colors text-center leading-tight max-w-[80px] sm:max-w-none",
-                activeStep === step.id ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {step.id === 1 ? 'Data Processing' : step.id === 2 ? 'AI Insights' : 'Smart Decisions'}
-              </span>
-            </motion.button>
-
-            {/* Arrow Connector */}
-            {index < steps.length - 1 && (
-              <div className="flex items-center mx-1 sm:mx-4">
+                {/* Step Number Badge */}
                 <motion.div
                   className={cn(
-                    "w-6 sm:w-12 h-0.5",
-                    activeStep > step.id ? "bg-emerald-500" : "bg-border"
+                    "absolute -top-2 -left-2 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold",
+                    activeStep === step.id
+                      ? "bg-primary text-primary-foreground"
+                      : activeStep > step.id
+                        ? "bg-emerald-500 text-white"
+                        : "bg-muted text-muted-foreground"
+                  )}
+                  animate={activeStep === step.id ? { scale: [1, 1.2, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  {activeStep > step.id ? <CheckCircle2 className="h-4 w-4" /> : step.id}
+                </motion.div>
+
+                {/* Icon */}
+                <motion.div
+                  className={cn(
+                    "h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center",
+                    activeStep === step.id
+                      ? `bg-gradient-to-br ${step.color}`
+                      : "bg-muted"
                   )}
                   animate={
-                    activeStep > step.id
-                      ? { scaleX: [0, 1], opacity: [0, 1] }
+                    activeStep === step.id
+                      ? {
+                          boxShadow: [
+                            '0 0 0px transparent',
+                            '0 0 30px hsl(174 72% 50% / 0.3)',
+                            '0 0 0px transparent',
+                          ],
+                        }
                       : {}
                   }
-                  transition={{ duration: 0.5 }}
-                />
-                <ArrowRight className={cn(
-                  "h-3 w-3 sm:h-4 sm:w-4 -ml-1",
-                  activeStep > step.id ? "text-emerald-500" : "text-muted-foreground"
-                )} />
-              </div>
-            )}
-          </div>
-        ))}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <step.icon className={cn(
+                    "h-5 w-5 sm:h-6 sm:w-6 transition-colors",
+                    activeStep === step.id ? "text-white" : "text-muted-foreground"
+                  )} />
+                </motion.div>
+
+                <span className={cn(
+                  "text-xs sm:text-sm font-semibold transition-colors text-center leading-tight",
+                  activeStep === step.id ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {step.id === 1 ? 'Data Processing' : step.id === 2 ? 'AI Insights' : 'Smart Decisions'}
+                </span>
+              </motion.button>
+
+              {/* Arrow Connector */}
+              {index < steps.length - 1 && (
+                <div className="flex items-center">
+                  <motion.div
+                    className={cn(
+                      "w-6 sm:w-10 h-0.5",
+                      activeStep > step.id ? "bg-emerald-500" : "bg-border"
+                    )}
+                    animate={
+                      activeStep > step.id
+                        ? { scaleX: [0, 1], opacity: [0, 1] }
+                        : {}
+                    }
+                    transition={{ duration: 0.5 }}
+                  />
+                  <ArrowRight className={cn(
+                    "h-4 w-4 -ml-1",
+                    activeStep > step.id ? "text-emerald-500" : "text-muted-foreground"
+                  )} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -162,7 +158,7 @@ const WorkflowDemo = () => {
           layoutId="step-accent"
         />
 
-        <div className="p-4 sm:p-6 md:p-10">
+        <div className="p-5 sm:p-8 md:p-10">
           {/* Header */}
           <AnimatePresence mode="wait">
             <motion.div
