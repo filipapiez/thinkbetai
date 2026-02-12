@@ -35,45 +35,47 @@ interface GeneratedBet {
   result: 'win' | 'loss';
 }
 
-// All sports from website configuration with ESPN API endpoints
-const SPORT_ENDPOINTS = [
-  // Priority 1 - Football
-  { sport: 'NFL', url: 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260101-20260128&limit=100' },
-  { sport: 'CFB', url: 'https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=20260101-20260128&limit=100' },
-  
-  // Priority 2 - Basketball
-  { sport: 'NBA', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=20260101-20260128&limit=100' },
-  { sport: 'NCAAB', url: 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20260101-20260128&limit=100' },
-  
-  // Priority 3 - Baseball
-  { sport: 'MLB', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20251001-20251201&limit=100' },
-  { sport: 'College Baseball', url: 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=20250501-20250701&limit=50' },
-  
-  // Priority 4 - Soccer (multiple leagues)
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=20260101-20260128&limit=50' }, // EPL
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=20251001-20251201&limit=50' }, // MLS
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=20260101-20260128&limit=50' }, // La Liga
-  { sport: 'Soccer', url: 'https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=20260101-20260128&limit=50' }, // Champions League
-  
-  // Priority 5 - Hockey
-  { sport: 'NHL', url: 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20260101-20260128&limit=100' },
-  
-  // Priority 6 - Tennis
-  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=20260101-20260128&limit=50' },
-  { sport: 'Tennis', url: 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=20260101-20260128&limit=50' },
-  
-  // Priority 7 - UFC/MMA
-  { sport: 'UFC', url: 'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=20260101-20260128&limit=50' },
-  
-  // Priority 9 - Golf
-  { sport: 'Golf', url: 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=20260101-20260128&limit=30' },
-  
-  // Priority 10 - Boxing
-  { sport: 'Boxing', url: 'https://site.api.espn.com/apis/site/v2/sports/boxing/scoreboard?dates=20260101-20260128&limit=30' },
-  
-  // Priority 11 - NASCAR
-  { sport: 'NASCAR', url: 'https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=20251001-20251201&limit=30' },
-];
+// Dynamic date range: last 14 days
+function getDateRange(daysBack = 14): string {
+  const now = new Date();
+  const end = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const start = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000)
+    .toISOString().slice(0, 10).replace(/-/g, '');
+  return `${start}-${end}`;
+}
+
+function getSportEndpoints() {
+  const range = getDateRange(14);
+  return [
+    // Priority 1 - Football
+    { sport: 'NFL', url: `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${range}&limit=100` },
+    { sport: 'CFB', url: `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${range}&limit=100` },
+    // Priority 2 - Basketball
+    { sport: 'NBA', url: `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${range}&limit=100` },
+    { sport: 'NCAAB', url: `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${range}&limit=100` },
+    // Priority 3 - Baseball
+    { sport: 'MLB', url: `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${range}&limit=100` },
+    { sport: 'College Baseball', url: `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${range}&limit=50` },
+    // Priority 4 - Soccer (multiple leagues)
+    { sport: 'Soccer', url: `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${range}&limit=50` },
+    { sport: 'Soccer', url: `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=${range}&limit=50` },
+    { sport: 'Soccer', url: `https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/scoreboard?dates=${range}&limit=50` },
+    { sport: 'Soccer', url: `https://site.api.espn.com/apis/site/v2/sports/soccer/uefa.champions/scoreboard?dates=${range}&limit=50` },
+    // Priority 5 - Hockey
+    { sport: 'NHL', url: `https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=${range}&limit=100` },
+    // Priority 6 - Tennis
+    { sport: 'Tennis', url: `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=${range}&limit=50` },
+    { sport: 'Tennis', url: `https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=${range}&limit=50` },
+    // Priority 7 - UFC/MMA
+    { sport: 'UFC', url: `https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard?dates=${range}&limit=50` },
+    // Priority 9 - Golf
+    { sport: 'Golf', url: `https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard?dates=${range}&limit=30` },
+    // Priority 10 - Boxing
+    { sport: 'Boxing', url: `https://site.api.espn.com/apis/site/v2/sports/boxing/scoreboard?dates=${range}&limit=30` },
+    // Priority 11 - NASCAR
+    { sport: 'NASCAR', url: `https://site.api.espn.com/apis/site/v2/sports/racing/nascar/scoreboard?dates=${range}&limit=30` },
+  ];
+}
 
 // Table Tennis (WTT) realistic completed matches - high-profile events only
 const TABLE_TENNIS_MATCHES = [
@@ -289,7 +291,7 @@ serve(async (req) => {
       winner: string;
     }> = [];
 
-    for (const { sport, url } of SPORT_ENDPOINTS) {
+    for (const { sport, url } of getSportEndpoints()) {
       try {
         const response = await fetch(url);
         if (!response.ok) continue;
@@ -381,15 +383,39 @@ serve(async (req) => {
       });
     }
 
-    // Sort by date (most recent first) then shuffle within date groups for variety
-    // This ensures recent games (Jan 23-24) are prioritized
-    const sortedByRecency = allCompletedGames.sort((a, b) => {
+    // Fetch existing bets to avoid duplicates
+    const { data: existingBets } = await supabase
+      .from('historical_bets')
+      .select('home_team, away_team, date, sport');
+    
+    const existingKeys = new Set(
+      (existingBets || []).map(b => `${b.sport}|${b.home_team}|${b.away_team}|${b.date}`)
+    );
+
+    // Filter out games that already have bets
+    const newGames = allCompletedGames.filter(g => 
+      !existingKeys.has(`${g.sport}|${g.homeTeam}|${g.awayTeam}|${g.gameDate}`)
+    );
+
+    console.log(`After dedup: ${newGames.length} new games (${allCompletedGames.length - newGames.length} already in history)`);
+
+    if (newGames.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'All games already in history, nothing new to add',
+        generated: 0,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Sort by date (most recent first)
+    const sortedByRecency = newGames.sort((a, b) => {
       const dateA = new Date(a.gameDate).getTime();
       const dateB = new Date(b.gameDate).getTime();
-      return dateB - dateA; // Most recent first
+      return dateB - dateA;
     });
     
-    // Take more recent games, then shuffle to add variety while keeping recency priority
     const selectedGames = sortedByRecency.slice(0, Math.min(count, sortedByRecency.length));
 
     // Calculate how many wins we need for 80% rate
