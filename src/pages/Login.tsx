@@ -10,13 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SEO } from '@/components/SEO';
-import { User as UserIcon, Mail, Lock, LogIn, Loader2, Ticket } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
-
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
-const nameSchema = z.string().min(1, 'This field is required').max(50, 'Name is too long');
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,10 +24,6 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [promoCode, setPromoCode] = useState('');
-  const [promoError, setPromoError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || '/games';
@@ -69,22 +63,6 @@ const Login = () => {
         toast.error('Passwords do not match');
         return false;
       }
-      try {
-        nameSchema.parse(firstName.trim());
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          toast.error('First name is required');
-          return false;
-        }
-      }
-      try {
-        nameSchema.parse(lastName.trim());
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          toast.error('Last name is required');
-          return false;
-        }
-      }
     }
     
     return true;
@@ -122,28 +100,20 @@ const Login = () => {
     e.preventDefault();
     if (!validateInputs(true)) return;
     
-    // Clear previous promo error
-    setPromoError('');
-    
     setIsLoading(true);
     try {
-      // Use server-side signup with promo validation
+      // Use server-side signup
       const { data, error } = await supabase.functions.invoke('signup-with-promo', {
         body: {
           email: email.trim(),
           password,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          promoCode: promoCode.trim(),
         },
       });
       
-      // Handle errors - edge function returns error in data when status is 400
+      // Handle errors
       const errorMessage = error?.message || data?.error;
       if (errorMessage) {
-        if (errorMessage === 'Invalid promo code') {
-          setPromoError('Invalid promo code');
-        } else if (errorMessage.includes('already registered')) {
+        if (errorMessage.includes('already registered')) {
           toast.error('This email is already registered. Please log in instead.');
         } else {
           toast.error(errorMessage);
@@ -272,32 +242,6 @@ const Login = () => {
 
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="first-name">First Name</Label>
-                        <Input
-                          id="first-name"
-                          type="text"
-                          placeholder="John"
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          disabled={isLoading}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="last-name">Last Name</Label>
-                        <Input
-                          id="last-name"
-                          type="text"
-                          placeholder="Doe"
-                          value={lastName}
-                          onChange={(e) => setLastName(e.target.value)}
-                          disabled={isLoading}
-                          required
-                        />
-                      </div>
-                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <div className="relative">
@@ -345,27 +289,6 @@ const Login = () => {
                           required
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="promo-code" className="flex items-center gap-2">
-                        <Ticket className="h-4 w-4 text-muted-foreground" />
-                        Promo Code (optional)
-                      </Label>
-                      <Input
-                        id="promo-code"
-                        type="text"
-                        placeholder="Enter promo code"
-                        value={promoCode}
-                        onChange={(e) => {
-                          setPromoCode(e.target.value.toUpperCase());
-                          setPromoError('');
-                        }}
-                        className={`uppercase tracking-wider font-mono ${promoError ? 'border-destructive' : ''}`}
-                        disabled={isLoading}
-                      />
-                      {promoError && (
-                        <p className="text-sm text-destructive">{promoError}</p>
-                      )}
                     </div>
                     <Button type="submit" variant="hero" className="w-full" disabled={isLoading}>
                       {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
