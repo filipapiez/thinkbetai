@@ -291,7 +291,7 @@ const Index = () => {
                   </Link>
                 </Button>
                 <Button variant="glass" size="xl" asChild className="group">
-                  <Link to="/login" className="flex items-center">
+                  <Link to="/login?tab=signup" className="flex items-center">
                     <LogIn className="h-5 w-5 mr-2" />
                     Create Free Account
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -666,7 +666,7 @@ const Index = () => {
             <p className="text-xs text-muted-foreground truncate">{platformStats.qualifiedWinRate}% win rate • 70% off</p>
           </div>
           <Button variant="hero" size="sm" asChild className="shrink-0">
-            <Link to="/login">
+            <Link to="/login?tab=signup">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               Sign Up Free
             </Link>
