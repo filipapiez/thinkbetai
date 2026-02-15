@@ -20,7 +20,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isSubscribed, refreshProfile } = useAuth();
-  
+  const searchParams = new URLSearchParams(location.search);
+  const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -179,7 +180,7 @@ const Login = () => {
 
           <Card variant="glass">
             <CardContent className="pt-6">
-              <Tabs defaultValue="login" className="w-full">
+              <Tabs defaultValue={defaultTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login">Log In</TabsTrigger>
                   <TabsTrigger value="signup">Sign Up</TabsTrigger>
