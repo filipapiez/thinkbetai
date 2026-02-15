@@ -33,7 +33,8 @@ import {
   Play,
   ChevronLeft,
   ChevronRight,
-  Brain
+  Brain,
+  LogIn
 } from 'lucide-react';
 
 const Index = () => {
@@ -290,9 +291,9 @@ const Index = () => {
                   </Link>
                 </Button>
                 <Button variant="glass" size="xl" asChild className="group">
-                  <Link to="/pricing" className="flex items-center">
-                    <Zap className="h-5 w-5 mr-2" />
-                    Unlock 70% Off
+                  <Link to="/login" className="flex items-center">
+                    <LogIn className="h-5 w-5 mr-2" />
+                    Create Free Account
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
@@ -607,7 +608,7 @@ const Index = () => {
             <div className="max-w-3xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold mb-6 animate-pulse">
                 <Zap className="h-4 w-4" />
-                Limited Time: First Week Free
+                Limited Time: 70% Off All Plans
               </div>
               <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
                 Stop Guessing. <span className="text-gradient">Start Winning.</span>
@@ -656,6 +657,22 @@ const Index = () => {
       </main>
 
       <Footer />
+
+      {/* Sticky Mobile Signup CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
+            <p className="text-xs text-muted-foreground truncate">{platformStats.qualifiedWinRate}% win rate • 70% off</p>
+          </div>
+          <Button variant="hero" size="sm" asChild className="shrink-0">
+            <Link to="/login">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Sign Up Free
+            </Link>
+          </Button>
+        </div>
+      </div>
       
     </div>
   );
