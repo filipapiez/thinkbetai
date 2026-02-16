@@ -104,7 +104,7 @@ const App = () => (
 
               {/* Protected routes - require auth + subscription */}
               <Route path="/games" element={<Games />} />
-              <Route path="/games/:gameId" element={<ProtectedRoute requireSubscription><GameDetail /></ProtectedRoute>} />
+              <Route path="/games/:gameId" element={<GameDetail />} />
               <Route path="/picks" element={<Picks />} />
               <Route path="/parlays" element={<ProtectedRoute requireSubscription><Parlays /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute requireSubscription><Chat /></ProtectedRoute>} />
