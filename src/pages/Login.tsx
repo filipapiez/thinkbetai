@@ -35,7 +35,8 @@ const Login = () => {
       if (isSubscribed) {
         navigate(from, { replace: true });
       } else {
-        navigate('/pricing', { replace: true });
+        // Non-subscribers go to games page to see the freemium preview
+        navigate('/games', { replace: true });
       }
     }
   }, [user, isSubscribed, navigate, from]);
