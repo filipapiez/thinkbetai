@@ -170,37 +170,31 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authentication check
+    // Optional authentication – allow anonymous access for freemium preview
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error("No authorization header provided");
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    let userId = 'anonymous';
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
       );
+
+      const token = authHeader.replace('Bearer ', '');
+      const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+      if (!claimsError && claimsData?.claims) {
+        userId = claimsData.claims.sub as string;
+      }
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    console.log(`User: ${userId}`);
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      console.error("Authentication failed:", claimsError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const userId = claimsData.claims.sub as string;
-    console.log(`Authenticated user: ${userId}`);
-
-    // Rate limiting by user ID
-    if (!checkRateLimit(userId)) {
+    // Rate limiting by user ID or IP for anonymous
+    const rateLimitKey = userId === 'anonymous'
+      ? (req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown-ip')
+      : userId;
+    if (!checkRateLimit(rateLimitKey)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Rate limit exceeded. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
