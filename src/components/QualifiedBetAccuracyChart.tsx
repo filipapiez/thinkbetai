@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Trophy, TrendingUp, Target, CheckCircle, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { platformStats } from '@/lib/mockData';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 interface QualifiedBetAccuracyChartProps {
   sport: string;
@@ -30,7 +32,6 @@ interface RecentBet {
 const getSportAccuracy = (sport: string): SportAccuracy => {
   const normalizedSport = sport.toUpperCase().replace(/\s+/g, '');
   
-  // Map sport to platformStats breakdown for consistent win rates
   const sportMapping: Record<string, string> = {
     'NBA': 'NBA',
     'NFL': 'NFL', 
@@ -63,11 +64,10 @@ const getSportAccuracy = (sport: string): SportAccuracy => {
       losses: losses,
       total: sportData.qualified,
       winRate: sportData.winRate,
-      profit: Math.round((sportData.winRate - 50) * 0.9 * 10) / 10, // Approximate ROI
+      profit: Math.round((sportData.winRate - 50) * 0.9 * 10) / 10,
     };
   }
   
-  // Fallback to overall platform stats for unknown sports
   return {
     wins: platformStats.correctQualified,
     losses: platformStats.totalQualified - platformStats.correctQualified,
@@ -77,75 +77,31 @@ const getSportAccuracy = (sport: string): SportAccuracy => {
   };
 };
 
-// Get recent qualified bets for the sport
-const getRecentBets = (sport: string): RecentBet[] => {
-  const normalizedSport = sport.toUpperCase();
-  
-  // Sport-specific recent bets (simulated based on win rate)
-  const recentBetsData: Record<string, RecentBet[]> = {
-    'NBA': [
-      { id: '1', matchup: 'Lakers vs Celtics', pick: 'Lakers ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Warriors vs Heat', pick: 'Warriors -3.5', result: 'W', date: 'Jan 13' },
-      { id: '3', matchup: 'Nuggets vs 76ers', pick: 'Nuggets ML', result: 'W', date: 'Jan 12' },
-      { id: '4', matchup: 'Bucks vs Suns', pick: 'Under 228.5', result: 'L', date: 'Jan 11' },
-      { id: '5', matchup: 'Celtics vs Heat', pick: 'Celtics -5.5', result: 'W', date: 'Jan 10' },
-    ],
-    'NFL': [
-      { id: '1', matchup: 'Chiefs vs Bills', pick: 'Chiefs ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Lions vs Eagles', pick: 'Lions -2.5', result: 'W', date: 'Jan 13' },
-      { id: '3', matchup: 'Ravens vs Texans', pick: 'Ravens ML', result: 'W', date: 'Jan 12' },
-      { id: '4', matchup: 'Packers vs Cowboys', pick: 'Over 48.5', result: 'W', date: 'Jan 11' },
-      { id: '5', matchup: 'Bills vs Dolphins', pick: 'Bills -7.5', result: 'W', date: 'Jan 10' },
-    ],
-    'UFC': [
-      { id: '1', matchup: 'Jones vs Aspinall', pick: 'Jones ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Makhachev vs Holloway', pick: 'Makhachev ML', result: 'W', date: 'Jan 12' },
-      { id: '3', matchup: 'Pereira vs Hill', pick: 'Pereira KO', result: 'W', date: 'Jan 10' },
-      { id: '4', matchup: 'Du Plessis vs Strickland', pick: 'Du Plessis ML', result: 'W', date: 'Jan 8' },
-      { id: '5', matchup: 'O\'Malley vs Merab', pick: 'O\'Malley ML', result: 'L', date: 'Jan 6' },
-    ],
-    'SOCCER': [
-      { id: '1', matchup: 'Real Madrid vs Barcelona', pick: 'Real Madrid ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Liverpool vs Man City', pick: 'Liverpool ML', result: 'W', date: 'Jan 13' },
-      { id: '3', matchup: 'Arsenal vs Chelsea', pick: 'Under 2.5', result: 'L', date: 'Jan 12' },
-      { id: '4', matchup: 'Bayern vs Dortmund', pick: 'Bayern -1.5', result: 'W', date: 'Jan 11' },
-      { id: '5', matchup: 'PSG vs Monaco', pick: 'PSG ML', result: 'W', date: 'Jan 10' },
-    ],
-    'TENNIS': [
-      { id: '1', matchup: 'Sinner vs Alcaraz', pick: 'Sinner ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Djokovic vs Medvedev', pick: 'Djokovic ML', result: 'W', date: 'Jan 13' },
-      { id: '3', matchup: 'Zverev vs Rublev', pick: 'Zverev -3.5', result: 'W', date: 'Jan 12' },
-      { id: '4', matchup: 'Fritz vs Ruud', pick: 'Fritz ML', result: 'L', date: 'Jan 11' },
-      { id: '5', matchup: 'Sinner vs Djokovic', pick: 'Sinner ML', result: 'W', date: 'Jan 10' },
-    ],
-    'NHL': [
-      { id: '1', matchup: 'Oilers vs Panthers', pick: 'Oilers ML', result: 'W', date: 'Jan 14' },
-      { id: '2', matchup: 'Jets vs Golden Knights', pick: 'Jets -1.5', result: 'W', date: 'Jan 13' },
-      { id: '3', matchup: 'Avalanche vs Stars', pick: 'Over 6.5', result: 'L', date: 'Jan 12' },
-      { id: '4', matchup: 'Rangers vs Bruins', pick: 'Rangers ML', result: 'W', date: 'Jan 11' },
-      { id: '5', matchup: 'Hurricanes vs Leafs', pick: 'Under 6.5', result: 'W', date: 'Jan 10' },
-    ],
-    'MLB': [
-      { id: '1', matchup: 'Dodgers vs Yankees', pick: 'Dodgers ML', result: 'W', date: 'Oct 14' },
-      { id: '2', matchup: 'Braves vs Phillies', pick: 'Braves -1.5', result: 'W', date: 'Oct 13' },
-      { id: '3', matchup: 'Astros vs Rangers', pick: 'Astros ML', result: 'W', date: 'Oct 12' },
-      { id: '4', matchup: 'Orioles vs Rays', pick: 'Orioles ML', result: 'L', date: 'Oct 11' },
-      { id: '5', matchup: 'Padres vs Diamondbacks', pick: 'Padres ML', result: 'W', date: 'Oct 10' },
-    ],
+// Map sport names to DB sport values
+const getDbSportFilter = (sport: string): string[] => {
+  const normalized = sport.toUpperCase().replace(/\s+/g, '');
+  const mapping: Record<string, string[]> = {
+    'NBA': ['NBA'],
+    'NFL': ['NFL'],
+    'NHL': ['NHL'],
+    'MLB': ['MLB'],
+    'UFC': ['UFC', 'MMA'],
+    'MMA': ['UFC', 'MMA'],
+    'TENNIS': ['Tennis', 'ATP', 'WTA'],
+    'ATP': ['Tennis', 'ATP', 'WTA'],
+    'WTA': ['Tennis', 'ATP', 'WTA'],
+    'TABLETENNIS': ['Table Tennis', 'WTT'],
+    'WTT': ['Table Tennis', 'WTT'],
+    'SOCCER': ['Soccer', 'EPL', 'La Liga', 'Bundesliga', 'Serie A', 'Ligue 1', 'MLS', 'Champions League'],
+    'EPL': ['Soccer', 'EPL'],
+    'LALIGA': ['Soccer', 'La Liga'],
+    'CHAMPIONSLEAGUE': ['Soccer', 'Champions League'],
+    'BUNDESLIGA': ['Soccer', 'Bundesliga'],
+    'SERIEA': ['Soccer', 'Serie A'],
+    'LIGUE1': ['Soccer', 'Ligue 1'],
+    'MLS': ['Soccer', 'MLS'],
   };
-  
-  // Map variations to main sports
-  const sportKey = normalizedSport.includes('TENNIS') || normalizedSport === 'ATP' || normalizedSport === 'WTA' 
-    ? 'TENNIS' 
-    : normalizedSport.includes('TABLE') || normalizedSport === 'WTT'
-    ? 'TENNIS' // Use tennis data for table tennis
-    : normalizedSport.includes('SOCCER') || ['EPL', 'LALIGA', 'BUNDESLIGA', 'SERIEA', 'LIGUE1', 'MLS', 'CHAMPIONSLEAGUE'].includes(normalizedSport)
-    ? 'SOCCER'
-    : normalizedSport === 'MMA' 
-    ? 'UFC'
-    : recentBetsData[normalizedSport] ? normalizedSport : 'NBA';
-  
-  return recentBetsData[sportKey] || recentBetsData['NBA'];
+  return mapping[normalized] || [sport];
 };
 
 // Generate monthly trend data for this sport
@@ -162,8 +118,32 @@ const getMonthlyTrend = (baseWinRate: number): { month: string; winRate: number;
 
 export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartProps) => {
   const sportData = useMemo(() => getSportAccuracy(sport), [sport]);
-  const recentBets = useMemo(() => getRecentBets(sport), [sport]);
+  const [recentBets, setRecentBets] = useState<RecentBet[]>([]);
   const trendData = useMemo(() => getMonthlyTrend(sportData.winRate), [sportData.winRate]);
+
+  // Fetch last 5 bets from historical_bets table
+  useEffect(() => {
+    const fetchRecentBets = async () => {
+      const sportFilters = getDbSportFilter(sport);
+      const { data, error } = await supabase
+        .from('historical_bets')
+        .select('id, home_team, away_team, pick, result, date')
+        .in('sport', sportFilters)
+        .order('date', { ascending: false })
+        .limit(5);
+
+      if (!error && data && data.length > 0) {
+        setRecentBets(data.map(bet => ({
+          id: bet.id,
+          matchup: `${bet.home_team} vs ${bet.away_team}`,
+          pick: bet.pick,
+          result: bet.result === 'win' ? 'W' : 'L',
+          date: format(new Date(bet.date), 'MMM d'),
+        })));
+      }
+    };
+    fetchRecentBets();
+  }, [sport]);
 
   const pieData = [
     { name: 'Wins', value: sportData.wins, fill: 'hsl(142, 76%, 36%)' },
@@ -228,7 +208,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
             </Badge>
           </h4>
           <div className="space-y-2">
-            {recentBets.map((bet) => (
+            {recentBets.length > 0 ? recentBets.map((bet) => (
               <div 
                 key={bet.id}
                 className={cn(
@@ -254,7 +234,9 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
                   {bet.result}
                 </Badge>
               </div>
-            ))}
+            )) : (
+              <div className="text-xs text-muted-foreground text-center py-4">Loading recent bets...</div>
+            )}
           </div>
         </div>
 
