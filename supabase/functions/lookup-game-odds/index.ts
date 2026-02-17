@@ -1,4 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// DB-backed cache helpers
+function getSupabaseAdmin() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+}
+
+async function getDbCache(key: string): Promise<unknown | null> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data } = await sb
+      .from('odds_cache')
+      .select('data, expires_at')
+      .eq('id', key)
+      .single();
+    if (data && new Date(data.expires_at) > new Date()) {
+      return data.data;
+    }
+  } catch { /* miss */ }
+  return null;
+}
+
+async function setDbCache(key: string, value: unknown, ttlMs: number): Promise<void> {
+  try {
+    const sb = getSupabaseAdmin();
+    await sb.from('odds_cache').upsert({
+      id: key,
+      data: value,
+      expires_at: new Date(Date.now() + ttlMs).toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error('[odds_cache] write error', e);
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,13 +70,13 @@ function checkRateLimit(identifier: string): boolean {
   return true;
 }
 
-// In-memory cache - match-level with longer TTL
+// In-memory L1 cache
 const cache = new Map<string, { data: unknown; ts: number }>();
-const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes (increased from 5)
+const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 15)
 
-// Sport-level cache for API responses (reduces duplicate calls)
+// Sport-level L1 cache
 const sportCache = new Map<string, { games: TheOddsApiGame[]; ts: number }>();
-const SPORT_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const SPORT_CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 10)
 
 // Track upstream rate limit state
 let upstreamRateLimited = false;
@@ -172,10 +210,20 @@ function extractBaseSport(sportKey: string): string | null {
 
 // Helper to fetch with sport-level caching
 async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOddsApiGame[]> {
+  // L1: in-memory
   const cached = sportCache.get(sportKey);
   if (cached && Date.now() - cached.ts < SPORT_CACHE_TTL_MS) {
-    console.log(`[lookup-game-odds] Using cached data for ${sportKey}`);
+    console.log(`[lookup-game-odds] L1 cache hit for ${sportKey}`);
     return cached.games;
+  }
+
+  // L2: DB cache
+  const dbKey = `sport-odds:${sportKey}`;
+  const dbCached = await getDbCache(dbKey) as TheOddsApiGame[] | null;
+  if (dbCached && Array.isArray(dbCached)) {
+    console.log(`[lookup-game-odds] L2 DB cache hit for ${sportKey}`);
+    sportCache.set(sportKey, { games: dbCached, ts: Date.now() });
+    return dbCached;
   }
 
   // Check if we're rate limited upstream
@@ -184,9 +232,10 @@ async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOdds
     return cached?.games || [];
   }
 
+  // Reduce to us region only to save API credits
   const oddsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(
     sportKey
-  )}/odds/?apiKey=${encodeURIComponent(apiKey)}&regions=us,uk&markets=h2h,spreads,totals&oddsFormat=american`;
+  )}/odds/?apiKey=${encodeURIComponent(apiKey)}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`;
 
   try {
     const resp = await fetch(oddsUrl);
@@ -194,13 +243,15 @@ async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOdds
       const data = (await resp.json()) as TheOddsApiGame[];
       if (Array.isArray(data)) {
         sportCache.set(sportKey, { games: data, ts: Date.now() });
+        // Persist to DB
+        await setDbCache(dbKey, data, SPORT_CACHE_TTL_MS);
         upstreamRateLimited = false;
         return data;
       }
     } else if (resp.status === 429) {
       console.log(`[lookup-game-odds] Upstream rate limit hit for ${sportKey}`);
       upstreamRateLimited = true;
-      upstreamRateLimitUntil = Date.now() + 60 * 1000; // Back off for 1 minute
+      upstreamRateLimitUntil = Date.now() + 60 * 1000;
       return cached?.games || [];
     } else {
       console.log(`[lookup-game-odds] API error ${resp.status} for ${sportKey}`);
@@ -379,9 +430,19 @@ serve(async (req) => {
     }
 
     const cacheKey = `${sportKey}:${normalizeTeam(homeTeam)}:${normalizeTeam(awayTeam)}:${commenceTime?.slice(0, 10) ?? ""}`;
+    // L1: in-memory
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
       return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // L2: DB cache
+    const dbMatchKey = `match-odds:${cacheKey}`;
+    const dbMatchCached = await getDbCache(dbMatchKey);
+    if (dbMatchCached) {
+      cache.set(cacheKey, { data: dbMatchCached, ts: Date.now() });
+      return new Response(JSON.stringify(dbMatchCached), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -450,6 +511,7 @@ serve(async (req) => {
     };
 
     cache.set(cacheKey, { data: result, ts: Date.now() });
+    await setDbCache(`match-odds:${cacheKey}`, result, CACHE_TTL_MS);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

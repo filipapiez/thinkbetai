@@ -1,6 +1,43 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// DB-backed cache helpers (survives cold starts)
+function getSupabaseAdmin() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+}
+
+async function getDbCache(key: string): Promise<unknown | null> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data } = await sb
+      .from('odds_cache')
+      .select('data, expires_at')
+      .eq('id', key)
+      .single();
+    if (data && new Date(data.expires_at) > new Date()) {
+      return data.data;
+    }
+  } catch { /* miss */ }
+  return null;
+}
+
+async function setDbCache(key: string, value: unknown, ttlMs: number): Promise<void> {
+  try {
+    const sb = getSupabaseAdmin();
+    await sb.from('odds_cache').upsert({
+      id: key,
+      data: value,
+      expires_at: new Date(Date.now() + ttlMs).toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error('[odds_cache] write error', e);
+  }
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -197,9 +234,9 @@ function validateSport(sport: string | null): string | null {
   return leagueIdMap[normalized] ? normalized : null;
 }
 
-// In-memory cache to reduce external API calls and avoid rate limits
+// In-memory cache as L1, DB cache as L2
 const oddsCache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes - extended to prevent rate limiting
+const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 30)
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -238,10 +275,19 @@ serve(async (req) => {
     
     const leagueId = leagueIdMap[validatedSport] || 'NBA';
 
-    // Cache lookup
+    // L1: In-memory cache
     const cached = oddsCache.get(leagueId);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       return new Response(JSON.stringify(cached.data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // L2: DB cache (survives cold starts)
+    const dbCached = await getDbCache(`get-odds:${leagueId}`);
+    if (dbCached) {
+      oddsCache.set(leagueId, { data: dbCached, timestamp: Date.now() });
+      return new Response(JSON.stringify(dbCached), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -392,6 +438,8 @@ serve(async (req) => {
     };
 
     oddsCache.set(leagueId, { data: responsePayload, timestamp: Date.now() });
+    // Persist to DB cache
+    await setDbCache(`get-odds:${leagueId}`, responsePayload, CACHE_TTL_MS);
 
     return new Response(JSON.stringify(responsePayload), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
