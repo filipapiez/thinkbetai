@@ -197,6 +197,30 @@ export type Database = {
         }
         Relationships: []
       }
+      odds_cache: {
+        Row: {
+          created_at: string
+          data: Json
+          expires_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          expires_at: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          expires_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_type: string | null
