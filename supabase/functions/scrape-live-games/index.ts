@@ -6,6 +6,45 @@ const corsHeaders = {
 };
 
 // ============================================================================
+// DB-BACKED CACHE (survives cold starts)
+// ============================================================================
+function getSupabaseAdmin() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+}
+
+async function getDbCache(key: string): Promise<unknown | null> {
+  try {
+    const sb = getSupabaseAdmin();
+    const { data } = await sb
+      .from('odds_cache')
+      .select('data, expires_at')
+      .eq('id', key)
+      .single();
+    if (data && new Date(data.expires_at) > new Date()) {
+      return data.data;
+    }
+  } catch { /* miss */ }
+  return null;
+}
+
+async function setDbCache(key: string, value: unknown, ttlMs: number): Promise<void> {
+  try {
+    const sb = getSupabaseAdmin();
+    await sb.from('odds_cache').upsert({
+      id: key,
+      data: value,
+      expires_at: new Date(Date.now() + ttlMs).toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error('[odds_cache] write error', e);
+  }
+}
+
+// ============================================================================
 // RATE LIMITING
 // ============================================================================
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -93,7 +132,8 @@ interface ScheduledGame {
 
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 5 min)
+const DB_CACHE_KEY = 'scrape-live-games:all';
 
 const LEAGUE_POPULARITY: Record<string, number> = {
   'NFL': 100, 'NBA': 95, 'MLB': 85, 'NHL': 80, 'NCAAF': 85, 'NCAAB': 80,
@@ -1158,7 +1198,7 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
         for (const config of tennisKeys) {
           try {
             const response = await fetch(
-              `https://api.the-odds-api.com/v4/sports/${config.key}/odds/?apiKey=${oddsApiKey}&regions=us,uk&markets=h2h&oddsFormat=american`,
+              `https://api.the-odds-api.com/v4/sports/${config.key}/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h&oddsFormat=american`,
               { headers: { 'Accept': 'application/json' } }
             );
 
@@ -1252,7 +1292,7 @@ async function fetchBoxingGames(): Promise<ScheduledGame[]> {
     console.log('[Boxing] Fetching from TheOddsAPI...');
     
     const response = await fetch(
-      `https://api.the-odds-api.com/v4/sports/boxing_boxing/odds/?apiKey=${oddsApiKey}&regions=us,uk&markets=h2h&oddsFormat=american`,
+      `https://api.the-odds-api.com/v4/sports/boxing_boxing/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h&oddsFormat=american`,
       { headers: { 'Accept': 'application/json' } }
     );
 
@@ -1557,7 +1597,7 @@ async function fetchTheOddsAPIGames(): Promise<ScheduledGame[]> {
       const batchPromises = batch.map(async (sportConfig) => {
         try {
           const response = await fetch(
-            `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us,uk,eu&markets=h2h,spreads,totals&oddsFormat=american`,
+            `https://api.the-odds-api.com/v4/sports/${sportConfig.key}/odds/?apiKey=${apiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`,
             { headers: { 'Accept': 'application/json' } }
           );
 
@@ -1951,7 +1991,7 @@ Deno.serve(async (req) => {
     const forceRefresh = url.searchParams.get('refresh') === 'true';
     
     if (!forceRefresh && isCacheValid()) {
-      console.log('[API] Returning cached games:', cachedGames.length);
+      console.log('[API] Returning L1 cached games:', cachedGames.length);
       return new Response(
         JSON.stringify({
           success: true,
@@ -1961,6 +2001,25 @@ Deno.serve(async (req) => {
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // L2: DB cache (survives cold starts)
+    if (!forceRefresh) {
+      const dbCached = await getDbCache(DB_CACHE_KEY) as ScheduledGame[] | null;
+      if (dbCached && Array.isArray(dbCached) && dbCached.length > 0) {
+        console.log('[API] Returning L2 DB cached games:', dbCached.length);
+        cachedGames = dbCached;
+        cacheTimestamp = Date.now();
+        return new Response(
+          JSON.stringify({
+            success: true,
+            games: dbCached,
+            source: 'db_cached',
+            lastUpdated: new Date().toISOString(),
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
@@ -2057,6 +2116,9 @@ Deno.serve(async (req) => {
     const rankedGames = deduplicateAndRank(upcomingOrLiveGames);
     cachedGames = rankedGames;
     cacheTimestamp = Date.now();
+    
+    // Persist to DB cache for cold-start protection
+    await setDbCache(DB_CACHE_KEY, rankedGames, CACHE_TTL_MS);
 
     return new Response(
       JSON.stringify({
