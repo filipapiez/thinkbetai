@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useUserParlays } from '@/hooks/useUserParlays';
 import { usePicks } from '@/hooks/usePicks';
+import { SuggestedParlays } from '@/components/SuggestedParlays';
 import { Link } from 'react-router-dom';
 import type { Pick } from '@/hooks/usePicks';
 
@@ -162,6 +163,11 @@ const Parlays = () => {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
+            {/* AI Suggested Parlays */}
+            <div className="lg:col-span-3 mb-6">
+              <SuggestedParlays />
+            </div>
+
             {/* Main Parlay Builder */}
             <div className="lg:col-span-2 space-y-6">
               <Card>
