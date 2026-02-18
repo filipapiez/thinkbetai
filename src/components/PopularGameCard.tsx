@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus, Check } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus, Check, Layers } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 
 // Get position label based on sport - only show for combat sports
@@ -331,7 +331,7 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                 <Star className="h-3 w-3" />
                 <span>Popularity: {game.popularityScore}</span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {onToggleSelect && (
                   <button
                     onClick={(e) => {
@@ -340,18 +340,27 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                       onToggleSelect(game);
                     }}
                     className={cn(
-                      "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md transition-all",
+                      "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all",
                       isSelected
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/50 text-muted-foreground hover:bg-primary/20 hover:text-primary"
+                        ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                        : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
                     )}
                   >
-                    <Check className={cn("h-3 w-3", isSelected ? "opacity-100" : "opacity-50")} />
-                    {isSelected ? 'In Parlay' : 'Add to Parlay'}
+                    {isSelected ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" />
+                        Added ✓
+                      </>
+                    ) : (
+                      <>
+                        <Layers className="h-3.5 w-3.5" />
+                        + Parlay
+                      </>
+                    )}
                   </button>
                 )}
                 <div className="flex items-center gap-1 text-xs text-primary group-hover:text-primary/80">
-                  <span>View Analysis</span>
+                  <span>Details</span>
                   <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>
