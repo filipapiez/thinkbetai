@@ -24,13 +24,28 @@ import type { PopularGame } from '@/hooks/usePopularGames';
 import { calculateLiveBetQualification } from '@/lib/liveTypes';
 import type { LiveGame } from '@/lib/liveTypes';
 
+interface LegBreakdown {
+  leg: string;
+  signal: 'STRONG' | 'DECENT' | 'RISKY' | 'AVOID';
+  confidence: number;
+  strengths: string[];
+  risks: string[];
+  keyInsight: string;
+}
+
 interface ParlayAnalysis {
   signal: 'STRONG' | 'DECENT' | 'RISKY' | 'AVOID';
   overallConfidence: number;
+  winProbability: string;
+  grade: string;
   verdict: string;
-  strengths: string[];
-  risks: string[];
-  correlations: string;
+  legBreakdowns: LegBreakdown[];
+  correlations: {
+    positive: string[];
+    negative: string[];
+  };
+  overallStrengths: string[];
+  overallRisks: string[];
   suggestion: string;
   alternativeIdea?: string;
 }
@@ -559,27 +574,131 @@ const Parlays = () => {
                   
                   <CardContent>
                     {analysis && signalStyle ? (
-                      <div className="space-y-4">
-                        {/* Signal Badge */}
-                        <div className="flex items-center justify-between">
-                          <Badge className={cn("px-4 py-2 text-base", signalStyle.bg, signalStyle.text, signalStyle.border)}>
+                      <div className="space-y-6">
+                        {/* Header: Signal + Grade + Confidence */}
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Badge className={cn("px-4 py-2 text-base font-bold", signalStyle.bg, signalStyle.text, signalStyle.border)}>
                             {signalStyle.label}
                           </Badge>
-                          <span className="text-lg font-semibold">{analysis.overallConfidence}% Confidence</span>
+                          <Badge variant="outline" className="px-3 py-2 text-base font-mono font-bold">
+                            Grade: {analysis.grade}
+                          </Badge>
+                          <div className="ml-auto text-right">
+                            <div className="text-lg font-bold">{analysis.overallConfidence}%</div>
+                            <div className="text-xs text-muted-foreground">Confidence</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-amber-400">{analysis.winProbability}</div>
+                            <div className="text-xs text-muted-foreground">Win Prob</div>
+                          </div>
                         </div>
 
                         {/* Verdict */}
-                        <p className="text-lg">{analysis.verdict}</p>
+                        <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                          <p className="text-sm leading-relaxed">{analysis.verdict}</p>
+                        </div>
 
-                        {/* Strengths & Risks */}
+                        {/* Per-Leg Breakdowns */}
+                        {analysis.legBreakdowns && analysis.legBreakdowns.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                              <Target className="h-4 w-4" />
+                              Leg-by-Leg Breakdown
+                            </h4>
+                            {analysis.legBreakdowns.map((leg, i) => {
+                              const legStyle = getSignalStyle(leg.signal);
+                              return (
+                                <div key={i} className="rounded-lg border border-border overflow-hidden">
+                                  <div className="p-3 bg-muted/20 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-mono text-muted-foreground">LEG {i + 1}</span>
+                                      <span className="font-semibold text-sm">{leg.leg}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={cn("text-xs", legStyle.bg, legStyle.text, legStyle.border)}>
+                                        {leg.signal}
+                                      </Badge>
+                                      <span className="text-sm font-mono">{leg.confidence}%</span>
+                                    </div>
+                                  </div>
+                                  <div className="p-3 space-y-2">
+                                    {/* Key Insight */}
+                                    <div className="flex items-start gap-2 p-2 rounded bg-primary/5 border border-primary/10">
+                                      <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                                      <p className="text-xs">{leg.keyInsight}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div>
+                                        <div className="text-[10px] uppercase tracking-wider text-emerald-400 mb-1 font-semibold">Strengths</div>
+                                        <ul className="space-y-0.5">
+                                          {leg.strengths.map((s, j) => (
+                                            <li key={j} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                              <CheckCircle2 className="h-3 w-3 text-emerald-400 mt-0.5 shrink-0" />
+                                              {s}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                      <div>
+                                        <div className="text-[10px] uppercase tracking-wider text-amber-400 mb-1 font-semibold">Risks</div>
+                                        <ul className="space-y-0.5">
+                                          {leg.risks.map((r, j) => (
+                                            <li key={j} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                                              <AlertTriangle className="h-3 w-3 text-amber-400 mt-0.5 shrink-0" />
+                                              {r}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Correlations */}
+                        {analysis.correlations && (
+                          <div className="grid md:grid-cols-2 gap-4">
+                            {analysis.correlations.positive?.length > 0 && (
+                              <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-2 flex items-center gap-1.5">
+                                  <TrendingUp className="h-3.5 w-3.5" />
+                                  Positive Correlations
+                                </h4>
+                                <ul className="space-y-1">
+                                  {analysis.correlations.positive.map((c, i) => (
+                                    <li key={i} className="text-xs text-muted-foreground">• {c}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {analysis.correlations.negative?.length > 0 && (
+                              <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+                                <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-1.5">
+                                  <TrendingDown className="h-3.5 w-3.5" />
+                                  Negative Correlations
+                                </h4>
+                                <ul className="space-y-1">
+                                  {analysis.correlations.negative.map((c, i) => (
+                                    <li key={i} className="text-xs text-muted-foreground">• {c}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Overall Strengths & Risks */}
                         <div className="grid md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <h4 className="font-semibold text-emerald-400 flex items-center gap-2">
+                            <h4 className="font-semibold text-emerald-400 flex items-center gap-2 text-sm">
                               <CheckCircle2 className="h-4 w-4" />
-                              Strengths
+                              Overall Strengths
                             </h4>
                             <ul className="space-y-1">
-                              {analysis.strengths.map((s, i) => (
+                              {(analysis.overallStrengths || []).map((s, i) => (
                                 <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                                   <span className="text-emerald-400 mt-1">•</span>
                                   {s}
@@ -588,12 +707,12 @@ const Parlays = () => {
                             </ul>
                           </div>
                           <div className="space-y-2">
-                            <h4 className="font-semibold text-amber-400 flex items-center gap-2">
+                            <h4 className="font-semibold text-amber-400 flex items-center gap-2 text-sm">
                               <AlertTriangle className="h-4 w-4" />
-                              Risks
+                              Overall Risks
                             </h4>
                             <ul className="space-y-1">
-                              {analysis.risks.map((r, i) => (
+                              {(analysis.overallRisks || []).map((r, i) => (
                                 <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                                   <span className="text-amber-400 mt-1">•</span>
                                   {r}
@@ -605,9 +724,23 @@ const Parlays = () => {
 
                         {/* Suggestion */}
                         <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                          <h4 className="font-semibold mb-2">💡 Suggestion</h4>
+                          <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            Recommendation
+                          </h4>
                           <p className="text-sm">{analysis.suggestion}</p>
                         </div>
+
+                        {/* Alternative */}
+                        {analysis.alternativeIdea && (
+                          <div className="p-4 rounded-lg bg-accent/10 border border-accent/20">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <RefreshCw className="h-4 w-4 text-accent-foreground" />
+                              Alternative Play
+                            </h4>
+                            <p className="text-sm text-muted-foreground">{analysis.alternativeIdea}</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-8 text-muted-foreground">
