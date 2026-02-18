@@ -11,17 +11,18 @@ import {
   X, Trash2, Calculator, TrendingUp, TrendingDown, 
   DollarSign, Trophy, AlertCircle, User, Layers,
   Sparkles, Loader2, CheckCircle2, AlertTriangle, XCircle, Flame,
-  Plus, RefreshCw
+  Plus, RefreshCw, Target, Activity, Zap, Calendar, Clock, Minus, Shield
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useUserParlays } from '@/hooks/useUserParlays';
 import { usePicks } from '@/hooks/usePicks';
-import { SuggestedParlays } from '@/components/SuggestedParlays';
 import { Link, useLocation } from 'react-router-dom';
 import type { Pick } from '@/hooks/usePicks';
 import type { PopularGame } from '@/hooks/usePopularGames';
+import { calculateLiveBetQualification } from '@/lib/liveTypes';
+import type { LiveGame } from '@/lib/liveTypes';
 
 interface ParlayAnalysis {
   signal: 'STRONG' | 'DECENT' | 'RISKY' | 'AVOID';
@@ -177,11 +178,6 @@ const Parlays = () => {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* AI Suggested Parlays */}
-            <div className="lg:col-span-3 mb-6">
-              <SuggestedParlays />
-            </div>
-
             {/* Main Parlay Builder */}
             <div className="lg:col-span-2 space-y-6">
               <Card>
@@ -234,46 +230,176 @@ const Parlays = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {/* Game-based parlay legs from Games page */}
-                      {gameParlayLegs.map((game) => (
-                        <div 
-                          key={game.id}
-                          className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg group hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <Layers className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold">{game.homeTeam} vs {game.awayTeam}</span>
-                              <Badge variant="outline" className="text-xs">{game.sport}</Badge>
+                       {/* Game-based parlay legs from Games page */}
+                      {gameParlayLegs.map((game) => {
+                        const abbrev = (name: string) => {
+                          if (!name) return 'TBD';
+                          if (name.length <= 4) return name.toUpperCase();
+                          const words = name.split(' ').filter(Boolean);
+                          if (words.length >= 2) return words.slice(0, 3).map(w => w[0]).join('').toUpperCase();
+                          return name.slice(0, 3).toUpperCase();
+                        };
+                        const liveGame: LiveGame = {
+                          id: game.id,
+                          sport: game.sport,
+                          sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+                          homeTeam: { id: game.homeTeam.toLowerCase().replace(/\s+/g, '-'), name: game.homeTeam, abbreviation: abbrev(game.homeTeam) },
+                          awayTeam: { id: game.awayTeam.toLowerCase().replace(/\s+/g, '-'), name: game.awayTeam, abbreviation: abbrev(game.awayTeam) },
+                          startTime: game.startTime,
+                          venue: '',
+                          status: game.status === 'live' ? 'live' : game.status === 'completed' ? 'final' : 'scheduled',
+                          odds: game.odds ? {
+                            moneyline: game.odds.moneyline || { home: 0, away: 0 },
+                            spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+                            total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+                          } : undefined,
+                          hasOdds: Boolean(game.hasOdds && game.odds),
+                          popularityScore: game.popularityScore,
+                        };
+                        const qual = calculateLiveBetQualification(liveGame);
+                        const signalVariants = {
+                          'GOOD': { bg: 'bg-emerald-500/20 border-emerald-500/40', text: 'text-emerald-400', icon: TrendingUp },
+                          'BORDERLINE': { bg: 'bg-amber-500/20 border-amber-500/40', text: 'text-amber-400', icon: Minus },
+                          'PASS': { bg: 'bg-red-500/20 border-red-500/40', text: 'text-red-400', icon: TrendingDown },
+                        };
+                        const sv = signalVariants[qual.signal];
+                        const SignalIcon = sv.icon;
+                        const gameDate = new Date(game.startTime);
+                        const dateStr = gameDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        const timeStr = gameDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                        return (
+                          <div key={game.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                            {/* Game Header */}
+                            <div className="p-4 border-b border-border">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="info">{game.sport}</Badge>
+                                  {game.league && <Badge variant="outline" className="text-xs">{game.league}</Badge>}
+                                  <Badge variant="outline" className={cn("text-xs", sv.bg, sv.text)}>
+                                    <SignalIcon className="h-3 w-3 mr-1" />
+                                    {qual.signal} · {qual.confidenceScore}%
+                                  </Badge>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={() => setGameParlayLegs(prev => prev.filter(g => g.id !== game.id))}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+
+                              {/* Teams */}
+                              <div className="flex items-center justify-center gap-6">
+                                <div className="text-center">
+                                  <div className={cn(
+                                    "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-lg font-bold",
+                                    qual.pick === 'home' && qual.signal === 'GOOD' && "ring-2 ring-emerald-500"
+                                  )}>
+                                    {abbrev(game.homeTeam)}
+                                  </div>
+                                  <p className="font-semibold text-sm">{game.homeTeam}</p>
+                                  <p className="text-xs text-muted-foreground">Home</p>
+                                </div>
+                                <div className="text-xl font-bold text-muted-foreground">vs</div>
+                                <div className="text-center">
+                                  <div className={cn(
+                                    "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-lg font-bold",
+                                    qual.pick === 'away' && qual.signal === 'GOOD' && "ring-2 ring-emerald-500"
+                                  )}>
+                                    {abbrev(game.awayTeam)}
+                                  </div>
+                                  <p className="font-semibold text-sm">{game.awayTeam}</p>
+                                  <p className="text-xs text-muted-foreground">Away</p>
+                                </div>
+                              </div>
+
+                              {/* Date/Time */}
+                              <div className="flex items-center justify-center gap-4 mt-3 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{dateStr}</span>
+                                <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeStr}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <span>{game.league}</span>
-                              {game.odds?.moneyline && (
-                                <>
-                                  <span>•</span>
-                                  <span>ML: {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home} / {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away}</span>
-                                </>
-                              )}
-                              {game.odds?.spread && (
-                                <>
-                                  <span>•</span>
-                                  <span>Spread: {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home}</span>
-                                </>
-                              )}
+
+                            {/* Odds Section */}
+                            {game.odds && game.hasOdds && (
+                              <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
+                                {/* Moneyline */}
+                                <div className="p-3 text-center">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                                    <Target className="h-3 w-3" /> ML
+                                  </div>
+                                  <div className="flex justify-between px-2">
+                                    <div>
+                                      <div className="text-xs text-muted-foreground">{abbrev(game.homeTeam)}</div>
+                                      <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.home < 0 ? "text-emerald-400" : "")}>
+                                        {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <div className="text-xs text-muted-foreground">{abbrev(game.awayTeam)}</div>
+                                      <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.away < 0 ? "text-emerald-400" : "")}>
+                                        {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* Spread */}
+                                <div className="p-3 text-center">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                                    <Activity className="h-3 w-3" /> Spread
+                                  </div>
+                                  <div className="font-bold font-mono text-sm">
+                                    {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
+                                  </div>
+                                </div>
+                                {/* Total */}
+                                <div className="p-3 text-center">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                                    <Zap className="h-3 w-3" /> O/U
+                                  </div>
+                                  <div className="font-bold font-mono text-sm">
+                                    {game.odds.total.over || 'N/A'}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Analysis Footer */}
+                            <div className="p-3 bg-muted/20">
+                              <div className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1">
+                                    <Shield className="h-3 w-3 text-muted-foreground" />
+                                    Risk: <span className={cn(
+                                      qual.riskScore <= 40 ? "text-emerald-400" : qual.riskScore <= 55 ? "text-amber-400" : "text-red-400"
+                                    )}>{qual.volatility}</span>
+                                  </span>
+                                  <span className="text-muted-foreground">{qual.reason}</span>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-xs px-2"
+                                  asChild
+                                >
+                                  <Link to={`/game/${game.id}`} state={{ game }}>
+                                    Full Analysis →
+                                  </Link>
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => setGameParlayLegs(prev => prev.filter(g => g.id !== game.id))}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {/* Player prop picks */}
                       {parlayPicks.map((pick) => (
