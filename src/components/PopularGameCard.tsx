@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Trophy, Star, Target, Activity, Zap, TrendingUp, TrendingDown, Minus, Check } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 
 // Get position label based on sport - only show for combat sports
@@ -23,6 +23,8 @@ import { PopularGame } from '@/hooks/usePopularGames';
 interface PopularGameCardProps {
   game: PopularGame;
   rank?: number;
+  isSelected?: boolean;
+  onToggleSelect?: (game: PopularGame) => void;
 }
 
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
@@ -138,7 +140,7 @@ const formatOdds = (odds: number | undefined): string => {
   return odds > 0 ? `+${odds}` : `${odds}`;
 };
 
-export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
+export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: PopularGameCardProps) => {
   // Calculate betting signal
   const betSignal = useMemo(() => calculateBetSignal(game), [game]);
 
@@ -329,9 +331,29 @@ export const PopularGameCard = ({ game, rank }: PopularGameCardProps) => {
                 <Star className="h-3 w-3" />
                 <span>Popularity: {game.popularityScore}</span>
               </div>
-              <div className="flex items-center gap-1 text-xs text-primary group-hover:text-primary/80">
-                <span>View Analysis</span>
-                <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+              <div className="flex items-center gap-3">
+                {onToggleSelect && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onToggleSelect(game);
+                    }}
+                    className={cn(
+                      "flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md transition-all",
+                      isSelected
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/50 text-muted-foreground hover:bg-primary/20 hover:text-primary"
+                    )}
+                  >
+                    <Check className={cn("h-3 w-3", isSelected ? "opacity-100" : "opacity-50")} />
+                    {isSelected ? 'In Parlay' : 'Add to Parlay'}
+                  </button>
+                )}
+                <div className="flex items-center gap-1 text-xs text-primary group-hover:text-primary/80">
+                  <span>View Analysis</span>
+                  <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                </div>
               </div>
             </div>
           </CardContent>
