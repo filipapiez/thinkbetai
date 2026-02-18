@@ -13,6 +13,7 @@ import { Search, Calendar, Filter, X, TrendingUp, Info, RefreshCw, Loader2, Cloc
 import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTeamLogoUrl, sportSupportsLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
+import { GameParlayBar } from '@/components/GameParlayBar';
 
 
 
@@ -51,7 +52,22 @@ const Games = () => {
   const [selectedLeague, setSelectedLeague] = useState<string | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<BetSignal | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('today');
+  const [parlayGames, setParlayGames] = useState<PopularGame[]>([]);
 
+  const toggleParlayGame = useCallback((game: PopularGame) => {
+    setParlayGames(prev => {
+      const exists = prev.some(g => g.id === game.id);
+      return exists ? prev.filter(g => g.id !== game.id) : [...prev, game];
+    });
+  }, []);
+
+  const removeParlayGame = useCallback((gameId: string) => {
+    setParlayGames(prev => prev.filter(g => g.id !== gameId));
+  }, []);
+
+  const clearParlayGames = useCallback(() => {
+    setParlayGames([]);
+  }, []);
   // Fetch popular games from scraper
   const { games, isLoading, error, lastUpdated, source, refetch } = usePopularGames();
 
@@ -559,7 +575,12 @@ const Games = () => {
                         </Badge>
                       </div>
                     )}
-                    <PopularGameCard game={game} rank={index + 1} />
+                    <PopularGameCard
+                      game={game}
+                      rank={index + 1}
+                      isSelected={parlayGames.some(g => g.id === game.id)}
+                      onToggleSelect={toggleParlayGame}
+                    />
                   </div>
                 );
               })}
@@ -581,7 +602,12 @@ const Games = () => {
       </main>
 
       <Footer />
-      
+
+      <GameParlayBar
+        selectedGames={parlayGames}
+        onRemoveGame={removeParlayGame}
+        onClearAll={clearParlayGames}
+      />
     </div>
   );
 };
