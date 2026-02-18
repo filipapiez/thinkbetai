@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,8 +19,9 @@ import { cn } from '@/lib/utils';
 import { useUserParlays } from '@/hooks/useUserParlays';
 import { usePicks } from '@/hooks/usePicks';
 import { SuggestedParlays } from '@/components/SuggestedParlays';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import type { Pick } from '@/hooks/usePicks';
+import type { PopularGame } from '@/hooks/usePopularGames';
 
 interface ParlayAnalysis {
   signal: 'STRONG' | 'DECENT' | 'RISKY' | 'AVOID';
@@ -47,12 +48,24 @@ function getSignalStyle(signal: string) {
 }
 
 const Parlays = () => {
-  const { parlayPicks, isLoading, isSaving, removePick, clearParlay } = useUserParlays();
+  const location = useLocation();
+  const { parlayPicks, isLoading, isSaving, selectPick, removePick, clearParlay } = useUserParlays();
   const { picks: availablePicks, isLoading: picksLoading } = usePicks();
   
   const [betAmount, setBetAmount] = useState<string>('10');
   const [analysis, setAnalysis] = useState<ParlayAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [gameParlayLegs, setGameParlayLegs] = useState<PopularGame[]>([]);
+
+  // Receive games from Games page navigation
+  useEffect(() => {
+    const state = location.state as { parlayGames?: PopularGame[] } | null;
+    if (state?.parlayGames && state.parlayGames.length > 0) {
+      setGameParlayLegs(state.parlayGames);
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const calculateLegOdds = (confidence: number): number => {
     const odds = 2.5 - ((confidence - 50) / 50) * 1.0;
@@ -133,6 +146,7 @@ const Parlays = () => {
   const handleClearAll = () => {
     setAnalysis(null);
     clearParlay();
+    setGameParlayLegs([]);
   };
 
   const signalStyle = analysis ? getSignalStyle(analysis.signal) : null;
@@ -180,7 +194,7 @@ const Parlays = () => {
                         <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
                       )}
                     </CardTitle>
-                    {parlayPicks.length > 0 && (
+                    {(parlayPicks.length > 0 || gameParlayLegs.length > 0) && (
                       <Button variant="ghost" size="sm" onClick={handleClearAll}>
                         <Trash2 className="h-4 w-4 mr-1" />
                         Clear All
@@ -194,24 +208,74 @@ const Parlays = () => {
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                  ) : parlayPicks.length === 0 ? (
+                  ) : parlayPicks.length === 0 && gameParlayLegs.length === 0 ? (
                     <div className="text-center py-12">
                       <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
                         <Layers className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold mb-2">No picks yet</h3>
                       <p className="text-muted-foreground mb-4">
-                        Add picks from the AI Picks page to start building your parlay
+                        Add picks from the AI Picks page or select games to start building your parlay
                       </p>
-                      <Button asChild>
-                        <Link to="/picks">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Browse Picks
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-center gap-3">
+                        <Button asChild>
+                          <Link to="/picks">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Browse Picks
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                          <Link to="/games">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Browse Games
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      {/* Game-based parlay legs from Games page */}
+                      {gameParlayLegs.map((game) => (
+                        <div 
+                          key={game.id}
+                          className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg group hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Layers className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold">{game.homeTeam} vs {game.awayTeam}</span>
+                              <Badge variant="outline" className="text-xs">{game.sport}</Badge>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              <span>{game.league}</span>
+                              {game.odds?.moneyline && (
+                                <>
+                                  <span>•</span>
+                                  <span>ML: {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home} / {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away}</span>
+                                </>
+                              )}
+                              {game.odds?.spread && (
+                                <>
+                                  <span>•</span>
+                                  <span>Spread: {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => setGameParlayLegs(prev => prev.filter(g => g.id !== game.id))}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+
+                      {/* Player prop picks */}
                       {parlayPicks.map((pick) => (
                         <div 
                           key={pick.id}
@@ -366,7 +430,7 @@ const Parlays = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{parlayPicks.length}</div>
+                      <div className="text-2xl font-bold text-primary">{parlayPicks.length + gameParlayLegs.length}</div>
                       <div className="text-xs text-muted-foreground">Total Legs</div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
