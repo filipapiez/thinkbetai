@@ -160,7 +160,7 @@ export function SuggestedParlays() {
                             <span className="font-medium truncate">{leg.pickDetail}</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {leg.homeTeam} vs {leg.awayTeam} · {leg.reasoning}
+                            {leg.reasoning}
                           </p>
                         </div>
                       </div>
