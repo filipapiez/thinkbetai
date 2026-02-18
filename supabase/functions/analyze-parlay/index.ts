@@ -75,33 +75,49 @@ serve(async (req) => {
       `${i + 1}. ${p.playerName} (${p.team}) - ${p.direction} ${p.line} ${p.propType} | Confidence: ${p.confidence}% | Sport: ${p.sport}${p.opponent ? ` vs ${p.opponent}` : ''}`
     ).join('\n');
 
-    const systemPrompt = `You are an expert sports analyst providing parlay analysis. Be concise and actionable.
+    const systemPrompt = `You are an elite sports betting analyst. Provide an extremely detailed, professional-grade parlay analysis. Be data-driven, specific, and actionable.
 
 RULES:
 - Never mention data sources or APIs
 - Never guarantee outcomes
-- Focus on correlations, risks, and value
-- Be direct and helpful
+- Be specific about each matchup — reference team/player tendencies, matchup dynamics, and situational factors
+- Treat each leg as its own mini-analysis before combining
+- Be direct, insightful, and professional
 
 OUTPUT FORMAT (JSON):
 {
   "signal": "STRONG" | "DECENT" | "RISKY" | "AVOID",
   "overallConfidence": 0-100,
-  "verdict": "One sentence summary",
-  "strengths": ["strength 1", "strength 2"],
-  "risks": ["risk 1", "risk 2"],
-  "correlations": "Any positive or negative correlations between picks",
-  "suggestion": "Actionable advice for this parlay",
-  "alternativeIdea": "Optional: a tweak that could improve the parlay"
+  "winProbability": "estimated combined win probability as percentage string e.g. '12.4%'",
+  "grade": "A+" | "A" | "B+" | "B" | "C+" | "C" | "D" | "F",
+  "verdict": "2-3 sentence executive summary of this parlay",
+  "legBreakdowns": [
+    {
+      "leg": "Player/Team name — prop or matchup description",
+      "signal": "STRONG" | "DECENT" | "RISKY" | "AVOID",
+      "confidence": 0-100,
+      "strengths": ["specific strength 1", "specific strength 2"],
+      "risks": ["specific risk 1", "specific risk 2"],
+      "keyInsight": "One sentence with the most important factor for this leg"
+    }
+  ],
+  "correlations": {
+    "positive": ["correlation that helps multiple legs hit together"],
+    "negative": ["correlation that hurts — if one hits, another might not"]
+  },
+  "overallStrengths": ["parlay-level strength 1", "parlay-level strength 2"],
+  "overallRisks": ["parlay-level risk 1", "parlay-level risk 2"],
+  "suggestion": "Detailed actionable advice — keep, modify, or split this parlay",
+  "alternativeIdea": "A specific tweak or alternative parlay construction that improves EV"
 }`;
 
-    const userPrompt = `Analyze this ${picks.length}-leg parlay:
+    const userPrompt = `Analyze this ${picks.length}-leg parlay in detail:
 
 ${picksContext}
 
-Combined win probability is approximately ${(picks.reduce((acc, p) => acc * (p.confidence / 100), 1) * 100).toFixed(1)}%.
+Combined estimated win probability: ~${(picks.reduce((acc, p) => acc * (p.confidence / 100), 1) * 100).toFixed(1)}%.
 
-Provide analysis in JSON format only.`;
+For EACH leg, provide specific strengths, risks, and a key insight. Then analyze how the legs correlate with each other. Provide your analysis in JSON format only.`;
 
     console.log("Calling Lovable AI for parlay analysis...");
 
