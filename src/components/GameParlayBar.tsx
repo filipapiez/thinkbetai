@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ const getAbbreviation = (name: string) => {
 
 export function GameParlayBar({ selectedGames, onRemoveGame, onClearAll }: GameParlayBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   if (selectedGames.length === 0) return null;
 
@@ -121,11 +122,13 @@ export function GameParlayBar({ selectedGames, onRemoveGame, onClearAll }: GameP
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <Button size="sm" className="h-9 gap-1.5 px-4 font-semibold" asChild>
-                  <Link to="/parlays">
-                    Build Parlay
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                <Button 
+                  size="sm" 
+                  className="h-9 gap-1.5 px-4 font-semibold"
+                  onClick={() => navigate('/parlays', { state: { parlayGames: selectedGames } })}
+                >
+                  Build Parlay
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
