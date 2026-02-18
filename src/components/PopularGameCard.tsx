@@ -33,11 +33,9 @@ type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
 export function calculateBetSignal(game: PopularGame): { signal: BetSignal; confidence: number } {
   // If no odds data, use popularity-based scoring instead
   if (!game.odds || !game.hasOdds) {
-    // Use popularity score to determine signal for games without odds
+    // Without odds, never show as GOOD — not enough data for parlay value
     const popularity = game.popularityScore || 50;
     if (popularity >= 85) {
-      return { signal: 'GOOD', confidence: 65 };
-    } else if (popularity >= 70) {
       return { signal: 'BORDERLINE', confidence: 55 };
     }
     return { signal: 'PASS', confidence: 40 };
@@ -98,7 +96,7 @@ export function calculateBetSignal(game: PopularGame): { signal: BetSignal; conf
   riskScore = Math.min(100, Math.max(0, riskScore));
 
   let signal: BetSignal;
-  if (confidenceScore >= 70 && riskScore <= 50) {
+  if (confidenceScore >= 75 && riskScore <= 45) {
     signal = 'GOOD';
   } else if (riskScore > 60 || confidenceScore < 40) {
     signal = 'PASS';
