@@ -326,43 +326,43 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
               </div>
             )}
 
+            {/* Add to Parlay Button - Full Width Centered */}
+            {onToggleSelect && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleSelect(game);
+                }}
+                className={cn(
+                  "w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-lg border transition-all mb-3",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                    : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+                )}
+              >
+                {isSelected ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Added to Parlay
+                  </>
+                ) : (
+                  <>
+                    <Layers className="h-4 w-4" />
+                    Add to Parlay
+                  </>
+                )}
+              </button>
+            )}
+
             <div className="flex items-center justify-between pt-3 border-t border-border">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Star className="h-3 w-3" />
                 <span>Popularity: {game.popularityScore}</span>
               </div>
-              <div className="flex items-center gap-2">
-                {onToggleSelect && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onToggleSelect(game);
-                    }}
-                    className={cn(
-                      "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all",
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
-                        : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
-                    )}
-                  >
-                    {isSelected ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" />
-                        Added ✓
-                      </>
-                    ) : (
-                      <>
-                        <Layers className="h-3.5 w-3.5" />
-                        + Parlay
-                      </>
-                    )}
-                  </button>
-                )}
-                <div className="flex items-center gap-1 text-xs text-primary group-hover:text-primary/80">
-                  <span>Details</span>
-                  <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                </div>
+              <div className="flex items-center gap-1 text-xs text-primary group-hover:text-primary/80">
+                <span>Details</span>
+                <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           </CardContent>
