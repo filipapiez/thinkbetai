@@ -326,33 +326,43 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
               </div>
             )}
 
-            {/* Add to Parlay Button - Full Width Centered */}
+            {/* Add to Parlay Button + Value Badge */}
             {onToggleSelect && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onToggleSelect(game);
-                }}
-                className={cn(
-                  "w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-lg border transition-all mb-3",
-                  isSelected
-                    ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
-                    : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+              <div className="space-y-1.5 mb-3">
+                {betSignal.signal === 'GOOD' && !isSelected && (
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-400">
+                    <TrendingUp className="h-3 w-3" />
+                    Good Parlay Value
+                  </div>
                 )}
-              >
-                {isSelected ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Added to Parlay
-                  </>
-                ) : (
-                  <>
-                    <Layers className="h-4 w-4" />
-                    Add to Parlay
-                  </>
-                )}
-              </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleSelect(game);
+                  }}
+                  className={cn(
+                    "w-full flex items-center justify-center gap-2 text-sm font-semibold py-2.5 rounded-lg border transition-all",
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                      : betSignal.signal === 'GOOD'
+                        ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/25 hover:border-emerald-500/60"
+                        : "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 hover:border-primary/50"
+                  )}
+                >
+                  {isSelected ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Added to Parlay
+                    </>
+                  ) : (
+                    <>
+                      <Layers className="h-4 w-4" />
+                      Add to Parlay
+                    </>
+                  )}
+                </button>
+              </div>
             )}
 
             <div className="flex items-center justify-between pt-3 border-t border-border">
