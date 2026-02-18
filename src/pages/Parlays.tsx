@@ -96,16 +96,49 @@ const Parlays = () => {
   const parlayOdds = calculateParlayOdds();
   const potentialPayout = calculatePayout();
 
+  const totalLegs = parlayPicks.length + gameParlayLegs.length;
+
+  // Calculate combined win probability including game legs
+  const combinedParlayProbability = useMemo(() => {
+    let prob = 1;
+    // Player prop probabilities
+    parlayPicks.forEach(p => {
+      prob *= (p.hitRate || p.confidence) / 100;
+    });
+    // Game leg probabilities based on qualification analysis
+    gameParlayLegs.forEach(game => {
+      const liveGame: LiveGame = {
+        id: game.id, sport: game.sport,
+        sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+        homeTeam: { id: '', name: game.homeTeam, abbreviation: '' },
+        awayTeam: { id: '', name: game.awayTeam, abbreviation: '' },
+        startTime: game.startTime, venue: '',
+        status: game.status === 'live' ? 'live' : 'scheduled',
+        odds: game.odds ? {
+          moneyline: game.odds.moneyline || { home: 0, away: 0 },
+          spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+          total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+        } : undefined,
+        hasOdds: Boolean(game.hasOdds && game.odds),
+        popularityScore: game.popularityScore,
+      };
+      const qual = calculateLiveBetQualification(liveGame);
+      prob *= qual.confidenceScore / 100;
+    });
+    return prob * 100;
+  }, [parlayPicks, gameParlayLegs]);
+
   const analyzeParlay = async () => {
-    if (parlayPicks.length < 2) {
-      toast.error('Add at least 2 picks to analyze');
+    if (totalLegs < 2) {
+      toast.error('Add at least 2 legs to analyze');
       return;
     }
 
     setIsAnalyzing(true);
 
     try {
-      const picksData = parlayPicks.map(p => ({
+      // Combine player props and game legs into a unified picks array
+      const playerPicksData = parlayPicks.map(p => ({
         playerName: p.playerName,
         team: p.team,
         propType: p.propType,
@@ -116,10 +149,41 @@ const Parlays = () => {
         opponent: p.opponent
       }));
 
+      const gamePicksData = gameParlayLegs.map(game => {
+        const liveGame: LiveGame = {
+          id: game.id, sport: game.sport,
+          sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+          homeTeam: { id: '', name: game.homeTeam, abbreviation: '' },
+          awayTeam: { id: '', name: game.awayTeam, abbreviation: '' },
+          startTime: game.startTime, venue: '',
+          status: game.status === 'live' ? 'live' : 'scheduled',
+          odds: game.odds ? {
+            moneyline: game.odds.moneyline || { home: 0, away: 0 },
+            spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+            total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+          } : undefined,
+          hasOdds: Boolean(game.hasOdds && game.odds),
+          popularityScore: game.popularityScore,
+        };
+        const qual = calculateLiveBetQualification(liveGame);
+        const pick = qual.pick === 'home' ? game.homeTeam : game.awayTeam;
+        return {
+          playerName: `${game.homeTeam} vs ${game.awayTeam}`,
+          team: pick,
+          propType: 'Moneyline',
+          line: game.odds?.moneyline?.[qual.pick || 'home'] || 0,
+          direction: 'MORE' as const,
+          confidence: qual.confidenceScore,
+          sport: game.sport,
+          opponent: qual.pick === 'home' ? game.awayTeam : game.homeTeam
+        };
+      });
+
+      const picksData = [...playerPicksData, ...gamePicksData];
+
       const { data, error } = await supabase.functions.invoke('analyze-parlay', {
         body: { picks: picksData }
       });
-
       if (error) {
         console.error('Error analyzing parlay:', error);
         toast.error('Failed to analyze parlay');
@@ -464,7 +528,7 @@ const Parlays = () => {
               </Card>
 
               {/* AI Analysis */}
-              {parlayPicks.length >= 2 && (
+              {totalLegs >= 2 && (
                 <Card>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -566,7 +630,7 @@ const Parlays = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{parlayPicks.length + gameParlayLegs.length}</div>
+                      <div className="text-2xl font-bold text-primary">{totalLegs}</div>
                       <div className="text-xs text-muted-foreground">Total Legs</div>
                     </div>
                     <div className="text-center p-3 bg-muted/30 rounded-lg">
@@ -574,8 +638,8 @@ const Parlays = () => {
                       <div className="text-xs text-muted-foreground">Avg Confidence</div>
                     </div>
                   </div>
-                  <div className="text-center p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                    <div className="text-2xl font-bold text-amber-400">{combinedHitRate.toFixed(1)}%</div>
+                   <div className="text-center p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                    <div className="text-2xl font-bold text-amber-400">{combinedParlayProbability.toFixed(1)}%</div>
                     <div className="text-xs text-muted-foreground">Win Probability</div>
                   </div>
                   <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
