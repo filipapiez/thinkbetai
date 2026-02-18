@@ -331,44 +331,54 @@ const Parlays = () => {
                                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
                                     <Target className="h-3 w-3" /> ML
                                   </div>
-                                  <div className="flex justify-between px-2">
-                                    <div>
-                                      <div className="text-xs text-muted-foreground">{abbrev(game.homeTeam)}</div>
-                                      <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.home < 0 ? "text-emerald-400" : "")}>
-                                        {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+                                  {game.odds.moneyline ? (
+                                    <div className="flex justify-between px-2">
+                                      <div>
+                                        <div className="text-xs text-muted-foreground">{abbrev(game.homeTeam)}</div>
+                                        <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.home < 0 ? "text-emerald-400" : "")}>
+                                          {game.odds.moneyline.home > 0 ? '+' : ''}{game.odds.moneyline.home || 'N/A'}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div className="text-xs text-muted-foreground">{abbrev(game.awayTeam)}</div>
+                                        <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.away < 0 ? "text-emerald-400" : "")}>
+                                          {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
+                                        </div>
                                       </div>
                                     </div>
-                                    <div>
-                                      <div className="text-xs text-muted-foreground">{abbrev(game.awayTeam)}</div>
-                                      <div className={cn("font-bold font-mono text-sm", game.odds.moneyline.away < 0 ? "text-emerald-400" : "")}>
-                                        {game.odds.moneyline.away > 0 ? '+' : ''}{game.odds.moneyline.away || 'N/A'}
-                                      </div>
-                                    </div>
-                                  </div>
+                                  ) : <div className="text-xs text-muted-foreground">N/A</div>}
                                 </div>
                                 {/* Spread */}
                                 <div className="p-3 text-center">
                                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
                                     <Activity className="h-3 w-3" /> Spread
                                   </div>
-                                  <div className="font-bold font-mono text-sm">
-                                    {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
-                                  </div>
+                                  {game.odds.spread ? (
+                                    <>
+                                      <div className="font-bold font-mono text-sm">
+                                        {game.odds.spread.home > 0 ? '+' : ''}{game.odds.spread.home || 'N/A'}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        ({game.odds.spread.homeOdds > 0 ? '+' : ''}{game.odds.spread.homeOdds})
+                                      </div>
+                                    </>
+                                  ) : <div className="text-xs text-muted-foreground">N/A</div>}
                                 </div>
                                 {/* Total */}
                                 <div className="p-3 text-center">
                                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center justify-center gap-1">
                                     <Zap className="h-3 w-3" /> O/U
                                   </div>
-                                  <div className="font-bold font-mono text-sm">
-                                    {game.odds.total.over || 'N/A'}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
-                                  </div>
+                                  {game.odds.total ? (
+                                    <>
+                                      <div className="font-bold font-mono text-sm">
+                                        {game.odds.total.over || 'N/A'}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        ({game.odds.total.overOdds > 0 ? '+' : ''}{game.odds.total.overOdds})
+                                      </div>
+                                    </>
+                                  ) : <div className="text-xs text-muted-foreground">N/A</div>}
                                 </div>
                               </div>
                             )}
