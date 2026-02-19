@@ -221,7 +221,7 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                   sport={game.league || game.sport}
                   className="mx-auto mb-2"
                 />
-                <p className="text-sm font-medium truncate" title={game.homeTeam}>
+                <p className="text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-[120px] mx-auto" title={game.homeTeam}>
                   {game.homeTeam}
                 </p>
                 {getPositionLabel(game.sport, true) && (
@@ -257,7 +257,7 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                   sport={game.league || game.sport}
                   className="mx-auto mb-2"
                 />
-                <p className="text-sm font-medium truncate" title={game.awayTeam}>
+                <p className="text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-[120px] mx-auto" title={game.awayTeam}>
                   {game.awayTeam}
                 </p>
                 {getPositionLabel(game.sport, false) && (
