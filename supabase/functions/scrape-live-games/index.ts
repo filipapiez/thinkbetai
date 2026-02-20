@@ -1227,29 +1227,6 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
         } catch (e) {
           console.error('[Tennis] Sports discovery error:', e);
         }
-        
-        for (const config of tennisKeys) {
-          try {
-            const response = await fetch(
-              `https://api.the-odds-api.com/v4/sports/${config.key}/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h&oddsFormat=american`,
-              { headers: { 'Accept': 'application/json' } }
-            );
-
-            if (response.ok) {
-              const events = await response.json();
-              if (events.length > 0) {
-                console.log(`[Tennis] Found ${events.length} ${config.league} events from TheOddsAPI`);
-                
-                for (const event of events) {
-                  const game = parseTheOddsEventSimple(event, 'Tennis', config.league, config.popularity);
-                  if (game) games.push(game);
-                }
-              }
-            }
-          } catch (e) {
-            // Continue to next tournament
-          }
-        }
       }
     }
 
