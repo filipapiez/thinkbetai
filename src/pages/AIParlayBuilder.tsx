@@ -118,8 +118,8 @@ const AIParlayBuilder = () => {
               AI Parlay Builder
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Stop guessing on parlays. Our AI analyzes leg correlations, calculates true win probabilities,
-              and builds optimized multi-leg bets with real mathematical edge.
+              Stop guessing on parlays. Our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> analyzes leg correlations, calculates true win probabilities,
+              and builds <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI optimized parlays</Link> with real mathematical edge.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
@@ -141,7 +141,7 @@ const AIParlayBuilder = () => {
                 How the AI Parlay Builder Works
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Building winning parlays requires understanding how outcomes relate to each other. Our AI does this automatically in four steps:
+                Building winning parlays requires understanding how outcomes relate to each other. You can <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">build parlays with AI</Link> automatically in four steps using our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">smart parlay generator</Link>:
               </p>
               <div className="space-y-5">
                 {[
@@ -172,7 +172,7 @@ const AIParlayBuilder = () => {
                 Example AI Parlay Picks
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Here's the kind of correlated parlay our AI surfaces — not random combinations, but picks whose outcomes reinforce each other.
+                Here's the kind of correlated parlay our AI surfaces — not random combinations, but <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay picks</Link> whose outcomes reinforce each other.
               </p>
 
               <div className="glass-card p-6 mb-4">
@@ -241,7 +241,7 @@ const AIParlayBuilder = () => {
 
               <h3 className="font-semibold mt-6 mb-2">Bankroll Management</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Even with AI optimization, parlays are high-variance bets. Limit parlay wagers to 1-2% of your bankroll and don't chase losses with bigger parlays.
+                Even with an <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI multi-bet strategy</Link>, parlays are high-variance bets. Limit parlay wagers to 1-2% of your bankroll and don't chase losses with bigger parlays.
               </p>
             </section>
 
