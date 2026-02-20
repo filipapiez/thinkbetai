@@ -71,7 +71,7 @@ const sportKeyMap: Record<string, string[]> = {
   'ncaab': ['basketball_ncaab'],
   'soccer': ['soccer_epl', 'soccer_usa_mls', 'soccer_uefa_champs_league', 'soccer_spain_la_liga', 'soccer_germany_bundesliga', 'soccer_italy_serie_a'],
   'mma': ['mma_mixed_martial_arts'],
-  'tennis': ['tennis_atp_aus_open', 'tennis_wta_aus_open', 'tennis_atp_us_open', 'tennis_wta_us_open'],
+  'tennis': ['tennis_atp_aus_open_singles', 'tennis_atp_french_open', 'tennis_atp_us_open', 'tennis_atp_wimbledon', 'tennis_wta_aus_open_singles', 'tennis_wta_french_open', 'tennis_wta_us_open', 'tennis_wta_wimbledon', 'tennis_atp_canadian_open', 'tennis_atp_china_open', 'tennis_atp_indian_wells', 'tennis_atp_miami_open', 'tennis_atp_madrid_open', 'tennis_atp_rome', 'tennis_atp_shanghai', 'tennis_atp_cincinnati_open', 'tennis_wta_canadian_open', 'tennis_wta_china_open', 'tennis_wta_indian_wells', 'tennis_wta_miami_open', 'tennis_wta_madrid_open', 'tennis_wta_rome', 'tennis_wta_wuhan_open'],
   'boxing': ['boxing_boxing'],
   'golf': ['golf_pga_championship', 'golf_masters_tournament'],
   'cricket': ['cricket_ipl', 'cricket_international_t20'],
