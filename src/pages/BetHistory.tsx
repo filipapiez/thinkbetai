@@ -63,6 +63,7 @@ const BetHistory = () => {
         const { data, error } = await supabase
           .from("historical_bets")
           .select("*")
+          .in("result", ["win", "loss"])
           .order("date", { ascending: false })
           .range(from, from + batchSize - 1);
 
