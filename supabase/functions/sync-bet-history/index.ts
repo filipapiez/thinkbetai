@@ -315,6 +315,9 @@ serve(async (req) => {
           
           if (homeScore === 0 && awayScore === 0) continue;
           
+          // Skip tied/drawn games — no valid moneyline winner
+          if (homeScore === awayScore) continue;
+          
           const gameDate = new Date(event.date).toISOString().split('T')[0];
           const winner = homeScore > awayScore ? homeTeam.team.displayName : awayTeam.team.displayName;
           
@@ -359,8 +362,10 @@ serve(async (req) => {
       });
     }
 
-    // Add recent completed games (to ensure coverage through Jan 24)
+    // Add recent completed games (to ensure coverage through Jan 24) — skip draws
     for (const game of RECENT_COMPLETED_GAMES) {
+      if (game.winner === 'Draw' || game.homeScore === game.awayScore) continue;
+      
       allCompletedGames.push({
         sport: game.sport,
         homeTeam: game.homeTeam,
