@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.sync-bet-history]
 verify_jwt = false
+
+[functions.audit-bet-history]
+verify_jwt = false
