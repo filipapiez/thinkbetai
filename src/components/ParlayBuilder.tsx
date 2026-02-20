@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  X, Trash2, Calculator, TrendingUp, TrendingDown, 
-  DollarSign, Trophy, AlertCircle, User, Layers,
-  Sparkles, Loader2, ChevronDown, ChevronUp,
+  X, Trash2, TrendingUp, TrendingDown, 
+  Trophy, AlertCircle, User, Layers,
+  Sparkles, Loader2,
   CheckCircle2, AlertTriangle, XCircle, Flame
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -54,27 +53,9 @@ export function ParlayBuilder({
   isOpen,
   onToggle
 }: ParlayBuilderProps) {
-  const [betAmount, setBetAmount] = useState<string>('10');
   const [analysis, setAnalysis] = useState<ParlayAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
-
-  const calculateLegOdds = (confidence: number): number => {
-    const odds = 2.5 - ((confidence - 50) / 50) * 1.0;
-    return Math.round(odds * 100) / 100;
-  };
-
-  const calculateParlayOdds = (): number => {
-    if (selectedPicks.length === 0) return 1;
-    return selectedPicks.reduce((acc, pick) => {
-      return acc * calculateLegOdds(pick.confidence);
-    }, 1);
-  };
-
-  const calculatePayout = (): number => {
-    const amount = parseFloat(betAmount) || 0;
-    return Math.round(amount * calculateParlayOdds() * 100) / 100;
-  };
 
   const averageConfidence = selectedPicks.length > 0
     ? Math.round(selectedPicks.reduce((acc, p) => acc + p.confidence, 0) / selectedPicks.length)
@@ -84,8 +65,6 @@ export function ParlayBuilder({
     ? selectedPicks.reduce((acc, p) => acc * ((p.hitRate || p.confidence) / 100), 1) * 100
     : 0;
 
-  const parlayOdds = calculateParlayOdds();
-  const potentialPayout = calculatePayout();
 
   const analyzeParlay = async () => {
     if (selectedPicks.length < 2) {
@@ -226,7 +205,7 @@ export function ParlayBuilder({
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {pick.propType} {pick.line} • {calculateLegOdds(pick.confidence)}x
+                          {pick.propType} {pick.line}
                         </div>
                       </div>
                       <Button
@@ -324,36 +303,6 @@ export function ParlayBuilder({
                 )}
               </div>
 
-              {/* Bet Calculator */}
-              <div className="p-3 border-t border-border bg-muted/20">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="relative flex-1">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      value={betAmount}
-                      onChange={(e) => setBetAmount(e.target.value)}
-                      className="pl-9 h-10"
-                      placeholder="Bet amount"
-                      min="1"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1 text-sm">
-                    <Calculator className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-semibold">{parlayOdds.toFixed(2)}x</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-emerald-400" />
-                    <span className="text-sm font-medium">Potential Payout</span>
-                  </div>
-                  <span className="text-xl font-bold text-emerald-400">
-                    ${potentialPayout.toFixed(2)}
-                  </span>
-                </div>
-              </div>
 
               {/* Warning for large parlays */}
               {selectedPicks.length >= 5 && (
