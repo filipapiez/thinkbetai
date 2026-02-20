@@ -481,7 +481,16 @@ const Parlays = () => {
                                     {qual.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away})
                                   </span>
                                 )}
-                                <span className="text-xs text-muted-foreground ml-auto">{qual.reason}</span>
+                                <div className="flex items-center gap-4 ml-auto">
+                                  <div className="text-right">
+                                    <div className="text-sm font-bold">{qual.confidenceScore}%</div>
+                                    <div className="text-[10px] text-muted-foreground">Confidence</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm font-bold text-amber-400">{qual.confidenceScore.toFixed(1)}%</div>
+                                    <div className="text-[10px] text-muted-foreground">Win Prob</div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
