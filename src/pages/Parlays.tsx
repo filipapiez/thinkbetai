@@ -462,6 +462,29 @@ const Parlays = () => {
                               </div>
                             )}
 
+                            {/* Chosen Pick */}
+                            <div className="px-4 py-3 border-b border-border bg-primary/5">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <Target className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-xs font-semibold uppercase tracking-wider text-primary">Chosen Pick</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "px-3 py-1.5 rounded-lg text-sm font-bold",
+                                  qual.signal === 'GOOD' ? "bg-emerald-500/20 text-emerald-400" : qual.signal === 'BORDERLINE' ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
+                                )}>
+                                  {qual.pick === 'home' ? game.homeTeam : game.awayTeam} ML
+                                </div>
+                                {game.odds?.moneyline && (
+                                  <span className="text-sm font-mono text-muted-foreground">
+                                    ({(qual.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away) > 0 ? '+' : ''}
+                                    {qual.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away})
+                                  </span>
+                                )}
+                                <span className="text-xs text-muted-foreground ml-auto">{qual.reason}</span>
+                              </div>
+                            </div>
+
                             {/* Analysis Footer */}
                             <div className="p-3 bg-muted/20">
                               <div className="flex items-center justify-between text-xs">
@@ -472,7 +495,6 @@ const Parlays = () => {
                                       qual.riskScore <= 40 ? "text-emerald-400" : qual.riskScore <= 55 ? "text-amber-400" : "text-red-400"
                                     )}>{qual.volatility}</span>
                                   </span>
-                                  <span className="text-muted-foreground">{qual.reason}</span>
                                 </div>
                                 <Button
                                   variant="ghost"
