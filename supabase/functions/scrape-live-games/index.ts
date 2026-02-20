@@ -1182,36 +1182,51 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
     if (!sportsGameOddsSuccess || games.length === 0) {
       const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
       if (oddsApiKey) {
-        console.log('[Tennis] Trying TheOddsAPI as fallback...');
+        console.log('[Tennis] Trying TheOddsAPI - discovering in-season tennis sports...');
         
-        const tennisKeys = [
-          // Grand Slams
-          { key: 'tennis_atp_aus_open_singles', league: 'Australian Open', popularity: 85 },
-          { key: 'tennis_atp_french_open', league: 'French Open', popularity: 85 },
-          { key: 'tennis_atp_us_open', league: 'US Open', popularity: 85 },
-          { key: 'tennis_atp_wimbledon', league: 'Wimbledon', popularity: 90 },
-          { key: 'tennis_wta_aus_open_singles', league: 'WTA Australian Open', popularity: 78 },
-          { key: 'tennis_wta_french_open', league: 'WTA French Open', popularity: 78 },
-          { key: 'tennis_wta_us_open', league: 'WTA US Open', popularity: 78 },
-          { key: 'tennis_wta_wimbledon', league: 'WTA Wimbledon', popularity: 80 },
-          // ATP 1000 & other major tours (year-round coverage)
-          { key: 'tennis_atp_canadian_open', league: 'ATP Canadian Open', popularity: 72 },
-          { key: 'tennis_atp_china_open', league: 'ATP China Open', popularity: 70 },
-          { key: 'tennis_atp_indian_wells', league: 'ATP Indian Wells', popularity: 75 },
-          { key: 'tennis_atp_miami_open', league: 'ATP Miami Open', popularity: 73 },
-          { key: 'tennis_atp_madrid_open', league: 'ATP Madrid Open', popularity: 72 },
-          { key: 'tennis_atp_rome', league: 'ATP Italian Open', popularity: 72 },
-          { key: 'tennis_atp_shanghai', league: 'ATP Shanghai Masters', popularity: 72 },
-          { key: 'tennis_atp_cincinnati_open', league: 'ATP Cincinnati Open', popularity: 70 },
-          // WTA 1000 & other tours
-          { key: 'tennis_wta_canadian_open', league: 'WTA Canadian Open', popularity: 68 },
-          { key: 'tennis_wta_china_open', league: 'WTA China Open', popularity: 66 },
-          { key: 'tennis_wta_indian_wells', league: 'WTA Indian Wells', popularity: 70 },
-          { key: 'tennis_wta_miami_open', league: 'WTA Miami Open', popularity: 68 },
-          { key: 'tennis_wta_madrid_open', league: 'WTA Madrid Open', popularity: 68 },
-          { key: 'tennis_wta_rome', league: 'WTA Italian Open', popularity: 68 },
-          { key: 'tennis_wta_wuhan_open', league: 'WTA Wuhan Open', popularity: 66 },
-        ];
+        try {
+          // First discover which tennis sports are currently in-season
+          const sportsResponse = await fetch(
+            `https://api.the-odds-api.com/v4/sports?apiKey=${oddsApiKey}`,
+            { headers: { 'Accept': 'application/json' } }
+          );
+          
+          if (sportsResponse.ok) {
+            const allSports = await sportsResponse.json();
+            const tennisSports = allSports.filter((s: any) => 
+              s.group === 'Tennis' && s.active === true
+            );
+            
+            console.log(`[Tennis] Found ${tennisSports.length} in-season tennis tournaments: ${tennisSports.map((s: any) => s.key).join(', ')}`);
+            
+            for (const sport of tennisSports) {
+              try {
+                const response = await fetch(
+                  `https://api.the-odds-api.com/v4/sports/${sport.key}/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h&oddsFormat=american`,
+                  { headers: { 'Accept': 'application/json' } }
+                );
+
+                if (response.ok) {
+                  const events = await response.json();
+                  if (events.length > 0) {
+                    console.log(`[Tennis] Found ${events.length} ${sport.title} events from TheOddsAPI`);
+                    
+                    for (const event of events) {
+                      const game = parseTheOddsEventSimple(event, 'Tennis', sport.title || sport.key, 75);
+                      if (game) games.push(game);
+                    }
+                  }
+                }
+              } catch (e) {
+                // Continue to next tournament
+              }
+            }
+          } else {
+            console.error(`[Tennis] Sports discovery failed: ${sportsResponse.status}`);
+          }
+        } catch (e) {
+          console.error('[Tennis] Sports discovery error:', e);
+        }
         
         for (const config of tennisKeys) {
           try {
@@ -1856,9 +1871,8 @@ function parseESPNEvent(event: any, config: { sport: string; league: string; pop
     let homeTeam = '';
     let awayTeam = '';
     
-    // For UFC/MMA, competitors don't have homeAway, use athlete names or first two competitors
-    if (config.league === 'UFC' || config.sport === 'MMA') {
-      // UFC uses athlete property for fighters
+    // For UFC/MMA and Tennis, competitors use athlete names instead of team names
+    if (config.league === 'UFC' || config.sport === 'MMA' || config.sport === 'Tennis' || config.sport === 'Boxing') {
       const fighter1 = competitors[0]?.athlete?.displayName || 
                        competitors[0]?.team?.displayName || 
                        competitors[0]?.team?.name ||
