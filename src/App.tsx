@@ -27,6 +27,7 @@ import BestAIBettingApp from "./pages/BestAIBettingApp";
 import FreeAIPredictions from "./pages/FreeAIPredictions";
 import AINFLPicks from "./pages/AINFLPicks";
 import AIParlayBuilder from "./pages/AIParlayBuilder";
+import AISportsBetting from "./pages/AISportsBetting";
 import FAQ from "./pages/FAQ";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
               <Route path="/ai-nfl-picks" element={<AINFLPicks />} />
               <Route path="/ai-parlay-builder" element={<AIParlayBuilder />} />
+              <Route path="/ai-sports-betting" element={<AISportsBetting />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
