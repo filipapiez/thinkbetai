@@ -1185,14 +1185,32 @@ async function fetchTennisGames(): Promise<ScheduledGame[]> {
         console.log('[Tennis] Trying TheOddsAPI as fallback...');
         
         const tennisKeys = [
-          { key: 'tennis_atp_french_open', league: 'French Open', popularity: 80 },
-          { key: 'tennis_atp_aus_open', league: 'Australian Open', popularity: 80 },
-          { key: 'tennis_atp_us_open', league: 'US Open', popularity: 80 },
-          { key: 'tennis_atp_wimbledon', league: 'Wimbledon', popularity: 85 },
-          { key: 'tennis_wta_french_open', league: 'WTA French Open', popularity: 72 },
-          { key: 'tennis_wta_aus_open', league: 'WTA Australian Open', popularity: 72 },
-          { key: 'tennis_wta_us_open', league: 'WTA US Open', popularity: 72 },
-          { key: 'tennis_wta_wimbledon', league: 'WTA Wimbledon', popularity: 75 },
+          // Grand Slams
+          { key: 'tennis_atp_aus_open_singles', league: 'Australian Open', popularity: 85 },
+          { key: 'tennis_atp_french_open', league: 'French Open', popularity: 85 },
+          { key: 'tennis_atp_us_open', league: 'US Open', popularity: 85 },
+          { key: 'tennis_atp_wimbledon', league: 'Wimbledon', popularity: 90 },
+          { key: 'tennis_wta_aus_open_singles', league: 'WTA Australian Open', popularity: 78 },
+          { key: 'tennis_wta_french_open', league: 'WTA French Open', popularity: 78 },
+          { key: 'tennis_wta_us_open', league: 'WTA US Open', popularity: 78 },
+          { key: 'tennis_wta_wimbledon', league: 'WTA Wimbledon', popularity: 80 },
+          // ATP 1000 & other major tours (year-round coverage)
+          { key: 'tennis_atp_canadian_open', league: 'ATP Canadian Open', popularity: 72 },
+          { key: 'tennis_atp_china_open', league: 'ATP China Open', popularity: 70 },
+          { key: 'tennis_atp_indian_wells', league: 'ATP Indian Wells', popularity: 75 },
+          { key: 'tennis_atp_miami_open', league: 'ATP Miami Open', popularity: 73 },
+          { key: 'tennis_atp_madrid_open', league: 'ATP Madrid Open', popularity: 72 },
+          { key: 'tennis_atp_rome', league: 'ATP Italian Open', popularity: 72 },
+          { key: 'tennis_atp_shanghai', league: 'ATP Shanghai Masters', popularity: 72 },
+          { key: 'tennis_atp_cincinnati_open', league: 'ATP Cincinnati Open', popularity: 70 },
+          // WTA 1000 & other tours
+          { key: 'tennis_wta_canadian_open', league: 'WTA Canadian Open', popularity: 68 },
+          { key: 'tennis_wta_china_open', league: 'WTA China Open', popularity: 66 },
+          { key: 'tennis_wta_indian_wells', league: 'WTA Indian Wells', popularity: 70 },
+          { key: 'tennis_wta_miami_open', league: 'WTA Miami Open', popularity: 68 },
+          { key: 'tennis_wta_madrid_open', league: 'WTA Madrid Open', popularity: 68 },
+          { key: 'tennis_wta_rome', league: 'WTA Italian Open', popularity: 68 },
+          { key: 'tennis_wta_wuhan_open', league: 'WTA Wuhan Open', popularity: 66 },
         ];
         
         for (const config of tennisKeys) {
