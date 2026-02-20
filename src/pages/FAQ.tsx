@@ -2,7 +2,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -159,14 +159,8 @@ const FAQ = () => {
         description="Get answers to common questions about AI betting, machine learning predictions, sports analytics, and how ThinkBetAI helps you make smarter betting decisions."
         keywords="AI betting FAQ, sports betting questions, machine learning predictions FAQ, betting tips, ThinkBetAI help"
         url="/faq"
+        structuredData={generateFAQStructuredData()}
       />
-      
-      {/* Structured Data for FAQ */}
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(generateFAQStructuredData())}
-        </script>
-      </Helmet>
       
       <Header />
       
