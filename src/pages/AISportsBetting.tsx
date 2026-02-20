@@ -100,7 +100,7 @@ const AISportsBetting = () => {
             AI Sports Betting Platform
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
-            ThinkBetAI combines machine learning with real-time sports data to deliver AI betting predictions you can actually understand — and act on.
+            Our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> combines machine learning with real-time sports data to deliver <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting predictions</Link> you can actually understand — and act on.
           </p>
           <div className="flex flex-wrap gap-4 mt-8">
             <Button size="lg" asChild>
@@ -124,10 +124,10 @@ const AISportsBetting = () => {
               What Is AI Betting?
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              AI betting uses machine learning algorithms to analyze vast amounts of sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. Instead of relying on gut feel or a single expert's opinion, AI processes thousands of variables simultaneously to surface edges that human analysis might miss.
+             AI betting uses machine learning algorithms to analyze vast amounts of sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. As the <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">best AI betting tool</Link> available, ThinkBetAI processes thousands of variables simultaneously to surface edges that human analysis might miss.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              The result is a set of data-driven <strong>AI bets</strong> and confidence scores that help bettors make more informed decisions. It's not a crystal ball — it's a smarter starting point.
+              The result is a set of data-driven <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting picks</Link> and confidence scores that help bettors make more informed decisions. This <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting software</Link> isn't a crystal ball — it's a smarter starting point.
             </p>
           </section>
 
@@ -185,7 +185,7 @@ const AISportsBetting = () => {
               AI Betting Predictions Today
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              ThinkBetAI refreshes predictions throughout the day as new data becomes available. Whether it's an NFL Sunday slate, a midweek NBA back-to-back, or a full MLB card, you'll find up-to-date <strong>AI betting predictions</strong> on the Picks page.
+              ThinkBetAI refreshes predictions throughout the day as new data becomes available. Whether it's an NFL Sunday slate, a midweek NBA back-to-back, or a full MLB card, you'll find up-to-date <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI bets today</Link> on the Picks page. Our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">sports betting AI analysis</Link> ensures every pick is backed by fresh data.
             </p>
             <div className="flex flex-wrap gap-4 mt-4">
               <Button variant="outline" asChild>
@@ -223,7 +223,7 @@ const AISportsBetting = () => {
               ))}
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              That said, no AI system is infallible. Sports are inherently unpredictable — injuries, referee decisions, and random variance all play a role. AI betting predictions should complement your research, not replace it.
+              That said, no AI system is infallible. Sports are inherently unpredictable — injuries, referee decisions, and random variance all play a role. A sound <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting strategy</Link> should complement your research, not replace it.
             </p>
           </section>
 
