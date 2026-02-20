@@ -119,7 +119,7 @@ const BestAIBettingApp = () => {
               Best AI Betting App <span className="text-gradient">2026</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Looking for the best AI betting app? We've analyzed the top AI sports betting platforms to help you find the most accurate predictions.
+              Looking for the best AI betting app? We've analyzed the top AI sports betting platforms — including the <Link to="/best-ai-sports-betting-tools" className="text-primary hover:underline font-medium">best AI sports betting tools</Link> — to help you find the most accurate predictions.
             </p>
           </header>
 
@@ -212,8 +212,8 @@ const BestAIBettingApp = () => {
               <li>Highest verified accuracy rate (82%+) on qualified picks</li>
               <li>Comprehensive coverage of 15+ sports and leagues</li>
               <li>Real-time odds updates from 20+ sportsbooks</li>
-              <li>Clear AI explanations for every prediction</li>
-              <li>Built-in parlay builder with correlation analysis</li>
+              <li>Clear AI explanations — learn <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">how AI betting works</Link> with every pick</li>
+              <li>Built-in <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> with correlation analysis</li>
             </ul>
 
             <h2>Frequently Asked Questions</h2>
@@ -243,8 +243,8 @@ const BestAIBettingApp = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Ready to Try the Best AI Betting App?
             </h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Join thousands of smart bettors using ThinkBetAI for AI-powered predictions.
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+              <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Start using AI bets</Link> — join thousands of smart bettors using ThinkBetAI for AI-powered predictions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>

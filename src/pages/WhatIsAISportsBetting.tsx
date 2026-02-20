@@ -74,10 +74,10 @@ const WhatIsAISportsBetting = () => {
               Understanding AI in Sports Betting
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              AI sports betting refers to the use of artificial intelligence and machine learning algorithms to analyze sports data. These systems process large volumes of information—including historical game results, player statistics, weather conditions, and injury reports—to identify patterns that may not be immediately obvious to human analysts.
+             AI sports betting refers to the use of artificial intelligence and machine learning algorithms to analyze sports data. Understanding <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">how AI betting works</Link> starts with these systems processing large volumes of information—including historical game results, player statistics, weather conditions, and injury reports—to identify patterns that may not be immediately obvious to human analysts.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              The core concept is data analysis at scale. While a human analyst might review a few dozen data points before making an assessment, AI systems can process thousands of variables simultaneously. This doesn't guarantee better outcomes, but it does allow for a more comprehensive review of available information.
+              The core concept is data analysis at scale. While a human analyst might review a few dozen data points before making an assessment, an <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> can process thousands of variables simultaneously. This doesn't guarantee better outcomes, but it does allow for a more comprehensive review of available information.
             </p>
           </section>
 
@@ -136,7 +136,7 @@ const WhatIsAISportsBetting = () => {
               <div className="glass-card p-4">
                 <h3 className="font-semibold mb-2">Analysis Platforms</h3>
                 <p className="text-sm text-muted-foreground">
-                  Some platforms, such as ThinkBetAI, focus on AI-assisted analysis rather than automated betting, helping users understand probabilities and risk.
+                  Some platforms, such as ThinkBetAI, focus on AI-assisted analysis rather than automated betting, helping users <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">analyze bets with AI</Link> to understand probabilities and risk.
                 </p>
               </div>
               <div className="glass-card p-4">
@@ -168,10 +168,13 @@ const WhatIsAISportsBetting = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-semibold mb-4">The Role of Human Judgment</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              AI analysis is a tool, not a replacement for informed decision-making. The most effective approach typically combines data-driven insights with contextual knowledge that algorithms may miss—such as locker room dynamics, coaching changes, or motivation factors that don't appear in statistics.
+              When comparing <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting vs human betting</Link>, AI analysis is a tool, not a replacement for informed decision-making. The most effective approach typically combines data-driven insights with contextual knowledge that algorithms may miss—such as locker room dynamics, coaching changes, or motivation factors that don't appear in statistics.
+            </p>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Understanding both the capabilities and limitations of AI tools allows users to incorporate them appropriately into their research process, rather than relying on them blindly.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Understanding both the capabilities and limitations of AI tools allows users to incorporate them appropriately into their research process, rather than relying on them blindly.
+              Ready to see it in action? <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Try AI betting</Link> for yourself and explore data-driven picks across every major sport.
             </p>
           </section>
 

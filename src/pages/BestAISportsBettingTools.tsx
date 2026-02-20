@@ -43,9 +43,9 @@ const BestAISportsBettingTools = () => {
         <section className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Best AI Sports Betting Tools</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Looking for the best AI betting sites? We compared the top AI sports betting tools so you don&apos;t have to. See why ThinkBetAI leads the pack.
+            Looking for the <Link to="/best-ai-sports-betting-tools" className="text-primary hover:underline font-medium">best AI sports betting tools</Link>? We compared the top AI betting sites so you don&apos;t have to. See why ThinkBetAI leads the pack.
           </p>
-          <Button size="lg" asChild><Link to="/login">Try ThinkBetAI Free</Link></Button>
+          <Button size="lg" asChild><Link to="/login?tab=signup">Try ThinkBetAI Free</Link></Button>
         </section>
 
         {/* Comparison table */}
@@ -104,7 +104,7 @@ const BestAISportsBettingTools = () => {
         {/* Internal link to pillar */}
         <section className="mb-16 text-center">
           <p className="text-muted-foreground mb-4">
-            Want to learn more about how AI is transforming sports betting?
+            Want to learn more about <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">how AI betting works</Link> and why it&apos;s transforming sports betting?
           </p>
           <Button variant="outline" asChild>
             <Link to="/ai-sports-betting">Read: AI Sports Betting Platform →</Link>
@@ -114,9 +114,9 @@ const BestAISportsBettingTools = () => {
         {/* CTA */}
         <section className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
           <h2 className="text-2xl font-bold mb-4">Join the #1 AI Betting Platform</h2>
-          <p className="text-muted-foreground mb-6">83% accuracy. AI parlays. Live odds. Free to start.</p>
+          <p className="text-muted-foreground mb-6">83% accuracy. AI parlays. Live odds. <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Start using AI bets</Link> today.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" asChild><Link to="/login">Sign Up Free</Link></Button>
+            <Button size="lg" asChild><Link to="/login?tab=signup">Sign Up Free</Link></Button>
             <Button size="lg" variant="outline" asChild><Link to="/pricing">View Plans</Link></Button>
           </div>
         </section>

@@ -117,7 +117,7 @@ const AINFLPicks = () => {
               AI NFL Picks <span className="text-gradient">Today</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Get AI-powered NFL predictions for every game. Our machine learning models analyze 
+              <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Test AI predictions</Link> for every NFL game. Our machine learning models analyze 
               team performance, injuries, weather, and betting trends for winning picks.
             </p>
             <Button size="lg" asChild>
@@ -191,12 +191,12 @@ const AINFLPicks = () => {
             <h2>Why Trust AI for NFL Picks?</h2>
             <p>
               NFL betting is notoriously difficult due to small sample sizes (17 games per team). 
-              AI helps by:
+              Our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> helps by:
             </p>
             <ul>
-              <li>Processing more data than any human analyst</li>
+              <li>Processing more data than any human analyst — a key advantage of <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting vs human betting</Link></li>
               <li>Removing emotional bias from predictions</li>
-              <li>Identifying value the market hasn't priced in</li>
+              <li>Using our <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> to identify value the market hasn't priced in</li>
               <li>Adjusting in real-time as news breaks</li>
             </ul>
           </article>
