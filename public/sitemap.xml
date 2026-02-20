@@ -102,6 +102,32 @@
   <url><loc>https://thinkbetai.com/de/ai-nfl-picks</loc><lastmod>2026-02-12</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://thinkbetai.com/de/ai-parlay-builder</loc><lastmod>2026-02-12</lastmod><changefreq>monthly</changefreq><priority>0.75</priority></url>
 
+  <!-- SEO pillar & landing pages -->
+  <url>
+    <loc>https://thinkbetai.com/ai-sports-betting</loc>
+    <lastmod>2026-02-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/ai-sports-betting" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://thinkbetai.com/ai-sports-betting" />
+  </url>
+  <url>
+    <loc>https://thinkbetai.com/ai-bet-analyzer</loc>
+    <lastmod>2026-02-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/ai-bet-analyzer" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://thinkbetai.com/ai-bet-analyzer" />
+  </url>
+  <url>
+    <loc>https://thinkbetai.com/best-ai-sports-betting-tools</loc>
+    <lastmod>2026-02-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://thinkbetai.com/best-ai-sports-betting-tools" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://thinkbetai.com/best-ai-sports-betting-tools" />
+  </url>
+
   <!-- Existing non-localized pages -->
   <url><loc>https://thinkbetai.com/games</loc><lastmod>2026-01-12</lastmod><changefreq>hourly</changefreq><priority>0.95</priority></url>
   <url><loc>https://thinkbetai.com/chat</loc><lastmod>2026-01-12</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
