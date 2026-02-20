@@ -55,7 +55,7 @@ const AIBetAnalyzer = () => {
         <section className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">AI Bet Analyzer</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Submit any bet and get an instant AI-powered probability breakdown, risk score, and value rating — powered by the same betting analysis AI trusted by thousands.
+            The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> evaluates probability, value, and risk instantly — powered by the same betting analysis AI trusted by thousands.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild><Link to="/login">Analyze a Bet Now</Link></Button>
@@ -67,7 +67,7 @@ const AIBetAnalyzer = () => {
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-6">Analyze Any Bet with AI</h2>
           <p className="text-muted-foreground mb-6">
-            Whether it&apos;s a moneyline, spread, total, or prop — our AI bet analyzer evaluates your wager in seconds. Just enter the matchup and bet type, and the AI returns a comprehensive breakdown including true probability, expected value, and a confidence rating.
+            Whether it&apos;s a moneyline, spread, total, or prop — you can <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">analyze bets with AI</Link> in seconds. Just enter the matchup and bet type, and the AI returns a comprehensive breakdown including true probability, expected value, and a confidence rating.
           </p>
           <div className="rounded-2xl border border-border bg-muted/30 h-64 flex items-center justify-center text-muted-foreground">
             [Screenshot: AI bet analysis input & results]
@@ -98,7 +98,7 @@ const AIBetAnalyzer = () => {
         <section className="mb-16">
           <h2 className="text-3xl font-bold mb-6">Risk Scoring</h2>
           <p className="text-muted-foreground mb-6">
-            Every bet is assigned a risk score from Low to High based on variance, injury impact, historical volatility, and line movement. The AI odds analysis flags bets with hidden risk that the odds alone don&apos;t reveal.
+            Every bet is assigned an <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI risk scoring</Link> from Low to High based on variance, injury impact, historical volatility, and line movement. The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> flags bets with hidden risk that the odds alone don&apos;t reveal.
           </p>
           <div className="grid md:grid-cols-2 gap-6">
             {[
@@ -161,7 +161,7 @@ const AIBetAnalyzer = () => {
         {/* CTA */}
         <section className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
           <h2 className="text-2xl font-bold mb-4">Ready to Analyze Your Next Bet?</h2>
-          <p className="text-muted-foreground mb-6">Join thousands of bettors using AI odds analysis to find value.</p>
+          <p className="text-muted-foreground mb-6">Join thousands of bettors using our <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">betting probability calculator</Link> to find value.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild><Link to="/login">Start AI Analysis</Link></Button>
             <Button size="lg" variant="outline" asChild><Link to="/pricing">View Plans</Link></Button>
