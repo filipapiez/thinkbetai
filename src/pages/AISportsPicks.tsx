@@ -219,7 +219,7 @@ const AISportsPicks = () => {
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Get free daily AI-powered sports predictions backed by advanced machine learning. 
+                <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Get AI picks today</Link> — free daily AI-powered sports predictions backed by advanced machine learning. 
                 Our algorithms analyze millions of data points to surface only the highest-confidence picks.
               </p>
               
@@ -292,8 +292,8 @@ const AISportsPicks = () => {
                 Why Our AI Sports Picks Stand Out
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Built by data scientists and sports analysts, our platform combines cutting-edge 
-                machine learning with deep sports knowledge.
+                Built by data scientists and sports analysts, our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> combines cutting-edge 
+                machine learning with deep sports knowledge. Use our <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> for even deeper analysis.
               </p>
             </div>
             

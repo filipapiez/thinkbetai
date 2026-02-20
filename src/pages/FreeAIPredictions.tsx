@@ -116,7 +116,7 @@ const FreeAIPredictions = () => {
               Free AI Sports <span className="text-gradient">Predictions</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Get AI-powered sports predictions without paying a dime. Our machine learning models 
+              <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Get AI picks today</Link> without paying a dime. Our machine learning models 
               analyze thousands of data points to find winning picks.
             </p>
             <Button size="lg" asChild>
@@ -176,9 +176,9 @@ const FreeAIPredictions = () => {
 
             <h2>Why Our Free Predictions Are Different</h2>
             <p>
-              Unlike other "free picks" sites that show random selections, ThinkBetAI uses the 
+              Unlike other "free picks" sites that show random selections, our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> uses the 
               <strong> same AI models</strong> for free and premium predictions. The only difference 
-              is volume—free users get limited daily picks while premium members get unlimited access.
+              is volume—free users get limited daily picks while premium members get unlimited access. You can also use our <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> to evaluate any wager.
             </p>
 
             <h2>Ready for More?</h2>
