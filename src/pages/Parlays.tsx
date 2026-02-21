@@ -343,7 +343,6 @@ const Parlays = () => {
                               };
                               const qSummary = calculateLiveBetQualification(liveGameSummary);
                               const pickedTeam = qSummary.pick === 'home' ? game.homeTeam : game.awayTeam;
-                              const odds = game.odds?.moneyline ? (qSummary.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away) : null;
                               return (
                                 <div key={game.id} className="px-4 py-2.5 flex items-center gap-3">
                                   <div className={cn(
@@ -356,9 +355,6 @@ const Parlays = () => {
                                     <p className="text-sm font-semibold truncate">{pickedTeam} <span className="text-muted-foreground font-normal">ML</span></p>
                                     <p className="text-xs text-muted-foreground truncate">{game.homeTeam} vs {game.awayTeam}</p>
                                   </div>
-                                  {odds !== null && (
-                                    <span className="text-sm font-mono font-bold shrink-0">{odds > 0 ? '+' : ''}{odds}</span>
-                                  )}
                                   <div className="text-right shrink-0">
                                     <div className="text-sm font-bold">{qSummary.confidenceScore}%</div>
                                     <div className="text-[10px] text-muted-foreground">Confidence</div>
@@ -370,6 +366,65 @@ const Parlays = () => {
                                 </div>
                               );
                             })}
+                          </div>
+                          {/* Win Ratio, Win Prob & Parlay Probability */}
+                          <div className="px-4 py-3 border-t border-primary/20 grid grid-cols-3 gap-3">
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-primary">
+                                {(() => {
+                                  const goodCount = gameParlayLegs.filter(game => {
+                                    const lg: LiveGame = {
+                                      id: game.id, sport: game.sport,
+                                      sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+                                      homeTeam: { id: '', name: game.homeTeam, abbreviation: '' },
+                                      awayTeam: { id: '', name: game.awayTeam, abbreviation: '' },
+                                      startTime: game.startTime, venue: '',
+                                      status: game.status === 'live' ? 'live' : 'scheduled',
+                                      odds: game.odds ? {
+                                        moneyline: game.odds.moneyline || { home: 0, away: 0 },
+                                        spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+                                        total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+                                      } : undefined,
+                                      hasOdds: Boolean(game.hasOdds && game.odds),
+                                      popularityScore: game.popularityScore,
+                                    };
+                                    return calculateLiveBetQualification(lg).signal === 'GOOD';
+                                  }).length;
+                                  return `${goodCount}/${gameParlayLegs.length}`;
+                                })()}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Win Ratio</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-emerald-400">
+                                {(() => {
+                                  const avg = gameParlayLegs.reduce((sum, game) => {
+                                    const lg: LiveGame = {
+                                      id: game.id, sport: game.sport,
+                                      sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+                                      homeTeam: { id: '', name: game.homeTeam, abbreviation: '' },
+                                      awayTeam: { id: '', name: game.awayTeam, abbreviation: '' },
+                                      startTime: game.startTime, venue: '',
+                                      status: game.status === 'live' ? 'live' : 'scheduled',
+                                      odds: game.odds ? {
+                                        moneyline: game.odds.moneyline || { home: 0, away: 0 },
+                                        spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+                                        total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+                                      } : undefined,
+                                      hasOdds: Boolean(game.hasOdds && game.odds),
+                                      popularityScore: game.popularityScore,
+                                    };
+                                    return sum + calculateLiveBetQualification(lg).confidenceScore;
+                                  }, 0) / gameParlayLegs.length;
+                                  return `${avg.toFixed(1)}%`;
+                                })()}
+                              </div>
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Avg Win Prob</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-amber-400">{combinedParlayProbability.toFixed(1)}%</div>
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Parlay Hit Prob</div>
+                            </div>
                           </div>
                         </div>
                       )}
