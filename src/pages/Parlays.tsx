@@ -309,6 +309,71 @@ const Parlays = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
+                      {/* Consolidated Picks Summary */}
+                      {gameParlayLegs.length > 0 && (
+                        <div className="rounded-xl border border-primary/30 bg-primary/5 overflow-hidden">
+                          <div className="px-4 py-3 border-b border-primary/20 flex items-center gap-2">
+                            <Target className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-bold text-primary uppercase tracking-wider">All Chosen Picks</span>
+                            <Badge variant="info" className="ml-auto">{gameParlayLegs.length} Leg{gameParlayLegs.length !== 1 ? 's' : ''}</Badge>
+                          </div>
+                          <div className="divide-y divide-border/50">
+                            {gameParlayLegs.map((game) => {
+                              const abbrevName = (name: string) => {
+                                if (!name) return 'TBD';
+                                if (name.length <= 4) return name.toUpperCase();
+                                const words = name.split(' ').filter(Boolean);
+                                if (words.length >= 2) return words.slice(0, 3).map(w => w[0]).join('').toUpperCase();
+                                return name.slice(0, 3).toUpperCase();
+                              };
+                              const liveGameSummary: LiveGame = {
+                                id: game.id, sport: game.sport,
+                                sportKey: game.sport.toLowerCase().replace(/\s+/g, '-'),
+                                homeTeam: { id: game.homeTeam.toLowerCase().replace(/\s+/g, '-'), name: game.homeTeam, abbreviation: abbrevName(game.homeTeam) },
+                                awayTeam: { id: game.awayTeam.toLowerCase().replace(/\s+/g, '-'), name: game.awayTeam, abbreviation: abbrevName(game.awayTeam) },
+                                startTime: game.startTime, venue: '',
+                                status: game.status === 'live' ? 'live' : game.status === 'completed' ? 'final' : 'scheduled',
+                                odds: game.odds ? {
+                                  moneyline: game.odds.moneyline || { home: 0, away: 0 },
+                                  spread: game.odds.spread || { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+                                  total: game.odds.total || { over: 0, overOdds: -110, under: 0, underOdds: -110 },
+                                } : undefined,
+                                hasOdds: Boolean(game.hasOdds && game.odds),
+                                popularityScore: game.popularityScore,
+                              };
+                              const qSummary = calculateLiveBetQualification(liveGameSummary);
+                              const pickedTeam = qSummary.pick === 'home' ? game.homeTeam : game.awayTeam;
+                              const odds = game.odds?.moneyline ? (qSummary.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away) : null;
+                              return (
+                                <div key={game.id} className="px-4 py-2.5 flex items-center gap-3">
+                                  <div className={cn(
+                                    "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+                                    qSummary.signal === 'GOOD' ? "bg-emerald-500/20 text-emerald-400" : qSummary.signal === 'BORDERLINE' ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
+                                  )}>
+                                    {abbrevName(pickedTeam)}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold truncate">{pickedTeam} <span className="text-muted-foreground font-normal">ML</span></p>
+                                    <p className="text-xs text-muted-foreground truncate">{game.homeTeam} vs {game.awayTeam}</p>
+                                  </div>
+                                  {odds !== null && (
+                                    <span className="text-sm font-mono font-bold shrink-0">{odds > 0 ? '+' : ''}{odds}</span>
+                                  )}
+                                  <div className="text-right shrink-0">
+                                    <div className="text-sm font-bold">{qSummary.confidenceScore}%</div>
+                                    <div className="text-[10px] text-muted-foreground">Confidence</div>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <div className={cn("text-sm font-bold", qSummary.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{qSummary.confidenceScore.toFixed(1)}%</div>
+                                    <div className="text-[10px] text-muted-foreground">Win Prob</div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                        {/* Game-based parlay legs from Games page */}
                       {gameParlayLegs.map((game) => {
                         const abbrev = (name: string) => {
