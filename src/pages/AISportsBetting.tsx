@@ -3,7 +3,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
+
 import { Brain, BarChart3, Zap, Target, CheckCircle, ArrowRight, MessageSquare, Layers, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -73,15 +73,15 @@ const AISportsBetting = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="AI Sports Betting Platform — AI Bets & Predictions"
-        description="Use ThinkBetAI's AI sports betting tool for data-driven AI bets, predictions, and parlay suggestions across NFL, NBA, MLB, NHL & more."
+        description="Use ThinkBetAI's AI sports betting tool for data-driven AI bets, predictions, and parlay suggestions across NFL, NBA, MLB, NHL & more. Learn how AI betting works and get started free."
         keywords="ai betting, ai bets, ai betting predictions, ai sports betting tool, ai sports betting, ai predictions sports"
         url="/ai-sports-betting"
         type="article"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@graph": [faqSchema, softwareSchema],
+        }}
       />
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
-      </Helmet>
 
       <Header />
 
