@@ -906,65 +906,6 @@ const Parlays = () => {
 
             {/* Sidebar - Stats & Calculator */}
             <div className="space-y-6">
-              {/* Stats Card */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Parlay Stats</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{totalLegs}</div>
-                      <div className="text-xs text-muted-foreground">Total Legs</div>
-                    </div>
-                    <div className="text-center p-3 bg-muted/30 rounded-lg">
-                      <div className="text-2xl font-bold">{averageConfidence}%</div>
-                      <div className="text-xs text-muted-foreground">Avg Confidence</div>
-                    </div>
-                  </div>
-                   <div className="text-center p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                    <div className="text-2xl font-bold text-amber-400">{combinedParlayProbability.toFixed(1)}%</div>
-                    <div className="text-xs text-muted-foreground">Win Probability</div>
-                  </div>
-                  <div className="text-center p-3 bg-primary/10 rounded-lg border border-primary/20">
-                    <div className="text-2xl font-bold text-primary">{parlayOdds.toFixed(2)}x</div>
-                    <div className="text-xs text-muted-foreground">Combined Odds</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Payout Calculator */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calculator className="h-4 w-4" />
-                    Payout Calculator
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      value={betAmount}
-                      onChange={(e) => setBetAmount(e.target.value)}
-                      className="pl-9"
-                      placeholder="Bet amount"
-                      min="1"
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">Potential Payout</span>
-                      <Trophy className="h-5 w-5 text-emerald-400" />
-                    </div>
-                    <div className="text-3xl font-bold text-emerald-400">
-                      ${potentialPayout.toFixed(2)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* Warning for large parlays */}
               {parlayPicks.length >= 5 && (
