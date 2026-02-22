@@ -38,7 +38,7 @@ const pricingPlans = [
     id: 'pro',
     priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY',
     name: 'Pro',
-    price: 14.99,
+    price: 13.99,
     originalPrice: 49.99,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
