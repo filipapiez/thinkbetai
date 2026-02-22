@@ -156,7 +156,7 @@ OUTPUT FORMAT (JSON):
   ],
   "injurySummary": "Brief injury impact or null",
   "riskLevel": "Low" | "Medium" | "High",
-  "suggestedStake": "Stake recommendation",
+  "suggestedStake": "Light" | "Moderate" | "Heavy" (MUST be inversely related to riskLevel: Low risk → Heavy stake, Medium risk → Moderate stake, High risk → Light stake),
   "keyInsight": "One unique insight the model noticed",
   "reasoning": "2-3 sentence explanation of the pick"
 }`;
