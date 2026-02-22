@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -31,6 +31,10 @@ export const Header = () => {
           <Link to="/bet-history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <History className="h-4 w-4" />
             Bet History
+          </Link>
+          <Link to="/over-under" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <ArrowUpDown className="h-4 w-4" />
+            O/U Picks
           </Link>
           <Link to="/chat" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <MessageCircle className="h-4 w-4" />
@@ -107,6 +111,14 @@ export const Header = () => {
             >
               <History className="h-4 w-4" />
               Bet History
+            </Link>
+            <Link 
+              to="/over-under" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              O/U Picks
             </Link>
             <Link 
               to="/chat" 
