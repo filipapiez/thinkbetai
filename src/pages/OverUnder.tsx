@@ -149,9 +149,16 @@ const OverUnder = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Over/Under AI Picks</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-3">Over/Under AI Picks</h1>
+          <p className="text-muted-foreground max-w-2xl mb-3">
+            Our AI engine evaluates every totals line across major sports by analyzing juice differentials, 
+            line positioning, and spread correlation to identify where the market may be mispricing the total. 
+            Each pick comes with a confidence score and detailed reasoning so you understand exactly why we lean a certain direction.
+          </p>
           <p className="text-muted-foreground max-w-2xl">
-            Live totals lines combined with AI analysis to find the best over/under bets across all sports.
+            Games marked as <span className="font-semibold text-primary">OVER</span> or <span className="font-semibold text-accent">UNDER</span> have 
+            enough converging factors to suggest an edge. Games marked SKIP don't show a clear lean — 
+            we'd rather pass than force a play. Quality over quantity, always.
           </p>
         </div>
 
