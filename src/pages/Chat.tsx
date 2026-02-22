@@ -278,49 +278,35 @@ const Chat = () => {
         structuredData={chatFaqSchema}
       />
       <Header />
-
-      {/* SEO Content Section */}
-      <ChatSEOContent />
       
-      <main className="flex-1 container py-8 flex flex-col max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <MessageCircle className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <h2 className="text-3xl font-bold">Try the AI Chat</h2>
-          </div>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Your AI-powered betting expert. Ask questions about odds, strategies, terminology, and how to use ThinkBetAI.
-          </p>
-        </div>
-
+      <main className="flex-1 container py-6 sm:py-8 flex flex-col max-w-4xl px-4">
         {/* Chat Area */}
-        <Card className="flex-1 flex flex-col min-h-[500px]">
-          <CardContent className="flex-1 flex flex-col p-6 overflow-hidden">
-            <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
+        <Card className="flex-1 flex flex-col min-h-[60vh]">
+          <CardContent className="flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
+            <ScrollArea className="flex-1 pr-2 sm:pr-4" ref={scrollRef}>
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center space-y-6 py-12">
+                <div className="h-full flex flex-col items-center justify-center space-y-6 py-8 sm:py-12">
                   <div className="text-center space-y-2">
-                    <Sparkles className="h-12 w-12 mx-auto text-primary/60" />
-                    <h3 className="text-xl font-semibold">How can I help you today?</h3>
+                    <div className="h-12 w-12 mx-auto rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-3">
+                      <MessageCircle className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold">Ask AI</h2>
                     <p className="text-sm text-muted-foreground max-w-md">
-                      I'm here to answer your sports betting questions and help you navigate ThinkBetAI.
+                      Your AI-powered betting expert. Ask about odds, strategies, injuries, and more.
                     </p>
                   </div>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 w-full max-w-lg">
                     {quickQuestions.map((q, i) => (
                       <Button
                         key={i}
                         variant="outline"
-                        className="h-auto py-3 px-4 justify-start gap-3 text-left"
+                        className="h-auto py-2.5 sm:py-3 px-3 sm:px-4 justify-start gap-2 sm:gap-3 text-left"
                         onClick={() => handleQuickQuestion(q.text)}
                         disabled={isLoading}
                       >
                         <q.icon className="h-4 w-4 shrink-0 text-primary" />
-                        <span className="text-sm">{q.text}</span>
+                        <span className="text-sm truncate">{q.text}</span>
                       </Button>
                     ))}
                   </div>
@@ -337,7 +323,7 @@ const Chat = () => {
                     >
                       <div
                         className={cn(
-                          "max-w-[80%] rounded-2xl px-4 py-3 text-sm",
+                          "max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-sm",
                           msg.role === 'user'
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
@@ -346,7 +332,7 @@ const Chat = () => {
                         {msg.role === 'assistant' && msg.content === '' ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                          <div className="whitespace-pre-wrap leading-relaxed break-words">{msg.content}</div>
                         )}
                       </div>
                     </div>
@@ -356,19 +342,19 @@ const Chat = () => {
             </ScrollArea>
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="flex gap-3 mt-6 pt-4 border-t border-border">
-              <div className="relative flex-1">
-                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3 mt-4 pt-4 border-t border-border">
+              <div className="relative flex-1 min-w-0">
+                <Sparkles className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask a betting question..."
-                  className="pl-11 pr-4 h-12 text-base"
+                  className="pl-10 sm:pl-11 pr-3 h-11 sm:h-12 text-sm sm:text-base"
                   disabled={isLoading}
                 />
               </div>
-              <Button type="submit" size="lg" disabled={isLoading || !input.trim()} className="h-12 px-6">
+              <Button type="submit" size="lg" disabled={isLoading || !input.trim()} className="h-11 sm:h-12 px-4 sm:px-6 shrink-0">
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
@@ -379,6 +365,9 @@ const Chat = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* SEO Content Section */}
+      <ChatSEOContent />
 
       <Footer />
     </div>
