@@ -39,7 +39,7 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
-  const { winRate } = useWinRate();
+  const { winRate, currentStreak } = useWinRate();
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
@@ -105,7 +105,7 @@ const Index = () => {
   const stats = [
     { value: `${winRate}%`, label: 'Win Rate', sublabel: 'on qualified picks' },
     { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
-    { value: `${platformStats.streakCurrent}`, label: 'Current Streak', sublabel: 'consecutive wins' },
+    { value: `${currentStreak}`, label: 'Current Streak', sublabel: 'consecutive wins' },
     { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
   ];
 
@@ -248,7 +248,7 @@ const Index = () => {
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">{platformStats.streakCurrent}</span> Game Streak 🔥
+                  <span className="font-semibold text-foreground">{currentStreak}</span> Game Streak 🔥
                 </span>
               </div>
 
