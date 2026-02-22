@@ -36,6 +36,7 @@ import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import BetHistory from "./pages/BetHistory";
+import OverUnder from "./pages/OverUnder";
 
 // Localized pages
 import LocalizedIndex from "./pages/localized/LocalizedIndex";
@@ -80,6 +81,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/bet-history" element={<BetHistory />} />
+              <Route path="/over-under" element={<ProtectedRoute requireSubscription><OverUnder /></ProtectedRoute>} />
 
               {/* Polish locale */}
               <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
