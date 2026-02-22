@@ -53,7 +53,8 @@ async function authenticateUser(req: Request): Promise<{ userId: string } | null
 }
 
 // Input validation
-const MAX_MESSAGE_LENGTH = 2000;
+const MAX_USER_MESSAGE_LENGTH = 2000;
+const MAX_ASSISTANT_MESSAGE_LENGTH = 10000;
 const MAX_MESSAGES = 20;
 const MAX_TEAM_NAME_LENGTH = 100;
 
@@ -73,9 +74,10 @@ function validateMessages(messages: unknown): { role: string; content: string }[
     const content = (msg as any).content;
     
     if (!['user', 'assistant', 'system'].includes(role)) return null;
-    if (typeof content !== 'string' || content.length > MAX_MESSAGE_LENGTH) return null;
+    const maxLen = role === 'user' ? MAX_USER_MESSAGE_LENGTH : MAX_ASSISTANT_MESSAGE_LENGTH;
+    if (typeof content !== 'string' || content.length > maxLen) return null;
     
-    validated.push({ role, content: sanitizeString(content, MAX_MESSAGE_LENGTH) });
+    validated.push({ role, content: sanitizeString(content, maxLen) });
   }
   return validated;
 }
