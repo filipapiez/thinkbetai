@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,27 +6,38 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  TrendingUp, TrendingDown, Activity, RefreshCw, Loader2,
-  ArrowUp, ArrowDown, Target, Zap, BarChart3, Filter
+  Activity, RefreshCw, Loader2,
+  ArrowUp, ArrowDown, Target, Zap, BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useOddsAPI } from '@/hooks/useOddsAPI';
-import type { LiveGame as OddsGame } from '@/hooks/useOddsAPI';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useLiveGames } from '@/hooks/useLiveGames';
 
 const SPORTS = [
-  { key: 'nba', label: 'NBA' },
-  { key: 'nfl', label: 'NFL' },
-  { key: 'mlb', label: 'MLB' },
-  { key: 'nhl', label: 'NHL' },
-  { key: 'ncaab', label: 'NCAAB' },
-  { key: 'ncaaf', label: 'NCAAF' },
-  { key: 'epl', label: 'EPL' },
-  { key: 'mls', label: 'MLS' },
-  { key: 'seriea', label: 'Serie A' },
+  { key: 'all', label: 'All' },
+  { key: 'Basketball', label: 'Basketball' },
+  { key: 'Baseball', label: 'Baseball' },
+  { key: 'Soccer', label: 'Soccer' },
+  { key: 'Hockey', label: 'Hockey' },
 ];
+
+interface TotalOdds {
+  over: number;
+  overOdds: number;
+  under: number;
+  underOdds: number;
+}
+
+interface GameWithTotals {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  sport: string;
+  league?: string;
+  startTime: string;
+  total: TotalOdds;
+  spread?: { home: number; away: number };
+  analysis: AITotalAnalysis;
+}
 
 interface AITotalAnalysis {
   recommendation: 'OVER' | 'UNDER' | 'SKIP';
@@ -35,8 +46,7 @@ interface AITotalAnalysis {
   factors: string[];
 }
 
-function analyzeTotal(game: OddsGame): AITotalAnalysis {
-  const total = game.odds?.total;
+function analyzeTotal(total: TotalOdds, spread?: { home: number; away: number }): AITotalAnalysis {
   if (!total || total.over === 0) {
     return { recommendation: 'SKIP', confidence: 0, reasoning: 'No totals line available.', factors: [] };
   }
@@ -44,9 +54,8 @@ function analyzeTotal(game: OddsGame): AITotalAnalysis {
   const overOdds = total.overOdds ?? -110;
   const underOdds = total.underOdds ?? -110;
   const factors: string[] = [];
-  let score = 0; // positive = lean over, negative = lean under
+  let score = 0;
 
-  // Juice analysis — if one side has better value
   const overJuice = overOdds > 0 ? 100 / (overOdds + 100) : Math.abs(overOdds) / (Math.abs(overOdds) + 100);
   const underJuice = underOdds > 0 ? 100 / (underOdds + 100) : Math.abs(underOdds) / (Math.abs(underOdds) + 100);
 
@@ -58,7 +67,6 @@ function analyzeTotal(game: OddsGame): AITotalAnalysis {
     factors.push('Under is getting better odds value');
   }
 
-  // Line positioning
   if (total.over >= 230) {
     score -= 10;
     factors.push('Very high total — lean under in high lines');
@@ -67,8 +75,6 @@ function analyzeTotal(game: OddsGame): AITotalAnalysis {
     factors.push('Lower total — potential for over in tight games');
   }
 
-  // Spread correlation — blowout potential impacts totals
-  const spread = game.odds?.spread;
   if (spread) {
     const absSpread = Math.abs(spread.home);
     if (absSpread >= 10) {
@@ -92,15 +98,41 @@ function analyzeTotal(game: OddsGame): AITotalAnalysis {
 }
 
 const OverUnder = () => {
-  const [sport, setSport] = useState('nba');
-  const { games, isLoading, refetch, lastUpdated } = useOddsAPI(sport);
+  const [sport, setSport] = useState('all');
+  const { games, isLoading, refetch } = useLiveGames();
 
   const gamesWithTotals = useMemo(() => {
-    return games
-      .filter(g => g.odds?.total && g.odds.total.over > 0)
-      .map(g => ({ game: g, analysis: analyzeTotal(g) }))
-      .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
-  }, [games]);
+    const results: GameWithTotals[] = [];
+
+    for (const g of games) {
+      const odds = (g as any).odds;
+      if (!odds?.total || !odds.total.over || odds.total.over === 0) continue;
+
+      if (sport !== 'all' && g.sport !== sport) continue;
+
+      const total: TotalOdds = {
+        over: odds.total.over,
+        overOdds: odds.total.overOdds ?? -110,
+        under: odds.total.under ?? odds.total.over,
+        underOdds: odds.total.underOdds ?? -110,
+      };
+      const spread = odds.spread ? { home: odds.spread.home, away: odds.spread.away } : undefined;
+
+      results.push({
+        id: g.id,
+        homeTeam: typeof g.homeTeam === 'string' ? g.homeTeam : (g.homeTeam as any)?.name || 'Home',
+        awayTeam: typeof g.awayTeam === 'string' ? g.awayTeam : (g.awayTeam as any)?.name || 'Away',
+        sport: g.sport,
+        league: (g as any).league,
+        startTime: (g as any).startTime || '',
+        total,
+        spread,
+        analysis: analyzeTotal(total, spread),
+      });
+    }
+
+    return results.sort((a, b) => b.analysis.confidence - a.analysis.confidence);
+  }, [games, sport]);
 
   const overCount = gamesWithTotals.filter(g => g.analysis.recommendation === 'OVER').length;
   const underCount = gamesWithTotals.filter(g => g.analysis.recommendation === 'UNDER').length;
@@ -116,17 +148,13 @@ const OverUnder = () => {
       <Header />
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Over/Under AI Picks
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Over/Under AI Picks</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Live totals lines from major sportsbooks combined with AI analysis to find the best over/under bets across all sports.
+            Live totals lines combined with AI analysis to find the best over/under bets across all sports.
           </p>
         </div>
 
-        {/* Sport filters */}
         <div className="flex flex-wrap gap-2 mb-6">
           {SPORTS.map(s => (
             <Button
@@ -144,7 +172,6 @@ const OverUnder = () => {
           </Button>
         </div>
 
-        {/* Summary strip */}
         {gamesWithTotals.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mb-6">
             <Card>
@@ -158,7 +185,7 @@ const OverUnder = () => {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <ArrowUp className="h-5 w-5 text-green-500" />
+                <ArrowUp className="h-5 w-5 text-primary" />
                 <div>
                   <p className="text-sm text-muted-foreground">Over Leans</p>
                   <p className="text-xl font-bold text-foreground">{overCount}</p>
@@ -167,7 +194,7 @@ const OverUnder = () => {
             </Card>
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <ArrowDown className="h-5 w-5 text-blue-500" />
+                <ArrowDown className="h-5 w-5 text-accent" />
                 <div>
                   <p className="text-sm text-muted-foreground">Under Leans</p>
                   <p className="text-xl font-bold text-foreground">{underCount}</p>
@@ -177,7 +204,6 @@ const OverUnder = () => {
           </div>
         )}
 
-        {/* Loading state */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
@@ -185,29 +211,30 @@ const OverUnder = () => {
           </div>
         )}
 
-        {/* Games grid */}
         {!isLoading && gamesWithTotals.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
               <Activity className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">No over/under lines available for {sport.toUpperCase()} right now.</p>
+              <p className="text-muted-foreground">
+                No over/under lines available{sport !== 'all' ? ` for ${sport}` : ''} right now.
+              </p>
             </CardContent>
           </Card>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
-          {gamesWithTotals.map(({ game, analysis }) => (
-            <Card key={game.id} className="overflow-hidden">
+          {gamesWithTotals.map(({ id, homeTeam, awayTeam, league, startTime, total, analysis }) => (
+            <Card key={id} className="overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base font-semibold">
-                    {game.awayTeam} @ {game.homeTeam}
+                    {awayTeam} @ {homeTeam}
                   </CardTitle>
                   <Badge
                     variant={analysis.recommendation === 'OVER' ? 'default' : analysis.recommendation === 'UNDER' ? 'secondary' : 'outline'}
                     className={cn(
-                      analysis.recommendation === 'OVER' && 'bg-green-600 text-white',
-                      analysis.recommendation === 'UNDER' && 'bg-blue-600 text-white',
+                      analysis.recommendation === 'OVER' && 'bg-primary text-primary-foreground',
+                      analysis.recommendation === 'UNDER' && 'bg-accent text-accent-foreground',
                     )}
                   >
                     {analysis.recommendation === 'OVER' && <ArrowUp className="h-3 w-3 mr-1" />}
@@ -216,26 +243,25 @@ const OverUnder = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(game.commenceTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  {league && <span className="mr-2">{league}</span>}
+                  {startTime && new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                 </p>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* Line display */}
                 <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
                   <div className="text-center flex-1">
                     <p className="text-xs text-muted-foreground">Over</p>
-                    <p className="text-lg font-bold text-foreground">{game.odds!.total.over}</p>
-                    <p className="text-xs text-muted-foreground">({game.odds!.total.overOdds > 0 ? '+' : ''}{game.odds!.total.overOdds})</p>
+                    <p className="text-lg font-bold text-foreground">{total.over}</p>
+                    <p className="text-xs text-muted-foreground">({total.overOdds > 0 ? '+' : ''}{total.overOdds})</p>
                   </div>
                   <div className="h-10 w-px bg-border" />
                   <div className="text-center flex-1">
                     <p className="text-xs text-muted-foreground">Under</p>
-                    <p className="text-lg font-bold text-foreground">{game.odds!.total.under}</p>
-                    <p className="text-xs text-muted-foreground">({game.odds!.total.underOdds > 0 ? '+' : ''}{game.odds!.total.underOdds})</p>
+                    <p className="text-lg font-bold text-foreground">{total.under}</p>
+                    <p className="text-xs text-muted-foreground">({total.underOdds > 0 ? '+' : ''}{total.underOdds})</p>
                   </div>
                 </div>
 
-                {/* AI reasoning */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-primary" />
@@ -257,13 +283,6 @@ const OverUnder = () => {
             </Card>
           ))}
         </div>
-
-        {/* Last updated */}
-        {lastUpdated && (
-          <p className="text-xs text-muted-foreground text-center mt-6">
-            Lines updated {new Date(lastUpdated).toLocaleTimeString()}
-          </p>
-        )}
       </main>
 
       <Footer />
