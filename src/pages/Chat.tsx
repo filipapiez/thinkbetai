@@ -121,8 +121,8 @@ const ChatSEOContent = () => (
     </div>
 
     <div className="text-center mb-8">
-      <Button size="lg" asChild>
-        <Link to="/login">Start Chatting with AI <ArrowRight className="ml-1 h-4 w-4" /></Link>
+      <Button size="lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        Start Chatting with AI <ArrowRight className="ml-1 h-4 w-4" />
       </Button>
     </div>
   </section>
