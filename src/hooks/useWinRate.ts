@@ -29,7 +29,8 @@ export const useWinRate = (): WinRateData => {
           .select('result')
           .in('result', ['win', 'loss'])
           .order('date', { ascending: false })
-          .limit(100),
+          .order('result', { ascending: false }) // 'win' before 'loss' on same date
+          .limit(200),
       ]);
 
       const wins = winsRes.count ?? 0;
