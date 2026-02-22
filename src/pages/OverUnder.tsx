@@ -14,10 +14,11 @@ import { useLiveGames } from '@/hooks/useLiveGames';
 
 const SPORTS = [
   { key: 'all', label: 'All' },
-  { key: 'Basketball', label: 'Basketball' },
-  { key: 'Baseball', label: 'Baseball' },
-  { key: 'Soccer', label: 'Soccer' },
-  { key: 'Hockey', label: 'Hockey' },
+  { key: 'basketball', label: 'Basketball' },
+  { key: 'baseball', label: 'Baseball' },
+  { key: 'soccer', label: 'Soccer' },
+  { key: 'hockey', label: 'Hockey' },
+  { key: 'football', label: 'Football' },
 ];
 
 interface TotalOdds {
@@ -108,7 +109,16 @@ const OverUnder = () => {
       const odds = (g as any).odds;
       if (!odds?.total || !odds.total.over || odds.total.over === 0) continue;
 
-      if (sport !== 'all' && g.sport !== sport) continue;
+      // Match against both the raw sport field and the transformed display name
+      const rawSport = (g as any).sport || '';
+      const sportKey = g.sportKey || '';
+      if (sport !== 'all') {
+        const matchesSport = 
+          rawSport.toLowerCase().includes(sport.toLowerCase()) ||
+          sportKey.toLowerCase().includes(sport.toLowerCase()) ||
+          rawSport === sport;
+        if (!matchesSport) continue;
+      }
 
       const total: TotalOdds = {
         over: odds.total.over,
