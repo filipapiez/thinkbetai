@@ -113,6 +113,7 @@ const leagueIdMap: Record<string, string> = {
   'aleague': 'ALEAGUE',
   'csl': 'CSL',
   'isl': 'ISL',
+  'soccer': 'EPL',
   'saudi': 'SAUDI',
   'brazil': 'BRAZIL',
   'argentina': 'ARGENTINA',

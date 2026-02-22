@@ -23,7 +23,9 @@ const SPORTS = [
   { key: 'nhl', label: 'NHL' },
   { key: 'ncaab', label: 'NCAAB' },
   { key: 'ncaaf', label: 'NCAAF' },
-  { key: 'soccer', label: 'Soccer' },
+  { key: 'epl', label: 'EPL' },
+  { key: 'mls', label: 'MLS' },
+  { key: 'seriea', label: 'Serie A' },
 ];
 
 interface AITotalAnalysis {
