@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
+import { useWinRate } from '@/hooks/useWinRate';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
 
@@ -84,6 +85,7 @@ const pricingPlans = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, isSubscribed } = useAuth();
+  const { winRate } = useWinRate();
   const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
 
   const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
@@ -133,7 +135,7 @@ const Pricing = () => {
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1">
                   <TrendingUp className="h-5 w-5" />
-                  82.4%
+                  {winRate}%
                 </div>
                 <div className="text-xs text-muted-foreground">Win Rate</div>
               </div>

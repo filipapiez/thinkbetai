@@ -10,6 +10,7 @@ import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
 
 import { platformStats } from '@/lib/mockData';
+import { useWinRate } from '@/hooks/useWinRate';
 import { 
   Search, 
   TrendingUp, 
@@ -38,6 +39,7 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
+  const { winRate } = useWinRate();
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
@@ -101,7 +103,7 @@ const Index = () => {
   ];
 
   const stats = [
-    { value: `${platformStats.qualifiedWinRate}%`, label: 'Win Rate', sublabel: 'on qualified picks' },
+    { value: `${winRate}%`, label: 'Win Rate', sublabel: 'on qualified picks' },
     { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
     { value: `${platformStats.streakCurrent}`, label: 'Current Streak', sublabel: 'consecutive wins' },
     { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
@@ -242,7 +244,7 @@ const Index = () => {
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">{platformStats.qualifiedWinRate}%</span> Win Rate
+                  <span className="text-primary font-bold">{winRate}%</span> Win Rate
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">

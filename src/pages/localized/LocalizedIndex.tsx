@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
 import { platformStats } from '@/lib/mockData';
+import { useWinRate } from '@/hooks/useWinRate';
 import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
 import {
   Search, TrendingUp, UserX, Gauge, Shield, ArrowRight, BarChart3, Trophy,
@@ -21,6 +22,7 @@ interface Props { locale: Exclude<Locale, 'en'>; }
 const LocalizedIndex = ({ locale }: Props) => {
   const t = getTranslations(locale).homepage;
   const lp = (path: string) => getLocalePath(locale, path);
+  const { winRate } = useWinRate();
 
   const [viewerCount, setViewerCount] = useState(847);
   useEffect(() => {
@@ -89,7 +91,7 @@ const LocalizedIndex = ({ locale }: Props) => {
                   <span className="text-xs md:text-sm font-semibold text-emerald-400">{t.liveBadge}</span>
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
-                <span className="text-xs md:text-sm font-medium text-foreground"><span className="text-primary font-bold">{platformStats.qualifiedWinRate}%</span> {t.winRate}</span>
+                <span className="text-xs md:text-sm font-medium text-foreground"><span className="text-primary font-bold">{winRate}%</span> {t.winRate}</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
@@ -139,7 +141,7 @@ const LocalizedIndex = ({ locale }: Props) => {
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: `${platformStats.qualifiedWinRate}%`, label: t.statWinRate, sublabel: t.statOnQualified, icon: Target, color: 'text-emerald-400' },
+                { value: `${winRate}%`, label: t.statWinRate, sublabel: t.statOnQualified, icon: Target, color: 'text-emerald-400' },
                 { value: '$2.4M+', label: t.statUserWinnings, sublabel: t.statTrackedYear, icon: DollarSign, color: 'text-amber-400' },
                 { value: `${platformStats.streakCurrent}`, label: t.statWinStreak, sublabel: t.statAndCounting, icon: TrendingUp, color: 'text-primary' },
                 { value: '15+', label: t.statSports, sublabel: t.statCoveredDaily, icon: Trophy, color: 'text-purple-400' },

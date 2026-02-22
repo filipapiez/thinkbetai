@@ -9,6 +9,7 @@ import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { Helmet } from 'react-helmet-async';
 import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
+import { useWinRate } from '@/hooks/useWinRate';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
 import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
@@ -24,6 +25,7 @@ interface Props { locale: Exclude<Locale, 'en'>; }
 const LocalizedPricing = ({ locale }: Props) => {
   const navigate = useNavigate();
   const { user, isSubscribed } = useAuth();
+  const { winRate } = useWinRate();
   const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
   const t = getTranslations(locale).pricing;
   const lp = (path: string) => getLocalePath(locale, path);
@@ -57,7 +59,7 @@ const LocalizedPricing = ({ locale }: Props) => {
             <h1 className="text-4xl md:text-6xl font-bold mb-4">{t.headline1} <span className="text-gradient">{t.headline2}</span></h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">{t.subtitle}</p>
             <div className="inline-flex items-center gap-4 sm:gap-8 py-4 px-6 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50">
-              <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1"><TrendingUp className="h-5 w-5" />82.4%</div><div className="text-xs text-muted-foreground">{t.winRateLabel}</div></div>
+              <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1"><TrendingUp className="h-5 w-5" />{winRate}%</div><div className="text-xs text-muted-foreground">{t.winRateLabel}</div></div>
               <div className="h-10 w-px bg-border" />
               <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div><div className="text-xs text-muted-foreground">{t.verifiedPicks}</div></div>
               <div className="h-10 w-px bg-border hidden sm:block" />
