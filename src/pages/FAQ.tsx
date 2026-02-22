@@ -56,7 +56,7 @@ const faqData: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'What subscription plans are available?',
-    answer: 'We offer various plans starting at $49/month with full access to all sports coverage, AI analysis, and features like injury reports and real-time odds tracking. Visit our pricing page to see all available options.'
+    answer: 'We offer various plans starting at $4.99/month with full access to all sports coverage, AI analysis, and features like injury reports and real-time odds tracking. Visit our pricing page to see all available options.'
   },
   {
     category: 'Getting Started',

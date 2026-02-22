@@ -275,7 +275,7 @@ const Account = () => {
                   className="w-full"
                   onClick={() => navigate('/paywall')}
                 >
-                  View Plans – Starting at $49/month
+                  View Plans – Starting at $4.99/month
                 </Button>
               </CardContent>
             </Card>
