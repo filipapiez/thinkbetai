@@ -467,7 +467,7 @@ const Index = () => {
                 Our Picks Win. Here's The Proof.
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                We only recommend "GOOD" signal bets with high confidence. Here's how our qualified picks perform by sport.
+                We only recommend "GOOD" signal bets with high confidence. Here's how our qualified picks perform by league.
               </p>
             </div>
 
