@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
   Activity, RefreshCw, Loader2,
-  ArrowUp, ArrowDown, Target, Zap, BarChart3,
+  ArrowUp, ArrowDown, Target, Zap, BarChart3, CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLiveGames } from '@/hooks/useLiveGames';
+import { GameParlayBar } from '@/components/GameParlayBar';
+import { PopularGame } from '@/hooks/usePopularGames';
 
 const SPORTS = [
   { key: 'all', label: 'All' },
@@ -101,6 +103,22 @@ function analyzeTotal(total: TotalOdds, spread?: { home: number; away: number })
 const OverUnder = () => {
   const [sport, setSport] = useState('all');
   const { games, isLoading, refetch } = useLiveGames();
+  const [parlayGames, setParlayGames] = useState<PopularGame[]>([]);
+
+  const toggleParlayGame = useCallback((game: PopularGame) => {
+    setParlayGames(prev => {
+      const exists = prev.some(g => g.id === game.id);
+      return exists ? prev.filter(g => g.id !== game.id) : [...prev, game];
+    });
+  }, []);
+
+  const removeParlayGame = useCallback((gameId: string) => {
+    setParlayGames(prev => prev.filter(g => g.id !== gameId));
+  }, []);
+
+  const clearParlayGames = useCallback(() => {
+    setParlayGames([]);
+  }, []);
 
   const gamesWithTotals = useMemo(() => {
     const results: GameWithTotals[] = [];
@@ -233,69 +251,97 @@ const OverUnder = () => {
         )}
 
         <div className="grid gap-4 md:grid-cols-2">
-          {gamesWithTotals.map(({ id, homeTeam, awayTeam, league, startTime, total, analysis }) => (
-            <Card key={id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-semibold">
-                    {awayTeam} @ {homeTeam}
-                  </CardTitle>
-                  <Badge
-                    variant={analysis.recommendation === 'OVER' ? 'default' : analysis.recommendation === 'UNDER' ? 'secondary' : 'outline'}
-                    className={cn(
-                      analysis.recommendation === 'OVER' && 'bg-primary text-primary-foreground',
-                      analysis.recommendation === 'UNDER' && 'bg-accent text-accent-foreground',
-                    )}
-                  >
-                    {analysis.recommendation === 'OVER' && <ArrowUp className="h-3 w-3 mr-1" />}
-                    {analysis.recommendation === 'UNDER' && <ArrowDown className="h-3 w-3 mr-1" />}
-                    {analysis.recommendation}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {league && <span className="mr-2">{league}</span>}
-                  {startTime && new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
-                  <div className="text-center flex-1">
-                    <p className="text-xs text-muted-foreground">Over</p>
-                    <p className="text-lg font-bold text-foreground">{total.over}</p>
-                    <p className="text-xs text-muted-foreground">({total.overOdds > 0 ? '+' : ''}{total.overOdds})</p>
-                  </div>
-                  <div className="h-10 w-px bg-border" />
-                  <div className="text-center flex-1">
-                    <p className="text-xs text-muted-foreground">Under</p>
-                    <p className="text-lg font-bold text-foreground">{total.under}</p>
-                    <p className="text-xs text-muted-foreground">({total.underOdds > 0 ? '+' : ''}{total.underOdds})</p>
-                  </div>
-                </div>
+          {gamesWithTotals.map(({ id, homeTeam, awayTeam, sport: gameSport, league, startTime, total, analysis }) => {
+            const asPopularGame: PopularGame = {
+              id,
+              homeTeam,
+              awayTeam,
+              sport: gameSport,
+              league: league || gameSport,
+              startTime,
+              popularityScore: analysis.confidence,
+              status: 'scheduled',
+            };
+            const isSelected = parlayGames.some(g => g.id === id);
 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">AI Confidence: {analysis.confidence}%</span>
+            return (
+              <Card
+                key={id}
+                className={cn(
+                  "overflow-hidden cursor-pointer transition-all hover:ring-1 hover:ring-primary/40",
+                  isSelected && "ring-2 ring-primary"
+                )}
+                onClick={() => toggleParlayGame(asPopularGame)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold flex items-center gap-2">
+                      {isSelected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
+                      {awayTeam} @ {homeTeam}
+                    </CardTitle>
+                    <Badge
+                      variant={analysis.recommendation === 'OVER' ? 'default' : analysis.recommendation === 'UNDER' ? 'secondary' : 'outline'}
+                      className={cn(
+                        analysis.recommendation === 'OVER' && 'bg-primary text-primary-foreground',
+                        analysis.recommendation === 'UNDER' && 'bg-accent text-accent-foreground',
+                      )}
+                    >
+                      {analysis.recommendation === 'OVER' && <ArrowUp className="h-3 w-3 mr-1" />}
+                      {analysis.recommendation === 'UNDER' && <ArrowDown className="h-3 w-3 mr-1" />}
+                      {analysis.recommendation}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{analysis.reasoning}</p>
-                  {analysis.factors.length > 0 && (
-                    <ul className="space-y-1">
-                      {analysis.factors.map((f, i) => (
-                        <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                          <Target className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <p className="text-xs text-muted-foreground">
+                    {league && <span className="mr-2">{league}</span>}
+                    {startTime && new Date(startTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
+                    <div className="text-center flex-1">
+                      <p className="text-xs text-muted-foreground">Over</p>
+                      <p className="text-lg font-bold text-foreground">{total.over}</p>
+                      <p className="text-xs text-muted-foreground">({total.overOdds > 0 ? '+' : ''}{total.overOdds})</p>
+                    </div>
+                    <div className="h-10 w-px bg-border" />
+                    <div className="text-center flex-1">
+                      <p className="text-xs text-muted-foreground">Under</p>
+                      <p className="text-lg font-bold text-foreground">{total.under}</p>
+                      <p className="text-xs text-muted-foreground">({total.underOdds > 0 ? '+' : ''}{total.underOdds})</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium text-foreground">AI Confidence: {analysis.confidence}%</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{analysis.reasoning}</p>
+                    {analysis.factors.length > 0 && (
+                      <ul className="space-y-1">
+                        {analysis.factors.map((f, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                            <Target className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </main>
 
       <Footer />
+
+      <GameParlayBar
+        selectedGames={parlayGames}
+        onRemoveGame={removeParlayGame}
+        onClearAll={clearParlayGames}
+      />
     </div>
   );
 };
