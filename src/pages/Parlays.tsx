@@ -344,7 +344,7 @@ const Parlays = () => {
                               const qSummary = calculateLiveBetQualification(liveGameSummary);
                               const pickedTeam = qSummary.pick === 'home' ? game.homeTeam : game.awayTeam;
                               return (
-                                <div key={game.id} className="px-4 py-2.5 flex items-center gap-3">
+                                <div key={game.id} className="px-3 sm:px-4 py-2.5 flex items-center gap-2 sm:gap-3">
                                   <div className={cn(
                                     "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
                                     qSummary.signal === 'GOOD' ? "bg-emerald-500/20 text-emerald-400" : qSummary.signal === 'BORDERLINE' ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
@@ -356,19 +356,15 @@ const Parlays = () => {
                                     <p className="text-xs text-muted-foreground truncate">{game.homeTeam} vs {game.awayTeam}</p>
                                   </div>
                                   <div className="text-right shrink-0">
-                                    <div className="text-sm font-bold">{qSummary.confidenceScore}%</div>
+                                    <div className={cn("text-sm font-bold", qSummary.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{qSummary.confidenceScore}%</div>
                                     <div className="text-[10px] text-muted-foreground">Confidence</div>
-                                  </div>
-                                  <div className="text-right shrink-0">
-                                    <div className={cn("text-sm font-bold", qSummary.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{qSummary.confidenceScore.toFixed(1)}%</div>
-                                    <div className="text-[10px] text-muted-foreground">Win Prob</div>
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
                           {/* Win Ratio, Win Prob & Parlay Probability */}
-                          <div className="px-4 py-3 border-t border-primary/20 grid grid-cols-3 gap-3">
+                          <div className="px-3 sm:px-4 py-3 border-t border-primary/20 grid grid-cols-3 gap-1 sm:gap-3">
                             <div className="text-center">
                               <div className="text-lg font-bold text-primary">
                                 {(() => {
