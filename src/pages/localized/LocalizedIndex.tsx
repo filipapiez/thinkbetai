@@ -22,7 +22,7 @@ interface Props { locale: Exclude<Locale, 'en'>; }
 const LocalizedIndex = ({ locale }: Props) => {
   const t = getTranslations(locale).homepage;
   const lp = (path: string) => getLocalePath(locale, path);
-  const { winRate } = useWinRate();
+  const { winRate, currentStreak } = useWinRate();
 
   const [viewerCount, setViewerCount] = useState(847);
   useEffect(() => {
@@ -143,7 +143,7 @@ const LocalizedIndex = ({ locale }: Props) => {
               {[
                 { value: `${winRate}%`, label: t.statWinRate, sublabel: t.statOnQualified, icon: Target, color: 'text-emerald-400' },
                 { value: '$2.4M+', label: t.statUserWinnings, sublabel: t.statTrackedYear, icon: DollarSign, color: 'text-amber-400' },
-                { value: `${platformStats.streakCurrent}`, label: t.statWinStreak, sublabel: t.statAndCounting, icon: TrendingUp, color: 'text-primary' },
+                { value: `${currentStreak}`, label: t.statWinStreak, sublabel: t.statAndCounting, icon: TrendingUp, color: 'text-primary' },
                 { value: '15+', label: t.statSports, sublabel: t.statCoveredDaily, icon: Trophy, color: 'text-purple-400' },
               ].map((stat, i) => (
                 <div key={stat.label} className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>

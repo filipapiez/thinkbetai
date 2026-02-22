@@ -6,6 +6,7 @@ interface WinRateData {
   totalBets: number;
   wins: number;
   losses: number;
+  currentStreak: number;
   isLoading: boolean;
 }
 
@@ -13,8 +14,8 @@ export const useWinRate = (): WinRateData => {
   const { data, isLoading } = useQuery({
     queryKey: ['global-win-rate'],
     queryFn: async () => {
-      // Fetch counts in two parallel queries for efficiency
-      const [winsRes, lossesRes] = await Promise.all([
+      // Fetch counts and recent bets for streak in parallel
+      const [winsRes, lossesRes, recentRes] = await Promise.all([
         supabase
           .from('historical_bets')
           .select('id', { count: 'exact', head: true })
@@ -23,6 +24,12 @@ export const useWinRate = (): WinRateData => {
           .from('historical_bets')
           .select('id', { count: 'exact', head: true })
           .eq('result', 'loss'),
+        supabase
+          .from('historical_bets')
+          .select('result')
+          .in('result', ['win', 'loss'])
+          .order('date', { ascending: false })
+          .limit(100),
       ]);
 
       const wins = winsRes.count ?? 0;
@@ -30,9 +37,20 @@ export const useWinRate = (): WinRateData => {
       const total = wins + losses;
       const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '0';
 
-      return { winRate, totalBets: total, wins, losses };
+      // Calculate current win streak from most recent bets
+      let currentStreak = 0;
+      const recentBets = recentRes.data ?? [];
+      for (const bet of recentBets) {
+        if (bet.result === 'win') {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+
+      return { winRate, totalBets: total, wins, losses, currentStreak };
     },
-    staleTime: 5 * 60 * 1000, // cache 5 min
+    staleTime: 5 * 60 * 1000,
   });
 
   return {
@@ -40,6 +58,7 @@ export const useWinRate = (): WinRateData => {
     totalBets: data?.totalBets ?? 0,
     wins: data?.wins ?? 0,
     losses: data?.losses ?? 0,
+    currentStreak: data?.currentStreak ?? 0,
     isLoading,
   };
 };
