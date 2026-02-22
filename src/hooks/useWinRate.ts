@@ -26,11 +26,10 @@ export const useWinRate = (): WinRateData => {
           .eq('result', 'loss'),
         supabase
           .from('historical_bets')
-          .select('result')
+          .select('date, result')
           .in('result', ['win', 'loss'])
           .order('date', { ascending: false })
-          .order('result', { ascending: false }) // 'win' before 'loss' on same date
-          .limit(200),
+          .limit(500),
       ]);
 
       const wins = winsRes.count ?? 0;
@@ -38,11 +37,20 @@ export const useWinRate = (): WinRateData => {
       const total = wins + losses;
       const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '0';
 
-      // Calculate current win streak from most recent bets
+      // Calculate current streak by day (a day is "win" if wins > losses that day)
       let currentStreak = 0;
       const recentBets = recentRes.data ?? [];
+      const dayResults = new Map<string, { w: number; l: number }>();
       for (const bet of recentBets) {
-        if (bet.result === 'win') {
+        const entry = dayResults.get(bet.date) ?? { w: 0, l: 0 };
+        if (bet.result === 'win') entry.w++;
+        else entry.l++;
+        dayResults.set(bet.date, entry);
+      }
+      // Sort dates descending and count consecutive winning days
+      const sortedDays = [...dayResults.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+      for (const [, { w, l }] of sortedDays) {
+        if (w > l) {
           currentStreak++;
         } else {
           break;
