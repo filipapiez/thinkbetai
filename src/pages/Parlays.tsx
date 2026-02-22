@@ -467,8 +467,8 @@ const Parlays = () => {
                           <div key={game.id} className="rounded-xl border border-border bg-card overflow-hidden">
                             {/* Game Header */}
                             <div className="p-4 border-b border-border">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-between mb-3 gap-2">
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
                                   <Badge variant="info">{game.sport}</Badge>
                                   {game.league && <Badge variant="outline" className="text-xs">{game.league}</Badge>}
                                   <Badge variant="outline" className={cn("text-xs", sv.bg, sv.text)}>
@@ -487,26 +487,26 @@ const Parlays = () => {
                               </div>
 
                               {/* Teams */}
-                              <div className="flex items-center justify-center gap-6">
-                                <div className="text-center">
+                              <div className="flex items-center justify-center gap-4 sm:gap-6">
+                                <div className="text-center max-w-[120px] sm:max-w-[160px]">
                                   <div className={cn(
                                     "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-lg font-bold",
                                     qual.pick === 'home' && qual.signal === 'GOOD' && "ring-2 ring-emerald-500"
                                   )}>
                                     {abbrev(game.homeTeam)}
                                   </div>
-                                  <p className="font-semibold text-sm">{game.homeTeam}</p>
+                                  <p className="font-semibold text-sm truncate">{game.homeTeam}</p>
                                   <p className="text-xs text-muted-foreground">Home</p>
                                 </div>
-                                <div className="text-xl font-bold text-muted-foreground">vs</div>
-                                <div className="text-center">
+                                <div className="text-xl font-bold text-muted-foreground shrink-0">vs</div>
+                                <div className="text-center max-w-[120px] sm:max-w-[160px]">
                                   <div className={cn(
                                     "w-14 h-14 mx-auto mb-2 rounded-xl bg-gradient-to-br from-secondary to-muted flex items-center justify-center text-lg font-bold",
                                     qual.pick === 'away' && qual.signal === 'GOOD' && "ring-2 ring-emerald-500"
                                   )}>
                                     {abbrev(game.awayTeam)}
                                   </div>
-                                  <p className="font-semibold text-sm">{game.awayTeam}</p>
+                                  <p className="font-semibold text-sm truncate">{game.awayTeam}</p>
                                   <p className="text-xs text-muted-foreground">Away</p>
                                 </div>
                               </div>
@@ -584,27 +584,23 @@ const Parlays = () => {
                                 <Target className="h-3.5 w-3.5 text-primary" />
                                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">Chosen Pick</span>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                                 <div className={cn(
-                                  "px-3 py-1.5 rounded-lg text-sm font-bold",
+                                  "px-3 py-1.5 rounded-lg text-sm font-bold truncate max-w-[160px] sm:max-w-[200px]",
                                   qual.signal === 'GOOD' ? "bg-emerald-500/20 text-emerald-400" : qual.signal === 'BORDERLINE' ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"
                                 )}>
                                   {qual.pick === 'home' ? game.homeTeam : game.awayTeam} ML
                                 </div>
                                 {game.odds?.moneyline && (
-                                  <span className="text-sm font-mono text-muted-foreground">
+                                  <span className="text-sm font-mono text-muted-foreground shrink-0">
                                     ({(qual.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away) > 0 ? '+' : ''}
                                     {qual.pick === 'home' ? game.odds.moneyline.home : game.odds.moneyline.away})
                                   </span>
                                 )}
-                                <div className="flex items-center gap-4 ml-auto">
+                                <div className="flex items-center gap-3 ml-auto shrink-0">
                                   <div className="text-right">
-                                    <div className="text-sm font-bold">{qual.confidenceScore}%</div>
+                                    <div className={cn("text-sm font-bold", qual.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{qual.confidenceScore}%</div>
                                     <div className="text-[10px] text-muted-foreground">Confidence</div>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="text-sm font-bold text-amber-400">{qual.confidenceScore.toFixed(1)}%</div>
-                                    <div className="text-[10px] text-muted-foreground">Win Prob</div>
                                   </div>
                                 </div>
                               </div>
