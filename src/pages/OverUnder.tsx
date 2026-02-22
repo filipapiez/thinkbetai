@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
   Activity, RefreshCw, Loader2,
-  ArrowUp, ArrowDown, Target, Zap, BarChart3, CheckCircle2,
+  ArrowUp, ArrowDown, Target, Zap, BarChart3, CheckCircle2, Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLiveGames } from '@/hooks/useLiveGames';
@@ -268,15 +268,13 @@ const OverUnder = () => {
               <Card
                 key={id}
                 className={cn(
-                  "overflow-hidden cursor-pointer transition-all hover:ring-1 hover:ring-primary/40",
+                  "overflow-hidden transition-all",
                   isSelected && "ring-2 ring-primary"
                 )}
-                onClick={() => toggleParlayGame(asPopularGame)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      {isSelected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
+                    <CardTitle className="text-base font-semibold">
                       {awayTeam} @ {homeTeam}
                     </CardTitle>
                     <Badge
@@ -328,6 +326,25 @@ const OverUnder = () => {
                       </ul>
                     )}
                   </div>
+
+                  <Button
+                    size="sm"
+                    variant={isSelected ? 'default' : 'outline'}
+                    className="w-full gap-1.5"
+                    onClick={() => toggleParlayGame(asPopularGame)}
+                  >
+                    {isSelected ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Added to Parlay
+                      </>
+                    ) : (
+                      <>
+                        <Layers className="h-3.5 w-3.5" />
+                        Add to Parlay
+                      </>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             );
