@@ -27,8 +27,9 @@ export function usePlayerProps(sport: string = 'all') {
     setError(null);
 
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-player-props?sport=${sport}`,
+        `${supabaseUrl}/functions/v1/get-player-props?sport=${sport}`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
