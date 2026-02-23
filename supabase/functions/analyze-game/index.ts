@@ -255,6 +255,11 @@ Respond with valid JSON only.`;
 // ============================================================================
 
 const SPORT_CONFIG: Record<string, { terms: string[]; scoreFormat: string; periods: string }> = {
+  'Basketball': {
+    terms: ['points', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'three-pointers', 'free throws', 'paint points'],
+    scoreFormat: '55-90 points typical (college), 90-120 points typical (NBA)',
+    periods: 'halves (2 x 20 minutes for college) or quarters (4 x 12 minutes for NBA)',
+  },
   'NBA': {
     terms: ['points', 'rebounds', 'assists', 'steals', 'blocks', 'turnovers', 'three-pointers', 'free throws', 'paint points'],
     scoreFormat: '90-120 points typical',
@@ -300,6 +305,36 @@ const SPORT_CONFIG: Record<string, { terms: string[]; scoreFormat: string; perio
 function validateAndNormalizeSport(sport: string, homeTeam?: string, awayTeam?: string): string {
   const normalized = (sport || '').toLowerCase().trim();
   
+  // College basketball indicators
+  const collegeIndicators = [
+    'wildcats', 'bulldogs', 'tigers', 'eagles', 'bears', 'cardinals', 'tar heels',
+    'blue devils', 'wolfpack', 'seminoles', 'hurricanes', 'cavaliers', 'hokies',
+    'yellow jackets', 'panthers', 'orange', 'demon deacons', 'fighting irish',
+    'crimson tide', 'volunteers', 'gators', 'gamecocks', 'rebels', 'razorbacks',
+    'commodores', 'aggies', 'longhorns', 'sooners', 'jayhawks', 'cyclones',
+    'mountaineers', 'cowboys', 'red raiders', 'horned frogs', 'bears',
+    'buckeyes', 'wolverines', 'spartans', 'hawkeyes', 'badgers', 'gophers',
+    'boilermakers', 'hoosiers', 'illini', 'nittany lions', 'terrapins',
+    'scarlet knights', 'cornhuskers', 'trojans', 'bruins', 'ducks', 'huskies',
+    'beavers', 'cougars', 'utes', 'buffaloes', 'sun devils', 'lumberjacks',
+    'colonels', 'privateers', 'vaqueros', 'islanders', 'lions', 'demons',
+    'delta devils', 'mustangs', 'waves', 'highlanders', 'pilots', 'gaels',
+    'zags', 'gonzaga', 'marquette', 'golden eagles', 'friars', 'musketeers',
+    'bluejays', 'pirates', 'red storm', 'johnnies', 'peacocks',
+    'north carolina', 'louisville', 'duke', 'kentucky', 'kansas', 'villanova',
+    'michigan state', 'purdue', 'indiana', 'iowa', 'wisconsin', 'minnesota',
+    'ohio state', 'penn state', 'maryland', 'rutgers', 'nebraska', 'northwestern',
+    'uconn', 'auburn', 'alabama', 'tennessee', 'florida', 'georgia',
+    'arkansas', 'mississippi', 'vanderbilt', 'texas a&m', 'ole miss', 'lsu',
+    'baylor', 'tcu', 'iowa state', 'oklahoma', 'oklahoma state', 'texas tech',
+    'west virginia', 'cincinnati', 'ucf', 'houston', 'byu', 'colorado',
+    'arizona', 'arizona state', 'utah', 'usc', 'ucla', 'oregon', 'washington',
+    'stanford', 'cal', 'oregon state', 'washington state',
+    'mcneese', 'stephen f. austin', 'lamar', 'nicholls', 'incarnate word',
+    'houston christian', 'east texas', 'grambling', 'miss valley',
+    'se louisiana', 'ut rio grande', 'new orleans', 'sam houston',
+  ];
+  
   // Known soccer team names/keywords to detect soccer even when labeled as "Football"
   const soccerTeamIndicators = [
     'fc', 'united', 'city', 'rovers', 'athletic', 'wanderers', 'albion', 'villa',
@@ -314,9 +349,10 @@ function validateAndNormalizeSport(sport: string, homeTeam?: string, awayTeam?: 
     'luton', 'huddersfield', 'rotherham', 'qpr', 'queens park'
   ];
   
-  // Check if team names suggest soccer
+  // Check team names
   const teamCheck = ((homeTeam || '') + ' ' + (awayTeam || '')).toLowerCase();
   const isSoccerTeam = soccerTeamIndicators.some(indicator => teamCheck.includes(indicator));
+  const isCollegeTeam = collegeIndicators.some(indicator => teamCheck.includes(indicator));
   
   // If sport is "football" but teams look like soccer teams, it's Soccer
   if ((normalized === 'football' || normalized === 'soccer_efl_championship' || 
@@ -324,10 +360,15 @@ function validateAndNormalizeSport(sport: string, homeTeam?: string, awayTeam?: 
     return 'Soccer';
   }
   
+  // If basketball but teams are college teams, use Basketball (college) not NBA
+  if ((normalized === 'basketball' || normalized === 'nba') && isCollegeTeam) {
+    return 'Basketball';
+  }
+  
   // Map variations to canonical names
   const sportMap: Record<string, string> = {
-    'nba': 'NBA', 'basketball': 'NBA', 'ncaab': 'NCAAB',
-    'nfl': 'NFL', 'american football': 'NFL', 'ncaaf': 'NCAAF',
+    'nba': 'NBA', 'basketball': 'Basketball', 'ncaab': 'Basketball',
+    'nfl': 'NFL', 'american football': 'NFL', 'ncaaf': 'NFL',
     'nhl': 'NHL', 'hockey': 'NHL', 'ice hockey': 'NHL',
     'mlb': 'MLB', 'baseball': 'MLB',
     'soccer': 'Soccer', 'football (soccer)': 'Soccer', 'epl': 'Soccer', 'premier league': 'Soccer',
