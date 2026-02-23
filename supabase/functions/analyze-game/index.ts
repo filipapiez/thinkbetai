@@ -105,17 +105,19 @@ serve(async (req) => {
     const initialRisk = gameData.initialRisk?.level || null;
     
     const signalGuidance = initialSignal 
-      ? `\nINITIAL ODDS-BASED SIGNAL: ${initialSignal} (${initialConfidence}% confidence)
-- You should generally ALIGN with this signal unless you find STRONG evidence to downgrade
-- Downgrade from GOOD to AVOID only if: major injury to star player, terrible recent form (0-5 or 1-4), or lopsided H2H against the pick
-- If initial signal is GOOD and data supports it, use STRONG_VALUE or QUALIFIED
-- If initial signal is PASS, you may upgrade to RISKY if you see value, but never to QUALIFIED/STRONG_VALUE without strong evidence`
+      ? `\nCRITICAL - INITIAL ODDS-BASED SIGNAL: ${initialSignal} (${initialConfidence}% confidence)
+- You MUST ALIGN your signal with this initial assessment. This is NON-NEGOTIABLE unless you find OVERWHELMING contrary evidence.
+- If initial signal is GOOD: your output signal MUST be STRONG_VALUE or QUALIFIED. NEVER output AVOID or RISKY for a GOOD signal.
+- If initial signal is BORDERLINE: your output signal should be QUALIFIED or RISKY.
+- If initial signal is PASS: your output signal should be RISKY or AVOID.
+- The ONLY acceptable reason to downgrade a GOOD signal to AVOID is if a franchise-level star player is confirmed OUT. Normal 3-2 or 2-3 records are NOT grounds to contradict a GOOD signal.
+- DO NOT manufacture reasons to contradict the signal. Trust the odds-based analysis.`
       : '';
     
     const riskGuidance = initialRisk
-      ? `\nINITIAL RISK LEVEL: ${initialRisk}
-- You MUST use this same risk level (${initialRisk}) in your output unless there's a critical reason to differ
-- Only deviate if you find major new risk factors not captured in the odds analysis`
+      ? `\nCRITICAL - INITIAL RISK LEVEL: ${initialRisk}
+- You MUST output this exact risk level: "${initialRisk}". Do NOT change it.
+- Only deviate if a franchise player is confirmed OUT (not questionable, not day-to-day — OUT).`
       : '';
 
     const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
@@ -139,9 +141,10 @@ GENERAL RULES:
 - Use bullet points for clarity
 - Keep explanations short but insightful
 
-SIGNAL CONSISTENCY:
-- Your signal should generally match the header signal unless you have strong contrary evidence
-- Map signals: GOOD → STRONG_VALUE or QUALIFIED, BORDERLINE → RISKY, PASS → AVOID
+SIGNAL CONSISTENCY (MANDATORY):
+- Your signal MUST match the initial odds-based signal. GOOD → STRONG_VALUE or QUALIFIED (NEVER AVOID). BORDERLINE → QUALIFIED or RISKY. PASS → RISKY or AVOID.
+- A 3-2 or 2-3 recent record is NORMAL and NEVER justifies contradicting the signal.
+- Be accurate with data: count wins/losses correctly from provided form. Do not exaggerate or miscount.
 - Only contradict the header signal if injuries/form clearly warrant it
 
 OUTPUT FORMAT (JSON):
