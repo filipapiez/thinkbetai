@@ -108,9 +108,9 @@ Deno.serve(async (req: Request) => {
                 const k = pid + ":" + pat.stat;
                 if (!pmap.has(k)) pmap.set(k, { stat: pat.stat, pid });
                 const entry = pmap.get(k)!;
-                const ln = parseFloat(
-                  String(o?.fairOverUnder || o?.bookOverUnder || o?.overUnder || o?.line || "0"),
-                );
+                const rawLine = o?.overUnder ?? o?.bookOverUnder ?? o?.line ?? o?.fairOverUnder ?? "0";
+                const ln = parseFloat(String(rawLine));
+                if (isNaN(ln) || ln <= 0) continue;
                 const odds_val = toOdds(o?.fairOdds || o?.bookOdds || o?.odds);
                 if (dir === "over") entry.ov = { l: ln, o: odds_val };
                 else entry.un = { l: ln, o: odds_val };
@@ -121,6 +121,21 @@ Deno.serve(async (req: Request) => {
           for (const entry of pmap.values()) {
             const ln = entry.ov?.l || entry.un?.l || 0;
             if (ln === 0) continue;
+
+            // Sanity check: filter obviously wrong lines
+            // NHL points/goals/assists/shots should be < 10, saves < 50
+            // NBA points < 60, rebounds/assists < 25
+            const maxLines: Record<string, Record<string, number>> = {
+              NHL: { Points: 10, Goals: 5, Assists: 5, Shots: 15, Saves: 50 },
+              NBA: { Points: 60, Rebounds: 25, Assists: 20, "3-Pointers": 12, Steals: 8, Blocks: 8 },
+              NFL: { "Pass Yards": 500, "Rush Yards": 200, "Rec Yards": 200, Receptions: 15 },
+              MLB: { Strikeouts: 20, Hits: 6, "Total Bases": 10 },
+            };
+            const sportMax = maxLines[lid];
+            if (sportMax && sportMax[entry.stat] && ln > sportMax[entry.stat]) {
+              console.warn(`Skipping suspicious line: ${fmtName(entry.pid)} ${entry.stat} ${ln} in ${lid}`);
+              continue;
+            }
             const isH = Object.keys(odds).some(
               (k) => k.includes(entry.pid) && k.includes("home"),
             );
