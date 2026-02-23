@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.audit-bet-history]
 verify_jwt = false
+
+[functions.get-player-props]
+verify_jwt = false
