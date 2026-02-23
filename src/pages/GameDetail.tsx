@@ -303,19 +303,37 @@ const GameDetail = () => {
 
   const [scrapedData, setScrapedData] = useState<ScrapedGameData | null>(null);
   const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
+  const scrapedFetchKeyRef = useRef<string | null>(null);
 
+  // Always fetch fresh game data (injuries, form, H2H) every time a user opens a game
   useEffect(() => {
     if (!game) return;
 
+    const homeTeamName = game.homeTeam.name;
+    const awayTeamName = game.awayTeam.name;
+    const sport = game.sport;
+
+    // Use a timestamp-based key so data refreshes on every page visit
+    const fetchKey = `${homeTeamName}:${awayTeamName}:${sport}:${Date.now()}`;
+    scrapedFetchKeyRef.current = fetchKey;
+
+    setScrapedData(null); // Clear stale data immediately
     setIsLoadingScrapedData(true);
-    fetchGameData(game.homeTeam.name, game.awayTeam.name, game.sport)
+    fetchGameData(homeTeamName, awayTeamName, sport)
       .then((response) => {
+        // Only apply if this is still the latest fetch
+        if (scrapedFetchKeyRef.current !== fetchKey) return;
         if (response.success && response.data) {
           setScrapedData(response.data);
         }
       })
-      .finally(() => setIsLoadingScrapedData(false));
-  }, [game]);
+      .finally(() => {
+        if (scrapedFetchKeyRef.current === fetchKey) {
+          setIsLoadingScrapedData(false);
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.homeTeam?.name, game?.awayTeam?.name, game?.sport]);
 
   useEffect(() => {
     if (!gameId || !game) return;
