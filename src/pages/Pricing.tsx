@@ -127,7 +127,7 @@ const Pricing = () => {
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
               Join thousands making smarter decisions with AI-powered insights.
-              Cancel anytime. No questions asked.
+              Cancel anytime.
             </p>
             
             {/* Social Proof Stats */}
@@ -147,10 +147,10 @@ const Pricing = () => {
               <div className="h-10 w-px bg-border hidden sm:block" />
               <div className="text-center hidden sm:block">
                 <div className="text-2xl sm:text-3xl font-bold text-accent flex items-center justify-center gap-1">
-                  <Shield className="h-5 w-5" />
-                  100%
+                  <Check className="h-5 w-5" />
+                  Instant
                 </div>
-                <div className="text-xs text-muted-foreground">Money-back</div>
+                <div className="text-xs text-muted-foreground">Access</div>
               </div>
             </div>
           </div>
@@ -241,7 +241,7 @@ const Pricing = () => {
                     
                     {/* Trust text */}
                     <p className="text-xs text-center text-muted-foreground mt-3">
-                      {isPopular ? '7-day money-back guarantee' : 'Cancel anytime'}
+                      Cancel anytime
                     </p>
                   </CardContent>
                 </Card>

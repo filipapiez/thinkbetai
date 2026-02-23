@@ -233,8 +233,7 @@ const BestAIBettingApp = () => {
             <h3>How much does an AI betting app cost?</h3>
             <p>
               Prices vary from free tiers with basic features to premium subscriptions ($15-50/month) 
-              with full AI analysis. ThinkBetAI offers plans starting at $4.99/month with a 
-              money-back guarantee.
+              with full AI analysis. ThinkBetAI offers plans starting at $4.99/month.
             </p>
           </article>
 
