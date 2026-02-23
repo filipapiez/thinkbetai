@@ -26,6 +26,7 @@ export interface PopularGame {
   injuries?: string[];
   odds?: PopularGameOdds;
   hasOdds?: boolean;
+  aiConfidence?: number;
 }
 
 interface PopularGamesResponse {

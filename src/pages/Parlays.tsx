@@ -138,7 +138,7 @@ const Parlays = () => {
         popularityScore: game.popularityScore,
       };
       const qual = calculateLiveBetQualification(liveGame);
-      prob *= qual.confidenceScore / 100;
+      prob *= (game.aiConfidence || qual.confidenceScore) / 100;
     });
     return prob * 100;
   }, [parlayPicks, gameParlayLegs]);
@@ -188,7 +188,7 @@ const Parlays = () => {
           propType: 'Moneyline',
           line: game.odds?.moneyline?.[qual.pick || 'home'] || 0,
           direction: 'MORE' as const,
-          confidence: qual.confidenceScore,
+          confidence: game.aiConfidence || qual.confidenceScore,
           sport: game.sport,
           opponent: qual.pick === 'home' ? game.awayTeam : game.homeTeam
         };
@@ -356,7 +356,7 @@ const Parlays = () => {
                                     <p className="text-xs text-muted-foreground truncate">{game.homeTeam} vs {game.awayTeam}</p>
                                   </div>
                                   <div className="text-right shrink-0">
-                                    <div className={cn("text-sm font-bold", qSummary.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{qSummary.confidenceScore}%</div>
+                                    <div className={cn("text-sm font-bold", qSummary.signal === 'GOOD' ? "text-emerald-400" : "text-amber-400")}>{game.aiConfidence || qSummary.confidenceScore}%</div>
                                     <div className="text-[10px] text-muted-foreground">Confidence</div>
                                   </div>
                                 </div>
