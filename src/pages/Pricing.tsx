@@ -274,7 +274,7 @@ const Pricing = () => {
               {[
                 {
                   q: 'Can I cancel anytime?',
-                  a: "Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period."
+                  a: "Yes, you can cancel your subscription at any time. Contact our 24/7 support team for cancellation, and you'll continue to have access until the end of your billing cycle."
                 },
                 {
                   q: 'Is this betting advice?',
