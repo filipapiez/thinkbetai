@@ -278,8 +278,8 @@ const Index = () => {
                   {platformStats.totalQualified}+ Winning Picks
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
-                  <Shield className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
-                  Money-Back Guarantee
+                  <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
+                  Instant Access
                 </Badge>
               </div>
 
