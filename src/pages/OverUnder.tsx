@@ -260,6 +260,7 @@ const OverUnder = () => {
               league: league || gameSport,
               startTime,
               popularityScore: analysis.confidence,
+              aiConfidence: analysis.confidence,
               status: 'scheduled',
             };
             const isSelected = parlayGames.some(g => g.id === id);
