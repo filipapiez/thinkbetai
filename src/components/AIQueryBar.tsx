@@ -235,10 +235,16 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
       {/* AI Response Display */}
       {response && (
         <div className="space-y-4">
-          {/* Response Header */}
-          <div className="flex items-center gap-2 text-sm text-primary">
-            <Bot className="h-4 w-4" />
-            <span className="font-medium">ThinkBetAI</span>
+          {/* Response Header with Sync Indicator */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <Bot className="h-4 w-4" />
+              <span className="font-medium">ThinkBetAI</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Data as of {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-medium">✅ Synced</span>
+            </div>
           </div>
 
           {/* Markdown Response */}
@@ -254,6 +260,10 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
                 h2: ({ children }) => <h2 className="text-base font-bold text-foreground mb-2">{children}</h2>,
                 h3: ({ children }) => <h3 className="text-sm font-bold text-foreground mb-1">{children}</h3>,
                 code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>,
+                a: ({ href, children }) => <a href={href || '#'} className="text-primary hover:underline">{children}</a>,
+                input: ({ checked, ...props }) => (
+                  <input type="checkbox" checked={checked} readOnly className="mr-1.5 accent-primary" {...props} />
+                ),
               }}
             >
               {response}
