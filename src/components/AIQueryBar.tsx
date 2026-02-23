@@ -243,7 +243,7 @@ export const AIQueryBar = ({ facts }: AIQueryBarProps) => {
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>Data as of {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px] font-medium">✅ Synced</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[10px] font-medium">⚡ Live Adaptive</span>
             </div>
           </div>
 
