@@ -67,6 +67,8 @@ export const TeamLogo = ({
           <img
             src={logoUrl}
             alt={`${teamName} logo`}
+            width={40}
+            height={40}
             className={cn(
               "w-10 h-10 object-contain transition-opacity duration-200",
               imageLoaded ? "opacity-100" : "opacity-0"

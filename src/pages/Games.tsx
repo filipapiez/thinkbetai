@@ -479,7 +479,7 @@ const Games = () => {
 
           {/* Loading State */}
           {isLoading && games.length === 0 && (
-            <div className="text-center py-16">
+            <div className="text-center py-16 min-h-[400px] flex flex-col items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
               <p className="text-muted-foreground">Loading popular games...</p>
               <p className="text-xs text-muted-foreground mt-2">Fetching Schedule Data</p>
