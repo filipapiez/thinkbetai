@@ -658,10 +658,13 @@ const Index = () => {
         </section>
       </main>
 
+      {/* Bottom padding for sticky mobile CTA */}
+      <div className="h-16 md:hidden" aria-hidden="true" />
+
       <Footer />
 
-      {/* Sticky Mobile Signup CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom">
+      {/* Sticky Mobile Signup CTA – always rendered to avoid CLS */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
