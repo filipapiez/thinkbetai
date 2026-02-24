@@ -78,20 +78,20 @@ const Games = () => {
     
     // Skip invalid dates
     if (isNaN(gameTime.getTime())) return false;
+
+    // Always hide finished games regardless of filter
+    const finishedStatuses = ['completed', 'post', 'ended', 'final'];
+    if (finishedStatuses.includes(game.status?.toLowerCase() ?? '')) return false;
     
     switch (period) {
       case 'live':
-        // Live games: status is 'live' or games starting within 2 hours
         const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
         const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
         return game.status === 'live' || 
-               (gameTime >= twoHoursAgo && gameTime <= twoHoursFromNow && game.status !== 'completed');
+               (gameTime >= twoHoursAgo && gameTime <= twoHoursFromNow);
       case 'today':
-        // Today: games from today (local timezone) - from start of day to end of day
-        // Also include live games
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-        // Include games that start today OR extend to show next 24 hours if no games today
         return game.status === 'live' || (gameTime >= todayStart && gameTime < todayEnd);
       case 'week':
         const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
