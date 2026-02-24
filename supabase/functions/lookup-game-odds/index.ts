@@ -217,11 +217,11 @@ async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOdds
     return cached.games;
   }
 
-  // L2: DB cache
+  // L2: DB cache (only use if non-empty)
   const dbKey = `sport-odds:${sportKey}`;
   const dbCached = await getDbCache(dbKey) as TheOddsApiGame[] | null;
-  if (dbCached && Array.isArray(dbCached)) {
-    console.log(`[lookup-game-odds] L2 DB cache hit for ${sportKey}`);
+  if (dbCached && Array.isArray(dbCached) && dbCached.length > 0) {
+    console.log(`[lookup-game-odds] L2 DB cache hit for ${sportKey} (${dbCached.length} games)`);
     sportCache.set(sportKey, { games: dbCached, ts: Date.now() });
     return dbCached;
   }
