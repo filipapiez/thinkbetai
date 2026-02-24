@@ -243,8 +243,10 @@ async function fetchSportOdds(sportKey: string, apiKey: string): Promise<TheOdds
       const data = (await resp.json()) as TheOddsApiGame[];
       if (Array.isArray(data)) {
         sportCache.set(sportKey, { games: data, ts: Date.now() });
-        // Persist to DB
-        await setDbCache(dbKey, data, SPORT_CACHE_TTL_MS);
+        // Only persist non-empty results to DB to avoid caching "no data" states
+        if (data.length > 0) {
+          await setDbCache(dbKey, data, SPORT_CACHE_TTL_MS);
+        }
         upstreamRateLimited = false;
         return data;
       }
