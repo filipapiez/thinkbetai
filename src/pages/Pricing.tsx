@@ -94,9 +94,13 @@ const Pricing = () => {
       return;
     }
 
-    // Insider plan uses a direct Stripe Payment Link
+    // Insider and Pro plans use direct Stripe Payment Links
     if (plan.id === 'insider') {
       window.open('https://buy.stripe.com/14A7sE0dr9sC7jt9eV0oM00', '_blank');
+      return;
+    }
+    if (plan.id === 'pro') {
+      window.open('https://buy.stripe.com/7sY28k9O1fR033d3UB0oM01', '_blank');
       return;
     }
 
