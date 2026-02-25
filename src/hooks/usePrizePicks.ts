@@ -35,6 +35,7 @@ interface PrizePicksResponse {
   leagues: PrizePickLeague[];
   totalCount: number;
   lastUpdated: string;
+  error?: string;
 }
 
 export function usePrizePicks(leagueId?: string) {
@@ -58,21 +59,21 @@ export function usePrizePicks(leagueId?: string) {
         }
       );
 
-      const result = await response.json() as PrizePicksResponse & { error?: string };
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
+      const result: PrizePicksResponse = await response.json();
 
       setProjections(result.projections || []);
       setLeagues(result.leagues || []);
       setLastUpdated(result.lastUpdated || null);
 
-      if ((result.projections || []).length === 0) {
+      if (result.error) {
+        setError(result.error);
+      }
+
+      if ((result.projections || []).length === 0 && !result.error) {
         toast.info('No PrizePicks projections available right now');
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch PrizePicks data';
+      const message = err instanceof Error ? err.message : 'Failed to fetch data';
       setError(message);
       toast.error(`Error: ${message}`);
     } finally {
