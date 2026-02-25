@@ -55,23 +55,57 @@ serve(async (req) => {
         sessionId: session.id,
         clientReferenceId: session.client_reference_id,
         metadata: session.metadata,
+        customerEmail: session.customer_details?.email,
       });
 
-      const userId = session.client_reference_id || session.metadata?.userId;
+      // 1. Determine the userId: prefer client_reference_id, then metadata
+      let userId = session.client_reference_id || session.metadata?.userId;
+
+      // 2. Fallback: find user by email if no userId attached
       if (!userId) {
-        logStep("No userId found on session");
+        const email = session.customer_details?.email || session.customer_email;
+        if (email) {
+          logStep("No userId on session, falling back to email lookup", { email });
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("user_id")
+            .eq("email", email)
+            .limit(1)
+            .single();
+          if (profile?.user_id) {
+            userId = profile.user_id;
+            logStep("Found user via email", { userId, email });
+          }
+        }
+      }
+
+      if (!userId) {
+        logStep("No userId found on session (no client_reference_id, metadata, or email match)");
         return new Response("No userId on session", { status: 400 });
       }
 
-      // IMPORTANT: profiles.access_type has a DB constraint.
-      // We must store the in-app plan id (basic/pro/insider), not a generic value like "subscription".
-      const planId =
+      // 3. Determine planId: metadata first, then line-item price lookup
+      let planId =
         (session.metadata?.planId as string | undefined) ||
         getPlanIdFromPriceId(session.metadata?.priceId);
 
+      // For Payment Links there's no metadata, so resolve from line items
       if (!planId) {
-        logStep("Could not determine planId from session metadata", { userId, metadata: session.metadata });
-        return new Response("No planId on session", { status: 400 });
+        try {
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
+          const priceId = lineItems.data[0]?.price?.id;
+          logStep("Resolving planId from line item price", { priceId });
+          planId = getPlanIdFromPriceId(priceId);
+        } catch (e) {
+          logStep("Failed to fetch line items", { error: String(e) });
+        }
+      }
+
+      if (!planId) {
+        logStep("Could not determine planId", { userId });
+        // Default to basic so the user at least gets access
+        planId = "basic";
+        logStep("Defaulting to basic plan");
       }
 
       const { error: updateError } = await supabaseAdmin
