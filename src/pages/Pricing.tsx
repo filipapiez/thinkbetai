@@ -94,6 +94,12 @@ const Pricing = () => {
       return;
     }
 
+    // Insider plan uses a direct Stripe Payment Link
+    if (plan.id === 'insider') {
+      window.open('https://buy.stripe.com/14A7sE0dr9sC7jt9eV0oM00', '_blank');
+      return;
+    }
+
     setSelectedPlan(plan);
   };
 
