@@ -171,90 +171,125 @@ function detectSportsDataQuery(message: string): { isDataQuery: boolean; queryTy
   return { isDataQuery, queryType, searchTerms };
 }
 
-// Fetch sports data from The Odds API / SportsGameOdds
-async function fetchSportsData(queryType: string, searchTerms: string[]): Promise<string | null> {
-  const apiKey = Deno.env.get('SPORTSGAMEODDS_API_KEY');
-  if (!apiKey) {
-    console.log('No SportsGameOdds API key configured');
+// Fetch live sports data from The Odds API (same source as Games page)
+async function fetchLiveOddsData(searchTerms: string[]): Promise<string | null> {
+  const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
+  if (!oddsApiKey) {
+    console.log('No Odds API key configured');
     return null;
   }
-  
+
   const timestamp = new Date().toISOString();
-  
+  const sportKeys = [
+    'basketball_nba', 'football_nfl', 'icehockey_nhl', 'baseball_mlb',
+    'mma_mixed_martial_arts', 'soccer_epl', 'soccer_usa_mls',
+  ];
+
   try {
-    // Fetch upcoming events to find relevant games
-    const sports = ['basketball_nba', 'football_nfl', 'hockey_nhl', 'baseball_mlb'];
     let allEvents: any[] = [];
-    
-    for (const sport of sports) {
+
+    // Fetch from The Odds API in parallel (scores + odds)
+    const fetches = sportKeys.map(async (sport) => {
       try {
-        const response = await fetch(
-          `https://api.sportsgameodds.com/v2/events?sportID=${sport}&status=upcoming,live&limit=20`,
-          {
-            headers: {
-              'X-API-Key': apiKey,
-            },
-          }
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data) {
-            allEvents = [...allEvents, ...data.data];
+        // Fetch scores (includes live scores) and odds together
+        const [scoresRes, oddsRes] = await Promise.all([
+          fetch(`https://api.the-odds-api.com/v4/sports/${sport}/scores/?apiKey=${oddsApiKey}&daysFrom=1`),
+          fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${oddsApiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american`),
+        ]);
+
+        const scores = scoresRes.ok ? await scoresRes.json() : [];
+        const odds = oddsRes.ok ? await oddsRes.json() : [];
+
+        // Merge scores into odds data
+        const oddsMap = new Map(odds.map((o: any) => [o.id, o]));
+        for (const s of scores) {
+          if (oddsMap.has(s.id)) {
+            (oddsMap.get(s.id) as any).scores = s.scores;
+            (oddsMap.get(s.id) as any).completed = s.completed;
+          } else {
+            oddsMap.set(s.id, s);
           }
         }
+
+        return Array.from(oddsMap.values()).map((e: any) => ({ ...e, sportKey: sport }));
       } catch (e) {
         console.log(`Error fetching ${sport}:`, e);
+        return [];
       }
-    }
-    
-    // Search for matching players/teams in events
-    const searchLower = searchTerms.map(t => t.toLowerCase());
-    const relevantEvents = allEvents.filter(event => {
-      const homeTeam = (event.homeTeam?.name || event.teams?.home?.name || '').toLowerCase();
-      const awayTeam = (event.awayTeam?.name || event.teams?.away?.name || '').toLowerCase();
-      const allText = `${homeTeam} ${awayTeam}`.toLowerCase();
-      
-      return searchLower.some(term => allText.includes(term));
     });
-    
-    if (relevantEvents.length === 0 && allEvents.length > 0) {
-      // Return general upcoming games info
-      const upcomingGames = allEvents.slice(0, 5).map(e => {
-        const home = e.homeTeam?.name || e.teams?.home?.name || 'TBD';
-        const away = e.awayTeam?.name || e.teams?.away?.name || 'TBD';
-        const startTime = e.startTime || e.commence_time || 'TBD';
-        return `• ${away} @ ${home} - ${new Date(startTime).toLocaleString()}`;
-      }).join('\n');
-      
-      return `**Upcoming Games** (SportsGameOdds API - ${timestamp})\n${upcomingGames}\n\n⚠️ Status can change close to game time.`;
-    }
-    
-    if (relevantEvents.length > 0) {
-      const gameInfos = relevantEvents.slice(0, 3).map(e => {
-        const home = e.homeTeam?.name || e.teams?.home?.name || 'TBD';
-        const away = e.awayTeam?.name || e.teams?.away?.name || 'TBD';
-        const startTime = e.startTime || e.commence_time;
-        const status = e.status || 'scheduled';
-        const odds = e.odds || {};
-        
-        let info = `**${away} @ ${home}**\n`;
-        info += `• Status: ${status.charAt(0).toUpperCase() + status.slice(1)}\n`;
+
+    const results = await Promise.all(fetches);
+    allEvents = results.flat().filter((e: any) => !e.completed);
+
+    // Search for matching teams
+    const searchLower = searchTerms.map(t => t.toLowerCase());
+    const relevantEvents = searchLower.length > 0
+      ? allEvents.filter(event => {
+          const home = (event.home_team || '').toLowerCase();
+          const away = (event.away_team || '').toLowerCase();
+          return searchLower.some(term => home.includes(term) || away.includes(term));
+        })
+      : allEvents;
+
+    const eventsToShow = (relevantEvents.length > 0 ? relevantEvents : allEvents).slice(0, 8);
+
+    if (eventsToShow.length === 0) return null;
+
+    const gameInfos = eventsToShow.map((e: any) => {
+      const home = e.home_team || 'TBD';
+      const away = e.away_team || 'TBD';
+      const startTime = e.commence_time;
+      const isLive = e.scores && !e.completed;
+
+      let info = `**${away} @ ${home}**\n`;
+      info += `• Sport: ${e.sport_title || e.sportKey}\n`;
+
+      if (isLive && e.scores) {
+        const homeScore = e.scores.find((s: any) => s.name === home)?.score || '0';
+        const awayScore = e.scores.find((s: any) => s.name === away)?.score || '0';
+        info += `• 🔴 LIVE: ${away} ${awayScore} - ${home} ${homeScore}\n`;
+      } else {
         info += `• Game Time: ${startTime ? new Date(startTime).toLocaleString() : 'TBD'}\n`;
-        
-        if (odds.moneyline) {
-          info += `• Moneyline: ${home} ${odds.moneyline.home > 0 ? '+' : ''}${odds.moneyline.home} / ${away} ${odds.moneyline.away > 0 ? '+' : ''}${odds.moneyline.away}\n`;
+      }
+
+      // Extract best odds from bookmakers
+      if (e.bookmakers && e.bookmakers.length > 0) {
+        const book = e.bookmakers[0]; // Use first (usually DraftKings/FanDuel)
+        const bookName = book.title || 'Sportsbook';
+
+        const h2h = book.markets?.find((m: any) => m.key === 'h2h');
+        if (h2h) {
+          const homeOdds = h2h.outcomes?.find((o: any) => o.name === home)?.price;
+          const awayOdds = h2h.outcomes?.find((o: any) => o.name === away)?.price;
+          if (homeOdds != null && awayOdds != null) {
+            info += `• Moneyline (${bookName}): ${home} ${homeOdds > 0 ? '+' : ''}${homeOdds} / ${away} ${awayOdds > 0 ? '+' : ''}${awayOdds}\n`;
+          }
         }
-        
-        return info;
-      }).join('\n');
-      
-      return `**Game Information** (SportsGameOdds API - ${timestamp})\n\n${gameInfos}\n\n⚠️ Status can change close to game time. Check official sources for final lineups.`;
-    }
-    
-    return null;
+
+        const spreads = book.markets?.find((m: any) => m.key === 'spreads');
+        if (spreads) {
+          const homeSpread = spreads.outcomes?.find((o: any) => o.name === home);
+          if (homeSpread) {
+            info += `• Spread: ${home} ${homeSpread.point > 0 ? '+' : ''}${homeSpread.point} (${homeSpread.price > 0 ? '+' : ''}${homeSpread.price})\n`;
+          }
+        }
+
+        const totals = book.markets?.find((m: any) => m.key === 'totals');
+        if (totals) {
+          const over = totals.outcomes?.find((o: any) => o.name === 'Over');
+          const under = totals.outcomes?.find((o: any) => o.name === 'Under');
+          if (over) {
+            info += `• Total: O/U ${over.point} (Over ${over.price > 0 ? '+' : ''}${over.price} / Under ${under?.price > 0 ? '+' : ''}${under?.price})\n`;
+          }
+        }
+      }
+
+      return info;
+    }).join('\n---\n');
+
+    return `**📊 Live Data Feed** (The Odds API - ${timestamp})\n\n${gameInfos}\n\n⚠️ Odds and scores update in real-time. Lines may shift before game time.`;
   } catch (error) {
-    console.error('Error fetching sports data:', error);
+    console.error('Error fetching live odds data:', error);
     return null;
   }
 }
@@ -306,20 +341,16 @@ serve(async (req) => {
 
     console.log(`Chat request from user ${auth.userId}: ${messages.length} messages`);
 
-    // Check if the latest user message is asking for live sports data
+    // Always fetch live data to give the AI real-time context
     const latestUserMessage = [...messages].reverse().find(m => m.role === 'user');
     let liveDataContext = '';
     
     if (latestUserMessage) {
       const dataQuery = detectSportsDataQuery(latestUserMessage.content);
-      
-      if (dataQuery.isDataQuery) {
-        console.log(`Detected sports data query: ${dataQuery.queryType}, terms: ${dataQuery.searchTerms.join(', ')}`);
-        
-        const sportsData = await fetchSportsData(dataQuery.queryType, dataQuery.searchTerms);
-        if (sportsData) {
-          liveDataContext = `\n\nLIVE SPORTS DATA (from licensed API):\n${sportsData}`;
-        }
+      // Fetch live data for any question — always give the AI fresh odds/scores
+      const liveData = await fetchLiveOddsData(dataQuery.searchTerms);
+      if (liveData) {
+        liveDataContext = `\n\nLIVE SPORTS DATA (from licensed API — use this for your analysis):\n${liveData}`;
       }
     }
 
