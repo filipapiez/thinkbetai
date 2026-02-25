@@ -94,13 +94,14 @@ const Pricing = () => {
       return;
     }
 
-    // Insider and Pro plans use direct Stripe Payment Links
-    if (plan.id === 'insider') {
-      window.open('https://buy.stripe.com/14A7sE0dr9sC7jt9eV0oM00', '_blank');
-      return;
-    }
-    if (plan.id === 'pro') {
-      window.open('https://buy.stripe.com/7sY28k9O1fR033d3UB0oM01', '_blank');
+    // All plans use direct Stripe Payment Links
+    const paymentLinks: Record<string, string> = {
+      basic: 'https://buy.stripe.com/aFa14g5xL34efPZdvb0oM03',
+      pro: 'https://buy.stripe.com/7sY28k9O1fR033d3UB0oM01',
+      insider: 'https://buy.stripe.com/14A7sE0dr9sC7jt9eV0oM00',
+    };
+    if (paymentLinks[plan.id]) {
+      window.open(paymentLinks[plan.id], '_blank');
       return;
     }
 
