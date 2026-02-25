@@ -120,7 +120,18 @@ serve(async (req) => {
 - Only deviate if a franchise player is confirmed OUT (not questionable, not day-to-day — OUT).`
       : '';
 
+    const currentDate = new Date().toISOString().split('T')[0];
+    
     const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
+
+CRITICAL DATA FRESHNESS RULES (HIGHEST PRIORITY):
+- Today's date is ${currentDate}.
+- Your training data is OUTDATED for player rosters, trades, and injuries.
+- Players get traded frequently. NEVER assume a player is still on the same team as your training data suggests.
+- ONLY use the injury and roster data PROVIDED in this prompt. If a player is listed under a team in the provided data, trust that — even if it contradicts your training data.
+- If no injury/roster data is provided for a player, DO NOT speculate about their team or status.
+- NEVER state which team a player plays for unless that information is explicitly in the provided data.
+- When discussing players, focus on their impact, not their team affiliation, unless the data confirms it.
 
 CRITICAL SPORT ISOLATION RULES:
 - This is a ${validatedSport} game ONLY
