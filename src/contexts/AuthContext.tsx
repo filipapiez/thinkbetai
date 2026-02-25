@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,10 +21,7 @@ interface AuthContextType {
   profile: Profile | null;
   isLoading: boolean;
   isSubscribed: boolean;
-  prizePicksData: any | null;
-  isPrizePicksLoading: boolean;
   refreshProfile: () => Promise<void>;
-  refreshPrizePicks: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -43,9 +40,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [prizePicksData, setPrizePicksData] = useState<any | null>(null);
-  const [isPrizePicksLoading, setIsPrizePicksLoading] = useState(false);
-  const hasScrapedOnLogin = useRef(false);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -66,41 +60,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Scrape PrizePicks data
-  const scrapePrizePicks = async () => {
-    if (isPrizePicksLoading) return;
-    
-    setIsPrizePicksLoading(true);
-    console.log('Triggering PrizePicks scrape on login...');
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('scrape-prizepicks');
-      
-      if (error) {
-        console.error('Error scraping PrizePicks:', error);
-        return;
-      }
-      
-      if (data?.success) {
-        console.log('PrizePicks scrape successful:', data.projections?.length, 'projections');
-        setPrizePicksData(data);
-      } else {
-        console.error('PrizePicks scrape failed:', data?.error);
-      }
-    } catch (error) {
-      console.error('Error invoking scrape-prizepicks:', error);
-    } finally {
-      setIsPrizePicksLoading(false);
-    }
-  };
-
-  const refreshPrizePicks = async () => {
-    await scrapePrizePicks();
-  };
-
   const refreshProfile = async () => {
     if (user) {
-      // First, sync subscription status with Stripe
       try {
         const { error } = await supabase.functions.invoke('check-subscription');
         if (error) {
@@ -110,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error invoking check-subscription:', err);
       }
       
-      // Then fetch the updated profile
       const updatedProfile = await fetchProfile(user.id);
       setProfile(updatedProfile);
     }
@@ -121,12 +81,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setSession(null);
     setProfile(null);
-    setPrizePicksData(null);
-    hasScrapedOnLogin.current = false;
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
@@ -136,38 +93,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => {
             fetchProfile(session.user.id).then(setProfile);
           }, 0);
-          
-          // Trigger PrizePicks scrape on SIGNED_IN event (new login)
-          if (event === 'SIGNED_IN' && !hasScrapedOnLogin.current) {
-            hasScrapedOnLogin.current = true;
-            // Use setTimeout to avoid blocking the auth flow
-            setTimeout(() => {
-              scrapePrizePicks();
-            }, 100);
-          }
         } else {
           setProfile(null);
-          setPrizePicksData(null);
-          hasScrapedOnLogin.current = false;
         }
         setIsLoading(false);
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         fetchProfile(session.user.id).then(setProfile);
-        // Also scrape on initial session load if user is already logged in
-        if (!hasScrapedOnLogin.current) {
-          hasScrapedOnLogin.current = true;
-          setTimeout(() => {
-            scrapePrizePicks();
-          }, 100);
-        }
       }
       setIsLoading(false);
     });
@@ -175,7 +113,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Check if user has active subscription or access
   const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true;
 
   return (
@@ -185,10 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       profile,
       isLoading,
       isSubscribed,
-      prizePicksData,
-      isPrizePicksLoading,
       refreshProfile,
-      refreshPrizePicks,
       signOut,
     }}>
       {children}
