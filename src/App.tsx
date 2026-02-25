@@ -36,7 +36,7 @@ import ResetPassword from "./pages/ResetPassword";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 import BetHistory from "./pages/BetHistory";
-import PrizePicks from "./pages/PrizePicks";
+
 
 
 // Localized pages
@@ -82,7 +82,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/bet-history" element={<BetHistory />} />
-              <Route path="/prizepicks" element={<PrizePicks />} />
+              
               
 
               {/* Polish locale */}
