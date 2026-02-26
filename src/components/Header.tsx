@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -42,6 +42,10 @@ export const Header = () => {
           <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Info className="h-4 w-4" />
             About
+          </Link>
+          <Link to="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <HelpCircle className="h-4 w-4" />
+            How It Works
           </Link>
           <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
@@ -131,6 +135,14 @@ export const Header = () => {
             >
               <Info className="h-4 w-4" />
               About Us
+            </Link>
+            <Link 
+              to="/how-it-works" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <HelpCircle className="h-4 w-4" />
+              How It Works
             </Link>
             <Link 
               to="/blog" 

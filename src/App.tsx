@@ -27,6 +27,7 @@ const About = lazy(() => import("./pages/About"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const WhatIsAISportsBetting = lazy(() => import("./pages/WhatIsAISportsBetting"));
+const HowItWorks = lazy(() => import("./pages/HowItWorks"));
 const AISportsPicks = lazy(() => import("./pages/AISportsPicks"));
 const BestAIBettingApp = lazy(() => import("./pages/BestAIBettingApp"));
 const FreeAIPredictions = lazy(() => import("./pages/FreeAIPredictions"));
@@ -80,6 +81,7 @@ const App = () => (
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/ai-sports-picks" element={<AISportsPicks />} />
                 <Route path="/best-ai-betting-app" element={<BestAIBettingApp />} />
                 <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
