@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, HelpCircle } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, HelpCircle, Sparkles, Hammer } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -24,9 +24,13 @@ export const Header = () => {
           <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Games
           </Link>
+          <Link to="/picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <Hammer className="h-4 w-4" />
+            Build Parlay
+          </Link>
           <Link to="/parlays" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Layers className="h-4 w-4" />
-            Parlays
+            <Sparkles className="h-4 w-4" />
+            AI Parlays
           </Link>
           <Link to="/bet-history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <History className="h-4 w-4" />
@@ -97,12 +101,20 @@ export const Header = () => {
               Search Games
             </Link>
             <Link 
+              to="/picks" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Hammer className="h-4 w-4" />
+              Build Parlay
+            </Link>
+            <Link 
               to="/parlays" 
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Layers className="h-4 w-4" />
-              Parlays
+              <Sparkles className="h-4 w-4" />
+              AI Parlays
             </Link>
             <Link 
               to="/bet-history" 
