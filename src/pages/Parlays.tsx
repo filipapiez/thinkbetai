@@ -84,14 +84,16 @@ const Parlays = () => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [selectedParlay, setSelectedParlay] = useState<SuggestedParlay | null>(null);
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = async (forceRefresh = false) => {
     if (!user) {
       toast.error('Please log in to see AI parlay suggestions');
       return;
     }
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-parlays');
+      const { data, error } = await supabase.functions.invoke('generate-parlays', {
+        body: { forceRefresh },
+      });
       if (error) {
         console.error('Error fetching parlay suggestions:', error);
         toast.error('Failed to load suggestions');
