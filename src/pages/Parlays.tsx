@@ -228,13 +228,16 @@ const Parlays = () => {
                           </h3>
 
                           {/* Compact legs preview */}
-                          <div className="space-y-1.5 mb-3">
+                          <div className="space-y-2 mb-3">
                             {parlay.legs.map((leg, li) => (
                               <div key={li} className="flex items-center gap-2 text-xs">
                                 <span className="h-5 w-5 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
                                   {li + 1}
                                 </span>
-                                <span className="text-muted-foreground truncate flex-1">{leg.pickDetail}</span>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <span className="text-foreground font-medium truncate">{leg.awayTeam} vs {leg.homeTeam}</span>
+                                  <span className="text-muted-foreground truncate">{leg.pickDetail}</span>
+                                </div>
                                 <Badge variant="outline" className="text-[9px] px-1 py-0 shrink-0">{leg.sport}</Badge>
                               </div>
                             ))}

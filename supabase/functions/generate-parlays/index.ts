@@ -110,7 +110,7 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are an expert sports betting analyst. Generate 6-8 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays.
+    const systemPrompt = `You are an expert sports betting analyst. Generate exactly 8 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays. You MUST generate 8 parlays, no fewer.
 
 RULES:
 - Only suggest games from the provided list
@@ -145,7 +145,7 @@ OUTPUT FORMAT (JSON array):
   }
 ]`;
 
-    const userPrompt = `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate 6-8 smart parlay suggestions with variety in signal strength and bet types. Return JSON only.`;
+    const userPrompt = `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate exactly 8 smart parlay suggestions with variety in signal strength and bet types. Always use the FULL team names (e.g. "Los Angeles Lakers" not just "Home"). Return JSON only.`;
 
     console.log('[generate-parlays] Calling AI...');
 
