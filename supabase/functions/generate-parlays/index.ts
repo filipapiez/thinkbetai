@@ -120,13 +120,24 @@ serve(async (req) => {
       });
     }
 
+    const getTeamName = (team: any, fallback: string) => {
+      if (!team) return fallback;
+      if (typeof team === 'string' && team.trim()) return team.trim();
+      if (typeof team?.name === 'string' && team.name.trim()) return team.name.trim();
+      if (typeof team?.fullName === 'string' && team.fullName.trim()) return team.fullName.trim();
+      if (typeof team?.displayName === 'string' && team.displayName.trim()) return team.displayName.trim();
+      return fallback;
+    };
+
     // Build compact game context for AI
     const gameContext = gamesWithOdds.map((g: any, i: number) => {
       const odds = g.odds || {};
       const ml = odds.moneyline || {};
       const spread = odds.spread || {};
       const total = odds.total || {};
-      return `${i + 1}. [${g.sport}] ${g.homeTeam?.name || 'Home'} vs ${g.awayTeam?.name || 'Away'} | ${new Date(g.startTime).toLocaleDateString()} | ML: ${ml.home || 'N/A'}/${ml.away || 'N/A'} | Spread: ${spread.home || 'N/A'} | O/U: ${total.over || 'N/A'}`;
+      const homeName = getTeamName(g.homeTeam, 'Home');
+      const awayName = getTeamName(g.awayTeam, 'Away');
+      return `${i + 1}. [${g.sport}] ${homeName} vs ${awayName} | ${new Date(g.startTime).toLocaleDateString()} | ML: ${ml.home || 'N/A'}/${ml.away || 'N/A'} | Spread: ${spread.home || 'N/A'} | O/U: ${total.over || 'N/A'}`;
     }).join('\n');
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -231,8 +242,8 @@ OUTPUT FORMAT (JSON array):
             ? parlay.legs.map((leg: any) => {
                 const gameIdx = Number(leg?.gameIndex);
                 const game = Number.isFinite(gameIdx) ? gamesWithOdds[Math.max(0, gameIdx - 1)] : undefined;
-                const fallbackHome = game?.homeTeam?.name || game?.homeTeam || leg?.homeTeam || 'Home';
-                const fallbackAway = game?.awayTeam?.name || game?.awayTeam || leg?.awayTeam || 'Away';
+                const fallbackHome = getTeamName(game?.homeTeam, leg?.homeTeam || 'Home');
+                const fallbackAway = getTeamName(game?.awayTeam, leg?.awayTeam || 'Away');
                 const safeHome = isPlaceholderTeam(leg?.homeTeam) ? fallbackHome : leg.homeTeam;
                 const safeAway = isPlaceholderTeam(leg?.awayTeam) ? fallbackAway : leg.awayTeam;
                 const safePickDetail = typeof leg?.pickDetail === 'string'
