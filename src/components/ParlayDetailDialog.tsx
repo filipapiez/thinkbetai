@@ -136,11 +136,9 @@ export function ParlayDetailDialog({ parlay, open, onOpenChange }: ParlayDetailD
                 </div>
 
                 <div className="ml-9 space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <span className="text-muted-foreground">{leg.awayTeam}</span>
-                    <ArrowRight className="h-3 w-3 text-muted-foreground/50" />
-                    <span className="text-muted-foreground">{leg.homeTeam}</span>
-                  </div>
+                  <p className="font-medium text-sm text-foreground">
+                    {leg.awayTeam} <span className="text-muted-foreground mx-1">vs</span> {leg.homeTeam}
+                  </p>
                   <p className="font-semibold text-sm flex items-center gap-1.5">
                     <Zap className="h-3.5 w-3.5 text-primary" />
                     {leg.pickDetail}
