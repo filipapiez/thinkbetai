@@ -59,10 +59,24 @@ serve(async (req) => {
         .single();
 
       if (cached && new Date(cached.expires_at) > new Date()) {
-        console.log('[generate-parlays] Returning cached parlays');
-        return new Response(JSON.stringify({ success: true, parlays: cached.data, source: 'cached' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        const cachedParlays = Array.isArray(cached.data) ? cached.data : [];
+        const hasPlaceholderTeams = cachedParlays.some((parlay: any) =>
+          Array.isArray(parlay?.legs) &&
+          parlay.legs.some((leg: any) => {
+            const home = String(leg?.homeTeam || '').trim().toLowerCase();
+            const away = String(leg?.awayTeam || '').trim().toLowerCase();
+            return home === 'home' || away === 'away';
+          })
+        );
+
+        if (!hasPlaceholderTeams) {
+          console.log('[generate-parlays] Returning cached parlays');
+          return new Response(JSON.stringify({ success: true, parlays: cached.data, source: 'cached' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        console.log('[generate-parlays] Cached parlays had placeholder team names, regenerating');
       }
     } else {
       console.log('[generate-parlays] Force refresh requested, skipping cache');
@@ -205,17 +219,50 @@ OUTPUT FORMAT (JSON array):
       });
     }
 
+    const isPlaceholderTeam = (value: unknown) => {
+      const v = String(value ?? '').trim().toLowerCase();
+      return v === '' || v === 'home' || v === 'away';
+    };
+
+    const normalizedParlays = Array.isArray(parlays)
+      ? parlays.map((parlay: any) => ({
+          ...parlay,
+          legs: Array.isArray(parlay?.legs)
+            ? parlay.legs.map((leg: any) => {
+                const gameIdx = Number(leg?.gameIndex);
+                const game = Number.isFinite(gameIdx) ? gamesWithOdds[Math.max(0, gameIdx - 1)] : undefined;
+                const fallbackHome = game?.homeTeam?.name || game?.homeTeam || leg?.homeTeam || 'Home';
+                const fallbackAway = game?.awayTeam?.name || game?.awayTeam || leg?.awayTeam || 'Away';
+                const safeHome = isPlaceholderTeam(leg?.homeTeam) ? fallbackHome : leg.homeTeam;
+                const safeAway = isPlaceholderTeam(leg?.awayTeam) ? fallbackAway : leg.awayTeam;
+                const safePickDetail = typeof leg?.pickDetail === 'string'
+                  ? leg.pickDetail
+                      .replace(/\bHome\b/g, String(fallbackHome))
+                      .replace(/\bAway\b/g, String(fallbackAway))
+                  : leg?.pickDetail;
+
+                return {
+                  ...leg,
+                  homeTeam: safeHome,
+                  awayTeam: safeAway,
+                  pickDetail: safePickDetail,
+                };
+              })
+            : [],
+        }))
+      : [];
+
     // Cache for 30 minutes
     await adminClient.from('odds_cache').upsert({
       id: CACHE_KEY,
-      data: parlays,
+      data: normalizedParlays,
       expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
     });
 
-    console.log(`[generate-parlays] Generated ${parlays.length} parlays`);
+    console.log(`[generate-parlays] Generated ${normalizedParlays.length} parlays`);
 
-    return new Response(JSON.stringify({ success: true, parlays, source: 'generated' }), {
+    return new Response(JSON.stringify({ success: true, parlays: normalizedParlays, source: 'generated' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
