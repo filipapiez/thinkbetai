@@ -143,7 +143,7 @@ const Parlays = () => {
                   <p className="text-muted-foreground text-sm">AI-curated parlay combos • tap any card for full breakdown</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" onClick={fetchSuggestions} disabled={isLoading}>
+              <Button variant="outline" size="sm" onClick={() => fetchSuggestions(true)} disabled={isLoading}>
                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                 Refresh
               </Button>
@@ -177,7 +177,7 @@ const Parlays = () => {
                 <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-lg font-semibold mb-2">No parlays available yet</h3>
                 <p className="text-muted-foreground mb-4">Check back when more games are scheduled</p>
-                <Button variant="outline" onClick={fetchSuggestions}>Generate Suggestions</Button>
+                <Button variant="outline" onClick={() => fetchSuggestions(true)}>Generate Suggestions</Button>
               </CardContent>
             </Card>
           ) : (
