@@ -273,7 +273,7 @@ const Account = () => {
                 <Button 
                   variant="hero" 
                   className="w-full"
-                  onClick={() => navigate('/paywall')}
+                  onClick={() => navigate('/pricing')}
                 >
                   View Plans – Starting at $4.99/month
                 </Button>
