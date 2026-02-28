@@ -24,10 +24,6 @@ export const Header = () => {
           <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Games
           </Link>
-          <Link to="/picks" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Hammer className="h-4 w-4" />
-            Build Parlay
-          </Link>
           <Link to="/parlays" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Sparkles className="h-4 w-4" />
             AI Parlays
@@ -99,14 +95,6 @@ export const Header = () => {
             >
               <Search className="h-4 w-4" />
               Search Games
-            </Link>
-            <Link 
-              to="/picks" 
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Hammer className="h-4 w-4" />
-              Build Parlay
             </Link>
             <Link 
               to="/parlays" 
