@@ -36,14 +36,20 @@ serve(async (req) => {
 
     console.log(`[generate-parlays] User: ${claimsData.claims.sub}`);
 
-    // Check if force refresh requested
+    // Parse request body
     let forceRefresh = false;
+    let userSelectedGames: any[] | null = null;
     try {
       const body = await req.json();
       forceRefresh = body?.forceRefresh === true;
+      if (Array.isArray(body?.games) && body.games.length > 0) {
+        userSelectedGames = body.games;
+      }
     } catch { /* no body */ }
 
-    // Check DB cache first (30 min TTL for suggested parlays)
+    const isCustomSelection = userSelectedGames !== null;
+
+    // Check DB cache first (30 min TTL for suggested parlays) — only for non-custom requests
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -51,7 +57,7 @@ serve(async (req) => {
 
     const CACHE_KEY = 'suggested-parlays';
 
-    if (!forceRefresh) {
+    if (!isCustomSelection && !forceRefresh) {
       const { data: cached } = await adminClient
         .from('odds_cache')
         .select('data, expires_at')
@@ -78,46 +84,62 @@ serve(async (req) => {
 
         console.log('[generate-parlays] Cached parlays had placeholder team names, regenerating');
       }
+    } else if (isCustomSelection) {
+      console.log(`[generate-parlays] Custom selection of ${userSelectedGames!.length} games, skipping cache`);
     } else {
       console.log('[generate-parlays] Force refresh requested, skipping cache');
     }
 
-    // Fetch current games from scrape-live-games
-    const gamesResponse = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/functions/v1/scrape-live-games`,
-      {
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-          'Content-Type': 'application/json',
-        },
+    let gamesWithOdds: any[];
+
+    if (isCustomSelection) {
+      // Use user-selected games directly — they already have the data we need
+      gamesWithOdds = userSelectedGames!;
+      console.log(`[generate-parlays] Using ${gamesWithOdds.length} user-selected games`);
+
+      if (gamesWithOdds.length < 2) {
+        return new Response(JSON.stringify({ success: true, parlays: [], message: 'Select at least 2 games' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
-    );
+    } else {
+      // Fetch current games from scrape-live-games
+      const gamesResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/functions/v1/scrape-live-games`,
+        {
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-    if (!gamesResponse.ok) {
-      console.error('[generate-parlays] Failed to fetch games:', gamesResponse.status);
-      return new Response(JSON.stringify({ error: 'Failed to fetch games data' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+      if (!gamesResponse.ok) {
+        console.error('[generate-parlays] Failed to fetch games:', gamesResponse.status);
+        return new Response(JSON.stringify({ error: 'Failed to fetch games data' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-    const gamesData = await gamesResponse.json();
-    const games = gamesData?.games || [];
+      const gamesData = await gamesResponse.json();
+      const games = gamesData?.games || [];
 
-    if (games.length < 3) {
-      return new Response(JSON.stringify({ success: true, parlays: [], message: 'Not enough games available' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+      if (games.length < 3) {
+        return new Response(JSON.stringify({ success: true, parlays: [], message: 'Not enough games available' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
 
-    // Filter to games with odds and upcoming status
-    const gamesWithOdds = games.filter((g: any) => 
-      g.hasOdds && g.status === 'scheduled' && g.odds
-    ).slice(0, 30); // Limit context
+      // Filter to games with odds and upcoming status
+      gamesWithOdds = games.filter((g: any) => 
+        g.hasOdds && g.status === 'scheduled' && g.odds
+      ).slice(0, 30);
 
-    if (gamesWithOdds.length < 3) {
-      return new Response(JSON.stringify({ success: true, parlays: [], message: 'Not enough games with odds' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      if (gamesWithOdds.length < 3) {
+        return new Response(JSON.stringify({ success: true, parlays: [], message: 'Not enough games with odds' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const getTeamName = (team: any, fallback: string) => {
@@ -147,7 +169,45 @@ serve(async (req) => {
       });
     }
 
-    const systemPrompt = `You are an expert sports betting analyst. Generate exactly 8 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays. You MUST generate 8 parlays, no fewer.
+    const parlayCount = isCustomSelection ? Math.min(4, gamesWithOdds.length) : 8;
+    const minLegs = isCustomSelection ? 2 : 2;
+    const maxLegs = isCustomSelection ? Math.min(gamesWithOdds.length, 3) : 3;
+
+    const systemPrompt = isCustomSelection
+      ? `You are an expert sports betting analyst. The user has selected specific games for their parlay. Generate ${parlayCount} parlay suggestions using ONLY the provided games. Each parlay should have ${minLegs}-${maxLegs} legs.
+
+RULES:
+- ONLY use games from the provided list — do NOT add any other games
+- Every leg must reference a game the user selected
+- Focus on correlated outcomes and value
+- Never guarantee wins
+- Use the exact team names from the list
+- Generate variety: some STRONG, some DECENT, some RISKY
+- Include a mix of moneyline, spread, and total picks
+
+OUTPUT FORMAT (JSON array):
+[
+  {
+    "name": "Descriptive parlay name",
+    "signal": "STRONG" | "DECENT" | "RISKY",
+    "confidence": 50-85,
+    "legs": [
+      {
+        "gameIndex": 1,
+        "sport": "NBA",
+        "homeTeam": "Full Team Name",
+        "awayTeam": "Full Team Name",
+        "pick": "home" | "away",
+        "pickType": "moneyline" | "spread" | "total",
+        "pickDetail": "Team A ML -150" or "Over 215.5",
+        "reasoning": "Short reason"
+      }
+    ],
+    "rationale": "Why these legs work together",
+    "estimatedOdds": "+250"
+  }
+]`
+      : `You are an expert sports betting analyst. Generate exactly 8 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays. You MUST generate 8 parlays, no fewer.
 
 RULES:
 - Only suggest games from the provided list
@@ -182,7 +242,9 @@ OUTPUT FORMAT (JSON array):
   }
 ]`;
 
-    const userPrompt = `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate exactly 8 smart parlay suggestions with variety in signal strength and bet types. Always use the FULL team names (e.g. "Los Angeles Lakers" not just "Home"). Return JSON only.`;
+    const userPrompt = isCustomSelection
+      ? `The user selected these ${gamesWithOdds.length} games for their parlay:\n\n${gameContext}\n\nGenerate ${parlayCount} smart parlay suggestions using ONLY these games. Always use FULL team names. Return JSON only.`
+      : `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate exactly 8 smart parlay suggestions with variety in signal strength and bet types. Always use the FULL team names (e.g. "Los Angeles Lakers" not just "Home"). Return JSON only.`;
 
     console.log('[generate-parlays] Calling AI...');
 
@@ -263,13 +325,15 @@ OUTPUT FORMAT (JSON array):
         }))
       : [];
 
-    // Cache for 30 minutes
-    await adminClient.from('odds_cache').upsert({
-      id: CACHE_KEY,
-      data: normalizedParlays,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+    // Cache for 30 minutes — only for non-custom selections
+    if (!isCustomSelection) {
+      await adminClient.from('odds_cache').upsert({
+        id: CACHE_KEY,
+        data: normalizedParlays,
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
 
     console.log(`[generate-parlays] Generated ${normalizedParlays.length} parlays`);
 
