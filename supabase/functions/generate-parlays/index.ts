@@ -36,6 +36,13 @@ serve(async (req) => {
 
     console.log(`[generate-parlays] User: ${claimsData.claims.sub}`);
 
+    // Check if force refresh requested
+    let forceRefresh = false;
+    try {
+      const body = await req.json();
+      forceRefresh = body?.forceRefresh === true;
+    } catch { /* no body */ }
+
     // Check DB cache first (30 min TTL for suggested parlays)
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -43,17 +50,22 @@ serve(async (req) => {
     );
 
     const CACHE_KEY = 'suggested-parlays';
-    const { data: cached } = await adminClient
-      .from('odds_cache')
-      .select('data, expires_at')
-      .eq('id', CACHE_KEY)
-      .single();
 
-    if (cached && new Date(cached.expires_at) > new Date()) {
-      console.log('[generate-parlays] Returning cached parlays');
-      return new Response(JSON.stringify({ success: true, parlays: cached.data, source: 'cached' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!forceRefresh) {
+      const { data: cached } = await adminClient
+        .from('odds_cache')
+        .select('data, expires_at')
+        .eq('id', CACHE_KEY)
+        .single();
+
+      if (cached && new Date(cached.expires_at) > new Date()) {
+        console.log('[generate-parlays] Returning cached parlays');
+        return new Response(JSON.stringify({ success: true, parlays: cached.data, source: 'cached' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      console.log('[generate-parlays] Force refresh requested, skipping cache');
     }
 
     // Fetch current games from scrape-live-games
