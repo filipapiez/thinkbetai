@@ -107,8 +107,8 @@
       .text-gradient{background:linear-gradient(135deg,hsl(var(--primary)),hsl(280 80% 65%));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
       .flex-wrap{flex-wrap:wrap}.justify-between{justify-content:space-between}.border-b{border-bottom-width:1px}.h-16{height:4rem}
       @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
-      @keyframes fade-in{from{opacity:0}to{opacity:1}}.animate-fade-in{animation:fade-in .5s ease-out forwards}
-      @keyframes slide-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.animate-slide-up{animation:slide-up .5s ease-out forwards}
+      @keyframes fade-in{from{transform:translateY(0)}to{transform:translateY(0)}}.animate-fade-in{animation:fade-in .3s ease-out forwards}
+      @keyframes slide-up{from{transform:translateY(12px)}to{transform:translateY(0)}}.animate-slide-up{animation:slide-up .5s ease-out forwards}
     </style>
     <!-- Preload critical fonts to reduce CLS -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />

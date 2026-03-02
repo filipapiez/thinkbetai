@@ -184,19 +184,15 @@
   }
 
   .animate-slide-up {
-    animation: slideUp 0.6s ease-out both;
-    /* Prevent CLS: start visible, animate transform only */
-    opacity: 1;
+    animation: slideUp 0.6s ease-out forwards;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out both;
-    opacity: 1;
+    animation: fadeIn 0.4s ease-out forwards;
   }
 
   .animate-feature-slide-in {
-    animation: featureSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-    opacity: 1;
+    animation: featureSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 
@@ -208,27 +204,23 @@
 
   @keyframes slideUp {
     from {
-      opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(12px);
     }
     to {
-      opacity: 1;
       transform: translateY(0);
     }
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { transform: translateY(0); }
+    to { transform: translateY(0); }
   }
 
   @keyframes featureSlideIn {
     0% {
-      opacity: 0;
-      transform: translateY(30px) scale(0.95);
+      transform: translateY(16px) scale(0.97);
     }
     100% {
-      opacity: 1;
       transform: translateY(0) scale(1);
     }
   }

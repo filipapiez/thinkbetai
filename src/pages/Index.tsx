@@ -64,9 +64,13 @@ const Index = () => {
 
   const updateScrollButtons = () => {
     if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+          setCanScrollLeft(scrollLeft > 0);
+          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+      });
     }
   };
 
