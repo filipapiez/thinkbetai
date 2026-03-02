@@ -5,26 +5,18 @@ import { useLocation } from "react-router-dom";
 const GA_MEASUREMENT_ID = "G-6NT9QNTBSZ";
 
 // Initialize Google Analytics
+// NOTE: The gtag script is already loaded via index.html (deferred to window.load).
+// This function only configures SPA page view tracking without loading the script again.
 export const initGA = () => {
   if (typeof window === "undefined") return;
-  
-  // Add gtag script
-  const script = document.createElement("script");
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-  script.async = true;
-  document.head.appendChild(script);
 
-  // Initialize gtag
-  window.dataLayer = window.dataLayer || [];
-  function gtag(...args: any[]) {
-    window.dataLayer.push(args);
+  // gtag and dataLayer are already initialized in index.html
+  // Just ensure SPA config is set (send_page_view: false)
+  if ((window as any).gtag) {
+    (window as any).gtag("config", GA_MEASUREMENT_ID, {
+      send_page_view: false,
+    });
   }
-  (window as any).gtag = gtag;
-  
-  gtag("js", new Date());
-  gtag("config", GA_MEASUREMENT_ID, {
-    send_page_view: false, // We'll handle page views manually for SPA
-  });
 };
 
 // Track page views
