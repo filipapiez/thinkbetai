@@ -7,7 +7,8 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import WorkflowDemo from '@/components/WorkflowDemo';
+import { lazy, Suspense } from 'react';
+const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 
 import { platformStats } from '@/lib/mockData';
 import { useWinRate } from '@/hooks/useWinRate';
@@ -390,7 +391,9 @@ const Index = () => {
               </p>
             </div>
             
-            <WorkflowDemo />
+            <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+              <WorkflowDemo />
+            </Suspense>
           </div>
         </section>
 
