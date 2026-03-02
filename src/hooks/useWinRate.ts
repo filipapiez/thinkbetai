@@ -15,11 +15,13 @@ export const useWinRate = (): WinRateData => {
   // Defer query to avoid extending the critical network dependency chain
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    const id = requestIdleCallback?.(() => setReady(true)) ?? setTimeout(() => setReady(true), 100);
-    return () => {
-      if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(id as number);
-      else clearTimeout(id as number);
-    };
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(() => setReady(true));
+      return () => cancelIdleCallback(id);
+    } else {
+      const id = setTimeout(() => setReady(true), 100);
+      return () => clearTimeout(id);
+    }
   }, []);
 
   const { data, isLoading } = useQuery({
