@@ -11,8 +11,11 @@ const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ defaul
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute").then(m => ({ default: m.ProtectedRoute })));
 
-// Lazy load all pages including Index for smaller initial bundle
-const Index = lazy(() => import("./pages/Index"));
+// Eagerly load the landing page – it's always needed on first visit and
+// lazy-loading it delays FCP / Speed Index because the browser must fetch
+// an extra chunk before anything paints.
+import Index from "./pages/Index";
+
 
 // Lazy load all other pages
 const Games = lazy(() => import("./pages/Games"));
