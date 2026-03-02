@@ -12,12 +12,12 @@
   "categories": ["sports", "entertainment", "utilities"],
   "icons": [
     {
-      "src": "/thinkbetai-logo.png",
+      "src": "/thinkbetai-logo-v2.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/thinkbetai-logo.png",
+      "src": "/thinkbetai-logo-v2.png",
       "sizes": "180x180",
       "type": "image/png"
     }
