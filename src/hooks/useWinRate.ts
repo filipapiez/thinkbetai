@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface WinRateData {
@@ -11,8 +12,19 @@ interface WinRateData {
 }
 
 export const useWinRate = (): WinRateData => {
+  // Defer query to avoid extending the critical network dependency chain
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = requestIdleCallback?.(() => setReady(true)) ?? setTimeout(() => setReady(true), 100);
+    return () => {
+      if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(id as number);
+      else clearTimeout(id as number);
+    };
+  }, []);
+
   const { data, isLoading } = useQuery({
     queryKey: ['global-win-rate'],
+    enabled: ready,
     queryFn: async () => {
       // Fetch counts and recent bets for streak in parallel
       const [winsRes, lossesRes, recentRes] = await Promise.all([
