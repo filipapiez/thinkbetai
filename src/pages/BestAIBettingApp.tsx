@@ -35,7 +35,7 @@ const BestAIBettingApp = () => {
       "name": "ThinkBetAI",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://thinkbetai.com/thinkbetai-logo.png"
+        "url": "https://thinkbetai.com/thinkbetai-logo-v2.png"
       }
     },
     "datePublished": "2026-02-09",
