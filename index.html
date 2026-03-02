@@ -1,13 +1,19 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6NT9QNTBSZ"></script>
+    <!-- Google tag (gtag.js) - deferred for FCP -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6NT9QNTBSZ');
+      // Load gtag script after page is interactive
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6NT9QNTBSZ';
+        s.async = true;
+        document.head.appendChild(s);
+      });
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -76,7 +82,23 @@
     <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fmrcmbdgmhoylmxbapdr.supabase.co" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    
+    <!-- Inline critical CSS for instant FCP -->
+    <style>
+      :root{--background:240 10% 3.9%;--foreground:0 0% 98%}
+      *,::after,::before{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Inter,system-ui,-apple-system,sans-serif;background:hsl(var(--background));color:hsl(var(--foreground));-webkit-font-smoothing:antialiased}
+      #root{min-height:100vh}
+      .min-h-screen{min-height:100vh}
+      .flex{display:flex}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      .bg-background{background-color:hsl(var(--background))}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .animate-spin{animation:spin 1s linear infinite}
+    </style>
     <!-- Preload critical fonts to reduce CLS -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" /></noscript>
@@ -227,11 +249,13 @@
     }
     </script>
     
-    <!-- Reddit Pixel -->
+    <!-- Reddit Pixel - deferred for FCP -->
     <script>
-    !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
-    rdt('init','a2_id0ix2n68vkj');
-    rdt('track', 'PageVisit');
+    window.addEventListener('load', function() {
+      !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
+      rdt('init','a2_id0ix2n68vkj');
+      rdt('track', 'PageVisit');
+    });
     </script>
     <!-- End Reddit Pixel -->
   </head>
