@@ -9,8 +9,8 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 
-// Eagerly load the landing page for fastest FCP
-import Index from "./pages/Index";
+// Lazy load all pages including Index for smaller initial bundle
+const Index = lazy(() => import("./pages/Index"));
 
 // Lazy load all other pages
 const Games = lazy(() => import("./pages/Games"));
