@@ -12,6 +12,7 @@ interface ParlayLeg {
   sport: string;
   homeTeam: string;
   awayTeam: string;
+  gameDate?: string;
   pick: 'home' | 'away';
   pickType: string;
   pickDetail: string;
@@ -136,9 +137,16 @@ export function ParlayDetailDialog({ parlay, open, onOpenChange }: ParlayDetailD
                 </div>
 
                 <div className="ml-9 space-y-1.5">
-                  <p className="font-medium text-sm text-foreground">
-                    {leg.awayTeam} <span className="text-muted-foreground mx-1">vs</span> {leg.homeTeam}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-sm text-foreground">
+                      {leg.awayTeam} <span className="text-muted-foreground mx-1">vs</span> {leg.homeTeam}
+                    </p>
+                    {leg.gameDate && (
+                      <span className="text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                        {leg.gameDate}
+                      </span>
+                    )}
+                  </div>
                   <p className="font-semibold text-sm flex items-center gap-1.5">
                     <Zap className="h-3.5 w-3.5 text-primary" />
                     {leg.pickDetail}

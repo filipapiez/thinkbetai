@@ -21,6 +21,7 @@ interface ParlayLeg {
   sport: string;
   homeTeam: string;
   awayTeam: string;
+  gameDate?: string;
   pick: 'home' | 'away';
   pickType: string;
   pickDetail: string;
@@ -240,7 +241,10 @@ const Parlays = () => {
                                   <span className="text-foreground font-medium truncate">{leg.awayTeam} vs {leg.homeTeam}</span>
                                   <span className="text-muted-foreground truncate">{leg.pickDetail}</span>
                                 </div>
-                                <Badge variant="outline" className="text-[9px] px-1 py-0 shrink-0">{leg.sport}</Badge>
+                                <div className="flex flex-col items-end gap-0.5 shrink-0">
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0">{leg.sport}</Badge>
+                                  {leg.gameDate && <span className="text-[9px] text-muted-foreground">{leg.gameDate}</span>}
+                                </div>
                               </div>
                             ))}
                           </div>

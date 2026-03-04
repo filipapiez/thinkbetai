@@ -197,6 +197,7 @@ OUTPUT FORMAT (JSON array):
         "sport": "NBA",
         "homeTeam": "Full Team Name",
         "awayTeam": "Full Team Name",
+        "gameDate": "Mar 5",
         "pick": "home" | "away",
         "pickType": "moneyline" | "spread" | "total",
         "pickDetail": "Team A ML -150" or "Over 215.5",
@@ -231,6 +232,7 @@ OUTPUT FORMAT (JSON array):
         "sport": "NBA",
         "homeTeam": "Team A",
         "awayTeam": "Team B",
+        "gameDate": "Mar 5",
         "pick": "home" | "away",
         "pickType": "moneyline" | "spread" | "total",
         "pickDetail": "Team A ML -150" or "Over 215.5",
@@ -314,11 +316,18 @@ OUTPUT FORMAT (JSON array):
                       .replace(/\bAway\b/g, String(fallbackAway))
                   : leg?.pickDetail;
 
+                // Derive gameDate from the source game's startTime if AI didn't include it
+                let gameDate = leg?.gameDate || '';
+                if (!gameDate && game?.startTime) {
+                  gameDate = new Date(game.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+
                 return {
                   ...leg,
                   homeTeam: safeHome,
                   awayTeam: safeAway,
                   pickDetail: safePickDetail,
+                  gameDate,
                 };
               })
             : [],
