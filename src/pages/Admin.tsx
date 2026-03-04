@@ -48,6 +48,7 @@ interface UserRole {
 
 interface AdminStats {
   totalUsers: number;
+  lifetimeRevenue: number;
   mrr: number;
   projectedMrr: number;
   totalActive: number;
@@ -357,7 +358,7 @@ const Admin = () => {
                 </Card>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
                 <Card variant="glass">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
@@ -367,6 +368,19 @@ const Admin = () => {
                       <div>
                         <p className="text-2xl font-bold">{stats.totalUsers}</p>
                         <p className="text-sm text-muted-foreground">Total Users</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-primary/20">
+                        <DollarSign className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">${stats.lifetimeRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="text-sm text-muted-foreground">All-Time Revenue</p>
                       </div>
                     </div>
                   </CardContent>
