@@ -201,6 +201,22 @@ serve(async (req) => {
 
     const websiteCanceled = (dbCanceledCount || 0) + (dbCancelingCount || 0);
 
+    // Per-plan canceled counts from DB
+    const { data: canceledProfiles } = await supabaseClient
+      .from("profiles")
+      .select("access_type")
+      .in("subscription_status", ["canceled", "canceling"]);
+
+    const planCanceledCounts: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
+    if (canceledProfiles) {
+      for (const p of canceledProfiles) {
+        const plan = p.access_type?.toLowerCase();
+        if (plan && planCanceledCounts[plan] !== undefined) {
+          planCanceledCounts[plan]++;
+        }
+      }
+    }
+
     const planPrices: Record<string, number> = {
       basic: 4.99,
       pro: 13.99,
@@ -224,11 +240,19 @@ serve(async (req) => {
         canceledCount: dbCanceledCount || 0,
         cancelRate,
         sources,
-        plans: Object.entries(merged.planCounts).map(([key, count]) => ({
-          name: key.charAt(0).toUpperCase() + key.slice(1),
-          count,
-          revenue: count * (planPrices[key] || 0),
-        })),
+        totalCanceled: websiteCanceled,
+        plans: Object.entries(merged.planCounts).map(([key, count]) => {
+          const canceled = planCanceledCounts[key] || 0;
+          const total = count + canceled;
+          const planCancelRate = total > 0 ? ((canceled / total) * 100).toFixed(1) : "0";
+          return {
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            count,
+            revenue: count * (planPrices[key] || 0),
+            canceled,
+            cancelRate: planCancelRate,
+          };
+        }),
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
