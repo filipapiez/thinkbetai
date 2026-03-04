@@ -362,9 +362,11 @@ const Admin = () => {
                               <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
                               <TableCell>
                                 <Badge 
-                                  variant={profile.subscription_status === 'active' ? 'default' : 'secondary'}
+                                  variant={profile.subscription_status === 'active' || profile.subscription_status === 'canceling' ? 'default' : 'secondary'}
                                   className={profile.subscription_status === 'active' 
                                     ? 'bg-green-500/20 text-green-500 border-green-500/30' 
+                                    : profile.subscription_status === 'canceling'
+                                    ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30'
                                     : ''
                                   }
                                 >
