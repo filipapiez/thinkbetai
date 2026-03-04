@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[ADMIN-CANCEL-SUB] ${step}${detailsStr}`);
+  console.log(`[ADMIN-UNDO-CANCEL] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -45,83 +45,42 @@ serve(async (req) => {
     const { target_user_id } = await req.json();
     if (!target_user_id) throw new Error("target_user_id is required");
 
-    // Look up the user's profile for stripe_subscription_id
     const { data: profile } = await supabaseClient
       .from("profiles")
-      .select("email, stripe_subscription_id, stripe_customer_id")
+      .select("email, stripe_subscription_id")
       .eq("user_id", target_user_id)
       .single();
 
-    if (!profile?.email) throw new Error("Target user email not found");
-    logStep("Found target", { email: profile.email, subId: profile.stripe_subscription_id });
+    if (!profile?.stripe_subscription_id) throw new Error("No subscription ID found for user");
+    logStep("Found subscription", { subId: profile.stripe_subscription_id });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    let subscriptionId = profile.stripe_subscription_id;
-
-    // If no subscription ID stored, find it from Stripe
-    if (!subscriptionId) {
-      logStep("No stored subscription ID, looking up in Stripe");
-      const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
-      if (customers.data.length === 0) {
-        // No Stripe customer — revoke access immediately
-        await supabaseClient
-          .from("profiles")
-          .update({ subscription_status: "canceled", has_access: false, access_type: null, cancel_at_period_end: false })
-          .eq("user_id", target_user_id);
-
-        return new Response(JSON.stringify({ success: true, message: "Access revoked (no Stripe customer found)" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const customerId = customers.data[0].id;
-      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
-      if (subs.data.length === 0) {
-        await supabaseClient
-          .from("profiles")
-          .update({ subscription_status: "canceled", has_access: false, access_type: null, cancel_at_period_end: false, stripe_customer_id: customerId })
-          .eq("user_id", target_user_id);
-
-        return new Response(JSON.stringify({ success: true, message: "Access revoked (no active subscription found)" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      subscriptionId = subs.data[0].id;
-    }
-
-    // Set cancel_at_period_end on Stripe
-    const updated = await stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: true,
-      proration_behavior: "none",
+    const updated = await stripe.subscriptions.update(profile.stripe_subscription_id, {
+      cancel_at_period_end: false,
     });
 
     const periodEnd = new Date((updated as any).current_period_end * 1000).toISOString();
-    const customerId = typeof updated.customer === "string" ? updated.customer : (updated.customer as any)?.id;
+    logStep("Undo cancel", { subId: profile.stripe_subscription_id, status: updated.status });
 
-    logStep("Set cancel_at_period_end", { subId: subscriptionId, periodEnd });
-
-    // Update DB
     await supabaseClient
       .from("profiles")
       .update({
         subscription_status: updated.status,
-        cancel_at_period_end: true,
+        cancel_at_period_end: false,
         current_period_end: periodEnd,
-        stripe_subscription_id: subscriptionId,
-        stripe_customer_id: customerId || profile.stripe_customer_id,
+        has_access: true,
       })
       .eq("user_id", target_user_id);
 
     return new Response(JSON.stringify({
       success: true,
       subscription_status: updated.status,
-      cancel_at_period_end: true,
+      cancel_at_period_end: false,
       current_period_end: periodEnd,
-      message: `Subscription will cancel on ${new Date(periodEnd).toLocaleDateString()}`,
+      message: "Cancellation undone — subscription will renew",
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -28,7 +28,6 @@ serve(async (req) => {
       return new Response("Missing stripe-signature header", { status: 400 });
     }
 
-    // Get raw body for signature verification
     const rawBody = await req.text();
 
     let event: Stripe.Event;
@@ -41,14 +40,13 @@ serve(async (req) => {
       return new Response(`Webhook signature verification failed: ${errorMessage}`, { status: 400 });
     }
 
-    // Create backend admin client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    // Handle checkout.session.completed event
+    // Handle checkout.session.completed
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       logStep("Processing checkout.session.completed", {
@@ -58,10 +56,8 @@ serve(async (req) => {
         customerEmail: session.customer_details?.email,
       });
 
-      // 1. Determine the userId: prefer client_reference_id, then metadata
       let userId = session.client_reference_id || session.metadata?.userId;
 
-      // 2. Fallback: find user by email if no userId attached
       if (!userId) {
         const email = session.customer_details?.email || session.customer_email;
         if (email) {
@@ -80,21 +76,21 @@ serve(async (req) => {
       }
 
       if (!userId) {
-        logStep("No userId found on session (no client_reference_id, metadata, or email match)");
+        logStep("No userId found on session");
         return new Response("No userId on session", { status: 400 });
       }
 
-      // 3. Determine planId: metadata first, then line-item price lookup
       let planId =
         (session.metadata?.planId as string | undefined) ||
         getPlanIdFromPriceId(session.metadata?.priceId);
 
-      // For Payment Links there's no metadata, so resolve from line items
+      let priceId: string | undefined;
+
       if (!planId) {
         try {
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
           const linePrice = lineItems.data[0]?.price;
-          const priceId = linePrice?.id;
+          priceId = linePrice?.id;
           const amountCents = linePrice?.unit_amount;
           logStep("Resolving planId from line item", { priceId, amountCents });
           planId = getPlanIdFromPriceId(priceId) || getPlanIdFromAmount(amountCents);
@@ -104,20 +100,43 @@ serve(async (req) => {
       }
 
       if (!planId) {
-        logStep("Could not determine planId", { userId });
-        // Default to basic so the user at least gets access
         planId = "basic";
         logStep("Defaulting to basic plan");
       }
 
+      // Retrieve subscription details if mode is subscription
+      const customerId = typeof session.customer === "string" ? session.customer : undefined;
+      let stripeSubscriptionId: string | undefined;
+      let periodEnd: string | undefined;
+
+      if (session.mode === "subscription" && session.subscription) {
+        stripeSubscriptionId = typeof session.subscription === "string" ? session.subscription : (session.subscription as any)?.id;
+        if (stripeSubscriptionId) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+            periodEnd = new Date((sub as any).current_period_end * 1000).toISOString();
+            if (!priceId) priceId = sub.items.data[0]?.price?.id;
+          } catch (e) {
+            logStep("Failed to retrieve subscription", { error: String(e) });
+          }
+        }
+      }
+
+      const updateData: Record<string, unknown> = {
+        has_access: true,
+        subscription_status: "active",
+        access_type: planId,
+        cancel_at_period_end: false,
+        updated_at: new Date().toISOString(),
+      };
+      if (customerId) updateData.stripe_customer_id = customerId;
+      if (stripeSubscriptionId) updateData.stripe_subscription_id = stripeSubscriptionId;
+      if (periodEnd) updateData.current_period_end = periodEnd;
+      if (priceId) updateData.price_id = priceId;
+
       const { error: updateError } = await supabaseAdmin
         .from("profiles")
-        .update({
-          has_access: true,
-          subscription_status: "active",
-          access_type: planId,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("user_id", userId);
 
       if (updateError) {
@@ -129,12 +148,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
-    // Handle subscription canceled/deleted
+    // Handle subscription deleted
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
       logStep("Processing subscription deletion", { subscriptionId: subscription.id });
 
-      // Find user by Stripe customer ID
       const customerId = subscription.customer as string;
       const customer = await stripe.customers.retrieve(customerId);
 
@@ -144,6 +162,7 @@ serve(async (req) => {
           .update({
             has_access: false,
             subscription_status: "canceled",
+            cancel_at_period_end: false,
             updated_at: new Date().toISOString(),
           })
           .eq("email", customer.email);
@@ -158,12 +177,13 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
-    // Handle subscription updates (e.g., renewal, payment failed)
+    // Handle subscription updates
     if (event.type === "customer.subscription.updated") {
       const subscription = event.data.object as Stripe.Subscription;
       logStep("Processing subscription update", {
         subscriptionId: subscription.id,
         status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
 
       const customerId = subscription.customer as string;
@@ -171,18 +191,24 @@ serve(async (req) => {
 
       if (!customer.deleted && customer.email) {
         const isActive = subscription.status === "active" || subscription.status === "trialing";
-
-        // Determine plan from subscription price
         const subPrice = subscription.items.data[0]?.price;
         const planId = getPlanIdFromPriceId(subPrice?.id) || getPlanIdFromAmount(subPrice?.unit_amount);
+        const periodEnd = new Date((subscription as any).current_period_end * 1000).toISOString();
 
         const updateData: Record<string, unknown> = {
-          has_access: isActive,
+          has_access: isActive || (subscription.cancel_at_period_end && new Date(periodEnd) > new Date()),
           subscription_status: subscription.status,
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          current_period_end: periodEnd,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: customerId,
           updated_at: new Date().toISOString(),
         };
         if (planId) {
           updateData.access_type = planId;
+        }
+        if (subPrice?.id) {
+          updateData.price_id = subPrice.id;
         }
 
         const { error } = await supabaseAdmin
@@ -197,6 +223,7 @@ serve(async (req) => {
             email: customer.email,
             status: subscription.status,
             hasAccess: isActive,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end,
             planId,
           });
         }
