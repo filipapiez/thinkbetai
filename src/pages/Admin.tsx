@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -24,6 +25,9 @@ interface Profile {
   created_at: string;
   cancel_at_period_end: boolean;
   current_period_end: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  price_id: string | null;
 }
 
 interface AccessCode {
@@ -69,6 +73,7 @@ const Admin = () => {
   const [statsError, setStatsError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   
   const [newCode, setNewCode] = useState('');
   const [newCodeMaxUses, setNewCodeMaxUses] = useState('');
@@ -168,7 +173,6 @@ const Admin = () => {
       });
       if (error) { toast.error('Failed to cancel subscription'); return; }
 
-      // Update local state immediately
       setProfiles(prev => prev.map(p => p.user_id === userId ? {
         ...p,
         cancel_at_period_end: true,
@@ -202,6 +206,43 @@ const Admin = () => {
     finally { setActionUserId(null); }
   };
 
+  const handleRevokeAccess = async (userId: string, email: string | null) => {
+    if (!confirm(`Manually revoke access for ${email || userId}? This user has no linked Stripe subscription.`)) return;
+    setActionUserId(userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          has_access: false,
+          subscription_status: 'canceled',
+          access_type: null,
+          cancel_at_period_end: false,
+        })
+        .eq('user_id', userId);
+
+      if (error) { toast.error('Failed to revoke access'); return; }
+
+      setProfiles(prev => prev.map(p => p.user_id === userId ? {
+        ...p,
+        has_access: false,
+        subscription_status: 'canceled',
+        access_type: null,
+        cancel_at_period_end: false,
+      } : p));
+
+      toast.success('Access revoked');
+    } catch { toast.error('Something went wrong'); }
+    finally { setActionUserId(null); }
+  };
+
+  const toggleRow = (id: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
   const filteredProfiles = profiles.filter(profile => 
     profile.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     profile.promo_used?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -210,6 +251,8 @@ const Admin = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
+
+  const hasStripeLink = (profile: Profile) => !!profile.stripe_subscription_id;
 
   if (authLoading || isCheckingAdmin) {
     return (
@@ -403,6 +446,7 @@ const Admin = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead className="w-8"></TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Access Type</TableHead>
@@ -412,79 +456,152 @@ const Admin = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {filteredProfiles.map((profile) => (
-                            <TableRow key={profile.id}>
-                              <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
-                              <TableCell>
-                                <div className="flex flex-col gap-1">
-                                  <Badge 
-                                    variant={profile.subscription_status === 'active' ? 'default' : 'secondary'}
-                                    className={profile.subscription_status === 'active' 
-                                      ? 'bg-green-500/20 text-green-500 border-green-500/30' 
-                                      : profile.subscription_status === 'canceled'
-                                      ? 'bg-red-500/20 text-red-500 border-red-500/30'
-                                      : ''
-                                    }
-                                  >
-                                    {profile.subscription_status || 'inactive'}
-                                  </Badge>
-                                  {profile.cancel_at_period_end && profile.current_period_end && (
-                                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30 text-xs">
-                                      Cancels {formatDate(profile.current_period_end)}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>{profile.access_type || '-'}</TableCell>
-                              <TableCell>
-                                {profile.promo_used ? (
-                                  <Badge variant="outline">{profile.promo_used}</Badge>
-                                ) : '-'}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {formatDate(profile.created_at)}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex gap-1">
-                                  {profile.subscription_status === 'active' && !profile.cancel_at_period_end && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-destructive hover:text-destructive"
-                                      onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
-                                      disabled={actionUserId === profile.user_id}
-                                    >
-                                      {actionUserId === profile.user_id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                      )}
-                                      Cancel
+                          {filteredProfiles.map((profile) => {
+                            const isExpanded = expandedRows.has(profile.id);
+                            const isActive = profile.subscription_status === 'active';
+                            const canCancel = isActive && !profile.cancel_at_period_end;
+                            const canUndo = isActive && profile.cancel_at_period_end;
+                            const noStripeLink = !hasStripeLink(profile);
+                            const hasAccess = profile.has_access || isActive;
+
+                            return (
+                              <>
+                                <TableRow key={profile.id}>
+                                  <TableCell className="w-8 px-2">
+                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => toggleRow(profile.id)}>
+                                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                                     </Button>
-                                  )}
-                                  {profile.cancel_at_period_end && profile.subscription_status === 'active' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-primary hover:text-primary"
-                                      onClick={() => handleUndoCancel(profile.user_id, profile.email)}
-                                      disabled={actionUserId === profile.user_id}
-                                    >
-                                      {actionUserId === profile.user_id ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <Undo2 className="h-4 w-4 mr-1" />
+                                  </TableCell>
+                                  <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
+                                  <TableCell>
+                                    <div className="flex flex-col gap-1">
+                                      <Badge 
+                                        variant={isActive ? 'default' : 'secondary'}
+                                        className={isActive 
+                                          ? 'bg-green-500/20 text-green-500 border-green-500/30' 
+                                          : profile.subscription_status === 'canceled'
+                                          ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                                          : ''
+                                        }
+                                      >
+                                        {profile.subscription_status || 'inactive'}
+                                      </Badge>
+                                      {profile.cancel_at_period_end && profile.current_period_end && (
+                                        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30 text-xs">
+                                          Cancels {formatDate(profile.current_period_end)}
+                                        </Badge>
                                       )}
-                                      Undo
-                                    </Button>
-                                  )}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>{profile.access_type || '-'}</TableCell>
+                                  <TableCell>
+                                    {profile.promo_used ? (
+                                      <Badge variant="outline">{profile.promo_used}</Badge>
+                                    ) : '-'}
+                                  </TableCell>
+                                  <TableCell className="text-muted-foreground">
+                                    {formatDate(profile.created_at)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-1">
+                                      {canCancel && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-destructive hover:text-destructive"
+                                          onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
+                                          disabled={actionUserId === profile.user_id}
+                                        >
+                                          {actionUserId === profile.user_id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <XCircle className="h-4 w-4 mr-1" />
+                                          )}
+                                          Cancel
+                                        </Button>
+                                      )}
+                                      {canUndo && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-primary hover:text-primary"
+                                          onClick={() => handleUndoCancel(profile.user_id, profile.email)}
+                                          disabled={actionUserId === profile.user_id}
+                                        >
+                                          {actionUserId === profile.user_id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <Undo2 className="h-4 w-4 mr-1" />
+                                          )}
+                                          Undo
+                                        </Button>
+                                      )}
+                                      {hasAccess && noStripeLink && !isActive && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-destructive hover:text-destructive"
+                                          onClick={() => handleRevokeAccess(profile.user_id, profile.email)}
+                                          disabled={actionUserId === profile.user_id}
+                                        >
+                                          {actionUserId === profile.user_id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <ShieldOff className="h-4 w-4 mr-1" />
+                                          )}
+                                          Revoke
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                                {isExpanded && (
+                                  <TableRow key={`${profile.id}-debug`}>
+                                    <TableCell colSpan={7} className="bg-muted/30 px-8 py-3">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Stripe Customer ID</p>
+                                          <p className="font-mono">{profile.stripe_customer_id || <span className="text-muted-foreground italic">Not linked</span>}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Stripe Subscription ID</p>
+                                          <p className="font-mono">{profile.stripe_subscription_id || <span className="text-muted-foreground italic">Not linked</span>}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Cancel At Period End</p>
+                                          <p>{profile.cancel_at_period_end ? 'Yes' : 'No'}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Current Period End</p>
+                                          <p>{profile.current_period_end ? formatDate(profile.current_period_end) : <span className="text-muted-foreground italic">N/A</span>}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Price ID</p>
+                                          <p className="font-mono">{profile.price_id || <span className="text-muted-foreground italic">N/A</span>}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">Has Access</p>
+                                          <p>{profile.has_access ? 'Yes' : 'No'}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-muted-foreground font-medium">User ID</p>
+                                          <p className="font-mono truncate">{profile.user_id}</p>
+                                        </div>
+                                        {noStripeLink && hasAccess && (
+                                          <div className="col-span-full">
+                                            <p className="text-yellow-500 font-medium">⚠ This user has no Stripe subscription linked.</p>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
+                            );
+                          })}
                           {filteredProfiles.length === 0 && (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                                 No users found
                               </TableCell>
                             </TableRow>
