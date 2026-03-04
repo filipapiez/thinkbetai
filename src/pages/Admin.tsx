@@ -171,7 +171,20 @@ const Admin = () => {
       const { data, error } = await supabase.functions.invoke('admin-cancel-subscription', {
         body: { target_user_id: userId },
       });
+
       if (error) { toast.error('Failed to cancel subscription'); return; }
+      
+      // Handle 404 — no Stripe link
+      if (data?.success === false) {
+        toast.error(data.error || 'No Stripe subscription linked');
+        // Still update stripe_customer_id if returned
+        if (data.stripe_customer_id) {
+          setProfiles(prev => prev.map(p => p.user_id === userId ? {
+            ...p, stripe_customer_id: data.stripe_customer_id,
+          } : p));
+        }
+        return;
+      }
 
       setProfiles(prev => prev.map(p => p.user_id === userId ? {
         ...p,
@@ -448,9 +461,9 @@ const Admin = () => {
                           <TableRow>
                             <TableHead className="w-8"></TableHead>
                             <TableHead>Email</TableHead>
+                            <TableHead>Customer ID</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Access Type</TableHead>
-                            <TableHead>Promo Code</TableHead>
                             <TableHead>Joined</TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
@@ -473,6 +486,9 @@ const Admin = () => {
                                     </Button>
                                   </TableCell>
                                   <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
+                                  <TableCell className="font-mono text-xs">
+                                    {profile.stripe_customer_id || <span className="text-muted-foreground italic">—</span>}
+                                  </TableCell>
                                   <TableCell>
                                     <div className="flex flex-col gap-1">
                                       <Badge 
@@ -494,11 +510,6 @@ const Admin = () => {
                                     </div>
                                   </TableCell>
                                   <TableCell>{profile.access_type || '-'}</TableCell>
-                                  <TableCell>
-                                    {profile.promo_used ? (
-                                      <Badge variant="outline">{profile.promo_used}</Badge>
-                                    ) : '-'}
-                                  </TableCell>
                                   <TableCell className="text-muted-foreground">
                                     {formatDate(profile.created_at)}
                                   </TableCell>

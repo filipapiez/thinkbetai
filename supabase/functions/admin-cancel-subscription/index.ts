@@ -60,33 +60,36 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     let subscriptionId = profile.stripe_subscription_id;
+    let customerId = profile.stripe_customer_id;
 
-    // If no subscription ID stored, find it from Stripe
+    // If no subscription ID stored, find it via customer ID or email
     if (!subscriptionId) {
       logStep("No stored subscription ID, looking up in Stripe");
-      const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
-      if (customers.data.length === 0) {
-        // No Stripe customer — revoke access immediately
-        await supabaseClient
-          .from("profiles")
-          .update({ subscription_status: "canceled", has_access: false, access_type: null, cancel_at_period_end: false })
-          .eq("user_id", target_user_id);
 
-        return new Response(JSON.stringify({ success: true, message: "Access revoked (no Stripe customer found)" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      // Step 1: resolve Stripe customer — prefer stored customer ID, then email
+      if (!customerId) {
+        const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
+        if (customers.data.length === 0) {
+          return new Response(JSON.stringify({ success: false, error: "This user has no Stripe subscription linked." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+          });
+        }
+        customerId = customers.data[0].id;
       }
 
-      const customerId = customers.data[0].id;
+      logStep("Using Stripe customer", { customerId });
+
+      // Step 2: find active subscription for this customer
       const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
       if (subs.data.length === 0) {
+        // Save the customer ID we found, but don't revoke — let admin use Revoke button
         await supabaseClient
           .from("profiles")
-          .update({ subscription_status: "canceled", has_access: false, access_type: null, cancel_at_period_end: false, stripe_customer_id: customerId })
+          .update({ stripe_customer_id: customerId })
           .eq("user_id", target_user_id);
 
-        return new Response(JSON.stringify({ success: true, message: "Access revoked (no active subscription found)" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ success: false, error: "No active subscription found for this Stripe customer.", stripe_customer_id: customerId }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
         });
       }
 
