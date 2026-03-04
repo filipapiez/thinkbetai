@@ -169,7 +169,7 @@ serve(async (req) => {
       });
     }
 
-    const parlayCount = isCustomSelection ? Math.min(4, gamesWithOdds.length) : 8;
+    const parlayCount = isCustomSelection ? Math.min(4, gamesWithOdds.length) : 20;
     const minLegs = isCustomSelection ? 2 : 2;
     const maxLegs = isCustomSelection ? Math.min(gamesWithOdds.length, 3) : 3;
 
@@ -208,7 +208,7 @@ OUTPUT FORMAT (JSON array):
     "estimatedOdds": "+250"
   }
 ]`
-      : `You are an expert sports betting analyst. Generate exactly 8 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays. You MUST generate 8 parlays, no fewer.
+      : `You are an expert sports betting analyst. Generate exactly 20 suggested parlay combinations from available games. Each parlay should have 2-3 legs. Mix of 2-leg and 3-leg parlays. You MUST generate 20 parlays, no fewer.
 
 RULES:
 - Only suggest games from the provided list
@@ -246,7 +246,7 @@ OUTPUT FORMAT (JSON array):
 
     const userPrompt = isCustomSelection
       ? `The user selected these ${gamesWithOdds.length} games for their parlay:\n\n${gameContext}\n\nGenerate ${parlayCount} smart parlay suggestions using ONLY these games. Always use FULL team names. Return JSON only.`
-      : `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate exactly 8 smart parlay suggestions with variety in signal strength and bet types. Always use the FULL team names (e.g. "Los Angeles Lakers" not just "Home"). Return JSON only.`;
+      : `Here are today's available games with odds:\n\n${gameContext}\n\nGenerate exactly 20 smart parlay suggestions with variety in signal strength and bet types. Always use the FULL team names (e.g. "Los Angeles Lakers" not just "Home"). Return JSON only.`;
 
     console.log('[generate-parlays] Calling AI...');
 
