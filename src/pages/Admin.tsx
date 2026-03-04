@@ -53,6 +53,7 @@ interface AdminStats {
   totalActive: number;
   scheduledCancels: number;
   cancelRate: string;
+  newSubsSinceMarch4: number;
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
 }
 
@@ -345,7 +346,7 @@ const Admin = () => {
           {stats && (
             <>
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
                 <Card variant="glass">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
@@ -394,6 +395,19 @@ const Admin = () => {
                       <div>
                         <p className="text-2xl font-bold">{stats.totalActive}</p>
                         <p className="text-sm text-muted-foreground">Active Subs ({stats.scheduledCancels} canceling)</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-primary/20">
+                        <TrendingUp className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">{stats.newSubsSinceMarch4}</p>
+                        <p className="text-sm text-muted-foreground">New Subs (Mar 4+)</p>
                       </div>
                     </div>
                   </CardContent>

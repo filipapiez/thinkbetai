@@ -23,6 +23,7 @@ type StripeStats = {
   scheduledCancels: number;
   planCounts: Record<string, number>;
   planScheduledCancels: Record<string, number>;
+  newSubsSinceMarch4: number;
 };
 
 async function fetchStripeStats(stripeKey: string, label: string): Promise<StripeStats> {
@@ -32,6 +33,8 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
 
   let totalActive = 0;
   let scheduledCancels = 0;
+  let newSubsSinceMarch4 = 0;
+  const march4Ts = Math.floor(new Date("2026-03-04T00:00:00Z").getTime() / 1000);
   let hasMore = true;
   let startingAfter: string | undefined;
 
@@ -61,14 +64,35 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
       if (plan && planCounts[plan] !== undefined) {
         planCounts[plan]++;
       }
+
+      // Check if created after March 4
+      if ((sub as any).created >= march4Ts) {
+        newSubsSinceMarch4++;
+      }
     }
 
     hasMore = subs.has_more;
     if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} plans=${JSON.stringify(planCounts)}`);
-  return { totalActive, scheduledCancels, planCounts, planScheduledCancels };
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} newSince0304=${newSubsSinceMarch4} plans=${JSON.stringify(planCounts)}`);
+  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, newSubsSinceMarch4 };
+}
+
+function mergeStats(a: StripeStats, b: StripeStats): StripeStats {
+  const planCounts: Record<string, number> = { ...EMPTY_PLAN_COUNTS };
+  const planScheduledCancels: Record<string, number> = { ...EMPTY_PLAN_COUNTS };
+  for (const key of Object.keys(EMPTY_PLAN_COUNTS)) {
+    planCounts[key] = (a.planCounts[key] || 0) + (b.planCounts[key] || 0);
+    planScheduledCancels[key] = (a.planScheduledCancels[key] || 0) + (b.planScheduledCancels[key] || 0);
+  }
+  return {
+    totalActive: a.totalActive + b.totalActive,
+    scheduledCancels: a.scheduledCancels + b.scheduledCancels,
+    planCounts,
+    planScheduledCancels,
+    newSubsSinceMarch4: a.newSubsSinceMarch4 + b.newSubsSinceMarch4,
+  };
 }
 
 serve(async (req) => {
@@ -100,23 +124,28 @@ serve(async (req) => {
     if (!roleData) throw new Error("Not authorized");
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+    const oldStripeKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") ?? "";
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY missing");
 
-    const stats = await fetchStripeStats(stripeKey, "primary");
+    // Fetch from both accounts in parallel
+    const statsPromises: Promise<StripeStats>[] = [fetchStripeStats(stripeKey, "primary")];
+    if (oldStripeKey) statsPromises.push(fetchStripeStats(oldStripeKey, "legacy"));
+
+    const results = await Promise.all(statsPromises);
+    const stats = results.length > 1 ? mergeStats(results[0], results[1]) : results[0];
 
     const { count: totalUsers } = await supabaseClient
       .from("profiles")
       .select("*", { count: "exact", head: true });
 
-    // Current MRR: all active subs (including scheduled cancels — they're still paying this cycle)
     const currentMrr = Object.entries(stats.planCounts).reduce(
       (sum, [plan, count]) => sum + count * (PLAN_PRICES[plan] || 0), 0
     );
 
     const projectedMrr = Object.entries(stats.planCounts).reduce(
       (sum, [plan, count]) => {
-        const scheduledCancels = stats.planScheduledCancels[plan] || 0;
-        return sum + (count - scheduledCancels) * (PLAN_PRICES[plan] || 0);
+        const sc = stats.planScheduledCancels[plan] || 0;
+        return sum + (count - sc) * (PLAN_PRICES[plan] || 0);
       }, 0
     );
 
@@ -132,14 +161,15 @@ serve(async (req) => {
         totalActive: stats.totalActive,
         scheduledCancels: stats.scheduledCancels,
         cancelRate,
+        newSubsSinceMarch4: stats.newSubsSinceMarch4,
         plans: Object.entries(stats.planCounts).map(([key, count]) => {
-          const scheduledCancels = stats.planScheduledCancels[key] || 0;
-          const planCancelRate = count > 0 ? ((scheduledCancels / count) * 100).toFixed(1) : "0";
+          const sc = stats.planScheduledCancels[key] || 0;
+          const planCancelRate = count > 0 ? ((sc / count) * 100).toFixed(1) : "0";
           return {
             name: key.charAt(0).toUpperCase() + key.slice(1),
             count,
             revenue: count * (PLAN_PRICES[key] || 0),
-            scheduledCancels,
+            scheduledCancels: sc,
             cancelRate: planCancelRate,
           };
         }),
