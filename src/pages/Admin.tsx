@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search } from 'lucide-react';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -56,6 +56,7 @@ const Admin = () => {
   const [newCode, setNewCode] = useState('');
   const [newCodeMaxUses, setNewCodeMaxUses] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
+  const [cancelingUserId, setCancelingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -160,6 +161,31 @@ const Admin = () => {
       fetchAllData();
     } catch (error) {
       toast.error('Something went wrong');
+    }
+  };
+
+  const handleCancelSubscription = async (userId: string, email: string | null) => {
+    if (!confirm(`Cancel subscription and revoke access for ${email || userId}?`)) return;
+    
+    setCancelingUserId(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-cancel-subscription', {
+        body: { target_user_id: userId },
+      });
+
+      if (error) {
+        toast.error('Failed to cancel subscription');
+        console.error('Cancel error:', error);
+        return;
+      }
+
+      toast.success(data?.message || `Subscription canceled (${data?.canceled_count || 0} canceled)`);
+      fetchAllData();
+    } catch (error) {
+      toast.error('Something went wrong');
+      console.error('Cancel error:', error);
+    } finally {
+      setCancelingUserId(null);
     }
   };
 
@@ -327,6 +353,7 @@ const Admin = () => {
                             <TableHead>Access Type</TableHead>
                             <TableHead>Promo Code</TableHead>
                             <TableHead>Joined</TableHead>
+                            <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -353,11 +380,29 @@ const Admin = () => {
                               <TableCell className="text-muted-foreground">
                                 {formatDate(profile.created_at)}
                               </TableCell>
+                              <TableCell>
+                                {profile.subscription_status === 'active' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
+                                    disabled={cancelingUserId === profile.user_id}
+                                  >
+                                    {cancelingUserId === profile.user_id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <XCircle className="h-4 w-4 mr-1" />
+                                    )}
+                                    Cancel
+                                  </Button>
+                                )}
+                              </TableCell>
                             </TableRow>
                           ))}
                           {filteredProfiles.length === 0 && (
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                                 No users found
                               </TableCell>
                             </TableRow>
