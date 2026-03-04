@@ -1,76 +1,115 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { PRICE_TO_PLAN_ID } from "../_shared/stripePlans.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-import { PRICE_TO_PLAN_ID } from "../_shared/stripePlans.ts";
+const EMPTY_PLAN_COUNTS: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
 
-// Old Stripe price-to-plan mapping (add your old price IDs here if different)
 const OLD_PRICE_TO_PLAN: Record<string, string> = {
-  // Map old Stripe price IDs to plan names. We'll also try to infer from amount.
+  // Optional explicit mapping for old account price IDs (if they differ)
+  // price_OLD_BASIC: "basic",
+  // price_OLD_PRO: "pro",
+  // price_OLD_INSIDER: "insider",
 };
 
-function inferPlanFromAmount(amountCents: number): string | null {
-  // Match by monthly price in cents
+function inferPlanFromAmount(amountCents: number | null | undefined): string | null {
   if (amountCents === 499) return "basic";
   if (amountCents === 1399) return "pro";
   if (amountCents === 4999) return "insider";
   return null;
 }
 
-async function fetchStripeStats(stripeKey: string, label: string) {
+type StripeStats = {
+  totalActive: number;
+  cancelingCount: number;
+  canceledCount: number;
+  planCounts: Record<string, number>;
+};
+
+async function fetchStripeStats(stripeKey: string, label: "new" | "old"): Promise<StripeStats> {
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-  const planCounts: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
+  const planCounts: Record<string, number> = { ...EMPTY_PLAN_COUNTS };
+
   let totalActive = 0;
   let cancelingCount = 0;
   let canceledCount = 0;
 
-  // Active subscriptions
   let hasMore = true;
   let startingAfter: string | undefined;
 
   while (hasMore) {
-    const params: any = { status: "active", limit: 100 };
+    const params: Record<string, unknown> = { status: "active", limit: 100 };
     if (startingAfter) params.starting_after = startingAfter;
+
     const subs = await stripe.subscriptions.list(params);
 
     for (const sub of subs.data) {
       totalActive++;
       if (sub.cancel_at_period_end) cancelingCount++;
 
-      const priceId = sub.items.data[0]?.price?.id;
-      const amountCents = sub.items.data[0]?.price?.unit_amount;
-      // Try new mapping, then old mapping, then infer from amount
-      let plan = priceId ? (PRICE_TO_PLAN_ID as Record<string, string>)[priceId] ?? OLD_PRICE_TO_PLAN[priceId] : null;
-      if (!plan && amountCents) plan = inferPlanFromAmount(amountCents);
+      const price = sub.items.data[0]?.price;
+      const priceId = price?.id;
+      const amountCents = price?.unit_amount;
+
+      let plan = priceId
+        ? (PRICE_TO_PLAN_ID as Record<string, string>)[priceId] ?? OLD_PRICE_TO_PLAN[priceId] ?? null
+        : null;
+
+      if (!plan) {
+        plan = inferPlanFromAmount(amountCents);
+      }
+
       if (plan && planCounts[plan] !== undefined) {
-        planCounts[plan]++;
+        planCounts[plan] += 1;
       }
     }
 
     hasMore = subs.has_more;
-    if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
+    if (subs.data.length > 0) {
+      startingAfter = subs.data[subs.data.length - 1].id;
+    }
   }
 
-  // Canceled subscriptions
   hasMore = true;
   startingAfter = undefined;
+
   while (hasMore) {
-    const params: any = { status: "canceled", limit: 100 };
+    const params: Record<string, unknown> = { status: "canceled", limit: 100 };
     if (startingAfter) params.starting_after = startingAfter;
+
     const subs = await stripe.subscriptions.list(params);
     canceledCount += subs.data.length;
+
     hasMore = subs.has_more;
-    if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
+    if (subs.data.length > 0) {
+      startingAfter = subs.data[subs.data.length - 1].id;
+    }
   }
 
   console.log(`[ADMIN-STATS][${label}] active=${totalActive} canceling=${cancelingCount} canceled=${canceledCount} plans=${JSON.stringify(planCounts)}`);
 
   return { totalActive, cancelingCount, canceledCount, planCounts };
+}
+
+function mergeStats(stats: StripeStats[]): StripeStats {
+  return stats.reduce(
+    (acc, curr) => ({
+      totalActive: acc.totalActive + curr.totalActive,
+      cancelingCount: acc.cancelingCount + curr.cancelingCount,
+      canceledCount: acc.canceledCount + curr.canceledCount,
+      planCounts: {
+        basic: acc.planCounts.basic + curr.planCounts.basic,
+        pro: acc.planCounts.pro + curr.planCounts.pro,
+        insider: acc.planCounts.insider + curr.planCounts.insider,
+      },
+    }),
+    { totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { ...EMPTY_PLAN_COUNTS } }
+  );
 }
 
 serve(async (req) => {
@@ -85,9 +124,9 @@ serve(async (req) => {
   );
 
   try {
-    // Verify admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
+
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData.user) throw new Error("Not authenticated");
@@ -101,30 +140,48 @@ serve(async (req) => {
 
     if (!roleData) throw new Error("Not authorized");
 
-    // Fetch stats from both Stripe accounts in parallel
-    const newKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
-    const oldKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") || "";
+    const newKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+    const oldKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") ?? "";
 
-    const promises: Promise<any>[] = [];
-    if (newKey) promises.push(fetchStripeStats(newKey, "NEW"));
-    else promises.push(Promise.resolve({ totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { basic: 0, pro: 0, insider: 0 } }));
+    const accountFetches = [
+      { label: "new" as const, key: newKey },
+      { label: "old" as const, key: oldKey },
+    ];
 
-    if (oldKey) promises.push(fetchStripeStats(oldKey, "OLD"));
-    else promises.push(Promise.resolve({ totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { basic: 0, pro: 0, insider: 0 } }));
+    const settled = await Promise.allSettled(
+      accountFetches.map(async ({ label, key }) => {
+        if (!key) {
+          throw new Error(`${label.toUpperCase()} Stripe key missing`);
+        }
+        const stats = await fetchStripeStats(key, label);
+        return { label, stats };
+      })
+    );
 
-    const [newStats, oldStats] = await Promise.all(promises);
-
-    // Merge
-    const planCounts: Record<string, number> = {
-      basic: newStats.planCounts.basic + oldStats.planCounts.basic,
-      pro: newStats.planCounts.pro + oldStats.planCounts.pro,
-      insider: newStats.planCounts.insider + oldStats.planCounts.insider,
+    const successfulStats: StripeStats[] = [];
+    const sources: Record<string, { included: boolean; error?: string }> = {
+      new: { included: false },
+      old: { included: false },
     };
-    const totalActive = newStats.totalActive + oldStats.totalActive;
-    const cancelingCount = newStats.cancelingCount + oldStats.cancelingCount;
-    const canceledCount = newStats.canceledCount + oldStats.canceledCount;
 
-    // Total users from profiles
+    settled.forEach((result, idx) => {
+      const label = accountFetches[idx].label;
+      if (result.status === "fulfilled") {
+        successfulStats.push(result.value.stats);
+        sources[label] = { included: true };
+      } else {
+        const errMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+        sources[label] = { included: false, error: errMsg };
+        console.warn(`[ADMIN-STATS][${label}] failed: ${errMsg}`);
+      }
+    });
+
+    if (successfulStats.length === 0) {
+      throw new Error("Could not load stats from either Stripe account");
+    }
+
+    const merged = mergeStats(successfulStats);
+
     const { count: totalUsers } = await supabaseClient
       .from("profiles")
       .select("*", { count: "exact", head: true });
@@ -135,23 +192,24 @@ serve(async (req) => {
       insider: 49.99,
     };
 
-    const mrr = Object.entries(planCounts).reduce(
+    const mrr = Object.entries(merged.planCounts).reduce(
       (sum, [plan, count]) => sum + count * (planPrices[plan] || 0),
       0
     );
 
-    const allPaidEver = totalActive + canceledCount;
-    const cancelRate = allPaidEver > 0 ? ((canceledCount / allPaidEver) * 100).toFixed(1) : "0";
+    const allPaidEver = merged.totalActive + merged.canceledCount;
+    const cancelRate = allPaidEver > 0 ? ((merged.canceledCount / allPaidEver) * 100).toFixed(1) : "0";
 
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers || 0,
         mrr,
-        totalActive,
-        cancelingCount,
-        canceledCount,
+        totalActive: merged.totalActive,
+        cancelingCount: merged.cancelingCount,
+        canceledCount: merged.canceledCount,
         cancelRate,
-        plans: Object.entries(planCounts).map(([key, count]) => ({
+        sources,
+        plans: Object.entries(merged.planCounts).map(([key, count]) => ({
           name: key.charAt(0).toUpperCase() + key.slice(1),
           count,
           revenue: count * (planPrices[key] || 0),

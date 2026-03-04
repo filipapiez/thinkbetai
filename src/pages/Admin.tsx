@@ -48,6 +48,10 @@ interface AdminStats {
   canceledCount: number;
   cancelRate: string;
   plans: { name: string; count: number; revenue: number }[];
+  sources?: {
+    new?: { included: boolean; error?: string };
+    old?: { included: boolean; error?: string };
+  };
 }
 
 const Admin = () => {
@@ -60,6 +64,7 @@ const Admin = () => {
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [statsError, setStatsError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -109,6 +114,7 @@ const Admin = () => {
 
   const fetchAllData = async () => {
     setIsLoading(true);
+    setStatsError(null);
     try {
       const [profilesRes, codesRes, rolesRes, statsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
@@ -120,9 +126,16 @@ const Admin = () => {
       if (profilesRes.data) setProfiles(profilesRes.data);
       if (codesRes.data) setAccessCodes(codesRes.data);
       if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
-      if (statsRes.data && !statsRes.error) setStats(statsRes.data);
+
+      if (statsRes.error) {
+        setStats(null);
+        setStatsError(statsRes.error.message || 'Could not load revenue stats');
+      } else if (statsRes.data) {
+        setStats(statsRes.data);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setStatsError('Failed to load revenue stats');
       toast.error('Failed to load data');
     } finally {
       setIsLoading(false);
@@ -270,8 +283,29 @@ const Admin = () => {
           </div>
 
           {/* Revenue & Stats Cards */}
+          {statsError && (
+            <Card variant="glass" className="mb-4 border-destructive/40">
+              <CardContent className="pt-6">
+                <p className="text-sm text-destructive">Stats error: {statsError}</p>
+              </CardContent>
+            </Card>
+          )}
+
           {stats && (
             <>
+              {(stats.sources?.old?.error || stats.sources?.new?.error) && (
+                <Card variant="glass" className="mb-4 border-destructive/40">
+                  <CardContent className="pt-6 space-y-1">
+                    {stats.sources?.new?.error && (
+                      <p className="text-sm text-destructive">New Stripe: {stats.sources.new.error}</p>
+                    )}
+                    {stats.sources?.old?.error && (
+                      <p className="text-sm text-destructive">Old Stripe: {stats.sources.old.error}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <Card variant="glass">
                   <CardContent className="pt-6">
