@@ -47,7 +47,8 @@ interface AdminStats {
   cancelingCount: number;
   canceledCount: number;
   cancelRate: string;
-  plans: { name: string; count: number; revenue: number }[];
+  plans: { name: string; count: number; revenue: number; canceled: number; cancelRate: string }[];
+  totalCanceled: number;
   sources?: {
     new?: { included: boolean; error?: string };
     old?: { included: boolean; error?: string };
@@ -354,7 +355,7 @@ const Admin = () => {
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{stats.cancelRate}%</p>
-                        <p className="text-sm text-muted-foreground">Cancel Rate ({stats.canceledCount}/{stats.totalActive + stats.canceledCount})</p>
+                        <p className="text-sm text-muted-foreground">Cancel Rate ({stats.totalCanceled}/{stats.totalActive + stats.totalCanceled})</p>
                       </div>
                     </div>
                   </CardContent>
@@ -369,9 +370,12 @@ const Admin = () => {
                         <div className="p-3 rounded-lg bg-accent/20">
                           <BarChart3 className="h-6 w-6 text-accent-foreground" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
                           <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {plan.canceled} canceled ({plan.cancelRate}%)
+                          </p>
                         </div>
                       </div>
                     </CardContent>
