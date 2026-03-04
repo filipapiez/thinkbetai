@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Profile {
@@ -22,6 +22,8 @@ interface Profile {
   subscription_status: string | null;
   promo_used: string | null;
   created_at: string;
+  cancel_at_period_end: boolean;
+  current_period_end: string | null;
 }
 
 interface AccessCode {
@@ -43,12 +45,11 @@ interface UserRole {
 interface AdminStats {
   totalUsers: number;
   mrr: number;
+  projectedMrr: number;
   totalActive: number;
-  cancelingCount: number;
-  canceledCount: number;
+  scheduledCancels: number;
   cancelRate: string;
-  plans: { name: string; count: number; revenue: number; canceled: number; cancelRate: string }[];
-  totalCanceled: number;
+  plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
   sources?: {
     new?: { included: boolean; error?: string };
     old?: { included: boolean; error?: string };
@@ -69,27 +70,21 @@ const Admin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // New access code form
   const [newCode, setNewCode] = useState('');
   const [newCodeMaxUses, setNewCodeMaxUses] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
-  const [cancelingUserId, setCancelingUserId] = useState<string | null>(null);
+  const [actionUserId, setActionUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      checkAdminStatus();
-    }
+    if (user) checkAdminStatus();
   }, [user]);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchAllData();
-    }
+    if (isAdmin) fetchAllData();
   }, [isAdmin]);
 
   const checkAdminStatus = async () => {
     if (!user) return;
-    
     setIsCheckingAdmin(true);
     try {
       const { data, error } = await supabase
@@ -98,15 +93,8 @@ const Admin = () => {
         .eq('user_id', user.id)
         .eq('role', 'admin')
         .maybeSingle();
-      
-      if (error) {
-        console.error('Error checking admin status:', error);
-        setIsAdmin(false);
-      } else {
-        setIsAdmin(!!data);
-      }
-    } catch (error) {
-      console.error('Error checking admin:', error);
+      setIsAdmin(!error && !!data);
+    } catch {
       setIsAdmin(false);
     } finally {
       setIsCheckingAdmin(false);
@@ -124,7 +112,7 @@ const Admin = () => {
         supabase.functions.invoke('admin-stats'),
       ]);
 
-      if (profilesRes.data) setProfiles(profilesRes.data);
+      if (profilesRes.data) setProfiles(profilesRes.data as Profile[]);
       if (codesRes.data) setAccessCodes(codesRes.data);
       if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
 
@@ -146,7 +134,6 @@ const Admin = () => {
   const handleCreateCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCode.trim()) return;
-
     setIsCreatingCode(true);
     try {
       const { error } = await supabase.from('access_codes').insert({
@@ -154,66 +141,65 @@ const Admin = () => {
         max_uses: newCodeMaxUses ? parseInt(newCodeMaxUses) : null,
         is_active: true,
       });
-
-      if (error) {
-        toast.error('Failed to create access code');
-        console.error('Error:', error);
-        return;
-      }
-
+      if (error) { toast.error('Failed to create access code'); return; }
       toast.success('Access code created!');
       setNewCode('');
       setNewCodeMaxUses('');
       fetchAllData();
-    } catch (error) {
-      toast.error('Something went wrong');
-    } finally {
-      setIsCreatingCode(false);
-    }
+    } catch { toast.error('Something went wrong'); }
+    finally { setIsCreatingCode(false); }
   };
 
   const toggleCodeStatus = async (codeId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('access_codes')
-        .update({ is_active: !currentStatus })
-        .eq('id', codeId);
-
-      if (error) {
-        toast.error('Failed to update code');
-        return;
-      }
-
+      const { error } = await supabase.from('access_codes').update({ is_active: !currentStatus }).eq('id', codeId);
+      if (error) { toast.error('Failed to update code'); return; }
       toast.success(`Code ${!currentStatus ? 'activated' : 'deactivated'}`);
       fetchAllData();
-    } catch (error) {
-      toast.error('Something went wrong');
-    }
+    } catch { toast.error('Something went wrong'); }
   };
 
   const handleCancelSubscription = async (userId: string, email: string | null) => {
-    if (!confirm(`Cancel subscription and revoke access for ${email || userId}?`)) return;
-    
-    setCancelingUserId(userId);
+    if (!confirm(`Schedule cancellation for ${email || userId}? They'll keep access until period end.`)) return;
+    setActionUserId(userId);
     try {
       const { data, error } = await supabase.functions.invoke('admin-cancel-subscription', {
         body: { target_user_id: userId },
       });
+      if (error) { toast.error('Failed to cancel subscription'); return; }
 
-      if (error) {
-        toast.error('Failed to cancel subscription');
-        console.error('Cancel error:', error);
-        return;
-      }
+      // Update local state immediately
+      setProfiles(prev => prev.map(p => p.user_id === userId ? {
+        ...p,
+        cancel_at_period_end: true,
+        current_period_end: data?.current_period_end || p.current_period_end,
+        subscription_status: data?.subscription_status || p.subscription_status,
+      } : p));
 
-      toast.success(data?.message || `Subscription canceled (${data?.canceled_count || 0} canceled)`);
-      fetchAllData();
-    } catch (error) {
-      toast.error('Something went wrong');
-      console.error('Cancel error:', error);
-    } finally {
-      setCancelingUserId(null);
-    }
+      toast.success(data?.message || 'Subscription scheduled for cancellation');
+    } catch { toast.error('Something went wrong'); }
+    finally { setActionUserId(null); }
+  };
+
+  const handleUndoCancel = async (userId: string, email: string | null) => {
+    if (!confirm(`Undo cancellation for ${email || userId}?`)) return;
+    setActionUserId(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-undo-cancel-subscription', {
+        body: { target_user_id: userId },
+      });
+      if (error) { toast.error('Failed to undo cancellation'); return; }
+
+      setProfiles(prev => prev.map(p => p.user_id === userId ? {
+        ...p,
+        cancel_at_period_end: false,
+        current_period_end: data?.current_period_end || p.current_period_end,
+        subscription_status: data?.subscription_status || p.subscription_status,
+      } : p));
+
+      toast.success(data?.message || 'Cancellation undone');
+    } catch { toast.error('Something went wrong'); }
+    finally { setActionUserId(null); }
   };
 
   const filteredProfiles = profiles.filter(profile => 
@@ -222,11 +208,7 @@ const Admin = () => {
   );
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   if (authLoading || isCheckingAdmin) {
@@ -250,14 +232,10 @@ const Admin = () => {
             <CardHeader className="text-center">
               <Shield className="h-12 w-12 text-destructive mx-auto mb-2" />
               <CardTitle>Access Denied</CardTitle>
-              <CardDescription>
-                You don't have permission to view this page.
-              </CardDescription>
+              <CardDescription>You don't have permission to view this page.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>
-                Go Home
-              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Go Home</Button>
             </CardContent>
           </Card>
         </main>
@@ -283,7 +261,6 @@ const Admin = () => {
             </Button>
           </div>
 
-          {/* Revenue & Stats Cards */}
           {statsError && (
             <Card variant="glass" className="mb-4 border-destructive/40">
               <CardContent className="pt-6">
@@ -297,17 +274,13 @@ const Admin = () => {
               {(stats.sources?.old?.error || stats.sources?.new?.error) && (
                 <Card variant="glass" className="mb-4 border-destructive/40">
                   <CardContent className="pt-6 space-y-1">
-                    {stats.sources?.new?.error && (
-                      <p className="text-sm text-destructive">New Stripe: {stats.sources.new.error}</p>
-                    )}
-                    {stats.sources?.old?.error && (
-                      <p className="text-sm text-destructive">Old Stripe: {stats.sources.old.error}</p>
-                    )}
+                    {stats.sources?.new?.error && <p className="text-sm text-destructive">New Stripe: {stats.sources.new.error}</p>}
+                    {stats.sources?.old?.error && <p className="text-sm text-destructive">Old Stripe: {stats.sources.old.error}</p>}
                   </CardContent>
                 </Card>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <Card variant="glass">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
@@ -329,7 +302,20 @@ const Admin = () => {
                       </div>
                       <div>
                         <p className="text-2xl font-bold">${stats.mrr.toFixed(2)}</p>
-                        <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+                        <p className="text-sm text-muted-foreground">Current MRR</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-accent/20">
+                        <TrendingUp className="h-6 w-6 text-accent-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">${stats.projectedMrr.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">Projected MRR</p>
                       </div>
                     </div>
                   </CardContent>
@@ -342,7 +328,7 @@ const Admin = () => {
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{stats.totalActive}</p>
-                        <p className="text-sm text-muted-foreground">Active Paid Subs{stats.cancelingCount > 0 ? ` (${stats.cancelingCount} canceling)` : ''}</p>
+                        <p className="text-sm text-muted-foreground">Active Subs ({stats.scheduledCancels} canceling)</p>
                       </div>
                     </div>
                   </CardContent>
@@ -351,11 +337,11 @@ const Admin = () => {
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
                       <div className="p-3 rounded-lg bg-destructive/20">
-                        <TrendingUp className="h-6 w-6 text-destructive" />
+                        <CalendarClock className="h-6 w-6 text-destructive" />
                       </div>
                       <div>
                         <p className="text-2xl font-bold">{stats.cancelRate}%</p>
-                        <p className="text-sm text-muted-foreground">Cancel Rate ({stats.totalCanceled}/{stats.totalActive + stats.totalCanceled})</p>
+                        <p className="text-sm text-muted-foreground">Cancel Rate ({stats.scheduledCancels}/{stats.totalActive})</p>
                       </div>
                     </div>
                   </CardContent>
@@ -374,7 +360,7 @@ const Admin = () => {
                           <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
                           <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            {plan.canceled} canceled ({plan.cancelRate}%)
+                            {plan.scheduledCancels} scheduled cancel{plan.scheduledCancels !== 1 ? 's' : ''} ({plan.cancelRate}%)
                           </p>
                         </div>
                       </div>
@@ -430,17 +416,24 @@ const Admin = () => {
                             <TableRow key={profile.id}>
                               <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
                               <TableCell>
-                                <Badge 
-                                  variant={profile.subscription_status === 'active' || profile.subscription_status === 'canceling' ? 'default' : 'secondary'}
-                                  className={profile.subscription_status === 'active' 
-                                    ? 'bg-green-500/20 text-green-500 border-green-500/30' 
-                                    : profile.subscription_status === 'canceling'
-                                    ? 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30'
-                                    : ''
-                                  }
-                                >
-                                  {profile.subscription_status || 'inactive'}
-                                </Badge>
+                                <div className="flex flex-col gap-1">
+                                  <Badge 
+                                    variant={profile.subscription_status === 'active' ? 'default' : 'secondary'}
+                                    className={profile.subscription_status === 'active' 
+                                      ? 'bg-green-500/20 text-green-500 border-green-500/30' 
+                                      : profile.subscription_status === 'canceled'
+                                      ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                                      : ''
+                                    }
+                                  >
+                                    {profile.subscription_status || 'inactive'}
+                                  </Badge>
+                                  {profile.cancel_at_period_end && profile.current_period_end && (
+                                    <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30 text-xs">
+                                      Cancels {formatDate(profile.current_period_end)}
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell>{profile.access_type || '-'}</TableCell>
                               <TableCell>
@@ -452,28 +445,46 @@ const Admin = () => {
                                 {formatDate(profile.created_at)}
                               </TableCell>
                               <TableCell>
-                                {profile.subscription_status === 'active' && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-destructive hover:text-destructive"
-                                    onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
-                                    disabled={cancelingUserId === profile.user_id}
-                                  >
-                                    {cancelingUserId === profile.user_id ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <XCircle className="h-4 w-4 mr-1" />
-                                    )}
-                                    Cancel
-                                  </Button>
-                                )}
+                                <div className="flex gap-1">
+                                  {profile.subscription_status === 'active' && !profile.cancel_at_period_end && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-destructive hover:text-destructive"
+                                      onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
+                                      disabled={actionUserId === profile.user_id}
+                                    >
+                                      {actionUserId === profile.user_id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                      )}
+                                      Cancel
+                                    </Button>
+                                  )}
+                                  {profile.cancel_at_period_end && profile.subscription_status === 'active' && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-primary hover:text-primary"
+                                      onClick={() => handleUndoCancel(profile.user_id, profile.email)}
+                                      disabled={actionUserId === profile.user_id}
+                                    >
+                                      {actionUserId === profile.user_id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Undo2 className="h-4 w-4 mr-1" />
+                                      )}
+                                      Undo
+                                    </Button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
                           {filteredProfiles.length === 0 && (
                             <TableRow>
-                               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                                 No users found
                               </TableCell>
                             </TableRow>
@@ -487,7 +498,6 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="codes" className="space-y-4">
-              {/* Create New Code */}
               <Card variant="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -517,7 +527,6 @@ const Admin = () => {
                 </CardContent>
               </Card>
 
-              {/* Existing Codes */}
               <Card variant="glass">
                 <CardHeader>
                   <CardTitle>All Access Codes</CardTitle>
@@ -546,26 +555,15 @@ const Admin = () => {
                               <TableCell>
                                 <Badge 
                                   variant={code.is_active ? 'default' : 'secondary'}
-                                  className={code.is_active 
-                                    ? 'bg-green-500/20 text-green-500 border-green-500/30' 
-                                    : ''
-                                  }
+                                  className={code.is_active ? 'bg-green-500/20 text-green-500 border-green-500/30' : ''}
                                 >
                                   {code.is_active ? 'Active' : 'Inactive'}
                                 </Badge>
                               </TableCell>
+                              <TableCell>{code.current_uses} / {code.max_uses || '∞'}</TableCell>
+                              <TableCell className="text-muted-foreground">{formatDate(code.created_at)}</TableCell>
                               <TableCell>
-                                {code.current_uses} / {code.max_uses || '∞'}
-                              </TableCell>
-                              <TableCell className="text-muted-foreground">
-                                {formatDate(code.created_at)}
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleCodeStatus(code.id, code.is_active)}
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => toggleCodeStatus(code.id, code.is_active)}>
                                   {code.is_active ? 'Deactivate' : 'Activate'}
                                 </Button>
                               </TableCell>
@@ -573,9 +571,7 @@ const Admin = () => {
                           ))}
                           {accessCodes.length === 0 && (
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                                No access codes found
-                              </TableCell>
+                              <TableCell colSpan={5} className="text-center text-muted-foreground py-8">No access codes found</TableCell>
                             </TableRow>
                           )}
                         </TableBody>

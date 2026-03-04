@@ -224,13 +224,18 @@ export type Database = {
       profiles: {
         Row: {
           access_type: string | null
+          cancel_at_period_end: boolean
           created_at: string
+          current_period_end: string | null
           email: string | null
           first_name: string | null
           has_access: boolean
           id: string
           last_name: string | null
+          price_id: string | null
           promo_used: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           subscription_status: string | null
           trial_ends_at: string | null
           updated_at: string
@@ -238,13 +243,18 @@ export type Database = {
         }
         Insert: {
           access_type?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
+          current_period_end?: string | null
           email?: string | null
           first_name?: string | null
           has_access?: boolean
           id?: string
           last_name?: string | null
+          price_id?: string | null
           promo_used?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string | null
           trial_ends_at?: string | null
           updated_at?: string
@@ -252,13 +262,18 @@ export type Database = {
         }
         Update: {
           access_type?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
+          current_period_end?: string | null
           email?: string | null
           first_name?: string | null
           has_access?: boolean
           id?: string
           last_name?: string | null
+          price_id?: string | null
           promo_used?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           subscription_status?: string | null
           trial_ends_at?: string | null
           updated_at?: string

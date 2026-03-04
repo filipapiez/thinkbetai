@@ -8,14 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const PLAN_PRICES: Record<string, number> = { basic: 4.99, pro: 13.99, insider: 49.99 };
 const EMPTY_PLAN_COUNTS: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
-
-const OLD_PRICE_TO_PLAN: Record<string, string> = {
-  // Optional explicit mapping for old account price IDs (if they differ)
-  // price_OLD_BASIC: "basic",
-  // price_OLD_PRO: "pro",
-  // price_OLD_INSIDER: "insider",
-};
 
 function inferPlanFromAmount(amountCents: number | null | undefined): string | null {
   if (amountCents === 499) return "basic";
@@ -26,91 +20,75 @@ function inferPlanFromAmount(amountCents: number | null | undefined): string | n
 
 type StripeStats = {
   totalActive: number;
-  cancelingCount: number;
-  canceledCount: number;
+  scheduledCancels: number;
   planCounts: Record<string, number>;
+  planScheduledCancels: Record<string, number>;
 };
 
-async function fetchStripeStats(stripeKey: string, label: "new" | "old"): Promise<StripeStats> {
+async function fetchStripeStats(stripeKey: string, label: string): Promise<StripeStats> {
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
   const planCounts: Record<string, number> = { ...EMPTY_PLAN_COUNTS };
+  const planScheduledCancels: Record<string, number> = { ...EMPTY_PLAN_COUNTS };
 
   let totalActive = 0;
-  let cancelingCount = 0;
-  let canceledCount = 0;
-
+  let scheduledCancels = 0;
   let hasMore = true;
   let startingAfter: string | undefined;
 
   while (hasMore) {
     const params: Record<string, unknown> = { status: "active", limit: 100 };
     if (startingAfter) params.starting_after = startingAfter;
-
     const subs = await stripe.subscriptions.list(params);
 
     for (const sub of subs.data) {
       totalActive++;
-      const isCanceling = !!sub.cancel_at_period_end;
-      if (isCanceling) cancelingCount++;
-
       const price = sub.items.data[0]?.price;
       const priceId = price?.id;
       const amountCents = price?.unit_amount;
 
       let plan = priceId
-        ? (PRICE_TO_PLAN_ID as Record<string, string>)[priceId] ?? OLD_PRICE_TO_PLAN[priceId] ?? null
+        ? (PRICE_TO_PLAN_ID as Record<string, string>)[priceId] ?? null
         : null;
+      if (!plan) plan = inferPlanFromAmount(amountCents);
 
-      if (!plan) {
-        plan = inferPlanFromAmount(amountCents);
+      if (sub.cancel_at_period_end) {
+        scheduledCancels++;
+        if (plan && planScheduledCancels[plan] !== undefined) {
+          planScheduledCancels[plan]++;
+        }
       }
 
-      // Only count towards MRR if NOT canceling
-      if (!isCanceling && plan && planCounts[plan] !== undefined) {
-        planCounts[plan] += 1;
+      // Count all active subs for MRR (including scheduled cancels — they're still paying this cycle)
+      if (plan && planCounts[plan] !== undefined) {
+        planCounts[plan]++;
       }
     }
 
     hasMore = subs.has_more;
-    if (subs.data.length > 0) {
-      startingAfter = subs.data[subs.data.length - 1].id;
-    }
+    if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  hasMore = true;
-  startingAfter = undefined;
-
-  while (hasMore) {
-    const params: Record<string, unknown> = { status: "canceled", limit: 100 };
-    if (startingAfter) params.starting_after = startingAfter;
-
-    const subs = await stripe.subscriptions.list(params);
-    canceledCount += subs.data.length;
-
-    hasMore = subs.has_more;
-    if (subs.data.length > 0) {
-      startingAfter = subs.data[subs.data.length - 1].id;
-    }
-  }
-
-  console.log(`[ADMIN-STATS][${label}] active=${totalActive} canceling=${cancelingCount} canceled=${canceledCount} plans=${JSON.stringify(planCounts)}`);
-
-  return { totalActive, cancelingCount, canceledCount, planCounts };
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} plans=${JSON.stringify(planCounts)}`);
+  return { totalActive, scheduledCancels, planCounts, planScheduledCancels };
 }
 
 function mergeStats(stats: StripeStats[]): StripeStats {
   return stats.reduce(
     (acc, curr) => ({
       totalActive: acc.totalActive + curr.totalActive,
-      cancelingCount: acc.cancelingCount + curr.cancelingCount,
-      canceledCount: acc.canceledCount + curr.canceledCount,
+      scheduledCancels: acc.scheduledCancels + curr.scheduledCancels,
       planCounts: {
         basic: acc.planCounts.basic + curr.planCounts.basic,
         pro: acc.planCounts.pro + curr.planCounts.pro,
         insider: acc.planCounts.insider + curr.planCounts.insider,
       },
+      planScheduledCancels: {
+        basic: acc.planScheduledCancels.basic + curr.planScheduledCancels.basic,
+        pro: acc.planScheduledCancels.pro + curr.planScheduledCancels.pro,
+        insider: acc.planScheduledCancels.insider + curr.planScheduledCancels.insider,
+      },
     }),
-    { totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { ...EMPTY_PLAN_COUNTS } }
+    { totalActive: 0, scheduledCancels: 0, planCounts: { ...EMPTY_PLAN_COUNTS }, planScheduledCancels: { ...EMPTY_PLAN_COUNTS } }
   );
 }
 
@@ -146,25 +124,19 @@ serve(async (req) => {
     const oldKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") ?? "";
 
     const accountFetches = [
-      { label: "new" as const, key: newKey },
-      { label: "old" as const, key: oldKey },
+      { label: "new", key: newKey },
+      { label: "old", key: oldKey },
     ];
 
     const settled = await Promise.allSettled(
       accountFetches.map(async ({ label, key }) => {
-        if (!key) {
-          throw new Error(`${label.toUpperCase()} Stripe key missing`);
-        }
-        const stats = await fetchStripeStats(key, label);
-        return { label, stats };
+        if (!key) throw new Error(`${label.toUpperCase()} Stripe key missing`);
+        return { label, stats: await fetchStripeStats(key, label) };
       })
     );
 
     const successfulStats: StripeStats[] = [];
-    const sources: Record<string, { included: boolean; error?: string }> = {
-      new: { included: false },
-      old: { included: false },
-    };
+    const sources: Record<string, { included: boolean; error?: string }> = { new: { included: false }, old: { included: false } };
 
     settled.forEach((result, idx) => {
       const label = accountFetches[idx].label;
@@ -178,9 +150,7 @@ serve(async (req) => {
       }
     });
 
-    if (successfulStats.length === 0) {
-      throw new Error("Could not load stats from either Stripe account");
-    }
+    if (successfulStats.length === 0) throw new Error("Could not load stats from either Stripe account");
 
     const merged = mergeStats(successfulStats);
 
@@ -188,68 +158,40 @@ serve(async (req) => {
       .from("profiles")
       .select("*", { count: "exact", head: true });
 
-    // Count cancellations from our own database (only those done through the website)
-    const { count: dbCanceledCount } = await supabaseClient
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("subscription_status", "canceled");
-
-    const { count: dbCancelingCount } = await supabaseClient
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("subscription_status", "canceling");
-
-    const websiteCanceled = (dbCanceledCount || 0) + (dbCancelingCount || 0);
-
-    // Per-plan canceled counts from DB
-    const { data: canceledProfiles } = await supabaseClient
-      .from("profiles")
-      .select("access_type")
-      .in("subscription_status", ["canceled", "canceling"]);
-
-    const planCanceledCounts: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
-    if (canceledProfiles) {
-      for (const p of canceledProfiles) {
-        const plan = p.access_type?.toLowerCase();
-        if (plan && planCanceledCounts[plan] !== undefined) {
-          planCanceledCounts[plan]++;
-        }
-      }
-    }
-
-    const planPrices: Record<string, number> = {
-      basic: 4.99,
-      pro: 13.99,
-      insider: 49.99,
-    };
-
-    const mrr = Object.entries(merged.planCounts).reduce(
-      (sum, [plan, count]) => sum + count * (planPrices[plan] || 0),
-      0
+    // Current MRR: all active subs (including scheduled cancels — they're still paying this cycle)
+    const currentMrr = Object.entries(merged.planCounts).reduce(
+      (sum, [plan, count]) => sum + count * (PLAN_PRICES[plan] || 0), 0
     );
 
-    const allPaidEver = merged.totalActive + websiteCanceled;
-    const cancelRate = allPaidEver > 0 ? ((websiteCanceled / allPaidEver) * 100).toFixed(1) : "0";
+    // Projected MRR: exclude scheduled cancels
+    const projectedMrr = Object.entries(merged.planCounts).reduce(
+      (sum, [plan, count]) => {
+        const scheduledCancels = merged.planScheduledCancels[plan] || 0;
+        return sum + (count - scheduledCancels) * (PLAN_PRICES[plan] || 0);
+      }, 0
+    );
+
+    const cancelRate = merged.totalActive > 0
+      ? ((merged.scheduledCancels / merged.totalActive) * 100).toFixed(1)
+      : "0";
 
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers || 0,
-        mrr,
+        mrr: currentMrr,
+        projectedMrr,
         totalActive: merged.totalActive,
-        cancelingCount: dbCancelingCount || 0,
-        canceledCount: dbCanceledCount || 0,
+        scheduledCancels: merged.scheduledCancels,
         cancelRate,
         sources,
-        totalCanceled: websiteCanceled,
         plans: Object.entries(merged.planCounts).map(([key, count]) => {
-          const canceled = planCanceledCounts[key] || 0;
-          const total = count + canceled;
-          const planCancelRate = total > 0 ? ((canceled / total) * 100).toFixed(1) : "0";
+          const scheduledCancels = merged.planScheduledCancels[key] || 0;
+          const planCancelRate = count > 0 ? ((scheduledCancels / count) * 100).toFixed(1) : "0";
           return {
             name: key.charAt(0).toUpperCase() + key.slice(1),
             count,
-            revenue: count * (planPrices[key] || 0),
-            canceled,
+            revenue: count * (PLAN_PRICES[key] || 0),
+            scheduledCancels,
             cancelRate: planCancelRate,
           };
         }),
