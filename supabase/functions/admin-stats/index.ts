@@ -50,7 +50,8 @@ async function fetchStripeStats(stripeKey: string, label: "new" | "old"): Promis
 
     for (const sub of subs.data) {
       totalActive++;
-      if (sub.cancel_at_period_end) cancelingCount++;
+      const isCanceling = !!sub.cancel_at_period_end;
+      if (isCanceling) cancelingCount++;
 
       const price = sub.items.data[0]?.price;
       const priceId = price?.id;
@@ -64,7 +65,8 @@ async function fetchStripeStats(stripeKey: string, label: "new" | "old"): Promis
         plan = inferPlanFromAmount(amountCents);
       }
 
-      if (plan && planCounts[plan] !== undefined) {
+      // Only count towards MRR if NOT canceling
+      if (!isCanceling && plan && planCounts[plan] !== undefined) {
         planCounts[plan] += 1;
       }
     }
