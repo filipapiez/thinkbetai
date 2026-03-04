@@ -276,8 +276,14 @@ const Admin = () => {
     profile.promo_used?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatDate = (dateString: string, includeTime = false) => {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    if (includeTime) {
+      options.hour = 'numeric';
+      options.minute = '2-digit';
+      options.hour12 = true;
+    }
+    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   const hasStripeLink = (profile: Profile) => !!profile.stripe_subscription_id;
@@ -526,7 +532,7 @@ const Admin = () => {
                                   </TableCell>
                                   <TableCell>{profile.access_type || '-'}</TableCell>
                                   <TableCell className="text-muted-foreground">
-                                    {formatDate(profile.created_at)}
+                                    {formatDate(profile.created_at, true)}
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex gap-1">
