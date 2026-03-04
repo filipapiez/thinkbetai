@@ -48,7 +48,7 @@ serve(async (req) => {
     // Look up the user's profile for stripe_subscription_id
     const { data: profile } = await supabaseClient
       .from("profiles")
-      .select("email, stripe_subscription_id, stripe_customer_id")
+      .select("email, stripe_subscription_id, stripe_customer_id, current_period_end")
       .eq("user_id", target_user_id)
       .single();
 
@@ -102,7 +102,11 @@ serve(async (req) => {
       proration_behavior: "none",
     });
 
-    const periodEnd = new Date((updated as any).current_period_end * 1000).toISOString();
+    const currentPeriodEndSeconds = (updated as any).current_period_end;
+    const periodEnd =
+      typeof currentPeriodEndSeconds === "number" && Number.isFinite(currentPeriodEndSeconds)
+        ? new Date(currentPeriodEndSeconds * 1000).toISOString()
+        : profile.current_period_end ?? null;
     const resolvedCustomerId = typeof updated.customer === "string" ? updated.customer : (updated.customer as any)?.id;
 
     logStep("Set cancel_at_period_end", { subId: subscriptionId, periodEnd });
@@ -124,7 +128,9 @@ serve(async (req) => {
       subscription_status: updated.status,
       cancel_at_period_end: true,
       current_period_end: periodEnd,
-      message: `Subscription will cancel on ${new Date(periodEnd).toLocaleDateString()}`,
+      message: periodEnd
+        ? `Subscription will cancel on ${new Date(periodEnd).toLocaleDateString()}`
+        : "Subscription scheduled to cancel at period end",
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
