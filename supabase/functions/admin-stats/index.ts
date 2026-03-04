@@ -186,6 +186,19 @@ serve(async (req) => {
       .from("profiles")
       .select("*", { count: "exact", head: true });
 
+    // Count cancellations from our own database (only those done through the website)
+    const { count: dbCanceledCount } = await supabaseClient
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("subscription_status", "canceled");
+
+    const { count: dbCancelingCount } = await supabaseClient
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("subscription_status", "canceling");
+
+    const websiteCanceled = (dbCanceledCount || 0) + (dbCancelingCount || 0);
+
     const planPrices: Record<string, number> = {
       basic: 4.99,
       pro: 13.99,
@@ -197,16 +210,16 @@ serve(async (req) => {
       0
     );
 
-    const allPaidEver = merged.totalActive + merged.canceledCount;
-    const cancelRate = allPaidEver > 0 ? ((merged.canceledCount / allPaidEver) * 100).toFixed(1) : "0";
+    const allPaidEver = merged.totalActive + websiteCanceled;
+    const cancelRate = allPaidEver > 0 ? ((websiteCanceled / allPaidEver) * 100).toFixed(1) : "0";
 
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers || 0,
         mrr,
         totalActive: merged.totalActive,
-        cancelingCount: merged.cancelingCount,
-        canceledCount: merged.canceledCount,
+        cancelingCount: dbCancelingCount || 0,
+        canceledCount: dbCanceledCount || 0,
         cancelRate,
         sources,
         plans: Object.entries(merged.planCounts).map(([key, count]) => ({
