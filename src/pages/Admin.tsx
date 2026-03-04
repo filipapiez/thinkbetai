@@ -172,28 +172,43 @@ const Admin = () => {
         body: { target_user_id: userId },
       });
 
-      if (error) { toast.error('Failed to cancel subscription'); return; }
-      
-      // Handle 404 — no Stripe link
-      if (data?.success === false) {
-        toast.error(data.error || 'No Stripe subscription linked');
-        // Still update stripe_customer_id if returned
-        if (data.stripe_customer_id) {
+      // supabase.functions.invoke puts non-2xx body into error or data depending on version
+      // Try to extract useful info from either
+      const result = data || (error as any);
+
+      // Parse error if it's a string (edge function non-2xx response)
+      let parsed = result;
+      if (typeof result === 'string') {
+        try { parsed = JSON.parse(result); } catch { parsed = null; }
+      }
+      if (error && typeof (error as any)?.context?.body === 'string') {
+        try { parsed = JSON.parse((error as any).context.body); } catch {}
+      }
+
+      // Handle no-link / not-found cases
+      if (parsed?.success === false || (error && !parsed?.success)) {
+        const msg = parsed?.error || 'No Stripe subscription linked. Use Revoke to remove access manually.';
+        toast.error(msg);
+        if (parsed?.stripe_customer_id) {
           setProfiles(prev => prev.map(p => p.user_id === userId ? {
-            ...p, stripe_customer_id: data.stripe_customer_id,
+            ...p, stripe_customer_id: parsed.stripe_customer_id,
           } : p));
         }
         return;
       }
 
+      if (error && !parsed) { toast.error('Failed to cancel subscription'); return; }
+
       setProfiles(prev => prev.map(p => p.user_id === userId ? {
         ...p,
         cancel_at_period_end: true,
-        current_period_end: data?.current_period_end || p.current_period_end,
-        subscription_status: data?.subscription_status || p.subscription_status,
+        current_period_end: parsed?.current_period_end || p.current_period_end,
+        subscription_status: parsed?.subscription_status || p.subscription_status,
+        stripe_subscription_id: parsed?.stripe_subscription_id || p.stripe_subscription_id,
+        stripe_customer_id: parsed?.stripe_customer_id || p.stripe_customer_id,
       } : p));
 
-      toast.success(data?.message || 'Subscription scheduled for cancellation');
+      toast.success(parsed?.message || 'Subscription scheduled for cancellation');
     } catch { toast.error('Something went wrong'); }
     finally { setActionUserId(null); }
   };
