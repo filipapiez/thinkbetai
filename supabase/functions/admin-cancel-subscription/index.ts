@@ -42,47 +42,43 @@ serve(async (req) => {
     if (!roleData) throw new Error("Unauthorized: admin role required");
     logStep("Admin verified", { adminId: userData.user.id });
 
-    const { target_user_id } = await req.json();
+    const { target_user_id, customer_id: providedCustomerId } = await req.json();
     if (!target_user_id) throw new Error("target_user_id is required");
 
-    // Look up the user's profile for stripe_subscription_id
+    // Look up the user's profile
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("email, stripe_subscription_id, stripe_customer_id, current_period_end")
       .eq("user_id", target_user_id)
       .single();
 
-    if (!profile?.email) throw new Error("Target user email not found");
-    logStep("Found target", { email: profile.email, subId: profile.stripe_subscription_id });
+    if (!profile) throw new Error("Target user profile not found");
+    logStep("Found target", { email: profile.email, subId: profile.stripe_subscription_id, custId: profile.stripe_customer_id });
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     let subscriptionId = profile.stripe_subscription_id;
-    let customerId = profile.stripe_customer_id;
+    // Priority: provided customer_id > stored stripe_customer_id
+    let customerId = providedCustomerId || profile.stripe_customer_id;
 
-    // If no subscription ID stored, find it via customer ID or email
+    // If we already have a subscription ID, use it directly
     if (!subscriptionId) {
-      logStep("No stored subscription ID, looking up in Stripe");
+      logStep("No stored subscription ID, looking up in Stripe by customer ID");
 
-      // Step 1: resolve Stripe customer — prefer stored customer ID, then email
       if (!customerId) {
-        const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
-        if (customers.data.length === 0) {
-          return new Response(JSON.stringify({ success: false, error: "This user has no Stripe subscription linked." }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
-          });
-        }
-        customerId = customers.data[0].id;
+        return new Response(JSON.stringify({ success: false, error: "This user has no Stripe Customer ID. Cannot cancel." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+        });
       }
 
       logStep("Using Stripe customer", { customerId });
 
-      // Step 2: find active subscription for this customer
+      // Find active subscription for this customer
       const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
       if (subs.data.length === 0) {
-        // Save the customer ID we found, but don't revoke — let admin use Revoke button
+        // Save the customer ID, but don't revoke
         await supabaseClient
           .from("profiles")
           .update({ stripe_customer_id: customerId })

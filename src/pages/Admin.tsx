@@ -164,12 +164,12 @@ const Admin = () => {
     } catch { toast.error('Something went wrong'); }
   };
 
-  const handleCancelSubscription = async (userId: string, email: string | null) => {
+  const handleCancelSubscription = async (userId: string, email: string | null, customerId?: string | null) => {
     if (!confirm(`Schedule cancellation for ${email || userId}? They'll keep access until period end.`)) return;
     setActionUserId(userId);
     try {
       const { data, error } = await supabase.functions.invoke('admin-cancel-subscription', {
-        body: { target_user_id: userId },
+        body: { target_user_id: userId, customer_id: customerId || undefined },
       });
 
       // supabase.functions.invoke puts non-2xx body into error or data depending on version
@@ -535,7 +535,7 @@ const Admin = () => {
                                           variant="ghost"
                                           size="sm"
                                           className="text-destructive hover:text-destructive"
-                                          onClick={() => handleCancelSubscription(profile.user_id, profile.email)}
+                                          onClick={() => handleCancelSubscription(profile.user_id, profile.email, profile.stripe_customer_id)}
                                           disabled={actionUserId === profile.user_id}
                                         >
                                           {actionUserId === profile.user_id ? (
