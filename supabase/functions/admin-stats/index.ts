@@ -71,26 +71,6 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
   return { totalActive, scheduledCancels, planCounts, planScheduledCancels };
 }
 
-function mergeStats(stats: StripeStats[]): StripeStats {
-  return stats.reduce(
-    (acc, curr) => ({
-      totalActive: acc.totalActive + curr.totalActive,
-      scheduledCancels: acc.scheduledCancels + curr.scheduledCancels,
-      planCounts: {
-        basic: acc.planCounts.basic + curr.planCounts.basic,
-        pro: acc.planCounts.pro + curr.planCounts.pro,
-        insider: acc.planCounts.insider + curr.planCounts.insider,
-      },
-      planScheduledCancels: {
-        basic: acc.planScheduledCancels.basic + curr.planScheduledCancels.basic,
-        pro: acc.planScheduledCancels.pro + curr.planScheduledCancels.pro,
-        insider: acc.planScheduledCancels.insider + curr.planScheduledCancels.insider,
-      },
-    }),
-    { totalActive: 0, scheduledCancels: 0, planCounts: { ...EMPTY_PLAN_COUNTS }, planScheduledCancels: { ...EMPTY_PLAN_COUNTS } }
-  );
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -119,59 +99,29 @@ serve(async (req) => {
 
     if (!roleData) throw new Error("Not authorized");
 
-    const newKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
-    const oldKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") ?? "";
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY missing");
 
-    const accountFetches = [
-      { label: "new", key: newKey },
-      { label: "old", key: oldKey },
-    ];
-
-    const settled = await Promise.allSettled(
-      accountFetches.map(async ({ label, key }) => {
-        if (!key) throw new Error(`${label.toUpperCase()} Stripe key missing`);
-        return { label, stats: await fetchStripeStats(key, label) };
-      })
-    );
-
-    const successfulStats: StripeStats[] = [];
-    const sources: Record<string, { included: boolean; error?: string }> = { new: { included: false }, old: { included: false } };
-
-    settled.forEach((result, idx) => {
-      const label = accountFetches[idx].label;
-      if (result.status === "fulfilled") {
-        successfulStats.push(result.value.stats);
-        sources[label] = { included: true };
-      } else {
-        const errMsg = result.reason instanceof Error ? result.reason.message : String(result.reason);
-        sources[label] = { included: false, error: errMsg };
-        console.warn(`[ADMIN-STATS][${label}] failed: ${errMsg}`);
-      }
-    });
-
-    if (successfulStats.length === 0) throw new Error("Could not load stats from either Stripe account");
-
-    const merged = mergeStats(successfulStats);
+    const stats = await fetchStripeStats(stripeKey, "primary");
 
     const { count: totalUsers } = await supabaseClient
       .from("profiles")
       .select("*", { count: "exact", head: true });
 
     // Current MRR: all active subs (including scheduled cancels — they're still paying this cycle)
-    const currentMrr = Object.entries(merged.planCounts).reduce(
+    const currentMrr = Object.entries(stats.planCounts).reduce(
       (sum, [plan, count]) => sum + count * (PLAN_PRICES[plan] || 0), 0
     );
 
-    // Projected MRR: exclude scheduled cancels
-    const projectedMrr = Object.entries(merged.planCounts).reduce(
+    const projectedMrr = Object.entries(stats.planCounts).reduce(
       (sum, [plan, count]) => {
-        const scheduledCancels = merged.planScheduledCancels[plan] || 0;
+        const scheduledCancels = stats.planScheduledCancels[plan] || 0;
         return sum + (count - scheduledCancels) * (PLAN_PRICES[plan] || 0);
       }, 0
     );
 
-    const cancelRate = merged.totalActive > 0
-      ? ((merged.scheduledCancels / merged.totalActive) * 100).toFixed(1)
+    const cancelRate = stats.totalActive > 0
+      ? ((stats.scheduledCancels / stats.totalActive) * 100).toFixed(1)
       : "0";
 
     return new Response(
@@ -179,12 +129,11 @@ serve(async (req) => {
         totalUsers: totalUsers || 0,
         mrr: currentMrr,
         projectedMrr,
-        totalActive: merged.totalActive,
-        scheduledCancels: merged.scheduledCancels,
+        totalActive: stats.totalActive,
+        scheduledCancels: stats.scheduledCancels,
         cancelRate,
-        sources,
-        plans: Object.entries(merged.planCounts).map(([key, count]) => {
-          const scheduledCancels = merged.planScheduledCancels[key] || 0;
+        plans: Object.entries(stats.planCounts).map(([key, count]) => {
+          const scheduledCancels = stats.planScheduledCancels[key] || 0;
           const planCancelRate = count > 0 ? ((scheduledCancels / count) * 100).toFixed(1) : "0";
           return {
             name: key.charAt(0).toUpperCase() + key.slice(1),

@@ -54,10 +54,6 @@ interface AdminStats {
   scheduledCancels: number;
   cancelRate: string;
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
-  sources?: {
-    new?: { included: boolean; error?: string };
-    old?: { included: boolean; error?: string };
-  };
 }
 
 const Admin = () => {
@@ -348,14 +344,6 @@ const Admin = () => {
 
           {stats && (
             <>
-              {(stats.sources?.old?.error || stats.sources?.new?.error) && (
-                <Card variant="glass" className="mb-4 border-destructive/40">
-                  <CardContent className="pt-6 space-y-1">
-                    {stats.sources?.new?.error && <p className="text-sm text-destructive">New Stripe: {stats.sources.new.error}</p>}
-                    {stats.sources?.old?.error && <p className="text-sm text-destructive">Old Stripe: {stats.sources.old.error}</p>}
-                  </CardContent>
-                </Card>
-              )}
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <Card variant="glass">
