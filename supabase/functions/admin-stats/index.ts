@@ -23,31 +23,7 @@ type StripeStats = {
   scheduledCancels: number;
   planCounts: Record<string, number>;
   planScheduledCancels: Record<string, number>;
-  lifetimeRevenue: number;
 };
-
-async function fetchLifetimeRevenue(stripe: Stripe): Promise<number> {
-  let total = 0;
-  let hasMore = true;
-  let startingAfter: string | undefined;
-
-  while (hasMore) {
-    const params: Record<string, unknown> = { limit: 100 };
-    if (startingAfter) params.starting_after = startingAfter;
-    const charges = await stripe.charges.list(params);
-
-    for (const charge of charges.data) {
-      if (charge.status === "succeeded" && !charge.refunded) {
-        total += (charge.amount - (charge.amount_refunded || 0));
-      }
-    }
-
-    hasMore = charges.has_more;
-    if (charges.data.length > 0) startingAfter = charges.data[charges.data.length - 1].id;
-  }
-
-  return total; // in cents
-}
 
 async function fetchStripeStats(stripeKey: string, label: string): Promise<StripeStats> {
   const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -58,9 +34,6 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
   let scheduledCancels = 0;
   let hasMore = true;
   let startingAfter: string | undefined;
-
-  // Fetch subs and lifetime revenue in parallel
-  const lifetimeRevenuePromise = fetchLifetimeRevenue(stripe);
 
   while (hasMore) {
     const params: Record<string, unknown> = { status: "active", limit: 100 };
@@ -94,10 +67,8 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
     if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  const lifetimeRevenue = await lifetimeRevenuePromise;
-
-  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} plans=${JSON.stringify(planCounts)} lifetimeRevenue=$${(lifetimeRevenue / 100).toFixed(2)}`);
-  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, lifetimeRevenue };
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} plans=${JSON.stringify(planCounts)}`);
+  return { totalActive, scheduledCancels, planCounts, planScheduledCancels };
 }
 
 function mergeStats(stats: StripeStats[]): StripeStats {
@@ -105,7 +76,6 @@ function mergeStats(stats: StripeStats[]): StripeStats {
     (acc, curr) => ({
       totalActive: acc.totalActive + curr.totalActive,
       scheduledCancels: acc.scheduledCancels + curr.scheduledCancels,
-      lifetimeRevenue: acc.lifetimeRevenue + curr.lifetimeRevenue,
       planCounts: {
         basic: acc.planCounts.basic + curr.planCounts.basic,
         pro: acc.planCounts.pro + curr.planCounts.pro,
@@ -117,7 +87,7 @@ function mergeStats(stats: StripeStats[]): StripeStats {
         insider: acc.planScheduledCancels.insider + curr.planScheduledCancels.insider,
       },
     }),
-    { totalActive: 0, scheduledCancels: 0, lifetimeRevenue: 0, planCounts: { ...EMPTY_PLAN_COUNTS }, planScheduledCancels: { ...EMPTY_PLAN_COUNTS } }
+    { totalActive: 0, scheduledCancels: 0, planCounts: { ...EMPTY_PLAN_COUNTS }, planScheduledCancels: { ...EMPTY_PLAN_COUNTS } }
   );
 }
 
@@ -207,7 +177,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers || 0,
-        lifetimeRevenue: merged.lifetimeRevenue / 100,
         mrr: currentMrr,
         projectedMrr,
         totalActive: merged.totalActive,
