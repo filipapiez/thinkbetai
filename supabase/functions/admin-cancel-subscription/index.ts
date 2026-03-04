@@ -103,7 +103,7 @@ serve(async (req) => {
     });
 
     const periodEnd = new Date((updated as any).current_period_end * 1000).toISOString();
-    const customerId = typeof updated.customer === "string" ? updated.customer : (updated.customer as any)?.id;
+    const resolvedCustomerId = typeof updated.customer === "string" ? updated.customer : (updated.customer as any)?.id;
 
     logStep("Set cancel_at_period_end", { subId: subscriptionId, periodEnd });
 
@@ -115,7 +115,7 @@ serve(async (req) => {
         cancel_at_period_end: true,
         current_period_end: periodEnd,
         stripe_subscription_id: subscriptionId,
-        stripe_customer_id: customerId || profile.stripe_customer_id,
+        stripe_customer_id: resolvedCustomerId || customerId,
       })
       .eq("user_id", target_user_id);
 
