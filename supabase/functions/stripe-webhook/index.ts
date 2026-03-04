@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { getPlanIdFromPriceId } from "../_shared/stripePlans.ts";
+import { getPlanIdFromPriceId, getPlanIdFromAmount } from "../_shared/stripePlans.ts";
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -93,9 +93,11 @@ serve(async (req) => {
       if (!planId) {
         try {
           const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 1 });
-          const priceId = lineItems.data[0]?.price?.id;
-          logStep("Resolving planId from line item price", { priceId });
-          planId = getPlanIdFromPriceId(priceId);
+          const linePrice = lineItems.data[0]?.price;
+          const priceId = linePrice?.id;
+          const amountCents = linePrice?.unit_amount;
+          logStep("Resolving planId from line item", { priceId, amountCents });
+          planId = getPlanIdFromPriceId(priceId) || getPlanIdFromAmount(amountCents);
         } catch (e) {
           logStep("Failed to fetch line items", { error: String(e) });
         }
@@ -170,13 +172,22 @@ serve(async (req) => {
       if (!customer.deleted && customer.email) {
         const isActive = subscription.status === "active" || subscription.status === "trialing";
 
+        // Determine plan from subscription price
+        const subPrice = subscription.items.data[0]?.price;
+        const planId = getPlanIdFromPriceId(subPrice?.id) || getPlanIdFromAmount(subPrice?.unit_amount);
+
+        const updateData: Record<string, unknown> = {
+          has_access: isActive,
+          subscription_status: subscription.status,
+          updated_at: new Date().toISOString(),
+        };
+        if (planId) {
+          updateData.access_type = planId;
+        }
+
         const { error } = await supabaseAdmin
           .from("profiles")
-          .update({
-            has_access: isActive,
-            subscription_status: subscription.status,
-            updated_at: new Date().toISOString(),
-          })
+          .update(updateData)
           .eq("email", customer.email);
 
         if (error) {
@@ -186,6 +197,7 @@ serve(async (req) => {
             email: customer.email,
             status: subscription.status,
             hasAccess: isActive,
+            planId,
           });
         }
       }

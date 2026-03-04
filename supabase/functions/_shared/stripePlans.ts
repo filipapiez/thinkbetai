@@ -16,3 +16,10 @@ export function getPlanIdFromPriceId(priceId?: string | null): PlanId | null {
   if (!priceId) return null;
   return (PRICE_TO_PLAN_ID as Record<string, PlanId>)[priceId] ?? null;
 }
+
+export function getPlanIdFromAmount(amountCents?: number | null): PlanId | null {
+  if (amountCents === 499) return "basic";
+  if (amountCents === 1399) return "pro";
+  if (amountCents === 4999) return "insider";
+  return null;
+}
