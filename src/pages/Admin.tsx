@@ -40,17 +40,10 @@ interface UserRole {
   created_at: string;
 }
 
-interface Subscription {
-  id: string;
-  price_id: string;
-  status: string;
-  cancel_at_period_end: boolean | null;
-}
-
 const PLAN_PRICES: Record<string, { name: string; price: number }> = {
-  price_1SpOpRQrqKHReEDtP3WD1zne: { name: 'Basic', price: 4.99 },
-  price_1SpOqPQrqKHReEDtqHZcLsbY: { name: 'Pro', price: 13.99 },
-  price_1Sn2CkQrqKHReEDtvJ6iR1gz: { name: 'Insider', price: 49.00 },
+  basic: { name: 'Basic', price: 4.99 },
+  pro: { name: 'Pro', price: 13.99 },
+  insider: { name: 'Insider', price: 49.99 },
 };
 
 const Admin = () => {
@@ -70,7 +63,6 @@ const Admin = () => {
   const [newCodeMaxUses, setNewCodeMaxUses] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
   const [cancelingUserId, setCancelingUserId] = useState<string | null>(null);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -113,17 +105,15 @@ const Admin = () => {
   const fetchAllData = async () => {
     setIsLoading(true);
     try {
-      const [profilesRes, codesRes, rolesRes, subsRes] = await Promise.all([
+      const [profilesRes, codesRes, rolesRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('access_codes').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
-        supabase.from('subscriptions').select('id, price_id, status, cancel_at_period_end'),
       ]);
 
       if (profilesRes.data) setProfiles(profilesRes.data);
       if (codesRes.data) setAccessCodes(codesRes.data);
       if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
-      if (subsRes.data) setSubscriptions(subsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -274,19 +264,19 @@ const Admin = () => {
 
           {/* Revenue & Stats Cards */}
           {(() => {
-            const activeSubs = subscriptions.filter(s => s.status === 'active');
-            const canceledSubs = subscriptions.filter(s => s.status === 'canceled');
-            const cancelingSubs = subscriptions.filter(s => s.cancel_at_period_end);
-            const totalSubs = subscriptions.length;
-            const cancelRate = totalSubs > 0 ? ((canceledSubs.length / totalSubs) * 100).toFixed(1) : '0';
+            const paidActive = profiles.filter(p => p.subscription_status === 'active' && p.access_type && p.access_type !== 'free_code');
+            const cancelingProfiles = profiles.filter(p => p.subscription_status === 'canceling');
+            const canceledProfiles = profiles.filter(p => p.subscription_status === 'canceled');
+            const allPaidEver = paidActive.length + cancelingProfiles.length + canceledProfiles.length;
+            const cancelRate = allPaidEver > 0 ? ((canceledProfiles.length / allPaidEver) * 100).toFixed(1) : '0';
             
-            const totalMRR = activeSubs.reduce((sum, s) => {
-              const plan = PLAN_PRICES[s.price_id];
+            const totalMRR = paidActive.reduce((sum, p) => {
+              const plan = PLAN_PRICES[p.access_type || ''];
               return sum + (plan?.price || 0);
             }, 0);
 
-            const planBreakdown = Object.entries(PLAN_PRICES).map(([priceId, { name, price }]) => {
-              const count = activeSubs.filter(s => s.price_id === priceId).length;
+            const planBreakdown = Object.entries(PLAN_PRICES).map(([key, { name, price }]) => {
+              const count = paidActive.filter(p => p.access_type === key).length;
               return { name, count, revenue: count * price };
             });
 
@@ -326,8 +316,8 @@ const Admin = () => {
                           <CreditCard className="h-6 w-6 text-blue-500" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">{activeSubs.length}</p>
-                          <p className="text-sm text-muted-foreground">Active Subs{cancelingSubs.length > 0 ? ` (${cancelingSubs.length} canceling)` : ''}</p>
+                          <p className="text-2xl font-bold">{paidActive.length}</p>
+                          <p className="text-sm text-muted-foreground">Active Paid Subs{cancelingProfiles.length > 0 ? ` (${cancelingProfiles.length} canceling)` : ''}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -340,7 +330,7 @@ const Admin = () => {
                         </div>
                         <div>
                           <p className="text-2xl font-bold">{cancelRate}%</p>
-                          <p className="text-sm text-muted-foreground">Cancel Rate ({canceledSubs.length}/{totalSubs})</p>
+                          <p className="text-sm text-muted-foreground">Cancel Rate ({canceledProfiles.length}/{allPaidEver})</p>
                         </div>
                       </div>
                     </CardContent>
