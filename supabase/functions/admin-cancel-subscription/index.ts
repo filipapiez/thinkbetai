@@ -27,7 +27,6 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Verify the caller is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
 
@@ -37,7 +36,6 @@ serve(async (req) => {
     const adminUser = userData.user;
     if (!adminUser) throw new Error("Not authenticated");
 
-    // Check admin role
     const { data: roleData } = await supabaseClient
       .from("user_roles")
       .select("role")
@@ -50,9 +48,7 @@ serve(async (req) => {
 
     const { target_user_id } = await req.json();
     if (!target_user_id) throw new Error("target_user_id is required");
-    logStep("Target user", { target_user_id });
 
-    // Get target user's email from profiles
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("email")
@@ -64,16 +60,13 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Find Stripe customer
     const customers = await stripe.customers.list({ email: profile.email, limit: 1 });
     if (customers.data.length === 0) {
-      // No Stripe customer — just revoke DB access
       await supabaseClient
         .from("profiles")
         .update({ subscription_status: "canceled", has_access: false, access_type: null })
         .eq("user_id", target_user_id);
 
-      logStep("No Stripe customer, revoked DB access");
       return new Response(JSON.stringify({ success: true, message: "Access revoked (no Stripe customer)" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -81,25 +74,39 @@ serve(async (req) => {
 
     const customerId = customers.data[0].id;
 
-    // Cancel all active subscriptions
+    // Cancel at end of billing period instead of immediately
     const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active" });
     let canceledCount = 0;
+    let periodEnd: string | null = null;
 
     for (const sub of subscriptions.data) {
-      await stripe.subscriptions.cancel(sub.id);
+      const updated = await stripe.subscriptions.update(sub.id, {
+        cancel_at_period_end: true,
+      });
       canceledCount++;
-      logStep("Canceled subscription", { subId: sub.id });
+      const endTs = (updated as any).current_period_end;
+      if (typeof endTs === "number") {
+        periodEnd = new Date(endTs * 1000).toISOString();
+      }
+      logStep("Set cancel_at_period_end", { subId: sub.id, periodEnd });
     }
 
-    // Update profile
+    // Mark as canceling but keep access until period ends
     await supabaseClient
       .from("profiles")
-      .update({ subscription_status: "canceled", has_access: false, access_type: null })
+      .update({ subscription_status: "canceling" })
       .eq("user_id", target_user_id);
 
-    logStep("Profile updated, done", { canceledCount });
+    logStep("Done", { canceledCount, periodEnd });
 
-    return new Response(JSON.stringify({ success: true, canceled_count: canceledCount }), {
+    return new Response(JSON.stringify({
+      success: true,
+      canceled_count: canceledCount,
+      period_end: periodEnd,
+      message: periodEnd
+        ? `Subscription will end on ${new Date(periodEnd).toLocaleDateString()}`
+        : `${canceledCount} subscription(s) set to cancel at period end`,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
