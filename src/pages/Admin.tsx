@@ -429,7 +429,7 @@ const Admin = () => {
                 {stats.plans.map(plan => {
                   const planKey = plan.name.toLowerCase();
                   const planEmails = profiles
-                    .filter(p => p.access_type === planKey && p.has_access)
+                    .filter(p => p.access_type === planKey && p.has_access && p.subscription_status === 'active')
                     .map(p => p.email || 'No email')
                     .sort();
                   const isExpanded = expandedRows.has(`plan-${planKey}`);
