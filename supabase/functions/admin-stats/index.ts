@@ -7,8 +7,71 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Import shared plan mapping
 import { PRICE_TO_PLAN_ID } from "../_shared/stripePlans.ts";
+
+// Old Stripe price-to-plan mapping (add your old price IDs here if different)
+const OLD_PRICE_TO_PLAN: Record<string, string> = {
+  // Map old Stripe price IDs to plan names. We'll also try to infer from amount.
+};
+
+function inferPlanFromAmount(amountCents: number): string | null {
+  // Match by monthly price in cents
+  if (amountCents === 499) return "basic";
+  if (amountCents === 1399) return "pro";
+  if (amountCents === 4999) return "insider";
+  return null;
+}
+
+async function fetchStripeStats(stripeKey: string, label: string) {
+  const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+  const planCounts: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
+  let totalActive = 0;
+  let cancelingCount = 0;
+  let canceledCount = 0;
+
+  // Active subscriptions
+  let hasMore = true;
+  let startingAfter: string | undefined;
+
+  while (hasMore) {
+    const params: any = { status: "active", limit: 100 };
+    if (startingAfter) params.starting_after = startingAfter;
+    const subs = await stripe.subscriptions.list(params);
+
+    for (const sub of subs.data) {
+      totalActive++;
+      if (sub.cancel_at_period_end) cancelingCount++;
+
+      const priceId = sub.items.data[0]?.price?.id;
+      const amountCents = sub.items.data[0]?.price?.unit_amount;
+      // Try new mapping, then old mapping, then infer from amount
+      let plan = priceId ? (PRICE_TO_PLAN_ID as Record<string, string>)[priceId] ?? OLD_PRICE_TO_PLAN[priceId] : null;
+      if (!plan && amountCents) plan = inferPlanFromAmount(amountCents);
+      if (plan && planCounts[plan] !== undefined) {
+        planCounts[plan]++;
+      }
+    }
+
+    hasMore = subs.has_more;
+    if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
+  }
+
+  // Canceled subscriptions
+  hasMore = true;
+  startingAfter = undefined;
+  while (hasMore) {
+    const params: any = { status: "canceled", limit: 100 };
+    if (startingAfter) params.starting_after = startingAfter;
+    const subs = await stripe.subscriptions.list(params);
+    canceledCount += subs.data.length;
+    hasMore = subs.has_more;
+    if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
+  }
+
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} canceling=${cancelingCount} canceled=${canceledCount} plans=${JSON.stringify(planCounts)}`);
+
+  return { totalActive, cancelingCount, canceledCount, planCounts };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,77 +101,28 @@ serve(async (req) => {
 
     if (!roleData) throw new Error("Not authorized");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    // Fetch stats from both Stripe accounts in parallel
+    const newKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
+    const oldKey = Deno.env.get("STRIPE_OLD_SECRET_KEY") || "";
 
-    // Fetch all active subscriptions from Stripe
-    const planCounts: Record<string, number> = { basic: 0, pro: 0, insider: 0 };
-    let totalActive = 0;
-    let hasMore = true;
-    let startingAfter: string | undefined;
+    const promises: Promise<any>[] = [];
+    if (newKey) promises.push(fetchStripeStats(newKey, "NEW"));
+    else promises.push(Promise.resolve({ totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { basic: 0, pro: 0, insider: 0 } }));
 
-    while (hasMore) {
-      const params: any = { status: "active", limit: 100 };
-      if (startingAfter) params.starting_after = startingAfter;
+    if (oldKey) promises.push(fetchStripeStats(oldKey, "OLD"));
+    else promises.push(Promise.resolve({ totalActive: 0, cancelingCount: 0, canceledCount: 0, planCounts: { basic: 0, pro: 0, insider: 0 } }));
 
-      const subs = await stripe.subscriptions.list(params);
+    const [newStats, oldStats] = await Promise.all(promises);
 
-      for (const sub of subs.data) {
-        totalActive++;
-        const priceId = sub.items.data[0]?.price?.id;
-        const plan = priceId ? PRICE_TO_PLAN_ID[priceId as keyof typeof PRICE_TO_PLAN_ID] : null;
-        if (plan && planCounts[plan] !== undefined) {
-          planCounts[plan]++;
-        }
-      }
-
-      hasMore = subs.has_more;
-      if (subs.data.length > 0) {
-        startingAfter = subs.data[subs.data.length - 1].id;
-      }
-    }
-
-    // Fetch canceled subscriptions count
-    let canceledCount = 0;
-    hasMore = true;
-    startingAfter = undefined;
-
-    while (hasMore) {
-      const params: any = { status: "canceled", limit: 100 };
-      if (startingAfter) params.starting_after = startingAfter;
-
-      const subs = await stripe.subscriptions.list(params);
-      canceledCount += subs.data.length;
-
-      hasMore = subs.has_more;
-      if (subs.data.length > 0) {
-        startingAfter = subs.data[subs.data.length - 1].id;
-      }
-    }
-
-    // Fetch canceling (cancel_at_period_end) count
-    let cancelingCount = 0;
-    hasMore = true;
-    startingAfter = undefined;
-
-    while (hasMore) {
-      const params: any = { status: "active", limit: 100 };
-      if (startingAfter) params.starting_after = startingAfter;
-
-      const subs = await stripe.subscriptions.list(params);
-
-      for (const sub of subs.data) {
-        if (sub.cancel_at_period_end) {
-          cancelingCount++;
-        }
-      }
-
-      hasMore = subs.has_more;
-      if (subs.data.length > 0) {
-        startingAfter = subs.data[subs.data.length - 1].id;
-      }
-    }
+    // Merge
+    const planCounts: Record<string, number> = {
+      basic: newStats.planCounts.basic + oldStats.planCounts.basic,
+      pro: newStats.planCounts.pro + oldStats.planCounts.pro,
+      insider: newStats.planCounts.insider + oldStats.planCounts.insider,
+    };
+    const totalActive = newStats.totalActive + oldStats.totalActive;
+    const cancelingCount = newStats.cancelingCount + oldStats.cancelingCount;
+    const canceledCount = newStats.canceledCount + oldStats.canceledCount;
 
     // Total users from profiles
     const { count: totalUsers } = await supabaseClient
