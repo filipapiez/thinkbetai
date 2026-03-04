@@ -40,11 +40,15 @@ interface UserRole {
   created_at: string;
 }
 
-const PLAN_PRICES: Record<string, { name: string; price: number }> = {
-  basic: { name: 'Basic', price: 4.99 },
-  pro: { name: 'Pro', price: 13.99 },
-  insider: { name: 'Insider', price: 49.99 },
-};
+interface AdminStats {
+  totalUsers: number;
+  mrr: number;
+  totalActive: number;
+  cancelingCount: number;
+  canceledCount: number;
+  cancelRate: string;
+  plans: { name: string; count: number; revenue: number }[];
+}
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -55,6 +59,7 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -105,15 +110,17 @@ const Admin = () => {
   const fetchAllData = async () => {
     setIsLoading(true);
     try {
-      const [profilesRes, codesRes, rolesRes] = await Promise.all([
+      const [profilesRes, codesRes, rolesRes, statsRes] = await Promise.all([
         supabase.from('profiles').select('*').order('created_at', { ascending: false }),
         supabase.from('access_codes').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
+        supabase.functions.invoke('admin-stats'),
       ]);
 
       if (profilesRes.data) setProfiles(profilesRes.data);
       if (codesRes.data) setAccessCodes(codesRes.data);
       if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
+      if (statsRes.data && !statsRes.error) setStats(statsRes.data);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -263,101 +270,82 @@ const Admin = () => {
           </div>
 
           {/* Revenue & Stats Cards */}
-          {(() => {
-            const paidActive = profiles.filter(p => p.subscription_status === 'active' && p.access_type && p.access_type !== 'free_code');
-            const cancelingProfiles = profiles.filter(p => p.subscription_status === 'canceling');
-            const canceledProfiles = profiles.filter(p => p.subscription_status === 'canceled');
-            const allPaidEver = paidActive.length + cancelingProfiles.length + canceledProfiles.length;
-            const cancelRate = allPaidEver > 0 ? ((canceledProfiles.length / allPaidEver) * 100).toFixed(1) : '0';
-            
-            const totalMRR = paidActive.reduce((sum, p) => {
-              const plan = PLAN_PRICES[p.access_type || ''];
-              return sum + (plan?.price || 0);
-            }, 0);
+          {stats && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-primary/20">
+                        <Users className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">{stats.totalUsers}</p>
+                        <p className="text-sm text-muted-foreground">Total Users</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-primary/20">
+                        <DollarSign className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">${stats.mrr.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground">Monthly Revenue</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-primary/20">
+                        <CreditCard className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">{stats.totalActive}</p>
+                        <p className="text-sm text-muted-foreground">Active Paid Subs{stats.cancelingCount > 0 ? ` (${stats.cancelingCount} canceling)` : ''}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-destructive/20">
+                        <TrendingUp className="h-6 w-6 text-destructive" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">{stats.cancelRate}%</p>
+                        <p className="text-sm text-muted-foreground">Cancel Rate ({stats.canceledCount}/{stats.totalActive + stats.canceledCount})</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-            const planBreakdown = Object.entries(PLAN_PRICES).map(([key, { name, price }]) => {
-              const count = paidActive.filter(p => p.access_type === key).length;
-              return { name, count, revenue: count * price };
-            });
-
-            return (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <Card variant="glass">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {stats.plans.map(plan => (
+                  <Card variant="glass" key={plan.name}>
                     <CardContent className="pt-6">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-primary/20">
-                          <Users className="h-6 w-6 text-primary" />
+                        <div className="p-3 rounded-lg bg-accent/20">
+                          <BarChart3 className="h-6 w-6 text-accent-foreground" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">{profiles.length}</p>
-                          <p className="text-sm text-muted-foreground">Total Users</p>
+                          <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
+                          <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                  <Card variant="glass">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-green-500/20">
-                          <DollarSign className="h-6 w-6 text-green-500" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold">${totalMRR.toFixed(2)}</p>
-                          <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card variant="glass">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-blue-500/20">
-                          <CreditCard className="h-6 w-6 text-blue-500" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold">{paidActive.length}</p>
-                          <p className="text-sm text-muted-foreground">Active Paid Subs{cancelingProfiles.length > 0 ? ` (${cancelingProfiles.length} canceling)` : ''}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card variant="glass">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-red-500/20">
-                          <TrendingUp className="h-6 w-6 text-red-500" />
-                        </div>
-                        <div>
-                          <p className="text-2xl font-bold">{cancelRate}%</p>
-                          <p className="text-sm text-muted-foreground">Cancel Rate ({canceledProfiles.length}/{allPaidEver})</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Per-Plan Revenue */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  {planBreakdown.map(plan => (
-                    <Card variant="glass" key={plan.name}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 rounded-lg bg-accent/20">
-                            <BarChart3 className="h-6 w-6 text-accent-foreground" />
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
-                            <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </>
-            );
-          })()}
+                ))}
+              </div>
+            </>
+          )}
 
           <Tabs defaultValue="users" className="space-y-4">
             <TabsList>
