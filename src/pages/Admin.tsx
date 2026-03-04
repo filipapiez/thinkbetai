@@ -426,24 +426,52 @@ const Admin = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                {stats.plans.map(plan => (
-                  <Card variant="glass" key={plan.name}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-accent/20">
-                          <BarChart3 className="h-6 w-6 text-accent-foreground" />
+                {stats.plans.map(plan => {
+                  const planKey = plan.name.toLowerCase();
+                  const planEmails = profiles
+                    .filter(p => p.access_type === planKey && p.has_access)
+                    .map(p => p.email || 'No email')
+                    .sort();
+                  const isExpanded = expandedRows.has(`plan-${planKey}`);
+                  return (
+                    <Card
+                      variant="glass"
+                      key={plan.name}
+                      className="cursor-pointer transition-all hover:ring-1 hover:ring-primary/30"
+                      onClick={() => {
+                        const newExpanded = new Set(expandedRows);
+                        if (isExpanded) newExpanded.delete(`plan-${planKey}`);
+                        else newExpanded.add(`plan-${planKey}`);
+                        setExpandedRows(newExpanded);
+                      }}
+                    >
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-lg bg-accent/20">
+                            <BarChart3 className="h-6 w-6 text-accent-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
+                            <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {plan.scheduledCancels} scheduled cancel{plan.scheduledCancels !== 1 ? 's' : ''} ({plan.cancelRate}%)
+                            </p>
+                          </div>
+                          {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                         </div>
-                        <div className="flex-1">
-                          <p className="text-lg font-bold">${plan.revenue.toFixed(2)}/mo</p>
-                          <p className="text-sm text-muted-foreground">{plan.name} — {plan.count} subscriber{plan.count !== 1 ? 's' : ''}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {plan.scheduledCancels} scheduled cancel{plan.scheduledCancels !== 1 ? 's' : ''} ({plan.cancelRate}%)
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        {isExpanded && (
+                          <div className="mt-4 pt-3 border-t border-border space-y-1 max-h-48 overflow-y-auto">
+                            {planEmails.length > 0 ? planEmails.map((email, i) => (
+                              <p key={i} className="text-xs text-muted-foreground font-mono">{email}</p>
+                            )) : (
+                              <p className="text-xs text-muted-foreground italic">No users on this plan</p>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </>
           )}
