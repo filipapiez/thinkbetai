@@ -149,7 +149,10 @@ const Account = () => {
                     </CardTitle>
                     <Badge className="bg-primary/20 text-primary border-primary/30">
                       {profile?.promo_used ? `Code: ${profile.promo_used}` : 
-                       profile?.access_type === 'subscription' ? 'Premium' : 'Active'}
+                       profile?.access_type === 'pro' ? 'Pro Plan' :
+                       profile?.access_type === 'basic' ? 'Basic Plan' :
+                       profile?.access_type === 'insider' ? 'Insider Plan' :
+                       'Active'}
                     </Badge>
                   </div>
                   <CardDescription>
