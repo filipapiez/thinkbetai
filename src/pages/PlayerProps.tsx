@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { PlayerPropCard } from '@/components/PlayerPropCard';
+import { PlayerPropCard, SPORTSBOOKS } from '@/components/PlayerPropCard';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const PlayerProps = () => {
   const [sportFilter, setSportFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statFilter, setStatFilter] = useState<string | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
 
@@ -148,6 +149,29 @@ const PlayerProps = () => {
               </Button>
             ))}
             <div className="ml-auto flex items-center gap-2">
+              {/* Platform selector */}
+              <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50">
+                <Button
+                  variant={selectedPlatform === null ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setSelectedPlatform(null)}
+                >
+                  All
+                </Button>
+                {SPORTSBOOKS.map(sb => (
+                  <Button
+                    key={sb.id}
+                    variant={selectedPlatform === sb.id ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-7 px-2 gap-1"
+                    onClick={() => setSelectedPlatform(selectedPlatform === sb.id ? null : sb.id)}
+                  >
+                    <img src={sb.logo} alt={sb.name} className="h-4 w-4 object-contain rounded-sm" />
+                    <span className="text-xs hidden sm:inline">{sb.name}</span>
+                  </Button>
+                ))}
+              </div>
               <Button variant="outline" size="sm" onClick={refetch} disabled={isLoading}>
                 <RefreshCw className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -217,7 +241,7 @@ const PlayerProps = () => {
           {!isLoading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map(prop => (
-                <PlayerPropCard key={prop.id} prop={prop} />
+                <PlayerPropCard key={prop.id} prop={prop} selectedPlatform={selectedPlatform} />
               ))}
             </div>
           )}
