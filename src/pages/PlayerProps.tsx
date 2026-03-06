@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { PlayerPropCard, SPORTSBOOKS } from '@/components/PlayerPropCard';
+import { PlayerPropCard, SPORTSBOOKS, computeEdge } from '@/components/PlayerPropCard';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,14 +38,20 @@ const PlayerProps = () => {
   );
 
   const filtered = useMemo(() => {
-    return props.filter(p => {
-      const matchesSearch =
-        !searchQuery ||
-        p.playerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.team.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStat = !statFilter || p.statType === statFilter;
-      return matchesSearch && matchesStat;
-    });
+    return props
+      .filter(p => {
+        const matchesSearch =
+          !searchQuery ||
+          p.playerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.team.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStat = !statFilter || p.statType === statFilter;
+        return matchesSearch && matchesStat;
+      })
+      .sort((a, b) => {
+        const edgeA = computeEdge(a.overOdds, a.underOdds);
+        const edgeB = computeEdge(b.overOdds, b.underOdds);
+        return edgeB.prob - edgeA.prob;
+      });
   }, [props, searchQuery, statFilter]);
 
   // Stats summary

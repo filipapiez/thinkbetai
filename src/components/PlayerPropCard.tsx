@@ -33,13 +33,13 @@ interface PlayerPropCardProps {
 }
 
 // Convert American odds to implied probability
-function impliedProb(odds: number): number {
+export function impliedProb(odds: number): number {
   if (odds > 0) return 100 / (odds + 100);
   return Math.abs(odds) / (Math.abs(odds) + 100);
 }
 
 // Compute edge: difference between fair 50% and implied probability
-function computeEdge(overOdds: number, underOdds: number): { direction: 'Over' | 'Under'; edge: number; prob: number } {
+export function computeEdge(overOdds: number, underOdds: number): { direction: 'Over' | 'Under'; edge: number; prob: number } {
   const overProb = impliedProb(overOdds);
   const underProb = impliedProb(underOdds);
   // Remove vig: normalize
