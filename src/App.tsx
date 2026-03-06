@@ -48,6 +48,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
+const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -132,6 +133,7 @@ const App = () => (
                 <Route path="/games" element={<Games />} />
                 <Route path="/games/:gameId" element={<GameDetail />} />
                 <Route path="/picks" element={<Picks />} />
+                <Route path="/player-props" element={<PlayerProps />} />
                 <Route path="/parlays" element={<ProtectedRoute requireSubscription><Parlays /></ProtectedRoute>} />
                 <Route path="/chat" element={<ProtectedRoute requireSubscription><Chat /></ProtectedRoute>} />
 
