@@ -225,14 +225,14 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
         {/* L5 hit rate bar */}
         <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
-            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L5 games
+            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L20
           </span>
-          <div className="flex gap-1 flex-1 justify-end">
+          <div className="flex gap-0.5 flex-1 justify-end">
             {l5Results.map((hit, i) => (
               <div
                 key={i}
                 className={cn(
-                  "h-2 flex-1 max-w-[48px] rounded-full",
+                  "h-2 flex-1 max-w-[16px] rounded-full",
                   hit ? 'bg-emerald-500' : 'bg-pink-500'
                 )}
               />
