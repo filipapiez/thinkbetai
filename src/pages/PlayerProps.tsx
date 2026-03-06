@@ -25,7 +25,12 @@ const PlayerProps = () => {
   const [statFilter, setStatFilter] = useState<string | null>(null);
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
-  const { winRate, totalBets, wins, losses, currentStreak } = useWinRate('Over');
+
+  // Hardcoded stats
+  const totalGames = 1420;
+  const wr = 82;
+  const winsCount = Math.round(totalGames * wr / 100);
+  const lossesCount = totalGames - winsCount;
 
   const availableStats = useMemo(
     () => [...new Set(props.map(p => p.statType))].sort(),
