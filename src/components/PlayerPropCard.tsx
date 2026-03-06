@@ -40,8 +40,10 @@ function pseudoHitRate(id: string): boolean[] {
     hash |= 0;
   }
   const results: boolean[] = [];
-  for (let i = 0; i < 5; i++) {
-    results.push(((hash >> i) & 1) === 1);
+  for (let i = 0; i < 20; i++) {
+    // Use different bit manipulation for more variety across 20 games
+    const subHash = hash ^ (i * 2654435761);
+    results.push(((subHash >> (i % 16)) & 1) === 1);
   }
   return results;
 }
@@ -118,7 +120,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
 
   const l5Results = useMemo(() => pseudoHitRate(prop.id), [prop.id]);
   const hitCount = l5Results.filter(Boolean).length;
-  const hitPct = hitCount * 20;
+  const hitPct = Math.round((hitCount / 20) * 100);
   const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
   const pace = useMemo(() => pseudoPace(prop.id), [prop.id]);
   const restDays = useMemo(() => pseudoRestDays(prop.id), [prop.id]);
@@ -145,7 +147,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
     const minsNote = avgMinutes >= 34 ? `heavy usage (${avgMinutes} MPG)` : avgMinutes >= 30 ? `solid minutes (${avgMinutes} MPG)` : `limited minutes (${avgMinutes} MPG)`;
 
     if (direction === 'Over' && edge > 5) {
-      return `Strong lean. ${playerFirst} is ${restNote} and seeing ${minsNote} — ${paceNote}. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc}, and ${playerFirst} has cleared this line in ${hitCount}/5 recent outings. The ${edge.toFixed(1)}% edge and ${prob.toFixed(0)}% implied probability make this one of the sharper Over plays on the board.`;
+      return `Strong lean. ${playerFirst} is ${restNote} and seeing ${minsNote} — ${paceNote}. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc}, and ${playerFirst} has cleared this line in ${hitCount}/20 recent outings. The ${edge.toFixed(1)}% edge and ${prob.toFixed(0)}% implied probability make this one of the sharper Over plays on the board.`;
     }
     if (direction === 'Over' && edge > 2) {
       return `${playerFirst} draws a favorable spot against ${prop.opponent} (${defOrd} vs ${position}, ${defDesc}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}, and he's ${restNote} with ${minsNote}. L5 hit rate sits at ${hitPct}% — the ${edge.toFixed(1)}% edge suggests the Over is slightly mispriced.`;
@@ -223,14 +225,14 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
         {/* L5 hit rate bar */}
         <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
-            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L5 games
+            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L20
           </span>
-          <div className="flex gap-1 flex-1 justify-end">
+          <div className="flex gap-0.5 flex-1 justify-end">
             {l5Results.map((hit, i) => (
               <div
                 key={i}
                 className={cn(
-                  "h-2 flex-1 max-w-[48px] rounded-full",
+                  "h-2 flex-1 max-w-[16px] rounded-full",
                   hit ? 'bg-emerald-500' : 'bg-pink-500'
                 )}
               />
