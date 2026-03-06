@@ -176,7 +176,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="text-center p-4 rounded-lg bg-muted/30">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Target className="h-4 w-4 text-primary" />
@@ -213,7 +213,9 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
             </Badge>
           </h4>
           <div className="space-y-2">
-            {recentBets.length > 0 ? recentBets.map((bet) => (
+            {isLoadingBets ? (
+              <div className="text-xs text-muted-foreground text-center py-4">Loading recent bets...</div>
+            ) : recentBets.length > 0 ? recentBets.map((bet) => (
               <div 
                 key={bet.id}
                 className={cn(
@@ -240,7 +242,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
                 </Badge>
               </div>
             )) : (
-              <div className="text-xs text-muted-foreground text-center py-4">Loading recent bets...</div>
+              <div className="text-xs text-muted-foreground text-center py-4">No tracked bets for this sport yet</div>
             )}
           </div>
         </div>
