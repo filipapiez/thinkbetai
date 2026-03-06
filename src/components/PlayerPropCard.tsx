@@ -48,10 +48,21 @@ export function computeEdge(overOdds: number, underOdds: number): { direction: '
   const fairUnder = underProb / total;
 
   // Pick whichever side has better value (closer to 50% or above)
+  let direction: 'Over' | 'Under';
+  let rawProb: number;
   if (fairUnder > fairOver) {
-    return { direction: 'Under', edge: (fairUnder - 0.5) * 100, prob: fairUnder * 100 };
+    direction = 'Under';
+    rawProb = fairUnder;
+  } else {
+    direction = 'Over';
+    rawProb = fairOver;
   }
-  return { direction: 'Over', edge: (fairOver - 0.5) * 100, prob: fairOver * 100 };
+
+  // Cap probability to a realistic range (52-78%)
+  const cappedProb = Math.min(Math.max(rawProb * 100, 52), 78);
+  const edge = Math.min((rawProb - 0.5) * 100, 28);
+
+  return { direction, edge, prob: cappedProb };
 }
 
 // Generate a pseudo-random but deterministic "L5 hit rate" from the prop ID
