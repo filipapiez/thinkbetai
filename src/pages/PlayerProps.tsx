@@ -25,7 +25,7 @@ const PlayerProps = () => {
   const [statFilter, setStatFilter] = useState<string | null>(null);
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
-  const { winRate, totalBets, wins, losses, currentStreak } = useWinRate();
+  const { winRate, totalBets, wins, losses, currentStreak } = useWinRate('Over');
 
   const availableStats = useMemo(
     () => [...new Set(props.map(p => p.statType))].sort(),
