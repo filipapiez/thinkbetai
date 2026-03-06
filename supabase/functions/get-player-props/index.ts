@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -19,6 +21,40 @@ Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
   const sportFilter = (url.searchParams.get("sport") || "all").toLowerCase();
 
+  // --- DB cache (30 min TTL) ---
+  const CACHE_KEY = `player-props-${sportFilter}`;
+  const CACHE_TTL_MS = 30 * 60 * 1000;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sb = createClient(supabaseUrl, serviceKey);
+
+  try {
+    const { data: cached } = await sb
+      .from("odds_cache")
+      .select("data, expires_at")
+      .eq("id", CACHE_KEY)
+      .maybeSingle();
+
+    if (cached && new Date(cached.expires_at) > new Date()) {
+      console.log("Serving player props from cache");
+      const cacheData = cached.data as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          success: true,
+          props: cacheData.props || [],
+          lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
+          count: (cacheData.props as unknown[])?.length || 0,
+          source: "cache",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+  } catch (e) {
+    console.warn("Cache read failed:", e);
+  }
+
+  // --- Fetch from API ---
   const leagueMap: Record<string, string[]> = {
     all: ["NBA", "NFL", "MLB", "NHL"],
     basketball: ["NBA"],
@@ -122,9 +158,6 @@ Deno.serve(async (req: Request) => {
             const ln = entry.ov?.l || entry.un?.l || 0;
             if (ln === 0) continue;
 
-            // Sanity check: filter obviously wrong lines
-            // NHL points/goals/assists/shots should be < 10, saves < 50
-            // NBA points < 60, rebounds/assists < 25
             const maxLines: Record<string, Record<string, number>> = {
               NHL: { Points: 10, Goals: 5, Assists: 5, Shots: 15, Saves: 50 },
               NBA: { Points: 60, Rebounds: 25, Assists: 20, "3-Pointers": 12, Steals: 8, Blocks: 8 },
@@ -163,11 +196,25 @@ Deno.serve(async (req: Request) => {
 
     console.log("Total props: " + allProps.length);
 
+    // Save to cache
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + CACHE_TTL_MS).toISOString();
+    try {
+      await sb.from("odds_cache").upsert({
+        id: CACHE_KEY,
+        data: { props: allProps, lastUpdated: now.toISOString() },
+        expires_at: expiresAt,
+        updated_at: now.toISOString(),
+      });
+    } catch (e) {
+      console.warn("Cache write failed:", e);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         props: allProps,
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: now.toISOString(),
         count: allProps.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
