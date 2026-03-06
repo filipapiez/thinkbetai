@@ -9,20 +9,20 @@ import { PlayerAvatar } from './PlayerAvatar';
 const SPORTSBOOKS = [
   {
     id: 'fanduel',
-    name: 'FD',
-    color: '#1493FF',
+    name: 'FanDuel',
+    logo: '/images/fanduel-logo.png',
     url: 'https://www.fanduel.com/sportsbook',
   },
   {
     id: 'draftkings',
-    name: 'DK',
-    color: '#53D337',
+    name: 'DraftKings',
+    logo: '/images/draftkings-logo.png',
     url: 'https://sportsbook.draftkings.com',
   },
   {
     id: 'betmgm',
-    name: 'MGM',
-    color: '#C4A44D',
+    name: 'BetMGM',
+    logo: '/images/betmgm-logo.png',
     url: 'https://sports.betmgm.com',
   },
 ] as const;
