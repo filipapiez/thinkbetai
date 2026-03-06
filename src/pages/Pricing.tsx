@@ -266,7 +266,6 @@ const Pricing = () => {
                         </Button>
                       );
                     })()}
-                    </Button>
                     
                     {/* Trust text */}
                     <p className="text-xs text-center text-muted-foreground mt-3">
