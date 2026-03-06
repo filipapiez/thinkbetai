@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
+import { PlayerAvatar } from './PlayerAvatar';
 
 interface PlayerPropCardProps {
   prop: PlayerProp;
@@ -136,9 +137,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
 
         {/* Player row */}
         <div className="flex items-center gap-3 px-4 py-3">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-lg font-bold text-muted-foreground">
-            {prop.playerName.charAt(0)}
-          </div>
+          <PlayerAvatar playerName={prop.playerName} sport={prop.sport} className="h-12 w-12" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-base truncate">{prop.playerName}</h3>
