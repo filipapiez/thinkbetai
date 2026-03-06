@@ -228,11 +228,12 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
             className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-3 py-1.5 cursor-pointer"
             title={`Bet on ${sportsbook.name}`}
           >
-            <img
-              src={sportsbook.logo}
-              alt={sportsbook.name}
-              className="h-4 w-4 object-contain"
-            />
+            <span
+              className="text-[10px] font-black rounded px-1 py-0.5 leading-none"
+              style={{ backgroundColor: sportsbook.color, color: '#fff' }}
+            >
+              {sportsbook.name}
+            </span>
             <span className="font-bold text-sm">{oddsStr}</span>
           </a>
         </div>
