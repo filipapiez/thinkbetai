@@ -3,7 +3,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard } from '@/components/PlayerPropCard';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
-import { useWinRate } from '@/hooks/useWinRate';
+import { Input } from '@/components/ui/input';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
