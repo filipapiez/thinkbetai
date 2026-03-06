@@ -189,34 +189,36 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
             </div>
           )}
           
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-400">{h2hHomeWins}</div>
-              <div className="text-xs text-muted-foreground">{homeTeam}</div>
-            </div>
-            <div className="text-sm text-muted-foreground">vs</div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-rose-400">{h2hAwayWins}</div>
-              <div className="text-xs text-muted-foreground">{awayTeam}</div>
-            </div>
-          </div>
-          
           {headToHead.length > 0 ? (
-            <div className="space-y-1 mb-3">
-              {headToHead.slice(0, 3).map((match, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{match.date}</span>
-                  <span className={cn(
-                    matchesTeam(match.winner, homeTeam) ? "text-emerald-400" : "text-rose-400"
-                  )}>
-                    {match.winner} ({match.score})
-                  </span>
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-400">{h2hHomeWins}</div>
+                  <div className="text-xs text-muted-foreground">{homeTeam}</div>
                 </div>
-              ))}
-            </div>
+                <div className="text-sm text-muted-foreground">vs</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-rose-400">{h2hAwayWins}</div>
+                  <div className="text-xs text-muted-foreground">{awayTeam}</div>
+                </div>
+              </div>
+              
+              <div className="space-y-1 mb-3">
+                {headToHead.slice(0, 3).map((match, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">{match.date}</span>
+                    <span className={cn(
+                      matchesTeam(match.winner, homeTeam) ? "text-emerald-400" : "text-rose-400"
+                    )}>
+                      {match.winner} ({match.score})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="p-3 rounded-lg bg-muted/50 text-center mb-3">
-              <p className="text-xs text-muted-foreground">No verified head-to-head matches available</p>
+              <p className="text-xs text-muted-foreground">No verified head-to-head history available</p>
             </div>
           )}
           
