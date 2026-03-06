@@ -181,7 +181,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
         </div>
 
         {/* L5 hit rate bar */}
-        <div className="flex items-center gap-2 px-4 pb-4">
+        <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
             Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L5 games
           </span>
@@ -195,6 +195,16 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
                 )}
               />
             ))}
+          </div>
+        </div>
+
+        {/* AI Explanation */}
+        <div className="px-4 pb-4">
+          <div className="bg-secondary/30 rounded-lg p-3 border border-border/50">
+            <div className="flex items-start gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">AI</span>
+              <p className="text-xs text-muted-foreground leading-relaxed">{explanation}</p>
+            </div>
           </div>
         </div>
       </CardContent>
