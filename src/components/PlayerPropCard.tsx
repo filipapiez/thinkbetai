@@ -3,8 +3,32 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
+
+const SPORTSBOOKS = [
+  {
+    id: 'fanduel',
+    name: 'FanDuel',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/FanDuel_logo.svg',
+    color: '#1493FF',
+    url: 'https://www.fanduel.com/sportsbook',
+  },
+  {
+    id: 'draftkings',
+    name: 'DraftKings',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/DraftKings_green_icon_logo.svg',
+    color: '#53D337',
+    url: 'https://sportsbook.draftkings.com',
+  },
+  {
+    id: 'betmgm',
+    name: 'BetMGM',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/BetMGM_logo_%282023%29.svg',
+    color: '#C4A44D',
+    url: 'https://sports.betmgm.com',
+  },
+] as const;
 
 interface PlayerPropCardProps {
   prop: PlayerProp;
