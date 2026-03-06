@@ -3,8 +3,32 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
+
+const SPORTSBOOKS = [
+  {
+    id: 'fanduel',
+    name: 'FanDuel',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/FanDuel_logo.svg',
+    color: '#1493FF',
+    url: 'https://www.fanduel.com/sportsbook',
+  },
+  {
+    id: 'draftkings',
+    name: 'DraftKings',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/DraftKings_green_icon_logo.svg',
+    color: '#53D337',
+    url: 'https://sportsbook.draftkings.com',
+  },
+  {
+    id: 'betmgm',
+    name: 'BetMGM',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/BetMGM_logo_%282023%29.svg',
+    color: '#C4A44D',
+    url: 'https://sports.betmgm.com',
+  },
+] as const;
 
 interface PlayerPropCardProps {
   prop: PlayerProp;
@@ -128,6 +152,10 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
   const position = positionMap[prop.statType] || 'PL';
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
   const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
+  const sportsbook = useMemo(() => {
+    const hash = Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
+    return SPORTSBOOKS[hash % SPORTSBOOKS.length];
+  }, [prop.id]);
 
   const gameDate = prop.gameTime
     ? new Date(prop.gameTime).toLocaleDateString('en-US', { weekday: 'short' })
@@ -195,10 +223,21 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
               {direction} {prop.line} {prop.statType}
             </p>
           </div>
-          {/* Odds badge */}
-          <div className="flex items-center gap-1.5 bg-secondary/60 rounded-lg px-3 py-1.5">
+          {/* Sportsbook odds badge */}
+          <a
+            href={sportsbook.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-3 py-1.5 cursor-pointer"
+            title={`Bet on ${sportsbook.name}`}
+          >
+            <img
+              src={sportsbook.logo}
+              alt={sportsbook.name}
+              className="h-4 w-4 object-contain"
+            />
             <span className="font-bold text-sm">{oddsStr}</span>
-          </div>
+          </a>
         </div>
 
         {/* Stats row */}
