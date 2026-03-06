@@ -3,11 +3,12 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard } from '@/components/PlayerPropCard';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
+import { useWinRate } from '@/hooks/useWinRate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, Clock, Filter, TrendingUp, X, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Clock, Filter, TrendingUp, X, Loader2, TrendingDown } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 const SPORT_FILTERS = [
