@@ -11,7 +11,7 @@ interface WinRateData {
   isLoading: boolean;
 }
 
-export const useWinRate = (): WinRateData => {
+export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
   // Defer query to avoid extending the critical network dependency chain
   const [ready, setReady] = useState(false);
   useEffect(() => {
