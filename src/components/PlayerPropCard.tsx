@@ -56,6 +56,34 @@ function pseudoDefRank(id: string): number {
   return (Math.abs(hash) % 30) + 1;
 }
 
+function pseudoPace(id: string): 'fast' | 'average' | 'slow' {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 7) - hash) + id.charCodeAt(i);
+    hash |= 0;
+  }
+  const v = Math.abs(hash) % 3;
+  return v === 0 ? 'fast' : v === 1 ? 'average' : 'slow';
+}
+
+function pseudoRestDays(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 4) - hash) + id.charCodeAt(i);
+    hash |= 0;
+  }
+  return (Math.abs(hash) % 4) + 1;
+}
+
+function pseudoMinutes(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 6) - hash) + id.charCodeAt(i);
+    hash |= 0;
+  }
+  return 28 + (Math.abs(hash) % 10); // 28-37 min
+}
+
 const sportAbbrev: Record<string, string> = {
   NBA: 'NBA',
   NFL: 'NFL',
