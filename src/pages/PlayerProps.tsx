@@ -134,7 +134,7 @@ const PlayerProps = () => {
           </div>
 
           {/* Sport filter tabs */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             {SPORT_FILTERS.map(sf => (
               <Button
                 key={sf.value}
@@ -148,35 +148,36 @@ const PlayerProps = () => {
                 {sf.label}
               </Button>
             ))}
-            <div className="ml-auto flex items-center gap-2">
-              {/* Platform selector */}
-              <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50">
-                <Button
-                  variant={selectedPlatform === null ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => setSelectedPlatform(null)}
-                >
-                  All
-                </Button>
-                {SPORTSBOOKS.map(sb => (
-                  <Button
-                    key={sb.id}
-                    variant={selectedPlatform === sb.id ? 'default' : 'ghost'}
-                    size="sm"
-                    className="h-7 px-2 gap-1"
-                    onClick={() => setSelectedPlatform(selectedPlatform === sb.id ? null : sb.id)}
-                  >
-                    <img src={sb.logo} alt={sb.name} className="h-4 w-4 object-contain rounded-sm" />
-                    <span className="text-xs hidden sm:inline">{sb.name}</span>
-                  </Button>
-                ))}
-              </div>
+            <div className="ml-auto">
               <Button variant="outline" size="sm" onClick={refetch} disabled={isLoading}>
                 <RefreshCw className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
             </div>
+          </div>
+
+          {/* Platform selector */}
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
+            <Button
+              variant={selectedPlatform === null ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => setSelectedPlatform(null)}
+            >
+              All
+            </Button>
+            {SPORTSBOOKS.map(sb => (
+              <Button
+                key={sb.id}
+                variant={selectedPlatform === sb.id ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-2 gap-1"
+                onClick={() => setSelectedPlatform(selectedPlatform === sb.id ? null : sb.id)}
+              >
+                <img src={sb.logo} alt={sb.name} className="h-4 w-4 object-contain rounded-sm" />
+                <span className="text-xs hidden sm:inline">{sb.name}</span>
+              </Button>
+            ))}
           </div>
 
           {/* Search + stat filter */}
