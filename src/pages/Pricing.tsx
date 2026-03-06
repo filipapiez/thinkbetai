@@ -84,9 +84,14 @@ const pricingPlans = [
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user, isSubscribed } = useAuth();
+  const { user, isSubscribed, profile } = useAuth();
   const { winRate } = useWinRate();
   const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
+
+  // Determine user's current plan tier
+  const currentPlanId = profile?.access_type || null; // 'basic', 'pro', 'insider'
+  const tierOrder = ['basic', 'pro', 'insider'];
+  const currentTierIndex = currentPlanId ? tierOrder.indexOf(currentPlanId) : -1;
 
   const handleSelectPlan = (plan: typeof pricingPlans[0]) => {
     if (!user) {
@@ -244,14 +249,23 @@ const Pricing = () => {
                     </ul>
 
                     {/* CTA Button */}
-                    <Button 
-                      onClick={() => handleSelectPlan(plan)}
-                      variant={isPopular ? 'hero' : 'outline'}
-                      size="lg"
-                      className={`w-full ${isPopular ? 'shadow-lg shadow-primary/30' : ''}`}
-                      disabled={isSubscribed}
-                    >
-                      {isSubscribed ? 'Already Subscribed' : plan.cta}
+                    {(() => {
+                      const planTierIndex = tierOrder.indexOf(plan.id);
+                      const isCurrentPlan = isSubscribed && plan.id === currentPlanId;
+                      const isLowerPlan = isSubscribed && currentTierIndex >= 0 && planTierIndex <= currentTierIndex && !isCurrentPlan;
+                      
+                      return (
+                        <Button 
+                          onClick={() => handleSelectPlan(plan)}
+                          variant={isCurrentPlan ? 'outline' : isPopular ? 'hero' : 'outline'}
+                          size="lg"
+                          className={`w-full ${isPopular && !isCurrentPlan ? 'shadow-lg shadow-primary/30' : ''} ${isCurrentPlan ? 'border-primary/50' : ''}`}
+                          disabled={isCurrentPlan || isLowerPlan}
+                        >
+                          {isCurrentPlan ? '✓ Your Plan' : isLowerPlan ? 'Current or Lower' : plan.cta}
+                        </Button>
+                      );
+                    })()}
                     </Button>
                     
                     {/* Trust text */}
