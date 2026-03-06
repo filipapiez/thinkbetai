@@ -11,7 +11,7 @@ interface WinRateData {
   isLoading: boolean;
 }
 
-export const useWinRate = (): WinRateData => {
+export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
   // Defer query to avoid extending the critical network dependency chain
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -25,25 +25,49 @@ export const useWinRate = (): WinRateData => {
   }, []);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['global-win-rate'],
+    queryKey: ['global-win-rate', pickType],
     enabled: ready,
     queryFn: async () => {
       // Fetch counts and recent bets for streak in parallel
+      const baseQuery = pickType 
+        ? { eq: { pick: pickType } } 
+        : undefined;
+
       const [winsRes, lossesRes, recentRes] = await Promise.all([
-        supabase
-          .from('historical_bets')
-          .select('id', { count: 'exact', head: true })
-          .eq('result', 'win'),
-        supabase
-          .from('historical_bets')
-          .select('id', { count: 'exact', head: true })
-          .eq('result', 'loss'),
-        supabase
-          .from('historical_bets')
-          .select('result')
-          .in('result', ['win', 'loss'])
-          .order('date', { ascending: false })
-          .limit(200),
+        pickType
+          ? supabase
+              .from('historical_bets')
+              .select('id', { count: 'exact', head: true })
+              .eq('result', 'win')
+              .eq('pick', pickType)
+          : supabase
+              .from('historical_bets')
+              .select('id', { count: 'exact', head: true })
+              .eq('result', 'win'),
+        pickType
+          ? supabase
+              .from('historical_bets')
+              .select('id', { count: 'exact', head: true })
+              .eq('result', 'loss')
+              .eq('pick', pickType)
+          : supabase
+              .from('historical_bets')
+              .select('id', { count: 'exact', head: true })
+              .eq('result', 'loss'),
+        pickType
+          ? supabase
+              .from('historical_bets')
+              .select('result')
+              .eq('pick', pickType)
+              .in('result', ['win', 'loss'])
+              .order('date', { ascending: false })
+              .limit(200)
+          : supabase
+              .from('historical_bets')
+              .select('result')
+              .in('result', ['win', 'loss'])
+              .order('date', { ascending: false })
+              .limit(200),
       ]);
 
       const wins = winsRes.count ?? 0;
