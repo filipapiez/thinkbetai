@@ -3,11 +3,12 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard } from '@/components/PlayerPropCard';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
+import { useWinRate } from '@/hooks/useWinRate';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, Clock, Filter, TrendingUp, X, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Clock, Filter, TrendingUp, X, Loader2, TrendingDown } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 const SPORT_FILTERS = [
@@ -24,6 +25,7 @@ const PlayerProps = () => {
   const [statFilter, setStatFilter] = useState<string | null>(null);
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
+  const { winRate, totalBets, wins, losses, currentStreak } = useWinRate();
 
   const availableStats = useMemo(
     () => [...new Set(props.map(p => p.statType))].sort(),
@@ -61,6 +63,41 @@ const PlayerProps = () => {
 
       <main className="flex-1 py-8">
         <div className="container">
+          {/* Win Rate Bar */}
+          <div className="mb-6 bg-secondary/30 rounded-lg border border-border/50 p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+            <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Win Rate</span>
+                  <span className="text-2xl font-bold text-primary">{winRate}%</span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{
+                      width: `${Math.min(parseFloat(winRate) || 0, 100)}%`,
+                      background: 'linear-gradient(to right, hsl(var(--success)), hsl(var(--success) / 0.8))'
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-6 text-sm">
+                <div className="text-center">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Wins</p>
+                  <p className="font-bold" style={{ color: 'hsl(var(--success))' }}>{wins}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Losses</p>
+                  <p className="font-bold" style={{ color: 'hsl(var(--destructive))' }}>{losses}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-muted-foreground text-xs uppercase tracking-wider">Streak</p>
+                  <p className="font-bold text-primary">{currentStreak}W</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Player Props</h1>
