@@ -120,7 +120,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
 
   const l5Results = useMemo(() => pseudoHitRate(prop.id), [prop.id]);
   const hitCount = l5Results.filter(Boolean).length;
-  const hitPct = hitCount * 20;
+  const hitPct = Math.round((hitCount / 20) * 100);
   const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
   const pace = useMemo(() => pseudoPace(prop.id), [prop.id]);
   const restDays = useMemo(() => pseudoRestDays(prop.id), [prop.id]);
