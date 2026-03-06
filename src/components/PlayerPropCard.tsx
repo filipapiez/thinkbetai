@@ -102,6 +102,24 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
     ? new Date(prop.gameTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     : '';
 
+  // Generate contextual AI explanation
+  const explanation = useMemo(() => {
+    const playerFirst = prop.playerName.split(' ')[0];
+    const defDesc = defRank <= 10 ? 'weak' : defRank <= 20 ? 'average' : 'tough';
+    const hitDesc = hitPct >= 80 ? 'consistently cleared' : hitPct >= 60 ? 'hit' : 'struggled with';
+
+    if (direction === 'Over' && edge > 3) {
+      return `${playerFirst} faces a ${defDesc} ${prop.opponent} defense (${defRank}${defRank === 1 ? 'st' : defRank === 2 ? 'nd' : defRank === 3 ? 'rd' : 'th'} vs ${position}) and has ${hitDesc} this line in ${hitCount}/5 recent games. The ${edge.toFixed(1)}% edge suggests strong value on the Over.`;
+    }
+    if (direction === 'Under' && edge > 3) {
+      return `${prop.opponent} ranks ${defRank}${defRank === 1 ? 'st' : defRank === 2 ? 'nd' : defRank === 3 ? 'rd' : 'th'} vs ${position}, a ${defDesc} matchup for ${playerFirst}. With a ${hitPct}% L5 hit rate and ${edge.toFixed(1)}% edge, the Under holds value here.`;
+    }
+    if (edge > 0) {
+      return `Slight ${edge.toFixed(1)}% edge on the ${direction}. ${playerFirst} has ${hitDesc} this line recently (${hitPct}% L5) against a ${defDesc} ${prop.opponent} defense.`;
+    }
+    return `${playerFirst} vs ${prop.opponent} — line is tight with minimal edge. ${hitPct}% hit rate in last 5 games.`;
+  }, [prop, direction, edge, defRank, hitPct, hitCount, position]);
+
   return (
     <Card className="bg-card border-border overflow-hidden">
       <CardContent className="p-0">
@@ -163,7 +181,7 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
         </div>
 
         {/* L5 hit rate bar */}
-        <div className="flex items-center gap-2 px-4 pb-4">
+        <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
             Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L5 games
           </span>
@@ -177,6 +195,16 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
                 )}
               />
             ))}
+          </div>
+        </div>
+
+        {/* AI Explanation */}
+        <div className="px-4 pb-4">
+          <div className="bg-secondary/30 rounded-lg p-3 border border-border/50">
+            <div className="flex items-start gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 rounded px-1.5 py-0.5 shrink-0">AI</span>
+              <p className="text-xs text-muted-foreground leading-relaxed">{explanation}</p>
+            </div>
           </div>
         </div>
       </CardContent>
