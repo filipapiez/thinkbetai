@@ -156,50 +156,50 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
   ];
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between flex-wrap gap-2">
-          <span className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-amber-400" />
-            {sport} Model Performance
+        <CardTitle className="flex items-start justify-between flex-wrap gap-2">
+          <span className="flex items-center gap-2 min-w-0">
+            <Trophy className="h-5 w-5 text-amber-400 shrink-0" />
+            <span className="truncate">{sport} Model Performance</span>
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/40 text-xs px-2 animate-pulse">
               <Radio className="h-3 w-3 mr-1" />
               LIVE
             </Badge>
-            <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-sm px-3">
+            <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-sm px-3 whitespace-nowrap">
               {sportData.winRate}% Win Rate
             </Badge>
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 overflow-x-hidden">
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <div className="text-center p-4 rounded-lg bg-muted/30">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="text-center p-3 sm:p-4 rounded-lg bg-muted/30 min-w-0">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Target className="h-4 w-4 text-primary" />
             </div>
-            <div className="text-2xl font-bold text-primary">{sportData.winRate}%</div>
+            <div className="text-lg sm:text-2xl font-bold text-primary leading-tight break-words">{sportData.winRate}%</div>
             <div className="text-xs text-muted-foreground">Win Rate</div>
           </div>
-          <div className="text-center p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+          <div className="text-center p-3 sm:p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 min-w-0">
             <div className="flex items-center justify-center gap-1 mb-1">
               <CheckCircle className="h-4 w-4 text-emerald-400" />
             </div>
-            <div className="text-2xl font-bold text-emerald-400">{sportData.wins}</div>
+            <div className="text-lg sm:text-2xl font-bold text-emerald-400 leading-tight break-words">{sportData.wins}</div>
             <div className="text-xs text-muted-foreground">Wins</div>
           </div>
-          <div className="text-center p-4 rounded-lg bg-rose-500/10 border border-rose-500/20">
-            <div className="text-2xl font-bold text-rose-400">{sportData.losses}</div>
+          <div className="text-center p-3 sm:p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 min-w-0">
+            <div className="text-lg sm:text-2xl font-bold text-rose-400 leading-tight break-words">{sportData.losses}</div>
             <div className="text-xs text-muted-foreground">Losses</div>
           </div>
-          <div className="text-center p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <div className="text-center p-3 sm:p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 min-w-0">
             <div className="flex items-center justify-center gap-1 mb-1">
               <TrendingUp className="h-4 w-4 text-amber-400" />
             </div>
-            <div className="text-2xl font-bold text-emerald-400">+{sportData.profit}%</div>
+            <div className="text-lg sm:text-2xl font-bold text-emerald-400 leading-tight break-words">+{sportData.profit}%</div>
             <div className="text-xs text-muted-foreground">ROI</div>
           </div>
         </div>
