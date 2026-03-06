@@ -225,15 +225,15 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
           </div>
           {/* Sportsbook odds badge */}
           <a
-            href={SPORTSBOOKS[Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0)) % SPORTSBOOKS.length].url}
+            href={sportsbook.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-3 py-1.5 cursor-pointer group"
-            title={`Bet on ${SPORTSBOOKS[Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0)) % SPORTSBOOKS.length].name}`}
+            className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-3 py-1.5 cursor-pointer"
+            title={`Bet on ${sportsbook.name}`}
           >
             <img
-              src={SPORTSBOOKS[Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0)) % SPORTSBOOKS.length].logo}
-              alt={SPORTSBOOKS[Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0)) % SPORTSBOOKS.length].name}
+              src={sportsbook.logo}
+              alt={sportsbook.name}
               className="h-4 w-4 object-contain"
             />
             <span className="font-bold text-sm">{oddsStr}</span>
