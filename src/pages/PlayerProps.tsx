@@ -84,7 +84,8 @@ const PlayerProps = () => {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Live</span>
                 </div>
                 <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-4xl font-black text-primary">{wr}%</span>
+                  <span className="text-4xl font-black text-emerald-400">{wr}%</span>
+                  <span className="text-4xl font-black text-red-400">{100 - wr}%</span>
                   <span className="text-sm text-muted-foreground font-medium">win rate</span>
                 </div>
                 <div className="w-full bg-secondary/80 rounded-full h-2.5 overflow-hidden">
