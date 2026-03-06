@@ -152,6 +152,10 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
   const position = positionMap[prop.statType] || 'PL';
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
   const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
+  const sportsbook = useMemo(() => {
+    const hash = Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
+    return SPORTSBOOKS[hash % SPORTSBOOKS.length];
+  }, [prop.id]);
 
   const gameDate = prop.gameTime
     ? new Date(prop.gameTime).toLocaleDateString('en-US', { weekday: 'short' })
