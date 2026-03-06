@@ -67,25 +67,28 @@ const PlayerProps = () => {
           <div className="mb-6 bg-secondary/30 rounded-lg border border-border/50 p-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-1">
+            <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Win Rate</span>
                   <span className="text-2xl font-bold text-primary">{winRate}%</span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full transition-all duration-300"
-                    style={{ width: `${Math.min(parseFloat(winRate) || 0, 100)}%` }}
+                    className="h-full transition-all duration-300"
+                    style={{
+                      width: `${Math.min(parseFloat(winRate) || 0, 100)}%`,
+                      background: 'linear-gradient(to right, hsl(var(--success)), hsl(var(--success) / 0.8))'
+                    }}
                   />
                 </div>
               </div>
               <div className="flex gap-6 text-sm">
                 <div className="text-center">
                   <p className="text-muted-foreground text-xs uppercase tracking-wider">Wins</p>
-                  <p className="font-bold text-emerald-400">{wins}</p>
+                  <p className="font-bold" style={{ color: 'hsl(var(--success))' }}>{wins}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-muted-foreground text-xs uppercase tracking-wider">Losses</p>
-                  <p className="font-bold text-red-400">{losses}</p>
+                  <p className="font-bold" style={{ color: 'hsl(var(--destructive))' }}>{losses}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-muted-foreground text-xs uppercase tracking-wider">Streak</p>
