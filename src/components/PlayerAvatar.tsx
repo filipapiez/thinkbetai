@@ -7,15 +7,8 @@ interface PlayerAvatarProps {
   className?: string;
 }
 
-const CACHE_KEY_PREFIX = 'player-img-';
+const CACHE_KEY_PREFIX = 'player-img-v2-';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-const sportToEspn: Record<string, string> = {
-  NBA: 'nba',
-  NFL: 'nfl',
-  MLB: 'mlb',
-  NHL: 'nhl',
-};
 
 interface CacheEntry {
   url: string | null;
@@ -58,17 +51,16 @@ export function PlayerAvatar({ playerName, sport, className }: PlayerAvatarProps
     }
 
     let cancelled = false;
-    const espnSport = sportToEspn[sport] || 'nba';
 
     (async () => {
       try {
         const res = await fetch(
-          `https://site.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(playerName)}&limit=1&type=player&sport=${espnSport}`
+          `https://site.web.api.espn.com/apis/common/v3/search?query=${encodeURIComponent(playerName)}&limit=1&type=player`
         );
         if (!res.ok) throw new Error('search failed');
         const data = await res.json();
-        const athlete = data?.items?.[0] || data?.athletes?.[0] || data?.results?.[0];
-        const headshot = athlete?.headshot?.href || athlete?.image || athlete?.headshot || null;
+        const item = data?.items?.[0];
+        const headshot = item?.headshot?.href || null;
 
         if (!cancelled) {
           setCache(cacheKey, headshot);
