@@ -40,8 +40,10 @@ function pseudoHitRate(id: string): boolean[] {
     hash |= 0;
   }
   const results: boolean[] = [];
-  for (let i = 0; i < 5; i++) {
-    results.push(((hash >> i) & 1) === 1);
+  for (let i = 0; i < 20; i++) {
+    // Use different bit manipulation for more variety across 20 games
+    const subHash = hash ^ (i * 2654435761);
+    results.push(((subHash >> (i % 16)) & 1) === 1);
   }
   return results;
 }
