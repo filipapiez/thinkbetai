@@ -102,7 +102,10 @@ Deno.serve(async (req: Request) => {
   try {
     const allProps: Array<Record<string, unknown>> = [];
 
-    for (const lid of leagues) {
+    for (let i = 0; i < leagues.length; i++) {
+      const lid = leagues[i];
+      // Delay between requests to avoid per-second rate limits
+      if (i > 0) await new Promise(r => setTimeout(r, 1500));
       try {
         console.log("Fetching " + lid);
         const res = await fetch(
