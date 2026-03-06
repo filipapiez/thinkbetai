@@ -119,11 +119,13 @@ const getMonthlyTrend = (baseWinRate: number): { month: string; winRate: number;
 export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartProps) => {
   const sportData = useMemo(() => getSportAccuracy(sport), [sport]);
   const [recentBets, setRecentBets] = useState<RecentBet[]>([]);
+  const [isLoadingBets, setIsLoadingBets] = useState(true);
   const trendData = useMemo(() => getMonthlyTrend(sportData.winRate), [sportData.winRate]);
 
   // Fetch last 5 bets from historical_bets table
   useEffect(() => {
     const fetchRecentBets = async () => {
+      setIsLoadingBets(true);
       const sportFilters = getDbSportFilter(sport);
       const { data, error } = await supabase
         .from('historical_bets')
@@ -140,7 +142,10 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
           result: bet.result === 'win' ? 'W' : 'L',
           date: format(new Date(bet.date), 'MMM d'),
         })));
+      } else {
+        setRecentBets([]);
       }
+      setIsLoadingBets(false);
     };
     fetchRecentBets();
   }, [sport]);
