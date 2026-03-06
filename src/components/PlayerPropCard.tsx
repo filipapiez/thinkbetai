@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
 
-const SPORTSBOOKS = [
+export const SPORTSBOOKS = [
   {
     id: 'fanduel',
     name: 'FanDuel',
@@ -29,6 +29,7 @@ const SPORTSBOOKS = [
 
 interface PlayerPropCardProps {
   prop: PlayerProp;
+  selectedPlatform?: string | null;
 }
 
 // Convert American odds to implied probability
@@ -133,7 +134,7 @@ const positionMap: Record<string, string> = {
   Goals: 'F',
 };
 
-export function PlayerPropCard({ prop }: PlayerPropCardProps) {
+export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) {
   const { direction, edge, prob } = useMemo(
     () => computeEdge(prop.overOdds, prop.underOdds),
     [prop.overOdds, prop.underOdds]
@@ -150,9 +151,12 @@ export function PlayerPropCard({ prop }: PlayerPropCardProps) {
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
   const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
   const sportsbook = useMemo(() => {
+    if (selectedPlatform) {
+      return SPORTSBOOKS.find(s => s.id === selectedPlatform) || SPORTSBOOKS[0];
+    }
     const hash = Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
     return SPORTSBOOKS[hash % SPORTSBOOKS.length];
-  }, [prop.id]);
+  }, [prop.id, selectedPlatform]);
 
   const gameDate = prop.gameTime
     ? new Date(prop.gameTime).toLocaleDateString('en-US', { weekday: 'short' })
