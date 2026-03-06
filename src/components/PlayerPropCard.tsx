@@ -9,22 +9,19 @@ import { PlayerAvatar } from './PlayerAvatar';
 const SPORTSBOOKS = [
   {
     id: 'fanduel',
-    name: 'FanDuel',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/FanDuel_logo.svg',
+    name: 'FD',
     color: '#1493FF',
     url: 'https://www.fanduel.com/sportsbook',
   },
   {
     id: 'draftkings',
-    name: 'DraftKings',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/DraftKings_green_icon_logo.svg',
+    name: 'DK',
     color: '#53D337',
     url: 'https://sportsbook.draftkings.com',
   },
   {
     id: 'betmgm',
-    name: 'BetMGM',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/6c/BetMGM_logo_%282023%29.svg',
+    name: 'MGM',
     color: '#C4A44D',
     url: 'https://sports.betmgm.com',
   },
