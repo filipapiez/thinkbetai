@@ -55,8 +55,8 @@ const PlayerProps = () => {
         const edgeB = computeEdge(b.overOdds, b.underOdds);
         const keyA = `${a.playerName}:${a.statType}:${a.line}:${edgeA.direction}`;
         const keyB = `${b.playerName}:${b.statType}:${b.line}:${edgeB.direction}`;
-        const hasRealA = (gameLogCache.get(keyA)?.results.length ?? 0) > 0 ? 1 : 0;
-        const hasRealB = (gameLogCache.get(keyB)?.results.length ?? 0) > 0 ? 1 : 0;
+        const hasRealA = (gameLogCache.get(keyA)?.results.length ?? 0) >= 20 ? 1 : 0;
+        const hasRealB = (gameLogCache.get(keyB)?.results.length ?? 0) >= 20 ? 1 : 0;
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
