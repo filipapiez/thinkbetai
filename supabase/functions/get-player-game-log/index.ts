@@ -68,21 +68,34 @@ Deno.serve(async (req) => {
 
     console.log(`Searching game log for ${playerName} (${statType})`);
 
-    const searchResp = await fetch('https://api.firecrawl.dev/v1/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query,
-        limit: 5,
-        scrapeOptions: { formats: ['markdown'] },
-      }),
-    });
+    // Retry logic for rate limits (429)
+    let searchResp: Response | null = null;
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      searchResp = await fetch('https://api.firecrawl.dev/v1/search', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${firecrawlApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          limit: 3,
+          scrapeOptions: { formats: ['markdown'] },
+        }),
+      });
 
-    if (!searchResp.ok) {
-      console.error(`Firecrawl search failed: ${searchResp.status}`);
+      if (searchResp.status === 429 && attempt < maxRetries - 1) {
+        const wait = (attempt + 1) * 2000; // 2s, 4s backoff
+        console.log(`Rate limited, retrying in ${wait}ms (attempt ${attempt + 1})`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      break;
+    }
+
+    if (!searchResp || !searchResp.ok) {
+      console.error(`Firecrawl search failed: ${searchResp?.status}`);
       return new Response(
         JSON.stringify({ success: false, error: 'Search failed' }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GameLogResult {
-  results: boolean[]; // true = hit, false = miss
+  results: boolean[];
   statValues: number[];
   hitCount: number;
   total: number;
@@ -12,6 +12,35 @@ interface GameLogResult {
 
 // In-memory cache to avoid re-fetching during same session
 const memoryCache = new Map<string, { results: boolean[]; statValues: number[]; hitCount: number; total: number }>();
+
+// Global request queue to prevent rate limiting
+const MAX_CONCURRENT = 2;
+let activeRequests = 0;
+const pendingQueue: Array<() => void> = [];
+
+function enqueue(): Promise<void> {
+  if (activeRequests < MAX_CONCURRENT) {
+    activeRequests++;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    pendingQueue.push(() => {
+      activeRequests++;
+      resolve();
+    });
+  });
+}
+
+function dequeue() {
+  activeRequests--;
+  if (pendingQueue.length > 0) {
+    // Stagger next request by 500ms to avoid bursts
+    setTimeout(() => {
+      const next = pendingQueue.shift();
+      next?.();
+    }, 500);
+  }
+}
 
 export function usePlayerGameLog(
   playerName: string,
@@ -46,6 +75,9 @@ export function usePlayerGameLog(
     setIsLoading(true);
 
     const fetchLog = async () => {
+      // Wait for our turn in the queue
+      await enqueue();
+
       try {
         const { data: resp, error: fnError } = await supabase.functions.invoke('get-player-game-log', {
           body: { playerName, sport, statType, line },
@@ -56,10 +88,8 @@ export function usePlayerGameLog(
           return;
         }
 
-        // Adjust results based on direction
         let results: boolean[];
         if (direction === 'Under') {
-          // For Under, hit = stat < line
           results = (resp.statValues || []).map((val: number) => val < line);
         } else {
           results = resp.results || [];
@@ -78,6 +108,7 @@ export function usePlayerGameLog(
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        dequeue();
         setIsLoading(false);
       }
     };
