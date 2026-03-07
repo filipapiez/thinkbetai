@@ -11,7 +11,8 @@ interface GameLogResult {
 }
 
 // In-memory cache to avoid re-fetching during same session
-const memoryCache = new Map<string, { results: boolean[]; statValues: number[]; hitCount: number; total: number }>();
+export const gameLogCache = new Map<string, { results: boolean[]; statValues: number[]; hitCount: number; total: number }>();
+const memoryCache = gameLogCache;
 
 // Global request queue to prevent rate limiting
 const MAX_CONCURRENT = 2;

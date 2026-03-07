@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard, SPORTSBOOKS, computeEdge } from '@/components/PlayerPropCard';
+import { gameLogCache } from '@/hooks/usePlayerGameLog';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
