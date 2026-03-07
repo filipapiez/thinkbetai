@@ -197,24 +197,29 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     const defOrd = `${defRank}${ordSuffix(defRank)}`;
     const paceNote = pace === 'fast' ? 'up-tempo game environment inflates volume' : pace === 'slow' ? 'slower pace could cap opportunities' : 'neutral pace expected';
     const restNote = restDays >= 3 ? 'well-rested' : restDays === 1 ? 'on a back-to-back' : 'with standard rest';
-    const minsNote = avgMinutes >= 34 ? `heavy usage (${avgMinutes} MPG)` : avgMinutes >= 30 ? `solid minutes (${avgMinutes} MPG)` : `limited minutes (${avgMinutes} MPG)`;
+    const minsNote = avgMinutes >= 34 ? `heavy usage (~${avgMinutes} MPG)` : avgMinutes >= 30 ? `steady minutes (~${avgMinutes} MPG)` : `limited minutes (~${avgMinutes} MPG)`;
+
+    // Direction-aware hit rate description
+    const hitStrength = hitPct >= 70 ? 'strong' : hitPct >= 55 ? 'solid' : hitPct >= 40 ? 'moderate' : 'weak';
+    const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
+    const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
 
     if (direction === 'Over' && edge > 5) {
-      return `Strong lean. ${playerFirst} is ${restNote} and seeing ${minsNote} — ${paceNote}. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc}, and ${playerFirst} has cleared this line in ${hitCount}/${hitTotal} recent outings. The ${edge.toFixed(1)}% edge and ${prob.toFixed(0)}% implied probability make this one of the sharper Over plays on the board.`;
+      return `Strong lean. ${hitPhrase}, and with ${minsNote} and ${restNote} status, volume looks sustainable. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc} — ${paceNote}. The ${edge.toFixed(1)}% edge makes this one of the sharper Over plays on the board.`;
     }
     if (direction === 'Over' && edge > 2) {
-      return `${playerFirst} draws a favorable spot against ${prop.opponent} (${defOrd} vs ${position}, ${defDesc}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}, and he's ${restNote} with ${minsNote}. L5 hit rate sits at ${hitPct}% — the ${edge.toFixed(1)}% edge suggests the Over is slightly mispriced.`;
+      return `${playerFirst} draws a favorable spot against ${prop.opponent} (${defOrd} vs ${position}, ${defDesc}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}, and he's ${restNote} with ${minsNote}. ${hitPhrase} — the ${edge.toFixed(1)}% edge suggests the Over is slightly mispriced.`;
     }
     if (direction === 'Under' && edge > 5) {
-      return `${prop.opponent} fields an ${defDesc} unit vs ${position} (${defOrd}), and ${paceNote}. ${playerFirst} is ${restNote} but only hitting this line ${hitPct}% of the time recently. With ${minsNote} and a ${edge.toFixed(1)}% edge, the Under looks well-supported by the data.`;
+      return `${hitPhrase}, a ${hitStrength} trend supporting the Under. ${prop.opponent} ranks ${defOrd} vs ${position} (${defDesc}), and ${paceNote}. With ${minsNote} and an ${edge.toFixed(1)}% edge, the Under projects as strong value.`;
     }
     if (direction === 'Under' && edge > 2) {
-      return `Matchup leans Under. ${prop.opponent} ranks ${defOrd} against ${position} — ${defDesc} on that side of the ball. ${playerFirst} is ${restNote} with ${minsNote}, and the ${hitPct}% L5 hit rate suggests this line may be set a touch high. ${edge.toFixed(1)}% edge here.`;
+      return `Matchup leans Under. ${hitPhrase}. ${prop.opponent} ranks ${defOrd} against ${position} — ${defDesc} on that side of the ball. ${playerFirst} is ${restNote} with ${minsNote}. ${edge.toFixed(1)}% edge here.`;
     }
     if (edge > 0) {
-      return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${playerFirst} is ${restNote} seeing ${minsNote}, facing a ${defDesc} ${prop.opponent} defense (${defOrd} vs ${position}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — ${hitPct}% L5 hit rate keeps this in play but not a top-tier spot.`;
+      return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. ${playerFirst} is ${restNote} seeing ${minsNote}, facing a ${defDesc} ${prop.opponent} defense (${defOrd} vs ${position}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}.`;
     }
-    return `Coin-flip territory. ${playerFirst} vs ${prop.opponent} shows minimal edge either way. ${defOrd}-ranked defense, ${minsNote}, and a ${hitPct}% recent hit rate. ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — pass or wait for better line movement.`;
+    return `Coin-flip territory. ${hitPhrase}. ${playerFirst} vs ${prop.opponent} shows minimal edge either way — ${defOrd}-ranked defense, ${minsNote}. ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}. Pass or wait for better line movement.`;
   }, [prop, direction, edge, prob, defRank, hitPct, hitCount, hitTotal, position, pace, restDays, avgMinutes]);
 
   return (
