@@ -15,7 +15,7 @@ Deno.serve(async (req: Request) => {
 
   // --- DB cache (30 min TTL) ---
   const CACHE_KEY = `player-props-v2-${sportFilter}`;
-  const CACHE_TTL_MS = 30 * 60 * 1000;
+  const CACHE_TTL_MS = 15 * 60 * 1000; // 15 min to keep props fresh
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
