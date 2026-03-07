@@ -134,14 +134,14 @@ interface ScrapedGameData {
   recentForm: {
     team: string;
     last5: { opponent: string; result: 'W' | 'L'; score: string; date: string }[];
-    limitedData?: boolean; // True if fewer than 3 valid matches
+    limitedData?: boolean;
   }[];
   headToHead: { 
     date: string; 
     winner: string; 
     score: string;
-    sport: string; // Sport validation
-    competitionLevel: string; // Competition level validation
+    sport: string;
+    competitionLevel: string;
   }[];
   headToHeadMeta?: {
     limitedData: boolean;
@@ -155,13 +155,36 @@ interface ScrapedGameData {
     streak: string;
     ranking: number;
   }[];
+  keyStats?: {
+    team: string;
+    stats: { label: string; value: string }[];
+  }[];
+  bettingTrends?: {
+    team: string;
+    atsRecord?: string;
+    ouRecord?: string;
+    homeAwayRecord?: string;
+    publicBetPct?: number;
+    notes?: string;
+  }[];
+  venueWeather?: {
+    venue?: string;
+    city?: string;
+    weather?: string;
+    temperature?: string;
+    wind?: string;
+    indoor?: boolean;
+    altitude?: string;
+    travelDistance?: string;
+    notes?: string;
+  };
   analysis: string;
   sportValidation: {
     sport: string;
     competitionLevel: string;
     scoringSystem: string;
   };
-  dataSource: 'real' | 'partial'; // Indicates data origin
+  dataSource: 'real' | 'partial';
 }
 
 Deno.serve(async (req) => {
