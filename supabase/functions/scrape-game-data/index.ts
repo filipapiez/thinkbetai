@@ -229,10 +229,11 @@ Deno.serve(async (req) => {
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
 
-      const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} ${sportValidation.competitionLevel}`;
-      const formQuery = `${homeTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
-      const awayFormQuery = `${awayTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
-      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head ${sport} ${sportValidation.competitionLevel}`;
+      const currentYear = new Date().getFullYear();
+      const injuryQuery = `${homeTeam} ${awayTeam} injury report ${currentYear} ${sportValidation.competitionLevel}`;
+      const formQuery = `${homeTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
+      const awayFormQuery = `${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
+      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com`;
 
       const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
