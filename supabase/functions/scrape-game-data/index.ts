@@ -381,10 +381,11 @@ async function extractHistoricalDataWithAIFromSources({
   if (!anySources) return null;
 
   const system =
-    'You extract SPORTS HISTORY from provided source snippets. ' +
-    'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess.';
+    'You are a sports data extraction expert. Extract EVERY piece of verifiable sports data from the provided source snippets. ' +
+    'Be thorough - look for game scores, win/loss records, head-to-head matchups, and recent results even if formatting varies. ' +
+    'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess or fabricate data.';
 
-  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nReturn structured data via the tool. Dates MUST be YYYY-MM-DD. Scores MUST match the sport scoring format when applicable.`;
+  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nIMPORTANT INSTRUCTIONS:\n1. Extract ALL recent game results you can find for BOTH teams (up to 5 each). Look for scores like "102-98", records, game logs, etc.\n2. Extract ALL head-to-head matchups between these specific teams. Even if you only find 1-2 matches, include them.\n3. For head-to-head, the "winner" field MUST be either "${homeTeam}" or "${awayTeam}" exactly.\n4. Dates MUST be YYYY-MM-DD format. If only month/year is available, use the 1st of that month.\n5. Scores should match the sport format (e.g., NBA: "112-108", NHL: "4-2", Soccer: "2-1").\n6. Do NOT leave recentForm empty if there are ANY game results in the snippets.`;
 
   const body: any = {
     model: 'google/gemini-3-flash-preview',
