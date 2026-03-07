@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GameLogResult {
@@ -12,7 +12,6 @@ interface GameLogResult {
 
 // In-memory cache to avoid re-fetching during same session
 export const gameLogCache = new Map<string, { results: boolean[]; statValues: number[]; hitCount: number; total: number }>();
-const memoryCache = gameLogCache;
 
 // Global request queue to prevent rate limiting
 const MAX_CONCURRENT = 2;
@@ -35,7 +34,6 @@ function enqueue(): Promise<void> {
 function dequeue() {
   activeRequests--;
   if (pendingQueue.length > 0) {
-    // Stagger next request by 500ms to avoid bursts
     setTimeout(() => {
       const next = pendingQueue.shift();
       next?.();
@@ -43,12 +41,59 @@ function dequeue() {
   }
 }
 
-export function usePlayerGameLog(
+async function fetchGameLog(
   playerName: string,
   sport: string,
   statType: string,
   line: number,
   direction: 'Over' | 'Under'
+): Promise<{ results: boolean[]; statValues: number[]; hitCount: number; total: number }> {
+  const cacheKey = `${playerName}:${statType}:${line}:${direction}`;
+  const cached = gameLogCache.get(cacheKey);
+  if (cached) return cached;
+
+  await enqueue();
+  try {
+    const { data: resp, error: fnError } = await supabase.functions.invoke('get-player-game-log', {
+      body: { playerName, sport, statType, line },
+    });
+
+    if (fnError || !resp?.success) {
+      throw new Error(resp?.error || fnError?.message || 'Failed to fetch game log');
+    }
+
+    let results: boolean[];
+    if (direction === 'Under') {
+      results = (resp.statValues || []).map((val: number) => val < line);
+    } else {
+      results = resp.results || [];
+    }
+
+    const hitCount = results.filter(Boolean).length;
+    const result = {
+      results,
+      statValues: resp.statValues || [],
+      hitCount,
+      total: results.length,
+    };
+
+    gameLogCache.set(cacheKey, result);
+    return result;
+  } finally {
+    dequeue();
+  }
+}
+
+/**
+ * Hook that auto-fetches L20 data (used for top N props)
+ */
+export function usePlayerGameLog(
+  playerName: string,
+  sport: string,
+  statType: string,
+  line: number,
+  direction: 'Over' | 'Under',
+  enabled: boolean = true
 ): GameLogResult {
   const [data, setData] = useState<{
     results: boolean[];
@@ -63,10 +108,10 @@ export function usePlayerGameLog(
   const cacheKey = `${playerName}:${statType}:${line}:${direction}`;
 
   useEffect(() => {
-    if (fetchedRef.current) return;
+    if (!enabled || fetchedRef.current) return;
 
     // Check memory cache
-    const cached = memoryCache.get(cacheKey);
+    const cached = gameLogCache.get(cacheKey);
     if (cached) {
       setData(cached);
       return;
@@ -75,47 +120,11 @@ export function usePlayerGameLog(
     fetchedRef.current = true;
     setIsLoading(true);
 
-    const fetchLog = async () => {
-      // Wait for our turn in the queue
-      await enqueue();
-
-      try {
-        const { data: resp, error: fnError } = await supabase.functions.invoke('get-player-game-log', {
-          body: { playerName, sport, statType, line },
-        });
-
-        if (fnError || !resp?.success) {
-          setError(resp?.error || fnError?.message || 'Failed to fetch game log');
-          return;
-        }
-
-        let results: boolean[];
-        if (direction === 'Under') {
-          results = (resp.statValues || []).map((val: number) => val < line);
-        } else {
-          results = resp.results || [];
-        }
-
-        const hitCount = results.filter(Boolean).length;
-        const result = {
-          results,
-          statValues: resp.statValues || [],
-          hitCount,
-          total: results.length,
-        };
-
-        memoryCache.set(cacheKey, result);
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        dequeue();
-        setIsLoading(false);
-      }
-    };
-
-    fetchLog();
-  }, [cacheKey, playerName, sport, statType, line, direction]);
+    fetchGameLog(playerName, sport, statType, line, direction)
+      .then(result => setData(result))
+      .catch(err => setError(err instanceof Error ? err.message : 'Unknown error'))
+      .finally(() => setIsLoading(false));
+  }, [cacheKey, playerName, sport, statType, line, direction, enabled]);
 
   if (data) {
     return { ...data, isLoading: false, error: null };
@@ -128,5 +137,57 @@ export function usePlayerGameLog(
     total: 0,
     isLoading,
     error,
+  };
+}
+
+/**
+ * Hook for lazy-load on tap (doesn't fetch until triggered)
+ */
+export function useLazyPlayerGameLog(
+  playerName: string,
+  sport: string,
+  statType: string,
+  line: number,
+  direction: 'Over' | 'Under'
+) {
+  const [data, setData] = useState<{
+    results: boolean[];
+    statValues: number[];
+    hitCount: number;
+    total: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const cacheKey = `${playerName}:${statType}:${line}:${direction}`;
+
+  // Check cache on mount
+  useEffect(() => {
+    const cached = gameLogCache.get(cacheKey);
+    if (cached) setData(cached);
+  }, [cacheKey]);
+
+  const fetch = useCallback(async () => {
+    if (data || isLoading) return;
+    setIsLoading(true);
+    try {
+      const result = await fetchGameLog(playerName, sport, statType, line, direction);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data, isLoading, playerName, sport, statType, line, direction]);
+
+  return {
+    results: data?.results ?? [],
+    statValues: data?.statValues ?? [],
+    hitCount: data?.hitCount ?? 0,
+    total: data?.total ?? 0,
+    isLoading,
+    error,
+    hasData: !!data && data.results.length > 0,
+    fetch,
   };
 }
