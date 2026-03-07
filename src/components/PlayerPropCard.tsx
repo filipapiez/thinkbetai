@@ -130,6 +130,15 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
   const position = positionMap[prop.statType] || 'PL';
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
+  // Blend odds-implied prob with actual L20 hit rate when available
+  // 60% weight on real data, 40% on odds-implied
+  const blendedProb = hasRealData
+    ? Math.min(Math.max(hitPct * 0.6 + prob * 0.4, 35), 95)
+    : prob;
+  const blendedEdge = hasRealData
+    ? Math.min(Math.max(blendedProb - 50, 0), 45)
+    : edge;
+
   const sportsbook = useMemo(() => {
     if (selectedPlatform) {
       return SPORTSBOOKS.find(s => s.id === selectedPlatform) || SPORTSBOOKS[0];
