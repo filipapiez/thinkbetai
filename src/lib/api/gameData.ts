@@ -43,6 +43,32 @@ export interface ScrapedTeamStats {
   ranking: number;
 }
 
+export interface ScrapedKeyStats {
+  team: string;
+  stats: { label: string; value: string }[];
+}
+
+export interface ScrapedBettingTrends {
+  team: string;
+  atsRecord?: string;
+  ouRecord?: string;
+  homeAwayRecord?: string;
+  publicBetPct?: number;
+  notes?: string;
+}
+
+export interface ScrapedVenueWeather {
+  venue?: string;
+  city?: string;
+  weather?: string;
+  temperature?: string;
+  wind?: string;
+  indoor?: boolean;
+  altitude?: string;
+  travelDistance?: string;
+  notes?: string;
+}
+
 export interface SportValidation {
   sport: string;
   competitionLevel: string;
@@ -55,6 +81,9 @@ export interface ScrapedGameData {
   headToHead: ScrapedH2H[];
   headToHeadMeta?: ScrapedH2HMeta;
   teamStats: ScrapedTeamStats[];
+  keyStats?: ScrapedKeyStats[];
+  bettingTrends?: ScrapedBettingTrends[];
+  venueWeather?: ScrapedVenueWeather;
   analysis: string;
   sportValidation?: SportValidation;
   dataSource?: 'real' | 'partial';
