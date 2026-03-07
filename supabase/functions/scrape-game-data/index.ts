@@ -974,19 +974,9 @@ function getSportValidation(sport: string): { sport: string; competitionLevel: s
 
 // Validate H2H match belongs to same sport and competition level
 function validateH2HMatch(matchData: any, sport: string): boolean {
-  const sportKey = normalizeSportKey(sport);
-  const competitionLevel = SPORT_COMPETITION_LEVELS[sportKey];
-  
-  // Check if score format matches expected sport
-  if (!matchData.score) return false;
-  
-  // Validate score format matches sport's scoring system
-  const scorePattern = getScorePatternForSport(sportKey);
-  if (!scorePattern.test(matchData.score)) {
-    console.log(`[H2H Validation] Score format mismatch for ${sportKey}: ${matchData.score}`);
-    return false;
-  }
-  
+  // Accept any match that has a winner and some score-like data
+  if (!matchData.winner) return false;
+  if (!matchData.score || matchData.score.length === 0) return false;
   return true;
 }
 
