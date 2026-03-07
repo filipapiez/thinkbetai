@@ -423,10 +423,10 @@ async function extractHistoricalDataWithAIFromSources({
 
   const system =
     'You are a sports data extraction expert. Extract EVERY piece of verifiable sports data from the provided source snippets. ' +
-    'Be thorough - look for game scores, win/loss records, head-to-head matchups, and recent results even if formatting varies. ' +
+    'Be thorough - look for game scores, win/loss records, head-to-head matchups, team stats, betting trends, and venue info. ' +
     'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess or fabricate data.';
 
-  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nIMPORTANT INSTRUCTIONS:\n1. Extract ALL recent game results you can find for BOTH teams (up to 5 each). Look for scores like "102-98", records, game logs, etc.\n2. Extract ALL head-to-head matchups between these specific teams. Even if you only find 1-2 matches, include them.\n3. For head-to-head, the "winner" field MUST be either "${homeTeam}" or "${awayTeam}" exactly.\n4. Dates MUST be YYYY-MM-DD format. If only month/year is available, use the 1st of that month.\n5. Scores should match the sport format (e.g., NBA: "112-108", NHL: "4-2", Soccer: "2-1").\n6. Do NOT leave recentForm empty if there are ANY game results in the snippets.`;
+  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nTEAM STATS & STANDINGS:\n${JSON.stringify(compact.stats, null, 2)}\n\nBETTING TRENDS:\n${JSON.stringify(compact.trends, null, 2)}\n\nVENUE & WEATHER:\n${JSON.stringify(compact.venue, null, 2)}\n\nIMPORTANT INSTRUCTIONS:\n1. Extract ALL recent game results you can find for BOTH teams (up to 5 each). Look for scores like "102-98", records, game logs, etc.\n2. Extract ALL head-to-head matchups between these specific teams. Even if you only find 1-2 matches, include them.\n3. For head-to-head, the "winner" field MUST be either "${homeTeam}" or "${awayTeam}" exactly.\n4. Dates MUST be YYYY-MM-DD format. If only month/year is available, use the 1st of that month.\n5. Scores should match the sport format (e.g., NBA: "112-108", NHL: "4-2", Soccer: "2-1").\n6. Do NOT leave recentForm empty if there are ANY game results in the snippets.\n7. For keyStats, extract sport-specific performance metrics (e.g., NBA: PPG, RPG, APG; NFL: yards/game; MLB: ERA, batting avg).\n8. For bettingTrends, extract ATS records, O/U records, home/away splits if available.\n9. For venueWeather, extract venue name, city, indoor/outdoor, weather forecast, wind, temperature if found.`;
 
   const body: any = {
     model: 'google/gemini-3-flash-preview',
@@ -439,11 +439,11 @@ async function extractHistoricalDataWithAIFromSources({
         type: 'function',
         function: {
           name: 'extract_matchup_history',
-          description: 'Extract verified matchup history and injuries from the provided source snippets.',
+          description: 'Extract verified matchup data from the provided source snippets.',
           parameters: {
             type: 'object',
             additionalProperties: false,
-            required: ['recentForm', 'headToHead', 'injuries', 'teamStats', 'sourcesUsed', 'notes'],
+            required: ['recentForm', 'headToHead', 'injuries', 'teamStats', 'keyStats', 'bettingTrends', 'venueWeather', 'sourcesUsed', 'notes'],
             properties: {
               recentForm: {
                 type: 'array',
@@ -511,6 +511,63 @@ async function extractHistoricalDataWithAIFromSources({
                     streak: { type: 'string' },
                     ranking: { type: 'number' },
                   },
+                },
+              },
+              keyStats: {
+                type: 'array',
+                description: 'Sport-specific performance stats for each team (e.g., PPG, RPG for NBA; yards/game for NFL)',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['team', 'stats'],
+                  properties: {
+                    team: { type: 'string' },
+                    stats: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        additionalProperties: false,
+                        required: ['label', 'value'],
+                        properties: {
+                          label: { type: 'string' },
+                          value: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              bettingTrends: {
+                type: 'array',
+                description: 'ATS records, O/U trends, home/away splits for each team',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['team'],
+                  properties: {
+                    team: { type: 'string' },
+                    atsRecord: { type: 'string' },
+                    ouRecord: { type: 'string' },
+                    homeAwayRecord: { type: 'string' },
+                    publicBetPct: { type: 'number' },
+                    notes: { type: 'string' },
+                  },
+                },
+              },
+              venueWeather: {
+                type: 'object',
+                description: 'Venue details and weather conditions for the game',
+                additionalProperties: false,
+                properties: {
+                  venue: { type: 'string' },
+                  city: { type: 'string' },
+                  weather: { type: 'string' },
+                  temperature: { type: 'string' },
+                  wind: { type: 'string' },
+                  indoor: { type: 'boolean' },
+                  altitude: { type: 'string' },
+                  travelDistance: { type: 'string' },
+                  notes: { type: 'string' },
                 },
               },
               sourcesUsed: {
