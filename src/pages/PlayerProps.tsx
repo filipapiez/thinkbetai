@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, TrendingUp, X, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
 
 const SPORT_FILTERS = [
@@ -27,6 +29,8 @@ const PlayerProps = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statFilter, setStatFilter] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const { user, isSubscribed } = useAuth();
+  const navigate = useNavigate();
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
 
@@ -217,14 +221,53 @@ const PlayerProps = () => {
           {/* Props Grid */}
           {!isLoading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map(prop => (
-                <PlayerPropCard
-                  key={prop.id}
-                  prop={prop}
-                  selectedPlatform={selectedPlatform}
-                  autoFetchL20={autoFetchIds.has(prop.id)}
-                />
-              ))}
+              {filtered.map((prop, index) => {
+                const isLocked = !isSubscribed && index >= 2;
+                const isFreePreview = !isSubscribed && index < 2;
+
+                if (isLocked) {
+                  return (
+                    <div key={prop.id}>
+                      <div
+                        className="relative cursor-pointer group"
+                        onClick={() => navigate(user ? '/pricing' : '/login', { state: { from: { pathname: '/player-props' } } })}
+                      >
+                        <div className="blur-[6px] opacity-50 pointer-events-none select-none">
+                          <PlayerPropCard prop={prop} selectedPlatform={selectedPlatform} autoFetchL20={false} />
+                        </div>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl border border-border/50 group-hover:border-primary/40 transition-colors">
+                          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-3">
+                            <Lock className="h-6 w-6 text-primary" />
+                          </div>
+                          <p className="text-sm font-semibold mb-1">Unlock This Prop</p>
+                          <p className="text-xs text-muted-foreground">Subscribe for full access</p>
+                          <div className="mt-3 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-xs font-medium text-primary group-hover:bg-primary/20 transition-colors">
+                            <Crown className="h-3 w-3 inline mr-1" />
+                            View Plans
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={prop.id} className="relative">
+                    {isFreePreview && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5">
+                          FREE PREVIEW
+                        </Badge>
+                      </div>
+                    )}
+                    <PlayerPropCard
+                      prop={prop}
+                      selectedPlatform={selectedPlatform}
+                      autoFetchL20={autoFetchIds.has(prop.id)}
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
 
