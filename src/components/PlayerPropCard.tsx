@@ -1,9 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { usePlayerGameLog } from '@/hooks/usePlayerGameLog';
 
@@ -43,12 +42,10 @@ export function impliedProb(odds: number): number {
 export function computeEdge(overOdds: number, underOdds: number): { direction: 'Over' | 'Under'; edge: number; prob: number } {
   const overProb = impliedProb(overOdds);
   const underProb = impliedProb(underOdds);
-  // Remove vig: normalize
   const total = overProb + underProb;
   const fairOver = overProb / total;
   const fairUnder = underProb / total;
 
-  // Pick whichever side has better value (closer to 50% or above)
   let direction: 'Over' | 'Under';
   let rawProb: number;
   if (fairUnder > fairOver) {
@@ -59,80 +56,11 @@ export function computeEdge(overOdds: number, underOdds: number): { direction: '
     rawProb = fairOver;
   }
 
-  // Cap probability to a realistic range (52-78%)
   const cappedProb = Math.min(Math.max(rawProb * 100, 52), 78);
   const edge = Math.min((rawProb - 0.5) * 100, 28);
 
   return { direction, edge, prob: cappedProb };
 }
-
-// Generate a pseudo-random but deterministic "L20 hit rate" that aligns with the AI direction
-// Higher edge/prob → more hits; lower edge → fewer hits
-function pseudoHitRate(id: string, prob: number): boolean[] {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 5) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  // Use probability to bias the hit rate (prob is 52-78)
-  // Convert to a hit chance: e.g. 78% prob → ~75% hits, 52% prob → ~45% hits
-  const hitChance = (prob - 52) / (78 - 52); // 0 to 1 normalized
-  const targetHitRate = 0.40 + hitChance * 0.40; // 40% to 80% hit rate
-
-  const results: boolean[] = [];
-  for (let i = 0; i < 20; i++) {
-    const subHash = hash ^ (i * 2654435761);
-    // Generate a pseudo-random 0-1 value from the hash
-    const rand = ((Math.abs(subHash) % 1000) / 1000);
-    results.push(rand < targetHitRate);
-  }
-  return results;
-}
-
-// Pseudo-random defense ranking from id
-function pseudoDefRank(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 3) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  return (Math.abs(hash) % 30) + 1;
-}
-
-function pseudoPace(id: string): 'fast' | 'average' | 'slow' {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 7) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  const v = Math.abs(hash) % 3;
-  return v === 0 ? 'fast' : v === 1 ? 'average' : 'slow';
-}
-
-function pseudoRestDays(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 4) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  return (Math.abs(hash) % 4) + 1;
-}
-
-function pseudoMinutes(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = ((hash << 6) - hash) + id.charCodeAt(i);
-    hash |= 0;
-  }
-  return 28 + (Math.abs(hash) % 10); // 28-37 min
-}
-
-const sportAbbrev: Record<string, string> = {
-  NBA: 'NBA',
-  NFL: 'NFL',
-  MLB: 'MLB',
-  NHL: 'NHL',
-};
 
 const positionMap: Record<string, string> = {
   Points: 'G',
@@ -159,18 +87,13 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     [prop.overOdds, prop.underOdds]
   );
 
-  // Real L20 game log data
+  // Real L20 game log data only
   const gameLog = usePlayerGameLog(prop.playerName, prop.sport, prop.statType, prop.line, direction);
-  const fallbackResults = useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
-  const isRealData = gameLog.results.length > 0;
-  const l5Results = isRealData ? gameLog.results : fallbackResults;
-  const hitCount = l5Results.filter(Boolean).length;
-  const hitTotal = l5Results.length || 20;
+  const hasRealData = gameLog.results.length > 0;
+  const hitCount = hasRealData ? gameLog.results.filter(Boolean).length : 0;
+  const hitTotal = hasRealData ? gameLog.results.length : 0;
   const hitPct = hitTotal > 0 ? Math.round((hitCount / hitTotal) * 100) : 0;
-  const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
-  const pace = useMemo(() => pseudoPace(prop.id), [prop.id]);
-  const restDays = useMemo(() => pseudoRestDays(prop.id), [prop.id]);
-  const avgMinutes = useMemo(() => pseudoMinutes(prop.id), [prop.id]);
+
   const position = positionMap[prop.statType] || 'PL';
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
   const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
@@ -189,38 +112,36 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     ? new Date(prop.gameTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     : '';
 
-  // Generate contextual AI explanation with deeper analysis
+  // Generate AI explanation based on real data only
   const explanation = useMemo(() => {
     const playerFirst = prop.playerName.split(' ')[0];
-    const defDesc = defRank <= 10 ? 'bottom-tier' : defRank <= 20 ? 'middle-of-the-pack' : 'elite';
-    const ordSuffix = (n: number) => n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-    const defOrd = `${defRank}${ordSuffix(defRank)}`;
-    const paceNote = pace === 'fast' ? 'up-tempo game environment inflates volume' : pace === 'slow' ? 'slower pace could cap opportunities' : 'neutral pace expected';
-    const restNote = restDays >= 3 ? 'well-rested' : restDays === 1 ? 'on a back-to-back' : 'with standard rest';
-    const minsNote = avgMinutes >= 34 ? `heavy usage (~${avgMinutes} MPG)` : avgMinutes >= 30 ? `steady minutes (~${avgMinutes} MPG)` : `limited minutes (~${avgMinutes} MPG)`;
 
-    // Direction-aware hit rate description
-    const hitStrength = hitPct >= 70 ? 'strong' : hitPct >= 55 ? 'solid' : hitPct >= 40 ? 'moderate' : 'weak';
-    const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
-    const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
+    if (hasRealData) {
+      const hitStrength = hitPct >= 70 ? 'strong' : hitPct >= 55 ? 'solid' : hitPct >= 40 ? 'moderate' : 'weak';
+      const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
+      const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
 
-    if (direction === 'Over' && edge > 5) {
-      return `Strong lean. ${hitPhrase}, and with ${minsNote} and ${restNote} status, volume looks sustainable. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc} — ${paceNote}. The ${edge.toFixed(1)}% edge makes this one of the sharper Over plays on the board.`;
+      if (edge > 5) {
+        return `${hitPhrase} — a ${hitStrength} trend. Combined with a ${edge.toFixed(1)}% edge from the odds, this is one of the sharper ${direction} plays on the board.`;
+      }
+      if (edge > 2) {
+        return `${hitPhrase}. The ${edge.toFixed(1)}% edge suggests the ${direction} is slightly mispriced against ${prop.opponent}.`;
+      }
+      if (edge > 0) {
+        return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. Worth monitoring for line movement.`;
+      }
+      return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
     }
-    if (direction === 'Over' && edge > 2) {
-      return `${playerFirst} draws a favorable spot against ${prop.opponent} (${defOrd} vs ${position}, ${defDesc}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}, and he's ${restNote} with ${minsNote}. ${hitPhrase} — the ${edge.toFixed(1)}% edge suggests the Over is slightly mispriced.`;
+
+    // No real data available — odds-only explanation
+    if (edge > 5) {
+      return `Odds imply a ${edge.toFixed(1)}% edge on the ${direction} for ${playerFirst} vs ${prop.opponent}. Historical game log data is currently unavailable.`;
     }
-    if (direction === 'Under' && edge > 5) {
-      return `${hitPhrase}, a ${hitStrength} trend supporting the Under. ${prop.opponent} ranks ${defOrd} vs ${position} (${defDesc}), and ${paceNote}. With ${minsNote} and an ${edge.toFixed(1)}% edge, the Under projects as strong value.`;
+    if (edge > 2) {
+      return `${playerFirst} shows a ${edge.toFixed(1)}% edge on the ${direction} based on current odds vs ${prop.opponent}. L20 data unavailable.`;
     }
-    if (direction === 'Under' && edge > 2) {
-      return `Matchup leans Under. ${hitPhrase}. ${prop.opponent} ranks ${defOrd} against ${position} — ${defDesc} on that side of the ball. ${playerFirst} is ${restNote} with ${minsNote}. ${edge.toFixed(1)}% edge here.`;
-    }
-    if (edge > 0) {
-      return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. ${playerFirst} is ${restNote} seeing ${minsNote}, facing a ${defDesc} ${prop.opponent} defense (${defOrd} vs ${position}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}.`;
-    }
-    return `Coin-flip territory. ${hitPhrase}. ${playerFirst} vs ${prop.opponent} shows minimal edge either way — ${defOrd}-ranked defense, ${minsNote}. ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}. Pass or wait for better line movement.`;
-  }, [prop, direction, edge, prob, defRank, hitPct, hitCount, hitTotal, position, pace, restDays, avgMinutes]);
+    return `${playerFirst} vs ${prop.opponent} — ${edge.toFixed(1)}% edge on the ${direction} from odds alone. No game log data available to confirm the trend.`;
+  }, [prop, direction, edge, hasRealData, hitPct, hitTotal]);
 
   return (
     <Card className="bg-card border-border overflow-hidden">
@@ -269,12 +190,8 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
           </a>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-2 px-4 pb-3">
-          <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">DEF VS {position}</div>
-            <div className="font-bold text-sm text-primary">{defRank}{defRank === 1 ? 'st' : defRank === 2 ? 'nd' : defRank === 3 ? 'rd' : 'th'}</div>
-          </div>
+        {/* Stats row — only real data */}
+        <div className="grid grid-cols-2 gap-2 px-4 pb-3">
           <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Edge</div>
             <div className={cn(
@@ -290,26 +207,24 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
           </div>
         </div>
 
-        {/* L20 hit rate bar */}
-        <div className="flex items-center gap-2 px-4 pb-3">
-          <span className="text-xs font-semibold whitespace-nowrap">
-            {gameLog.isLoading ? (
-              <span className="text-muted-foreground">Loading L{hitTotal}…</span>
-            ) : (
-              <>
-                Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L{hitTotal}
-                {isRealData && <span className="text-[9px] text-muted-foreground ml-1">✓</span>}
-              </>
-            )}
-          </span>
-          <div className="flex gap-0.5 flex-1 justify-end">
-            {gameLog.isLoading ? (
-              // Loading skeleton dots
-              Array.from({ length: 20 }).map((_, i) => (
+        {/* L20 hit rate bar — only shown with real data */}
+        {gameLog.isLoading ? (
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Loading L20…</span>
+            <div className="flex gap-0.5 flex-1 justify-end">
+              {Array.from({ length: 20 }).map((_, i) => (
                 <div key={i} className="h-2 flex-1 max-w-[16px] rounded-full bg-muted animate-pulse" />
-              ))
-            ) : (
-              l5Results.map((hit, i) => (
+              ))}
+            </div>
+          </div>
+        ) : hasRealData ? (
+          <div className="flex items-center gap-2 px-4 pb-3">
+            <span className="text-xs font-semibold whitespace-nowrap">
+              Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L{hitTotal}
+              <span className="text-[9px] text-muted-foreground ml-1">✓</span>
+            </span>
+            <div className="flex gap-0.5 flex-1 justify-end">
+              {gameLog.results.map((hit, i) => (
                 <div
                   key={i}
                   className={cn(
@@ -317,10 +232,14 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
                     hit ? 'bg-emerald-500' : 'bg-pink-500'
                   )}
                 />
-              ))
-            )}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="px-4 pb-3">
+            <span className="text-xs text-muted-foreground">L20 data unavailable</span>
+          </div>
+        )}
 
         {/* AI Explanation */}
         <div className="px-4 pb-4">
