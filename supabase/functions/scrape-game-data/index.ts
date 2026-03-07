@@ -561,8 +561,8 @@ async function extractHistoricalDataWithAIFromSources({
       sport: sportKey,
       competitionLevel: sportValidation.competitionLevel,
     }))
-    // Lenient filter: just need a valid winner that matches one of the teams
-    .filter((h: any) => h.winner && (h.winner === homeTeam || h.winner === awayTeam));
+    // Accept any h2h entry that has a winner name (don't require exact team match - normalizeWinner handles fuzzy matching)
+    .filter((h: any) => h.winner && h.winner.length > 0);
 
   const injuries: ScrapedGameData['injuries'] = clampArray(extracted.injuries || [], 30)
     .map((i: any) => ({
