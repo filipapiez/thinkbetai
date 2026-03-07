@@ -5,6 +5,7 @@ import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
+import { usePlayerGameLog } from '@/hooks/usePlayerGameLog';
 
 export const SPORTSBOOKS = [
   {
@@ -158,9 +159,13 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     [prop.overOdds, prop.underOdds]
   );
 
-  const l5Results = useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
+  // Real L20 game log data
+  const gameLog = usePlayerGameLog(prop.playerName, prop.sport, prop.statType, prop.line, direction);
+  const l5Results = gameLog.results.length > 0 ? gameLog.results : useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
   const hitCount = l5Results.filter(Boolean).length;
-  const hitPct = Math.round((hitCount / 20) * 100);
+  const hitTotal = l5Results.length || 20;
+  const hitPct = hitTotal > 0 ? Math.round((hitCount / hitTotal) * 100) : 0;
+  const isRealData = gameLog.results.length > 0;
   const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
   const pace = useMemo(() => pseudoPace(prop.id), [prop.id]);
   const restDays = useMemo(() => pseudoRestDays(prop.id), [prop.id]);
