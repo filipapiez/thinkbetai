@@ -215,7 +215,7 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
       return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${playerFirst} is ${restNote} seeing ${minsNote}, facing a ${defDesc} ${prop.opponent} defense (${defOrd} vs ${position}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — ${hitPct}% L5 hit rate keeps this in play but not a top-tier spot.`;
     }
     return `Coin-flip territory. ${playerFirst} vs ${prop.opponent} shows minimal edge either way. ${defOrd}-ranked defense, ${minsNote}, and a ${hitPct}% recent hit rate. ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — pass or wait for better line movement.`;
-  }, [prop, direction, edge, prob, defRank, hitPct, hitCount, position, pace, restDays, avgMinutes]);
+  }, [prop, direction, edge, prob, defRank, hitPct, hitCount, hitTotal, position, pace, restDays, avgMinutes]);
 
   return (
     <Card className="bg-card border-border overflow-hidden">
