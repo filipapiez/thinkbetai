@@ -390,6 +390,9 @@ async function extractHistoricalDataWithAIFromSources({
     homeRecentForm: FirecrawlSearchResponse;
     awayRecentForm: FirecrawlSearchResponse;
     headToHead: FirecrawlSearchResponse;
+    stats: FirecrawlSearchResponse;
+    trends: FirecrawlSearchResponse;
+    venue: FirecrawlSearchResponse;
   };
 }): Promise<ScrapedGameData | null> {
   const sportValidation = getSportValidation(sport);
@@ -401,13 +404,19 @@ async function extractHistoricalDataWithAIFromSources({
     homeRecentForm: compactFirecrawlResults(sources.homeRecentForm),
     awayRecentForm: compactFirecrawlResults(sources.awayRecentForm),
     headToHead: compactFirecrawlResults(sources.headToHead),
+    stats: compactFirecrawlResults(sources.stats),
+    trends: compactFirecrawlResults(sources.trends),
+    venue: compactFirecrawlResults(sources.venue),
   };
 
   const anySources =
     compact.injuries.length +
       compact.homeRecentForm.length +
       compact.awayRecentForm.length +
-      compact.headToHead.length >
+      compact.headToHead.length +
+      compact.stats.length +
+      compact.trends.length +
+      compact.venue.length >
     0;
 
   if (!anySources) return null;
