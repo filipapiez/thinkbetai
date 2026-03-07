@@ -235,12 +235,12 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
               {direction} {prop.line} {prop.statType}
             </p>
           </div>
-          {/* Sportsbook odds badge */}
+          {/* Sportsbook logo */}
           <a
             href={sportsbook.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-3 py-1.5 cursor-pointer"
+            className="bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg p-2 cursor-pointer"
             title={`Bet on ${sportsbook.name}`}
           >
             <img
@@ -248,7 +248,6 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
               alt={sportsbook.name}
               className="h-5 w-5 object-contain rounded-sm"
             />
-            <span className="font-bold text-sm">{oddsStr}</span>
           </a>
         </div>
 
