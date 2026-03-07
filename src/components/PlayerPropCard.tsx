@@ -130,6 +130,15 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
   const position = positionMap[prop.statType] || 'PL';
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
+  // Blend odds-implied prob with actual L20 hit rate when available
+  // 60% weight on real data, 40% on odds-implied
+  const blendedProb = hasRealData
+    ? Math.min(Math.max(hitPct * 0.6 + prob * 0.4, 35), 95)
+    : prob;
+  const blendedEdge = hasRealData
+    ? Math.min(Math.max(blendedProb - 50, 0), 45)
+    : edge;
+
   const sportsbook = useMemo(() => {
     if (selectedPlatform) {
       return SPORTSBOOKS.find(s => s.id === selectedPlatform) || SPORTSBOOKS[0];
@@ -147,32 +156,33 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
 
   const explanation = useMemo(() => {
     const playerFirst = prop.playerName.split(' ')[0];
+    const displayEdge = blendedEdge;
 
     if (hasRealData) {
       const hitStrength = hitPct >= 70 ? 'strong' : hitPct >= 55 ? 'solid' : hitPct >= 40 ? 'moderate' : 'weak';
       const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
       const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
 
-      if (edge > 5) {
-        return `${hitPhrase} — a ${hitStrength} trend. Combined with a ${edge.toFixed(1)}% edge from the odds, this is one of the sharper ${direction} plays on the board.`;
+      if (displayEdge > 5) {
+        return `${hitPhrase} — a ${hitStrength} trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
       }
-      if (edge > 2) {
-        return `${hitPhrase}. The ${edge.toFixed(1)}% edge suggests the ${direction} is slightly mispriced against ${prop.opponent}.`;
+      if (displayEdge > 2) {
+        return `${hitPhrase}. The ${displayEdge.toFixed(1)}% blended edge suggests the ${direction} is slightly mispriced against ${prop.opponent}.`;
       }
-      if (edge > 0) {
-        return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. Worth monitoring for line movement.`;
+      if (displayEdge > 0) {
+        return `Marginal ${displayEdge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. Worth monitoring for line movement.`;
       }
       return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
     }
 
-    if (edge > 5) {
-      return `Odds imply a ${edge.toFixed(1)}% edge on the ${direction} for ${playerFirst} vs ${prop.opponent}. Tap to load game history.`;
+    if (displayEdge > 5) {
+      return `Odds imply a ${displayEdge.toFixed(1)}% edge on the ${direction} for ${playerFirst} vs ${prop.opponent}. Tap to load game history.`;
     }
-    if (edge > 2) {
-      return `${playerFirst} shows a ${edge.toFixed(1)}% edge on the ${direction} based on current odds vs ${prop.opponent}. Tap to load L20 data.`;
+    if (displayEdge > 2) {
+      return `${playerFirst} shows a ${displayEdge.toFixed(1)}% edge on the ${direction} based on current odds vs ${prop.opponent}. Tap to load L20 data.`;
     }
-    return `${playerFirst} vs ${prop.opponent} — ${edge.toFixed(1)}% edge on the ${direction} from odds alone. Tap to load game history.`;
-  }, [prop, direction, edge, hasRealData, hitPct, hitTotal]);
+    return `${playerFirst} vs ${prop.opponent} — ${displayEdge.toFixed(1)}% edge on the ${direction} from odds alone. Tap to load game history.`;
+  }, [prop, direction, blendedEdge, hasRealData, hitPct, hitTotal]);
 
   return (
     <>
@@ -221,14 +231,14 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Edge</div>
           <div className={cn(
             "font-bold text-sm",
-            edge > 3 ? 'text-emerald-400' : edge > 0 ? 'text-amber-400' : 'text-red-400'
+            blendedEdge > 3 ? 'text-emerald-400' : blendedEdge > 0 ? 'text-amber-400' : 'text-red-400'
           )}>
-            +{edge.toFixed(1)}%
+            +{blendedEdge.toFixed(1)}%
           </div>
         </div>
         <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Prob</div>
-          <div className="font-bold text-sm text-primary">{prob.toFixed(0)}%</div>
+          <div className="font-bold text-sm text-primary">{blendedProb.toFixed(0)}%</div>
         </div>
       </div>
 
