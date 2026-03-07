@@ -35,6 +35,9 @@ import { AIAnalysisCard } from '@/components/AIAnalysisCard';
 import { PerformanceChartLive } from '@/components/PerformanceChartLive';
 import { QualifiedBetAccuracyChart } from '@/components/QualifiedBetAccuracyChart';
 import { FullAIReport } from '@/components/FullAIReport';
+import { TeamStatsCard } from '@/components/TeamStatsCard';
+import { BettingTrendsCard } from '@/components/BettingTrendsCard';
+import { VenueWeatherCard } from '@/components/VenueWeatherCard';
 import type { PopularGame } from '@/hooks/usePopularGames';
 
 type OddsApiGame = {
