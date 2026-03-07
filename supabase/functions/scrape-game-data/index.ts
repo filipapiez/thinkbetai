@@ -684,6 +684,45 @@ async function extractHistoricalDataWithAIFromSources({
     }))
     .filter((ts: any) => ts.team);
 
+  // Process keyStats
+  const keyStats: ScrapedGameData['keyStats'] = clampArray(extracted.keyStats || [], 4)
+    .map((ks: any) => ({
+      team: typeof ks?.team === 'string' ? ks.team : '',
+      stats: clampArray(ks?.stats || [], 8).map((s: any) => ({
+        label: typeof s?.label === 'string' ? s.label : '',
+        value: typeof s?.value === 'string' ? s.value : '',
+      })).filter((s: any) => s.label && s.value),
+    }))
+    .filter((ks: any) => ks.team && ks.stats.length > 0);
+
+  // Process bettingTrends
+  const bettingTrends: ScrapedGameData['bettingTrends'] = clampArray(extracted.bettingTrends || [], 4)
+    .map((bt: any) => ({
+      team: typeof bt?.team === 'string' ? bt.team : '',
+      atsRecord: typeof bt?.atsRecord === 'string' ? bt.atsRecord : undefined,
+      ouRecord: typeof bt?.ouRecord === 'string' ? bt.ouRecord : undefined,
+      homeAwayRecord: typeof bt?.homeAwayRecord === 'string' ? bt.homeAwayRecord : undefined,
+      publicBetPct: Number.isFinite(bt?.publicBetPct) ? bt.publicBetPct : undefined,
+      notes: typeof bt?.notes === 'string' ? bt.notes : undefined,
+    }))
+    .filter((bt: any) => bt.team);
+
+  // Process venueWeather
+  const venueRaw = extracted.venueWeather || {};
+  const venueWeather: ScrapedGameData['venueWeather'] = {
+    venue: typeof venueRaw.venue === 'string' ? venueRaw.venue : undefined,
+    city: typeof venueRaw.city === 'string' ? venueRaw.city : undefined,
+    weather: typeof venueRaw.weather === 'string' ? venueRaw.weather : undefined,
+    temperature: typeof venueRaw.temperature === 'string' ? venueRaw.temperature : undefined,
+    wind: typeof venueRaw.wind === 'string' ? venueRaw.wind : undefined,
+    indoor: typeof venueRaw.indoor === 'boolean' ? venueRaw.indoor : undefined,
+    altitude: typeof venueRaw.altitude === 'string' ? venueRaw.altitude : undefined,
+    travelDistance: typeof venueRaw.travelDistance === 'string' ? venueRaw.travelDistance : undefined,
+    notes: typeof venueRaw.notes === 'string' ? venueRaw.notes : undefined,
+  };
+
+  const hasVenueData = Object.values(venueWeather).some(v => v !== undefined);
+
   const validMatchCount = headToHead.length;
   const headToHeadMeta = {
     limitedData: validMatchCount < 3,
@@ -699,7 +738,7 @@ async function extractHistoricalDataWithAIFromSources({
   ].filter(Boolean);
 
   const hasAnyRealData =
-    recentForm.some((rf) => rf.last5.length > 0) || headToHead.length > 0 || injuries.length > 0 || teamStats.length > 0;
+    recentForm.some((rf) => rf.last5.length > 0) || headToHead.length > 0 || injuries.length > 0 || teamStats.length > 0 || keyStats.length > 0;
 
   if (!hasAnyRealData) return null;
 
@@ -712,6 +751,9 @@ async function extractHistoricalDataWithAIFromSources({
     headToHead,
     headToHeadMeta,
     teamStats,
+    keyStats: keyStats.length > 0 ? keyStats : undefined,
+    bettingTrends: bettingTrends.length > 0 ? bettingTrends : undefined,
+    venueWeather: hasVenueData ? venueWeather : undefined,
     analysis: analysisLines.join('\n'),
     sportValidation,
     dataSource,
