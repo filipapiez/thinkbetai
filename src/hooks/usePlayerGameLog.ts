@@ -187,7 +187,7 @@ export function useLazyPlayerGameLog(
     total: data?.total ?? 0,
     isLoading,
     error,
-    hasData: !!data && data.results.length >= 20,
+    hasData: !!data && data.results.length >= 10,
     fetch,
   };
 }

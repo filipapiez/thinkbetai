@@ -61,10 +61,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Search for player game log
+    // Build sport-specific search for game log pages
     const currentYear = new Date().getFullYear();
     const sportNorm = (sport || 'nba').toLowerCase();
-    const query = `${playerName} game log ${currentYear} ${statType} stats site:espn.com OR site:basketball-reference.com OR site:statmuse.com OR site:baseball-reference.com OR site:hockey-reference.com`;
+    
+    // Use sport-specific reference sites for better game log coverage
+    const sportSites: Record<string, string> = {
+      nba: 'site:basketball-reference.com OR site:espn.com OR site:statmuse.com',
+      nhl: 'site:hockey-reference.com OR site:espn.com OR site:statmuse.com',
+      nfl: 'site:pro-football-reference.com OR site:espn.com OR site:statmuse.com',
+      mlb: 'site:baseball-reference.com OR site:espn.com OR site:statmuse.com',
+    };
+    const sites = sportSites[sportNorm] || 'site:espn.com OR site:statmuse.com';
+    const query = `${playerName} ${currentYear} game log ${sites}`;
 
     console.log(`Searching game log for ${playerName} (${statType})`);
 
@@ -80,7 +89,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           query,
-          limit: 3,
+          limit: 5,
           scrapeOptions: { formats: ['markdown'] },
         }),
       });
@@ -140,7 +149,8 @@ Deno.serve(async (req) => {
       .slice(0, 5)
       .map((r: any) => {
         const md = (r?.markdown || r?.description || '').toString();
-        return md.length > 3000 ? md.slice(0, 3000) : md;
+        // Allow larger snippets to capture full game log tables
+        return md.length > 8000 ? md.slice(0, 8000) : md;
       })
       .filter((s: string) => s.trim().length > 0);
 
@@ -164,11 +174,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Extract the last 20 game stat values for a specific player and stat type from source snippets. Return ONLY numeric values from actual games. Do NOT fabricate data.`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from game log data. Look for tables or lists showing individual game results. Each row in a game log represents one game. Extract the "${statType}" column value from each game row. You MUST find at least 15-20 games if the data is present. Do NOT stop at 5 or 6 — scan the ENTIRE source for all game rows. Return ONLY real numeric values. Do NOT fabricate or estimate data.`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat: ${statType}\nSport: ${sport}\n\nSOURCE SNIPPETS:\n${snippets.join('\n\n---\n\n')}\n\nExtract the ${statType} values from ${playerName}'s last 20 games. If you can only find fewer games, return what you find. Return the values in chronological order (oldest first).`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (game logs from reference sites):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table(s) in the source data above\n2. For EACH game row, extract the "${statType}" value\n3. Return ALL games found (target: 20 most recent games)\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)`,
           },
         ],
         tools: [
