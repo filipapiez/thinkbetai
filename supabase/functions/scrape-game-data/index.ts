@@ -630,7 +630,7 @@ async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
       },
       body: JSON.stringify({
         query,
-        limit: 5,
+        limit: 8,
         scrapeOptions: { formats: ['markdown'] },
       }),
     });
