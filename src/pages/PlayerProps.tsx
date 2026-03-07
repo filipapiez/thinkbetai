@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, Clock, Filter, TrendingUp, X, Loader2, TrendingDown } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, X, Loader2 } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 
 const SPORT_FILTERS = [
@@ -19,6 +19,9 @@ const SPORT_FILTERS = [
   { value: 'hockey', label: 'NHL' },
 ];
 
+/** Top N props auto-fetch L20; rest are lazy-loaded on tap */
+const AUTO_FETCH_LIMIT = 30;
+
 const PlayerProps = () => {
   const [sportFilter, setSportFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +30,6 @@ const PlayerProps = () => {
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
 
-  // Hardcoded stats
   const totalGames = 1420;
   const wr = 82;
   const winsCount = Math.round(totalGames * wr / 100);
@@ -49,7 +51,6 @@ const PlayerProps = () => {
         return matchesSearch && matchesStat;
       })
       .sort((a, b) => {
-        // Prioritize props that have real L20 game log data
         const edgeA = computeEdge(a.overOdds, a.underOdds);
         const edgeB = computeEdge(b.overOdds, b.underOdds);
         const keyA = `${a.playerName}:${a.statType}:${a.line}:${edgeA.direction}`;
@@ -61,7 +62,15 @@ const PlayerProps = () => {
       });
   }, [props, searchQuery, statFilter]);
 
-  // Stats summary
+  // Build a set of top-N prop IDs for auto-fetch
+  const autoFetchIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (let i = 0; i < Math.min(AUTO_FETCH_LIMIT, filtered.length); i++) {
+      ids.add(filtered[i].id);
+    }
+    return ids;
+  }, [filtered]);
+
   const totalProps = filtered.length;
   const sportBreakdown = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -83,11 +92,8 @@ const PlayerProps = () => {
         <div className="container">
           {/* Win Rate Bar */}
           <div className="relative mb-6 rounded-xl border border-primary/20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--secondary)))' }}>
-            {/* Subtle glow */}
             <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
-            
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 p-5">
-              {/* Left: Win Rate */}
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Over / Under Record</span>
@@ -102,23 +108,10 @@ const PlayerProps = () => {
                   <span className="text-sm text-muted-foreground font-medium">win rate</span>
                 </div>
                 <div className="w-full bg-secondary/80 rounded-full h-2.5 overflow-hidden flex">
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${wr}%`,
-                      background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))'
-                    }}
-                  />
-                  <div
-                    className="h-full transition-all duration-500 bg-red-500"
-                    style={{
-                      width: `${100 - wr}%`
-                    }}
-                  />
+                  <div className="h-full transition-all duration-500" style={{ width: `${wr}%`, background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))' }} />
+                  <div className="h-full transition-all duration-500 bg-red-500" style={{ width: `${100 - wr}%` }} />
                 </div>
               </div>
-
-              {/* Right: Stats */}
               <div className="flex gap-5 sm:gap-6">
                 <div className="text-center">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total</p>
@@ -153,10 +146,7 @@ const PlayerProps = () => {
                 key={sf.value}
                 variant={sportFilter === sf.value ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => {
-                  setSportFilter(sf.value);
-                  setStatFilter(null);
-                }}
+                onClick={() => { setSportFilter(sf.value); setStatFilter(null); }}
               >
                 {sf.label}
               </Button>
@@ -171,22 +161,11 @@ const PlayerProps = () => {
 
           {/* Platform selector */}
           <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
-            <Button
-              variant={selectedPlatform === null ? 'default' : 'ghost'}
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => setSelectedPlatform(null)}
-            >
+            <Button variant={selectedPlatform === null ? 'default' : 'ghost'} size="sm" className="h-7 px-2 text-xs" onClick={() => setSelectedPlatform(null)}>
               All
             </Button>
             {SPORTSBOOKS.map(sb => (
-              <Button
-                key={sb.id}
-                variant={selectedPlatform === sb.id ? 'default' : 'ghost'}
-                size="sm"
-                className="h-7 px-2 gap-1"
-                onClick={() => setSelectedPlatform(selectedPlatform === sb.id ? null : sb.id)}
-              >
+              <Button key={sb.id} variant={selectedPlatform === sb.id ? 'default' : 'ghost'} size="sm" className="h-7 px-2 gap-1" onClick={() => setSelectedPlatform(selectedPlatform === sb.id ? null : sb.id)}>
                 <img src={sb.logo} alt={sb.name} className="h-4 w-4 object-contain rounded-sm" />
                 <span className="text-xs hidden sm:inline">{sb.name}</span>
               </Button>
@@ -197,21 +176,11 @@ const PlayerProps = () => {
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search player or team..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card border-border"
-              />
+              <Input placeholder="Search player or team..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 bg-card border-border" />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {availableStats.map(stat => (
-                <Badge
-                  key={stat}
-                  variant={statFilter === stat ? 'default' : 'outline'}
-                  className="cursor-pointer"
-                  onClick={() => setStatFilter(statFilter === stat ? null : stat)}
-                >
+                <Badge key={stat} variant={statFilter === stat ? 'default' : 'outline'} className="cursor-pointer" onClick={() => setStatFilter(statFilter === stat ? null : stat)}>
                   {stat}
                   {statFilter === stat && <X className="h-3 w-3 ml-1" />}
                 </Badge>
@@ -221,13 +190,9 @@ const PlayerProps = () => {
 
           {/* Summary */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <Badge variant="secondary" className="text-xs">
-              {totalProps} props
-            </Badge>
+            <Badge variant="secondary" className="text-xs">{totalProps} props</Badge>
             {Object.entries(sportBreakdown).map(([league, count]) => (
-              <Badge key={league} variant="outline" className="text-xs">
-                {league}: {count}
-              </Badge>
+              <Badge key={league} variant="outline" className="text-xs">{league}: {count}</Badge>
             ))}
           </div>
 
@@ -244,9 +209,7 @@ const PlayerProps = () => {
             <Card className="bg-destructive/10 border-destructive/30">
               <CardContent className="p-6 text-center">
                 <p className="text-destructive font-medium">{error}</p>
-                <Button variant="outline" size="sm" onClick={refetch} className="mt-3">
-                  Try Again
-                </Button>
+                <Button variant="outline" size="sm" onClick={refetch} className="mt-3">Try Again</Button>
               </CardContent>
             </Card>
           )}
@@ -255,7 +218,12 @@ const PlayerProps = () => {
           {!isLoading && !error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map(prop => (
-                <PlayerPropCard key={prop.id} prop={prop} selectedPlatform={selectedPlatform} />
+                <PlayerPropCard
+                  key={prop.id}
+                  prop={prop}
+                  selectedPlatform={selectedPlatform}
+                  autoFetchL20={autoFetchIds.has(prop.id)}
+                />
               ))}
             </div>
           )}
