@@ -520,8 +520,8 @@ async function extractHistoricalDataWithAIFromSources({
         score: typeof g?.score === 'string' ? g.score : '',
         date: typeof g?.date === 'string' ? g.date : '',
       }))
-      // Lenient filter: accept if we have a score OR a date (not requiring both)
-      .filter((g) => (g.date && g.date.length > 0) || (g.score && g.score.length > 0));
+      // Lenient filter: accept if we have an opponent name or a result
+      .filter((g) => g.opponent && g.opponent !== 'Unknown');
 
     return {
       team: teamName,
