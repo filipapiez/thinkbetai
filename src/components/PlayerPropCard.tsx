@@ -5,6 +5,7 @@ import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
+import { usePlayerGameLog } from '@/hooks/usePlayerGameLog';
 
 export const SPORTSBOOKS = [
   {
@@ -158,9 +159,14 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     [prop.overOdds, prop.underOdds]
   );
 
-  const l5Results = useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
+  // Real L20 game log data
+  const gameLog = usePlayerGameLog(prop.playerName, prop.sport, prop.statType, prop.line, direction);
+  const fallbackResults = useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
+  const isRealData = gameLog.results.length > 0;
+  const l5Results = isRealData ? gameLog.results : fallbackResults;
   const hitCount = l5Results.filter(Boolean).length;
-  const hitPct = Math.round((hitCount / 20) * 100);
+  const hitTotal = l5Results.length || 20;
+  const hitPct = hitTotal > 0 ? Math.round((hitCount / hitTotal) * 100) : 0;
   const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
   const pace = useMemo(() => pseudoPace(prop.id), [prop.id]);
   const restDays = useMemo(() => pseudoRestDays(prop.id), [prop.id]);
@@ -194,7 +200,7 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     const minsNote = avgMinutes >= 34 ? `heavy usage (${avgMinutes} MPG)` : avgMinutes >= 30 ? `solid minutes (${avgMinutes} MPG)` : `limited minutes (${avgMinutes} MPG)`;
 
     if (direction === 'Over' && edge > 5) {
-      return `Strong lean. ${playerFirst} is ${restNote} and seeing ${minsNote} — ${paceNote}. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc}, and ${playerFirst} has cleared this line in ${hitCount}/20 recent outings. The ${edge.toFixed(1)}% edge and ${prob.toFixed(0)}% implied probability make this one of the sharper Over plays on the board.`;
+      return `Strong lean. ${playerFirst} is ${restNote} and seeing ${minsNote} — ${paceNote}. ${prop.opponent}'s ${defOrd}-ranked defense vs ${position} is ${defDesc}, and ${playerFirst} has cleared this line in ${hitCount}/${hitTotal} recent outings. The ${edge.toFixed(1)}% edge and ${prob.toFixed(0)}% implied probability make this one of the sharper Over plays on the board.`;
     }
     if (direction === 'Over' && edge > 2) {
       return `${playerFirst} draws a favorable spot against ${prop.opponent} (${defOrd} vs ${position}, ${defDesc}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)}, and he's ${restNote} with ${minsNote}. L5 hit rate sits at ${hitPct}% — the ${edge.toFixed(1)}% edge suggests the Over is slightly mispriced.`;
@@ -209,7 +215,7 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
       return `Marginal ${edge.toFixed(1)}% edge on the ${direction}. ${playerFirst} is ${restNote} seeing ${minsNote}, facing a ${defDesc} ${prop.opponent} defense (${defOrd} vs ${position}). ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — ${hitPct}% L5 hit rate keeps this in play but not a top-tier spot.`;
     }
     return `Coin-flip territory. ${playerFirst} vs ${prop.opponent} shows minimal edge either way. ${defOrd}-ranked defense, ${minsNote}, and a ${hitPct}% recent hit rate. ${paceNote.charAt(0).toUpperCase() + paceNote.slice(1)} — pass or wait for better line movement.`;
-  }, [prop, direction, edge, prob, defRank, hitPct, hitCount, position, pace, restDays, avgMinutes]);
+  }, [prop, direction, edge, prob, defRank, hitPct, hitCount, hitTotal, position, pace, restDays, avgMinutes]);
 
   return (
     <Card className="bg-card border-border overflow-hidden">
@@ -279,21 +285,35 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
           </div>
         </div>
 
-        {/* L5 hit rate bar */}
+        {/* L20 hit rate bar */}
         <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
-            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L20
+            {gameLog.isLoading ? (
+              <span className="text-muted-foreground">Loading L{hitTotal}…</span>
+            ) : (
+              <>
+                Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L{hitTotal}
+                {isRealData && <span className="text-[9px] text-muted-foreground ml-1">✓</span>}
+              </>
+            )}
           </span>
           <div className="flex gap-0.5 flex-1 justify-end">
-            {l5Results.map((hit, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-2 flex-1 max-w-[16px] rounded-full",
-                  hit ? 'bg-emerald-500' : 'bg-pink-500'
-                )}
-              />
-            ))}
+            {gameLog.isLoading ? (
+              // Loading skeleton dots
+              Array.from({ length: 20 }).map((_, i) => (
+                <div key={i} className="h-2 flex-1 max-w-[16px] rounded-full bg-muted animate-pulse" />
+              ))
+            ) : (
+              l5Results.map((hit, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-2 flex-1 max-w-[16px] rounded-full",
+                    hit ? 'bg-emerald-500' : 'bg-pink-500'
+                  )}
+                />
+              ))
+            )}
           </div>
         </div>
 
