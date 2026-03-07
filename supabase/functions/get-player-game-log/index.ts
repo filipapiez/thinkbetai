@@ -34,21 +34,25 @@ Deno.serve(async (req) => {
       .single();
 
     if (cached && new Date(cached.expires_at) > new Date()) {
-      console.log(`Cache hit for ${playerName} ${statType}`);
       const cachedData = cached.data as any;
-      // Recalculate hits against the current line (line may differ from cached)
-      const results = (cachedData.statValues || []).map((val: number) => val >= line);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          results,
-          statValues: cachedData.statValues,
-          hitCount: results.filter(Boolean).length,
-          total: results.length,
-          source: 'cached',
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const cachedValues = Array.isArray(cachedData?.statValues) ? cachedData.statValues : [];
+      // Only use cache if it has at least 10 stat values (reject old small entries)
+      if (cachedValues.length >= 10) {
+        console.log(`Cache hit for ${playerName} ${statType} (${cachedValues.length} values)`);
+        const results = cachedValues.map((val: number) => val >= line);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            results,
+            statValues: cachedValues,
+            hitCount: results.filter(Boolean).length,
+            total: results.length,
+            source: 'cached',
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log(`Cache has only ${cachedValues.length} values for ${playerName} ${statType}, re-fetching`);
     }
 
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
