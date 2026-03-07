@@ -229,10 +229,11 @@ Deno.serve(async (req) => {
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
 
-      const injuryQuery = `${homeTeam} ${awayTeam} injuries ${sport} ${sportValidation.competitionLevel}`;
-      const formQuery = `${homeTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
-      const awayFormQuery = `${awayTeam} recent results last 5 ${sport} ${sportValidation.competitionLevel}`;
-      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head ${sport} ${sportValidation.competitionLevel}`;
+      const currentYear = new Date().getFullYear();
+      const injuryQuery = `${homeTeam} ${awayTeam} injury report ${currentYear} ${sportValidation.competitionLevel}`;
+      const formQuery = `${homeTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
+      const awayFormQuery = `${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
+      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com`;
 
       const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
@@ -300,7 +301,7 @@ Deno.serve(async (req) => {
 
 type FirecrawlSearchResponse = any;
 
-function compactFirecrawlResults(resp: FirecrawlSearchResponse, maxItems = 5, maxCharsPerItem = 2400) {
+function compactFirecrawlResults(resp: FirecrawlSearchResponse, maxItems = 8, maxCharsPerItem = 4000) {
   const list = Array.isArray(resp?.data) ? resp.data.slice(0, maxItems) : [];
   return list
     .map((r: any) => {
@@ -380,10 +381,11 @@ async function extractHistoricalDataWithAIFromSources({
   if (!anySources) return null;
 
   const system =
-    'You extract SPORTS HISTORY from provided source snippets. ' +
-    'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess.';
+    'You are a sports data extraction expert. Extract EVERY piece of verifiable sports data from the provided source snippets. ' +
+    'Be thorough - look for game scores, win/loss records, head-to-head matchups, and recent results even if formatting varies. ' +
+    'Use ONLY the snippets. If a fact is not present, omit it. Do NOT guess or fabricate data.';
 
-  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nReturn structured data via the tool. Dates MUST be YYYY-MM-DD. Scores MUST match the sport scoring format when applicable.`;
+  const user = `Matchup: ${homeTeam} vs ${awayTeam}\nSport: ${sport} (${sportValidation.competitionLevel})\n\nSOURCE SNIPPETS:\n\nINJURIES:\n${JSON.stringify(compact.injuries, null, 2)}\n\nHOME RECENT FORM:\n${JSON.stringify(compact.homeRecentForm, null, 2)}\n\nAWAY RECENT FORM:\n${JSON.stringify(compact.awayRecentForm, null, 2)}\n\nHEAD TO HEAD:\n${JSON.stringify(compact.headToHead, null, 2)}\n\nIMPORTANT INSTRUCTIONS:\n1. Extract ALL recent game results you can find for BOTH teams (up to 5 each). Look for scores like "102-98", records, game logs, etc.\n2. Extract ALL head-to-head matchups between these specific teams. Even if you only find 1-2 matches, include them.\n3. For head-to-head, the "winner" field MUST be either "${homeTeam}" or "${awayTeam}" exactly.\n4. Dates MUST be YYYY-MM-DD format. If only month/year is available, use the 1st of that month.\n5. Scores should match the sport format (e.g., NBA: "112-108", NHL: "4-2", Soccer: "2-1").\n6. Do NOT leave recentForm empty if there are ANY game results in the snippets.`;
 
   const body: any = {
     model: 'google/gemini-3-flash-preview',
@@ -518,8 +520,8 @@ async function extractHistoricalDataWithAIFromSources({
         score: typeof g?.score === 'string' ? g.score : '',
         date: typeof g?.date === 'string' ? g.date : '',
       }))
-      // Lenient filter: accept if we have a score OR a date (not requiring both)
-      .filter((g) => (g.date && g.date.length > 0) || (g.score && g.score.length > 0));
+      // Lenient filter: accept if we have an opponent name or a result
+      .filter((g) => g.opponent && g.opponent !== 'Unknown');
 
     return {
       team: teamName,
@@ -559,8 +561,8 @@ async function extractHistoricalDataWithAIFromSources({
       sport: sportKey,
       competitionLevel: sportValidation.competitionLevel,
     }))
-    // Lenient filter: just need a valid winner that matches one of the teams
-    .filter((h: any) => h.winner && (h.winner === homeTeam || h.winner === awayTeam));
+    // Accept any h2h entry that has a winner name (don't require exact team match - normalizeWinner handles fuzzy matching)
+    .filter((h: any) => h.winner && h.winner.length > 0);
 
   const injuries: ScrapedGameData['injuries'] = clampArray(extracted.injuries || [], 30)
     .map((i: any) => ({
@@ -628,7 +630,7 @@ async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
       },
       body: JSON.stringify({
         query,
-        limit: 5,
+        limit: 8,
         scrapeOptions: { formats: ['markdown'] },
       }),
     });
@@ -972,19 +974,9 @@ function getSportValidation(sport: string): { sport: string; competitionLevel: s
 
 // Validate H2H match belongs to same sport and competition level
 function validateH2HMatch(matchData: any, sport: string): boolean {
-  const sportKey = normalizeSportKey(sport);
-  const competitionLevel = SPORT_COMPETITION_LEVELS[sportKey];
-  
-  // Check if score format matches expected sport
-  if (!matchData.score) return false;
-  
-  // Validate score format matches sport's scoring system
-  const scorePattern = getScorePatternForSport(sportKey);
-  if (!scorePattern.test(matchData.score)) {
-    console.log(`[H2H Validation] Score format mismatch for ${sportKey}: ${matchData.score}`);
-    return false;
-  }
-  
+  // Accept any match that has a winner and some score-like data
+  if (!matchData.winner) return false;
+  if (!matchData.score || matchData.score.length === 0) return false;
   return true;
 }
 
