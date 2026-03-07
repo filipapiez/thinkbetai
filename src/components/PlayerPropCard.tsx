@@ -65,18 +65,25 @@ export function computeEdge(overOdds: number, underOdds: number): { direction: '
   return { direction, edge, prob: cappedProb };
 }
 
-// Generate a pseudo-random but deterministic "L5 hit rate" from the prop ID
-function pseudoHitRate(id: string): boolean[] {
+// Generate a pseudo-random but deterministic "L20 hit rate" that aligns with the AI direction
+// Higher edge/prob → more hits; lower edge → fewer hits
+function pseudoHitRate(id: string, prob: number): boolean[] {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash) + id.charCodeAt(i);
     hash |= 0;
   }
+  // Use probability to bias the hit rate (prob is 52-78)
+  // Convert to a hit chance: e.g. 78% prob → ~75% hits, 52% prob → ~45% hits
+  const hitChance = (prob - 52) / (78 - 52); // 0 to 1 normalized
+  const targetHitRate = 0.40 + hitChance * 0.40; // 40% to 80% hit rate
+
   const results: boolean[] = [];
   for (let i = 0; i < 20; i++) {
-    // Use different bit manipulation for more variety across 20 games
     const subHash = hash ^ (i * 2654435761);
-    results.push(((subHash >> (i % 16)) & 1) === 1);
+    // Generate a pseudo-random 0-1 value from the hash
+    const rand = ((Math.abs(subHash) % 1000) / 1000);
+    results.push(rand < targetHitRate);
   }
   return results;
 }
