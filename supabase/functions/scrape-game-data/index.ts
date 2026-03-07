@@ -283,6 +283,9 @@ Deno.serve(async (req) => {
             homeRecentForm: formHomeResponse,
             awayRecentForm: formAwayResponse,
             headToHead: h2hResponse,
+            stats: statsResponse,
+            trends: trendsResponse,
+            venue: venueResponse,
           },
         });
 
