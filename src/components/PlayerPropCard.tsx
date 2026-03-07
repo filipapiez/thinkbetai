@@ -158,7 +158,7 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
     [prop.overOdds, prop.underOdds]
   );
 
-  const l5Results = useMemo(() => pseudoHitRate(prop.id), [prop.id]);
+  const l5Results = useMemo(() => pseudoHitRate(prop.id, prob), [prop.id, prob]);
   const hitCount = l5Results.filter(Boolean).length;
   const hitPct = Math.round((hitCount / 20) * 100);
   const defRank = useMemo(() => pseudoDefRank(prop.id), [prop.id]);
