@@ -257,12 +257,18 @@ Deno.serve(async (req) => {
       const formQuery = `${homeTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
       const awayFormQuery = `${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
       const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com`;
+      const statsQuery = `${homeTeam} ${awayTeam} team stats standings ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:cbssports.com`;
+      const trendsQuery = `${homeTeam} ${awayTeam} ATS record over under betting trends ${currentYear} site:covers.com OR site:teamrankings.com OR site:actionnetwork.com`;
+      const venueQuery = `${homeTeam} ${awayTeam} venue stadium weather forecast ${currentYear}`;
 
-      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse] = await Promise.all([
+      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse, statsResponse, trendsResponse, venueResponse] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
         searchFirecrawl(firecrawlApiKey, formQuery),
         searchFirecrawl(firecrawlApiKey, awayFormQuery),
         searchFirecrawl(firecrawlApiKey, h2hQuery),
+        searchFirecrawl(firecrawlApiKey, statsQuery),
+        searchFirecrawl(firecrawlApiKey, trendsQuery),
+        searchFirecrawl(firecrawlApiKey, venueQuery),
       ]);
 
       // Prefer Gemini extraction from sources when available
