@@ -301,7 +301,7 @@ Deno.serve(async (req) => {
 
 type FirecrawlSearchResponse = any;
 
-function compactFirecrawlResults(resp: FirecrawlSearchResponse, maxItems = 5, maxCharsPerItem = 2400) {
+function compactFirecrawlResults(resp: FirecrawlSearchResponse, maxItems = 8, maxCharsPerItem = 4000) {
   const list = Array.isArray(resp?.data) ? resp.data.slice(0, maxItems) : [];
   return list
     .map((r: any) => {
