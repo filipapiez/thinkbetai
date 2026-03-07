@@ -828,6 +828,32 @@ const GameDetail = () => {
             )}
           </div>
           
+          {/* Team Stats & Key Performance */}
+          {scrapedData && (scrapedData.teamStats.length > 0 || (scrapedData.keyStats && scrapedData.keyStats.length > 0)) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <TeamStatsCard
+                teamStats={scrapedData.teamStats}
+                keyStats={scrapedData.keyStats}
+                homeTeam={game.homeTeam.name}
+                awayTeam={game.awayTeam.name}
+              />
+              {scrapedData.bettingTrends && scrapedData.bettingTrends.length > 0 && (
+                <BettingTrendsCard
+                  trends={scrapedData.bettingTrends}
+                  homeTeam={game.homeTeam.name}
+                  awayTeam={game.awayTeam.name}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Venue & Weather */}
+          {scrapedData?.venueWeather && (
+            <div className="mb-6">
+              <VenueWeatherCard data={scrapedData.venueWeather} />
+            </div>
+          )}
+
           {/* Recent Form & Performance Chart */}
           {scrapedData && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
