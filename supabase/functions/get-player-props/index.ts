@@ -15,7 +15,7 @@ Deno.serve(async (req: Request) => {
 
   // --- DB cache (30 min TTL) ---
   const CACHE_KEY = `player-props-v2-${sportFilter}`;
-  const CACHE_TTL_MS = 30 * 60 * 1000;
+  const CACHE_TTL_MS = 15 * 60 * 1000; // 15 min to keep props fresh
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -126,8 +126,9 @@ Deno.serve(async (req: Request) => {
           if (i > 0) await new Promise(r => setTimeout(r, 300));
 
           try {
+            // Request only from major US sportsbooks
             const propsRes = await fetch(
-              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=${marketsStr}&oddsFormat=american`,
+              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us&bookmakers=fanduel,draftkings,betmgm&markets=${marketsStr}&oddsFormat=american`,
             );
 
             if (!propsRes.ok) {
@@ -154,8 +155,14 @@ Deno.serve(async (req: Request) => {
               }>;
             };
 
-            // Use first bookmaker that has props
-            const bookmaker = propsData.bookmakers?.find(b => b.markets.length > 0);
+            // Prefer FanDuel > DraftKings > BetMGM, then any
+            const preferredOrder = ['fanduel', 'draftkings', 'betmgm'];
+            let bookmaker = null;
+            for (const pref of preferredOrder) {
+              bookmaker = propsData.bookmakers?.find(b => b.key === pref && b.markets.length > 0);
+              if (bookmaker) break;
+            }
+            if (!bookmaker) bookmaker = propsData.bookmakers?.find(b => b.markets.length > 0);
             if (!bookmaker) continue;
 
             for (const market of bookmaker.markets) {
