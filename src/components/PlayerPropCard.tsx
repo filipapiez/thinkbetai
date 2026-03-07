@@ -285,21 +285,35 @@ export function PlayerPropCard({ prop, selectedPlatform }: PlayerPropCardProps) 
           </div>
         </div>
 
-        {/* L5 hit rate bar */}
+        {/* L20 hit rate bar */}
         <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
-            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L20
+            {gameLog.isLoading ? (
+              <span className="text-muted-foreground">Loading L{hitTotal}…</span>
+            ) : (
+              <>
+                Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L{hitTotal}
+                {isRealData && <span className="text-[9px] text-muted-foreground ml-1">✓</span>}
+              </>
+            )}
           </span>
           <div className="flex gap-0.5 flex-1 justify-end">
-            {l5Results.map((hit, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-2 flex-1 max-w-[16px] rounded-full",
-                  hit ? 'bg-emerald-500' : 'bg-pink-500'
-                )}
-              />
-            ))}
+            {gameLog.isLoading ? (
+              // Loading skeleton dots
+              Array.from({ length: 20 }).map((_, i) => (
+                <div key={i} className="h-2 flex-1 max-w-[16px] rounded-full bg-muted animate-pulse" />
+              ))
+            ) : (
+              l5Results.map((hit, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-2 flex-1 max-w-[16px] rounded-full",
+                    hit ? 'bg-emerald-500' : 'bg-pink-500'
+                  )}
+                />
+              ))
+            )}
           </div>
         </div>
 
