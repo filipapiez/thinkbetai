@@ -95,10 +95,43 @@ Deno.serve(async (req) => {
     }
 
     if (!searchResp || !searchResp.ok) {
-      console.error(`Firecrawl search failed: ${searchResp?.status}`);
+      const status = searchResp?.status ?? 0;
+      console.error(`Firecrawl search failed: ${status}`);
+
+      // Graceful fallback: if we have any cached data (even stale), use it.
+      if (cached?.data && typeof cached.data === 'object') {
+        const cachedData = cached.data as any;
+        const fallbackValues = Array.isArray(cachedData.statValues)
+          ? cachedData.statValues.filter((v: unknown) => typeof v === 'number' && Number.isFinite(v))
+          : [];
+
+        if (fallbackValues.length > 0) {
+          const fallbackResults = fallbackValues.map((val: number) => val >= line);
+          return new Response(
+            JSON.stringify({
+              success: true,
+              results: fallbackResults,
+              statValues: fallbackValues,
+              hitCount: fallbackResults.filter(Boolean).length,
+              total: fallbackResults.length,
+              source: 'stale-cache',
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // No cache available: return non-fatal empty payload so UI doesn't crash.
       return new Response(
-        JSON.stringify({ success: false, error: 'Search failed' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          success: true,
+          results: [],
+          statValues: [],
+          hitCount: 0,
+          total: 0,
+          source: status === 402 ? 'credits-exhausted' : status === 429 ? 'rate-limited' : 'unavailable',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
