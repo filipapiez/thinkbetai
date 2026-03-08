@@ -275,13 +275,15 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
             {results.map((hit, i) => {
               const effectiveHit = direction !== oddsDirection ? !hit : hit;
               return (
-                key={i}
-                className={cn(
-                  "h-2 flex-1 max-w-[16px] rounded-full",
-                  hit ? 'bg-emerald-500' : 'bg-pink-500'
-                )}
-              />
-            ))}
+                <div
+                  key={i}
+                  className={cn(
+                    "h-2 flex-1 max-w-[16px] rounded-full",
+                    effectiveHit ? 'bg-emerald-500' : 'bg-pink-500'
+                  )}
+                />
+              );
+            })}
           </div>
         </div>
       ) : onLoadL20 ? (
