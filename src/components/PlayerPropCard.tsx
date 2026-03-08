@@ -131,9 +131,9 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
   // Blend odds-implied prob with actual L20 hit rate when available
-  // 60% weight on real data, 40% on odds-implied
+  // 75% weight on real data, 25% on odds-implied — trust game logs heavily
   const blendedProb = hasRealData
-    ? Math.min(Math.max(hitPct * 0.6 + prob * 0.4, 35), 95)
+    ? Math.min(Math.max(hitPct * 0.75 + prob * 0.25, 10), 95)
     : prob;
   const blendedEdge = hasRealData
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
