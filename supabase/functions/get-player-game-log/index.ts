@@ -239,21 +239,56 @@ Deno.serve(async (req) => {
       parsed = null;
     }
 
-    if (!parsed?.statValues || !Array.isArray(parsed.statValues)) {
+    if (!parsed?.games || !Array.isArray(parsed.games)) {
+      // Fallback: check for legacy statValues format
+      if (parsed?.statValues && Array.isArray(parsed.statValues)) {
+        const statValues = parsed.statValues
+          .filter((v: any) => typeof v === 'number' && Number.isFinite(v))
+          .slice(-20);
+        const results = statValues.map((val: number) => val >= line);
+        const hitCount = results.filter(Boolean).length;
+
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        await supabase.from('odds_cache').upsert({
+          id: cacheKey,
+          data: { statValues, playerName, statType, sport, fetchedAt: new Date().toISOString() },
+          expires_at: expiresAt,
+          updated_at: new Date().toISOString(),
+        });
+
+        return new Response(
+          JSON.stringify({ success: true, results, statValues, hitCount, total: statValues.length, source: 'live' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ success: false, error: 'Could not extract stat values' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Take last 20 values, ensure they're numbers
-    const statValues = parsed.statValues
-      .filter((v: any) => typeof v === 'number' && Number.isFinite(v))
+    // Sort games by date (oldest first) to ensure correct chronological order
+    const currentYear = new Date().getFullYear();
+    const sortedGames = parsed.games
+      .filter((g: any) => typeof g.value === 'number' && Number.isFinite(g.value))
+      .map((g: any) => {
+        // Try to parse the date string into a sortable timestamp
+        let dateStr = g.date || '';
+        // If date lacks a year, prepend current year
+        if (dateStr && !/\d{4}/.test(dateStr)) {
+          dateStr = `${currentYear} ${dateStr}`;
+        }
+        const ts = new Date(dateStr).getTime();
+        return { value: g.value as number, date: dateStr, ts: isNaN(ts) ? 0 : ts };
+      })
+      .sort((a: any, b: any) => a.ts - b.ts)
       .slice(-20);
 
+    // Take last 20 values in chronological order
+    const statValues = sortedGames.map((g: any) => g.value);
+
     // Calculate hits against the line
-    // For "Over" props: hit = stat >= line. For simplicity, we return the raw values
-    // and let the frontend decide based on direction
     const results = statValues.map((val: number) => val >= line);
     const hitCount = results.filter(Boolean).length;
 
