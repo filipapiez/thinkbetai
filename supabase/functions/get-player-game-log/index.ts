@@ -269,7 +269,6 @@ Deno.serve(async (req) => {
     }
 
     // Sort games by date (oldest first) to ensure correct chronological order
-    const currentYear = new Date().getFullYear();
     const sortedGames = parsed.games
       .filter((g: any) => typeof g.value === 'number' && Number.isFinite(g.value))
       .map((g: any) => {
