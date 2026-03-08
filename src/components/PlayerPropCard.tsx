@@ -119,7 +119,7 @@ export function PlayerPropCard({ prop, selectedPlatform, autoFetchL20 = true }: 
   );
 }
 
-function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
+function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
   prop: PlayerProp; direction: 'Over' | 'Under'; edge: number; prob: number;
   selectedPlatform?: string | null;
   results: boolean[]; hitCount: number; hitTotal: number;
@@ -128,12 +128,23 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
 }) {
   const hitPct = hitTotal > 0 ? Math.round((hitCount / hitTotal) * 100) : 0;
   const position = positionMap[prop.statType] || 'PL';
+
+  // Override direction when L20 data strongly contradicts odds direction
+  // If hit rate < 40%, flip to the opposite direction
+  const direction = hasRealData && hitPct < 40
+    ? (oddsDirection === 'Over' ? 'Under' : 'Over')
+    : oddsDirection;
+
+  // Recalculate hit stats for the potentially flipped direction
+  const effectiveHitPct = direction !== oddsDirection ? (100 - hitPct) : hitPct;
+  const effectiveHitCount = direction !== oddsDirection ? (hitTotal - hitCount) : hitCount;
+
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
   // Blend odds-implied prob with actual L20 hit rate when available
   // 75% weight on real data, 25% on odds-implied — trust game logs heavily
   const blendedProb = hasRealData
-    ? Math.min(Math.max(hitPct * 0.75 + prob * 0.25, 10), 95)
+    ? Math.min(Math.max(effectiveHitPct * 0.75 + prob * 0.25, 10), 95)
     : prob;
   const blendedEdge = hasRealData
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
