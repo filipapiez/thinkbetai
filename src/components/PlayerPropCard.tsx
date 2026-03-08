@@ -159,20 +159,27 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
     const displayEdge = blendedEdge;
 
     if (hasRealData) {
-      const hitStrength = hitPct >= 70 ? 'strong' : hitPct >= 55 ? 'solid' : hitPct >= 40 ? 'moderate' : 'weak';
       const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
       const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
 
-      if (displayEdge > 5) {
-        return `${hitPhrase} — a ${hitStrength} trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
+      // Strong fade — data says this is a bad bet
+      if (hitPct < 30) {
+        return `${hitPhrase} — a clear fade. The data strongly suggests avoiding this ${direction}.`;
       }
-      if (displayEdge > 2) {
-        return `${hitPhrase}. The ${displayEdge.toFixed(1)}% blended edge suggests the ${direction} is slightly mispriced against ${prop.opponent}.`;
+      // Weak/marginal
+      if (hitPct < 45) {
+        return `${hitPhrase} — below average. Consider passing or waiting for a better line.`;
       }
-      if (displayEdge > 0) {
-        return `Marginal ${displayEdge.toFixed(1)}% edge on the ${direction}. ${hitPhrase}. Worth monitoring for line movement.`;
+      // Coin flip range
+      if (hitPct < 55) {
+        return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
       }
-      return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
+      // Solid
+      if (hitPct < 70) {
+        return `${hitPhrase} — a solid trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is a reasonable ${direction} play.`;
+      }
+      // Strong
+      return `${hitPhrase} — a strong trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
     }
 
     if (displayEdge > 5) {
