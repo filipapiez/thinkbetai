@@ -248,7 +248,23 @@ Respond with valid JSON only.`;
       );
     }
 
-    console.log("AI analysis generated successfully");
+    // ── Post-processing: enforce confidence ↔ risk consistency ──
+    // High risk should never pair with high confidence (and vice-versa)
+    if (analysis.riskLevel === 'High' && analysis.confidence > 60) {
+      analysis.confidence = Math.min(analysis.confidence, 60);
+    } else if (analysis.riskLevel === 'Medium' && analysis.confidence > 75) {
+      analysis.confidence = Math.min(analysis.confidence, 75);
+    }
+    // If confidence is very high, risk can't be High
+    if (analysis.confidence >= 75) {
+      analysis.riskLevel = 'Low';
+      analysis.suggestedStake = 'Heavy';
+    } else if (analysis.confidence >= 60 && analysis.riskLevel === 'High') {
+      analysis.riskLevel = 'Medium';
+      analysis.suggestedStake = 'Moderate';
+    }
+
+    console.log(`AI analysis generated — confidence: ${analysis.confidence}%, risk: ${analysis.riskLevel}`);
 
     return new Response(
       JSON.stringify({ success: true, analysis }),
