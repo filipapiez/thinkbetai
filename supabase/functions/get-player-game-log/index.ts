@@ -178,11 +178,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Your task is to extract per-game stat values from game log data. Look for tables or lists showing individual game results. Each row in a game log represents one game. Extract the "${statType}" column value from each game row. You MUST find at least 15-20 games if the data is present. Do NOT stop at 5 or 6 — scan the ENTIRE source for all game rows. Return ONLY real numeric values. Do NOT fabricate or estimate data.`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from game log data. Look for tables or lists showing individual game results. Each row in a game log represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find at least 15-20 games if the data is present. Do NOT stop at 5 or 6 — scan the ENTIRE source for all game rows. Return ONLY real numeric values. Do NOT fabricate or estimate data.`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (game logs from reference sites):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table(s) in the source data above\n2. For EACH game row, extract the "${statType}" value\n3. Return ALL games found (target: 20 most recent games)\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (game logs from reference sites):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table(s) in the source data above\n2. For EACH game row, extract the "${statType}" value AND the game date\n3. Return ALL games found (target: 20 most recent games)\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)\n7. For each game, include the date string as found in the source (e.g., "2025-03-01", "Mar 1", etc.)`,
           },
         ],
         tools: [
@@ -190,16 +190,23 @@ Deno.serve(async (req) => {
             type: 'function',
             function: {
               name: 'extract_stat_values',
-              description: `Extract numeric ${statType} values from the player's recent game log`,
+              description: `Extract numeric ${statType} values and dates from the player's recent game log`,
               parameters: {
                 type: 'object',
                 additionalProperties: false,
-                required: ['statValues', 'gamesFound'],
+                required: ['games', 'gamesFound'],
                 properties: {
-                  statValues: {
+                  games: {
                     type: 'array',
-                    description: `Array of numeric ${statType} values from recent games, oldest first`,
-                    items: { type: 'number' },
+                    description: 'Array of game entries with date and stat value, oldest first',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        date: { type: 'string', description: 'Game date as found in the source' },
+                        value: { type: 'number', description: `The ${statType} value for this game` },
+                      },
+                      required: ['date', 'value'],
+                    },
                   },
                   gamesFound: {
                     type: 'number',
