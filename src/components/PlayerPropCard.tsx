@@ -119,7 +119,7 @@ export function PlayerPropCard({ prop, selectedPlatform, autoFetchL20 = true }: 
   );
 }
 
-function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
+function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
   prop: PlayerProp; direction: 'Over' | 'Under'; edge: number; prob: number;
   selectedPlatform?: string | null;
   results: boolean[]; hitCount: number; hitTotal: number;
@@ -128,12 +128,23 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
 }) {
   const hitPct = hitTotal > 0 ? Math.round((hitCount / hitTotal) * 100) : 0;
   const position = positionMap[prop.statType] || 'PL';
+
+  // Override direction when L20 data strongly contradicts odds direction
+  // If hit rate < 40%, flip to the opposite direction
+  const direction = hasRealData && hitPct < 40
+    ? (oddsDirection === 'Over' ? 'Under' : 'Over')
+    : oddsDirection;
+
+  // Recalculate hit stats for the potentially flipped direction
+  const effectiveHitPct = direction !== oddsDirection ? (100 - hitPct) : hitPct;
+  const effectiveHitCount = direction !== oddsDirection ? (hitTotal - hitCount) : hitCount;
+
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
   // Blend odds-implied prob with actual L20 hit rate when available
   // 75% weight on real data, 25% on odds-implied — trust game logs heavily
   const blendedProb = hasRealData
-    ? Math.min(Math.max(hitPct * 0.75 + prob * 0.25, 10), 95)
+    ? Math.min(Math.max(effectiveHitPct * 0.75 + prob * 0.25, 10), 95)
     : prob;
   const blendedEdge = hasRealData
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
@@ -160,26 +171,21 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
 
     if (hasRealData) {
       const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
-      const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${hitPct}% of his last ${hitTotal} games`;
+      const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${effectiveHitPct}% of his last ${hitTotal} games`;
 
-      // Strong fade — data says this is a bad bet
-      if (hitPct < 30) {
-        return `${hitPhrase} — a clear fade. The data strongly suggests avoiding this ${direction}.`;
+      if (effectiveHitPct >= 70) {
+        return `${hitPhrase} — a strong trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
       }
-      // Weak/marginal
-      if (hitPct < 45) {
-        return `${hitPhrase} — below average. Consider passing or waiting for a better line.`;
-      }
-      // Coin flip range
-      if (hitPct < 55) {
-        return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
-      }
-      // Solid
-      if (hitPct < 70) {
+      if (effectiveHitPct >= 55) {
         return `${hitPhrase} — a solid trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is a reasonable ${direction} play.`;
       }
-      // Strong
-      return `${hitPhrase} — a strong trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
+      if (effectiveHitPct >= 45) {
+        return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
+      }
+      if (effectiveHitPct >= 30) {
+        return `${hitPhrase} — below average. Consider passing or waiting for a better line.`;
+      }
+      return `${hitPhrase} — a clear fade. The data strongly suggests avoiding this ${direction}.`;
     }
 
     if (displayEdge > 5) {
@@ -189,7 +195,7 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
       return `${playerFirst} shows a ${displayEdge.toFixed(1)}% edge on the ${direction} based on current odds vs ${prop.opponent}. Tap to load L20 data.`;
     }
     return `${playerFirst} vs ${prop.opponent} — ${displayEdge.toFixed(1)}% edge on the ${direction} from odds alone. Tap to load game history.`;
-  }, [prop, direction, blendedEdge, hasRealData, hitPct, hitTotal]);
+  }, [prop, direction, blendedEdge, hasRealData, effectiveHitPct, hitTotal]);
 
   return (
     <>
@@ -262,19 +268,22 @@ function CardInner({ prop, direction, edge, prob, selectedPlatform, results, hit
       ) : hasRealData ? (
         <div className="flex items-center gap-2 px-4 pb-3">
           <span className="text-xs font-semibold whitespace-nowrap">
-            Hit <span className={hitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{hitPct}%</span> in L{hitTotal}
+            Hit <span className={effectiveHitPct >= 60 ? 'text-emerald-400' : 'text-red-400'}>{effectiveHitPct}%</span> in L{hitTotal}
             <span className="text-[9px] text-muted-foreground ml-1">✓</span>
           </span>
           <div className="flex gap-0.5 flex-1 justify-end">
-            {results.map((hit, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-2 flex-1 max-w-[16px] rounded-full",
-                  hit ? 'bg-emerald-500' : 'bg-pink-500'
-                )}
-              />
-            ))}
+            {results.map((hit, i) => {
+              const effectiveHit = direction !== oddsDirection ? !hit : hit;
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-2 flex-1 max-w-[16px] rounded-full",
+                    effectiveHit ? 'bg-emerald-500' : 'bg-pink-500'
+                  )}
+                />
+              );
+            })}
           </div>
         </div>
       ) : onLoadL20 ? (
