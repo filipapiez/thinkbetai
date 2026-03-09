@@ -65,61 +65,33 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build sport-specific search for game log pages
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 1-12
     const sportNorm = (sport || 'nba').toLowerCase();
-    
-    // Determine the correct season year label based on sport calendars
-    // NHL/NBA: season spans Oct-Jun, so Jan-Jun is the end year of a season that started prev year
-    // NFL: season spans Sep-Feb, so Jan-Feb is end of prev year's season
-    // MLB: season spans Apr-Oct, same calendar year
-    let seasonLabel = `${currentYear}`;
-    if (['nba', 'nhl'].includes(sportNorm)) {
-      // If we're in Jan-Aug, the season started last year (e.g., Mar 2026 → "2025-26 season")
-      if (currentMonth <= 8) {
-        seasonLabel = `${currentYear - 1}-${String(currentYear).slice(2)}`;
-      } else {
-        seasonLabel = `${currentYear}-${String(currentYear + 1).slice(2)}`;
-      }
-    } else if (sportNorm === 'nfl') {
-      if (currentMonth <= 2) {
-        seasonLabel = `${currentYear - 1}`;
-      }
-    }
 
-    // Use sport-specific reference sites for better game log coverage
-    const sportSites: Record<string, string> = {
-      nba: 'site:basketball-reference.com OR site:espn.com OR site:statmuse.com',
-      nhl: 'site:hockey-reference.com OR site:espn.com OR site:statmuse.com',
-      nfl: 'site:pro-football-reference.com OR site:espn.com OR site:statmuse.com',
-      mlb: 'site:baseball-reference.com OR site:espn.com OR site:statmuse.com',
-    };
-    const sites = sportSites[sportNorm] || 'site:espn.com OR site:statmuse.com';
-    const query = `${playerName} ${seasonLabel} game log ${sites}`;
+    // Build StatMuse URL directly — more accurate than search
+    const playerSlug = playerName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+    const statmuseUrl = `https://www.statmuse.com/${sportNorm}/ask/${playerSlug}-last-20-games`;
 
-    console.log(`Searching game log for ${playerName} (${statType})`);
+    console.log(`Scraping StatMuse for ${playerName} (${statType}): ${statmuseUrl}`);
 
-    // Retry logic for rate limits (429)
-    let searchResp: Response | null = null;
+    // Scrape StatMuse directly (1 credit instead of 5 for search)
+    let scrapeResp: Response | null = null;
     const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      searchResp = await fetch('https://api.firecrawl.dev/v1/search', {
+      scrapeResp = await fetch('https://api.firecrawl.dev/v1/scrape', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${firecrawlApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query,
-          limit: 5,
-          scrapeOptions: { formats: ['markdown'] },
+          url: statmuseUrl,
+          formats: ['markdown'],
+          waitFor: 2000,
         }),
       });
 
-      if (searchResp.status === 429 && attempt < maxRetries - 1) {
-        const wait = (attempt + 1) * 2000; // 2s, 4s backoff
+      if (scrapeResp.status === 429 && attempt < maxRetries - 1) {
+        const wait = (attempt + 1) * 2000;
         console.log(`Rate limited, retrying in ${wait}ms (attempt ${attempt + 1})`);
         await new Promise(r => setTimeout(r, wait));
         continue;
@@ -127,9 +99,9 @@ Deno.serve(async (req) => {
       break;
     }
 
-    if (!searchResp || !searchResp.ok) {
-      const status = searchResp?.status ?? 0;
-      console.error(`Firecrawl search failed: ${status}`);
+    if (!scrapeResp || !scrapeResp.ok) {
+      const status = scrapeResp?.status ?? 0;
+      console.error(`Firecrawl scrape failed: ${status}`);
 
       // Graceful fallback: if we have any cached data (even stale), use it.
       if (cached?.data && typeof cached.data === 'object') {
@@ -154,7 +126,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // No cache available: return non-fatal empty payload so UI doesn't crash.
       return new Response(
         JSON.stringify({
           success: true,
@@ -168,19 +139,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const searchData = await searchResp.json();
-    const snippets = (searchData?.data || [])
-      .slice(0, 5)
-      .map((r: any) => {
-        const md = (r?.markdown || r?.description || '').toString();
-        // Allow larger snippets to capture full game log tables
-        return md.length > 8000 ? md.slice(0, 8000) : md;
-      })
-      .filter((s: string) => s.trim().length > 0);
+    const scrapeData = await scrapeResp.json();
+    const markdown = (scrapeData?.data?.markdown || scrapeData?.markdown || '').toString();
+    const snippets = markdown.length > 12000 ? [markdown.slice(0, 12000)] : [markdown];
 
-    if (snippets.length === 0) {
+    if (!markdown || markdown.trim().length === 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'No game log data found' }),
+        JSON.stringify({ success: false, error: 'No game log data found on StatMuse' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
