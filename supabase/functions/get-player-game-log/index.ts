@@ -223,9 +223,32 @@ Deno.serve(async (req) => {
 
     if (!aiResp.ok) {
       console.error(`AI extraction failed: ${aiResp.status}`);
+
+      // Graceful fallback on AI failure (e.g. 402 credits exhausted)
+      if (cached?.data && typeof cached.data === 'object') {
+        const cachedData = cached.data as any;
+        const fallbackValues = Array.isArray(cachedData.statValues)
+          ? cachedData.statValues.filter((v: unknown) => typeof v === 'number' && Number.isFinite(v))
+          : [];
+        if (fallbackValues.length > 0) {
+          const fallbackResults = fallbackValues.map((val: number) => val >= line);
+          return new Response(
+            JSON.stringify({
+              success: true, results: fallbackResults, statValues: fallbackValues,
+              hitCount: fallbackResults.filter(Boolean).length, total: fallbackResults.length,
+              source: 'stale-cache',
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
       return new Response(
-        JSON.stringify({ success: false, error: 'Extraction failed' }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          success: true, results: [], statValues: [], hitCount: 0, total: 0,
+          source: aiResp.status === 402 ? 'credits-exhausted' : 'ai-unavailable',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
