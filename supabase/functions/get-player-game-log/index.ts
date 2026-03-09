@@ -152,6 +152,16 @@ Deno.serve(async (req) => {
     }
 
     // Use AI to extract the last 20 stat values
+    // Build sport-specific column mapping hints
+    const columnHints: Record<string, Record<string, string>> = {
+      nhl: { 'Goals': 'G (not GP)', 'Assists': 'A', 'Points': 'P (PTS)', 'Shots': 'S or SOG', 'Saves': 'SV', 'Power Play Points': 'PPG + PPA' },
+      nba: { 'Points': 'PTS', 'Assists': 'AST', 'Rebounds': 'REB', '3-Pointers': '3PM or 3P', 'Steals': 'STL', 'Blocks': 'BLK' },
+      nfl: { 'Passing Yards': 'PASS YDS', 'Rushing Yards': 'RUSH YDS', 'Touchdowns': 'TD', 'Receptions': 'REC' },
+      mlb: { 'Hits': 'H', 'Home Runs': 'HR', 'RBIs': 'RBI', 'Strikeouts': 'K or SO', 'Total Bases': 'TB' },
+    };
+    const sportHints = columnHints[sportNorm] || {};
+    const columnHint = sportHints[statType] ? `\nIMPORTANT: The column for "${statType}" is labeled "${sportHints[statType]}" in the table. Make sure you read the CORRECT column.` : '';
+
     const statLabel = statType.toLowerCase();
     const aiResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -164,11 +174,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.${columnHint}`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. For EACH game row, extract the "${statType}" value AND the game date\n3. Return ALL 20 games\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)\n7. For each game, include the date string as found in the source`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sportNorm}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINPORTANT COLUMN MAPPING:${columnHint}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. Identify the CORRECT column for "${statType}" using the header row\n3. For EACH game row, extract that column's value AND the game date\n4. Return ALL 20 games\n5. Order: oldest game first, newest game last\n6. Be VERY careful to read the right column — count columns from left to right using the header\n7. Return numeric values only (0 is valid)\n8. For each game, include the date string as found in the source`,
           },
         ],
         tools: [
