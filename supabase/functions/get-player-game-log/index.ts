@@ -142,7 +142,8 @@ Deno.serve(async (req) => {
 
     const scrapeData = await scrapeResp.json();
     const markdown = (scrapeData?.data?.markdown || scrapeData?.markdown || '').toString();
-    const snippets = markdown.length > 12000 ? [markdown.slice(0, 12000)] : [markdown];
+    console.log(`Markdown length for ${playerName}: ${markdown.length} chars`);
+    const snippets = markdown.length > 24000 ? [markdown.slice(0, 24000)] : [markdown];
 
     if (!markdown || markdown.trim().length === 0) {
       return new Response(
