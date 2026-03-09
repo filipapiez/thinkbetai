@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    const currentYear = new Date().getFullYear();
     const sportNorm = (sport || 'nba').toLowerCase();
 
     // Build StatMuse URL directly — more accurate than search
