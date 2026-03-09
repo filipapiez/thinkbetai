@@ -24,11 +24,20 @@ function getTodayStr(): string {
 }
 
 // localStorage key for game log cache
+const CACHE_VERSION = 'v2-statmuse';
 const STORAGE_KEY = 'player-game-log-cache';
+const VERSION_KEY = 'player-game-log-cache-version';
 
-// Load cache from localStorage
+// Load cache from localStorage (invalidate if version mismatch)
 function loadLocalCache(): Map<string, CachedData> {
   try {
+    const storedVersion = localStorage.getItem(VERSION_KEY);
+    if (storedVersion !== CACHE_VERSION) {
+      // Version mismatch — wipe stale cache
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(VERSION_KEY, CACHE_VERSION);
+      return new Map();
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
