@@ -141,8 +141,18 @@ Deno.serve(async (req) => {
     }
 
     const scrapeData = await scrapeResp.json();
-    const markdown = (scrapeData?.data?.markdown || scrapeData?.markdown || '').toString();
-    const snippets = markdown.length > 12000 ? [markdown.slice(0, 12000)] : [markdown];
+    let markdown = (scrapeData?.data?.markdown || scrapeData?.markdown || '').toString();
+    
+    // Strip image markdown to dramatically reduce size (each row has ~1500 chars of image URLs)
+    // [![alt](imgUrl)](link) → just the alt text or empty
+    markdown = markdown.replace(/\[!\[([^\]]*)\]\([^)]*\)\]\([^)]*\)/g, '$1');
+    // ![alt](imgUrl) → empty
+    markdown = markdown.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+    // Clean up remaining long URLs in link text: [text](url "title") → text
+    markdown = markdown.replace(/\[([^\]]{1,50})\]\([^)]*\)/g, '$1');
+    
+    console.log(`Markdown length for ${playerName}: ${markdown.length} chars (after cleanup)`);
+    const snippets = markdown.length > 16000 ? [markdown.slice(0, 16000)] : [markdown];
 
     if (!markdown || markdown.trim().length === 0) {
       return new Response(
