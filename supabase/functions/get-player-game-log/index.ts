@@ -66,9 +66,29 @@ Deno.serve(async (req) => {
     }
 
     // Build sport-specific search for game log pages
-    const currentYear = new Date().getFullYear();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
     const sportNorm = (sport || 'nba').toLowerCase();
     
+    // Determine the correct season year label based on sport calendars
+    // NHL/NBA: season spans Oct-Jun, so Jan-Jun is the end year of a season that started prev year
+    // NFL: season spans Sep-Feb, so Jan-Feb is end of prev year's season
+    // MLB: season spans Apr-Oct, same calendar year
+    let seasonLabel = `${currentYear}`;
+    if (['nba', 'nhl'].includes(sportNorm)) {
+      // If we're in Jan-Aug, the season started last year (e.g., Mar 2026 → "2025-26 season")
+      if (currentMonth <= 8) {
+        seasonLabel = `${currentYear - 1}-${String(currentYear).slice(2)}`;
+      } else {
+        seasonLabel = `${currentYear}-${String(currentYear + 1).slice(2)}`;
+      }
+    } else if (sportNorm === 'nfl') {
+      if (currentMonth <= 2) {
+        seasonLabel = `${currentYear - 1}`;
+      }
+    }
+
     // Use sport-specific reference sites for better game log coverage
     const sportSites: Record<string, string> = {
       nba: 'site:basketball-reference.com OR site:espn.com OR site:statmuse.com',
@@ -77,7 +97,7 @@ Deno.serve(async (req) => {
       mlb: 'site:baseball-reference.com OR site:espn.com OR site:statmuse.com',
     };
     const sites = sportSites[sportNorm] || 'site:espn.com OR site:statmuse.com';
-    const query = `${playerName} ${currentYear} game log ${sites}`;
+    const query = `${playerName} ${seasonLabel} game log ${sites}`;
 
     console.log(`Searching game log for ${playerName} (${statType})`);
 
