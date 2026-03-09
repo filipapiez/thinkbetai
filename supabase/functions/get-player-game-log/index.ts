@@ -164,11 +164,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Your task is to extract per-game stat values from game log data. Look for tables or lists showing individual game results. Each row in a game log represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find at least 15-20 games if the data is present. Do NOT stop at 5 or 6 — scan the ENTIRE source for all game rows. Return ONLY real numeric values. Do NOT fabricate or estimate data.`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (game logs from reference sites):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table(s) in the source data above\n2. For EACH game row, extract the "${statType}" value AND the game date\n3. Return ALL games found (target: 20 most recent games)\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)\n7. For each game, include the date string as found in the source (e.g., "2025-03-01", "Mar 1", etc.)`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sport}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. For EACH game row, extract the "${statType}" value AND the game date\n3. Return ALL 20 games\n4. Order: oldest game first, newest game last\n5. If the stat column is labeled differently (e.g., "G" for Goals, "PTS" for Points, "AST" for Assists, "REB" for Rebounds, "3P" for 3-Pointers), still extract it\n6. Return numeric values only (0 is valid)\n7. For each game, include the date string as found in the source`,
           },
         ],
         tools: [
