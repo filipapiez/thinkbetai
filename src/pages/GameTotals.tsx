@@ -74,7 +74,11 @@ async function fetchGameTotals(sport: string): Promise<GameTotal[]> {
   return data.games || [];
 }
 
-async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]): Promise<Record<string, string>> {
+async function fetchAIExplanations(
+  games: GameTotal[],
+  analyses: TotalAnalysis[],
+  recentScores: Record<string, RecentGame[]>
+): Promise<Record<string, string>> {
   if (!games.length) return {};
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
   const payload = games.map((g, i) => ({
@@ -88,6 +92,8 @@ async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]
     mlAway: g.moneyline.away,
     lean: analyses[i].lean,
     confidence: analyses[i].confidence,
+    homeRecent: recentScores[g.homeTeam.toLowerCase()]?.slice(0, 5) || [],
+    awayRecent: recentScores[g.awayTeam.toLowerCase()]?.slice(0, 5) || [],
   }));
 
   const res = await fetch(`${baseUrl}/functions/v1/analyze-game-totals`, {
