@@ -154,6 +154,12 @@ async function fetchRecentScores(teamNames: string[], sport: string): Promise<Re
   return data.scores || {};
 }
 
+function findScores(scores: Record<string, RecentGame[]>, teamName: string): RecentGame[] | undefined {
+  const key = teamName.toLowerCase();
+  return scores[key] || scores[key.replace('los angeles', 'la')] || 
+    Object.entries(scores).find(([k]) => key.includes(k) || k.includes(key))?.[1];
+}
+
 const GameTotals = () => {
   const [sport, setSport] = useState('nba');
   const [explanations, setExplanations] = useState<Record<string, string>>({});
