@@ -9,6 +9,7 @@ const resourceLinks = [
   { to: '/about', label: 'About', icon: Info },
   { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },
   { to: '/blog', label: 'Blog', icon: BookOpen },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export const Header = () => {
