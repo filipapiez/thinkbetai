@@ -74,7 +74,11 @@ async function fetchGameTotals(sport: string): Promise<GameTotal[]> {
   return data.games || [];
 }
 
-async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]): Promise<Record<string, string>> {
+async function fetchAIExplanations(
+  games: GameTotal[],
+  analyses: TotalAnalysis[],
+  recentScores: Record<string, RecentGame[]>
+): Promise<Record<string, string>> {
   if (!games.length) return {};
   const baseUrl = import.meta.env.VITE_SUPABASE_URL;
   const payload = games.map((g, i) => ({
@@ -88,6 +92,8 @@ async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]
     mlAway: g.moneyline.away,
     lean: analyses[i].lean,
     confidence: analyses[i].confidence,
+    homeRecent: recentScores[g.homeTeam.toLowerCase()]?.slice(0, 5) || [],
+    awayRecent: recentScores[g.awayTeam.toLowerCase()]?.slice(0, 5) || [],
   }));
 
   const res = await fetch(`${baseUrl}/functions/v1/analyze-game-totals`, {
@@ -138,9 +144,9 @@ const GameTotals = () => {
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
   }, [games]);
 
-  // Fetch AI explanations when games load
+  // Fetch AI explanations after recent scores are loaded
   useEffect(() => {
-    if (!analyzed.length) {
+    if (!analyzed.length || loadingScores) {
       setExplanations({});
       return;
     }
@@ -148,12 +154,12 @@ const GameTotals = () => {
     setLoadingAI(true);
     setExplanations({});
     const analyses = analyzed.map(g => g.analysis);
-    fetchAIExplanations(analyzed, analyses)
+    fetchAIExplanations(analyzed, analyses, recentScores)
       .then(result => { if (!cancelled) setExplanations(result); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoadingAI(false); });
     return () => { cancelled = true; };
-  }, [analyzed]);
+  }, [analyzed, recentScores, loadingScores]);
 
   // Fetch recent scores when games load
   useEffect(() => {
