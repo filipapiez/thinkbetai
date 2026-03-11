@@ -111,7 +111,9 @@ function dequeue() {
 // Check if cached data is still valid (same day)
 function isCacheValid(cached: CachedData | undefined): cached is CachedData {
   if (!cached) return false;
-  return cached.date === getTodayStr() && cached.results.length >= 10;
+  // Support legacy 'date' field and new 'timestamp' field
+  const age = cached.timestamp ? Date.now() - cached.timestamp : Infinity;
+  return age < CACHE_TTL_MS && cached.results.length >= 10;
 }
 
 async function fetchGameLog(
