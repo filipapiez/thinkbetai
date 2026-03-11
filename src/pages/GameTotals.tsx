@@ -47,22 +47,51 @@ interface RecentGame {
   date: string;
 }
 
-function analyzeTotal(game: GameTotal): TotalAnalysis {
+function analyzeTotal(
+  game: GameTotal,
+  homeRecent?: RecentGame[],
+  awayRecent?: RecentGame[]
+): TotalAnalysis {
   const { overOdds, underOdds } = game.total;
-  if (!overOdds && !underOdds) return { lean: 'EVEN', confidence: 50 };
+  const line = game.total.over;
 
-  const overImpl = overOdds > 0
-    ? 100 / (overOdds + 100)
-    : Math.abs(overOdds) / (Math.abs(overOdds) + 100);
-  const underImpl = underOdds > 0
-    ? 100 / (underOdds + 100)
-    : Math.abs(underOdds) / (Math.abs(underOdds) + 100);
+  // 1. Odds-based lean (25% weight)
+  let oddsLean = 0; // positive = OVER, negative = UNDER
+  if (overOdds || underOdds) {
+    const overImpl = overOdds > 0
+      ? 100 / (overOdds + 100)
+      : Math.abs(overOdds) / (Math.abs(overOdds) + 100);
+    const underImpl = underOdds > 0
+      ? 100 / (underOdds + 100)
+      : Math.abs(underOdds) / (Math.abs(underOdds) + 100);
+    oddsLean = (underImpl - overImpl) * 100; // positive = OVER favored
+  }
 
-  const diff = underImpl - overImpl;
-  if (Math.abs(diff) < 0.015) return { lean: 'EVEN', confidence: 50 };
+  // 2. Recent scores lean (75% weight)
+  let recentLean = 0;
+  let recentGamesCount = 0;
+  const allRecent = [
+    ...(homeRecent || []).slice(0, 5),
+    ...(awayRecent || []).slice(0, 5),
+  ];
+  if (allRecent.length > 0) {
+    const overCount = allRecent.filter(g => g.totalPoints > line).length;
+    const underCount = allRecent.filter(g => g.totalPoints < line).length;
+    recentGamesCount = allRecent.length;
+    // Scale: if 10/10 over → +50, if 0/10 → -50
+    recentLean = ((overCount - underCount) / recentGamesCount) * 50;
+  }
 
-  const lean = diff > 0 ? 'OVER' : 'UNDER';
-  const confidence = Math.min(85, Math.round(50 + Math.abs(diff) * 200));
+  // Blend: 75% recent, 25% odds
+  const hasRecent = recentGamesCount > 0;
+  const blended = hasRecent
+    ? recentLean * 0.75 + oddsLean * 0.25
+    : oddsLean;
+
+  if (Math.abs(blended) < 2) return { lean: 'EVEN', confidence: 50 };
+
+  const lean: 'OVER' | 'UNDER' = blended > 0 ? 'OVER' : 'UNDER';
+  const confidence = Math.min(85, Math.round(50 + Math.abs(blended) * 0.7));
   return { lean, confidence };
 }
 
