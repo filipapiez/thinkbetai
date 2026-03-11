@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, Trophy,
+  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity,
 } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 
@@ -152,8 +153,9 @@ function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAna
     <Card className="overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-            <Trophy className="h-5 w-5 text-muted-foreground" />
+          <div className="flex flex-col items-center gap-1 shrink-0">
+            <TeamLogo teamName={game.awayTeam} abbreviation="" sport={game.sportKey.includes('nba') ? 'basketball' : game.sportKey.includes('nfl') ? 'football' : game.sportKey.includes('mlb') ? 'baseball' : game.sportKey.includes('nhl') ? 'hockey' : 'basketball'} className="!w-8 !h-8 !rounded-lg" />
+            <TeamLogo teamName={game.homeTeam} abbreviation="" sport={game.sportKey.includes('nba') ? 'basketball' : game.sportKey.includes('nfl') ? 'football' : game.sportKey.includes('mlb') ? 'baseball' : game.sportKey.includes('nhl') ? 'hockey' : 'basketball'} className="!w-8 !h-8 !rounded-lg" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-foreground truncate text-sm">{game.awayTeam}</p>
