@@ -154,6 +154,12 @@ async function fetchRecentScores(teamNames: string[], sport: string): Promise<Re
   return data.scores || {};
 }
 
+function findScores(scores: Record<string, RecentGame[]>, teamName: string): RecentGame[] | undefined {
+  const key = teamName.toLowerCase();
+  return scores[key] || scores[key.replace('los angeles', 'la')] || 
+    Object.entries(scores).find(([k]) => key.includes(k) || k.includes(key))?.[1];
+}
+
 const GameTotals = () => {
   const [sport, setSport] = useState('nba');
   const [explanations, setExplanations] = useState<Record<string, string>>({});
@@ -173,8 +179,8 @@ const GameTotals = () => {
         ...g,
         analysis: analyzeTotal(
           g,
-          recentScores[g.homeTeam.toLowerCase()],
-          recentScores[g.awayTeam.toLowerCase()]
+          findScores(recentScores, g.homeTeam),
+          findScores(recentScores, g.awayTeam)
         ),
       }))
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
@@ -283,8 +289,8 @@ const GameTotals = () => {
               analysis={game.analysis}
               explanation={explanations[game.id]}
               loadingAI={loadingAI}
-              homeScores={recentScores[game.homeTeam.toLowerCase()]}
-              awayScores={recentScores[game.awayTeam.toLowerCase()]}
+              homeScores={findScores(recentScores, game.homeTeam)}
+              awayScores={findScores(recentScores, game.awayTeam)}
               loadingScores={loadingScores}
               totalLine={game.total.over}
             />
@@ -337,11 +343,11 @@ function RecentScoresRow({
           return (
             <div
               key={i}
-              className={cn(
-                "w-7 h-5 rounded text-[10px] font-medium flex items-center justify-center",
+               className={cn(
+                "w-7 h-5 rounded text-[10px] font-bold flex items-center justify-center",
                 isOver
-                  ? "bg-primary/15 text-primary"
-                  : "bg-muted/60 text-muted-foreground"
+                  ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                  : "bg-muted/40 text-muted-foreground"
               )}
               title={`vs ${g.opponent}: ${g.score}-${g.opponentScore} (${g.totalPoints} total)`}
             >
