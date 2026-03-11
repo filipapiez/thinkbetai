@@ -163,7 +163,7 @@ async function fetchGameLog(
       statValues,
       hitCount,
       total: results.length,
-      date: getTodayStr(),
+      timestamp: Date.now(),
     };
 
     // Cache by player+stat+direction (not line), so we can recalculate for different lines
