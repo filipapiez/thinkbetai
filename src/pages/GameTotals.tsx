@@ -179,8 +179,8 @@ const GameTotals = () => {
         ...g,
         analysis: analyzeTotal(
           g,
-          recentScores[g.homeTeam.toLowerCase()],
-          recentScores[g.awayTeam.toLowerCase()]
+          recentScores[g.homeTeam.toLowerCase()] || recentScores[g.homeTeam.toLowerCase().replace('los angeles', 'la')],
+          recentScores[g.awayTeam.toLowerCase()] || recentScores[g.awayTeam.toLowerCase().replace('los angeles', 'la')]
         ),
       }))
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
