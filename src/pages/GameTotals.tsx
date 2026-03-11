@@ -169,9 +169,16 @@ const GameTotals = () => {
 
   const analyzed = useMemo(() => {
     return games
-      .map(g => ({ ...g, analysis: analyzeTotal(g) }))
+      .map(g => ({
+        ...g,
+        analysis: analyzeTotal(
+          g,
+          recentScores[g.homeTeam.toLowerCase()],
+          recentScores[g.awayTeam.toLowerCase()]
+        ),
+      }))
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
-  }, [games]);
+  }, [games, recentScores]);
 
   // Fetch AI explanations after recent scores are loaded
   useEffect(() => {
