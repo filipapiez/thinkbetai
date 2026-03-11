@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.analyze-game-totals]
 verify_jwt = false
+
+[functions.get-recent-scores]
+verify_jwt = false

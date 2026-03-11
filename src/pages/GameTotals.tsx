@@ -38,6 +38,15 @@ interface TotalAnalysis {
   confidence: number;
 }
 
+interface RecentGame {
+  opponent: string;
+  score: number;
+  opponentScore: number;
+  totalPoints: number;
+  won: boolean;
+  date: string;
+}
+
 function analyzeTotal(game: GameTotal): TotalAnalysis {
   const { overOdds, underOdds } = game.total;
   if (!overOdds && !underOdds) return { lean: 'EVEN', confidence: 50 };
@@ -94,10 +103,28 @@ async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]
   return data.explanations || {};
 }
 
+async function fetchRecentScores(teamNames: string[], sport: string): Promise<Record<string, RecentGame[]>> {
+  if (!teamNames.length) return {};
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const res = await fetch(`${baseUrl}/functions/v1/get-recent-scores`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ teamNames, sport }),
+  });
+  if (!res.ok) return {};
+  const data = await res.json();
+  return data.scores || {};
+}
+
 const GameTotals = () => {
   const [sport, setSport] = useState('nba');
   const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [loadingAI, setLoadingAI] = useState(false);
+  const [recentScores, setRecentScores] = useState<Record<string, RecentGame[]>>({});
+  const [loadingScores, setLoadingScores] = useState(false);
 
   const { data: games = [], isLoading, refetch } = useQuery({
     queryKey: ['game-totals', sport],
@@ -122,15 +149,29 @@ const GameTotals = () => {
     setExplanations({});
     const analyses = analyzed.map(g => g.analysis);
     fetchAIExplanations(analyzed, analyses)
-      .then(result => {
-        if (!cancelled) setExplanations(result);
-      })
+      .then(result => { if (!cancelled) setExplanations(result); })
       .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoadingAI(false);
-      });
+      .finally(() => { if (!cancelled) setLoadingAI(false); });
     return () => { cancelled = true; };
   }, [analyzed]);
+
+  // Fetch recent scores when games load
+  useEffect(() => {
+    if (!analyzed.length) {
+      setRecentScores({});
+      return;
+    }
+    let cancelled = false;
+    setLoadingScores(true);
+    setRecentScores({});
+    const allTeams = analyzed.flatMap(g => [g.homeTeam, g.awayTeam]);
+    const sportKey = sport;
+    fetchRecentScores(allTeams, sportKey)
+      .then(result => { if (!cancelled) setRecentScores(result); })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingScores(false); });
+    return () => { cancelled = true; };
+  }, [analyzed, sport]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -185,10 +226,10 @@ const GameTotals = () => {
           </Card>
         )}
 
-        {loadingAI && analyzed.length > 0 && (
+        {(loadingAI || loadingScores) && analyzed.length > 0 && (
           <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-            <span>Generating AI analysis…</span>
+            <span>{loadingAI ? 'Generating AI analysis…' : 'Loading recent scores…'}</span>
           </div>
         )}
 
@@ -200,6 +241,10 @@ const GameTotals = () => {
               analysis={game.analysis}
               explanation={explanations[game.id]}
               loadingAI={loadingAI}
+              homeScores={recentScores[game.homeTeam.toLowerCase()]}
+              awayScores={recentScores[game.awayTeam.toLowerCase()]}
+              loadingScores={loadingScores}
+              totalLine={game.total.over}
             />
           ))}
         </div>
@@ -215,20 +260,87 @@ function sportKeyToLogoSport(sportKey: string): string {
   return parts[parts.length - 1] || 'nba';
 }
 
+function RecentScoresRow({
+  label,
+  games,
+  totalLine,
+  loading,
+}: {
+  label: string;
+  games?: RecentGame[];
+  totalLine: number;
+  loading: boolean;
+}) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-[10px] text-muted-foreground w-10 shrink-0">{label}</span>
+        <div className="flex gap-1">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="w-7 h-5 rounded bg-muted/50 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!games?.length) return null;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] text-muted-foreground w-10 shrink-0">{label}</span>
+      <div className="flex gap-1">
+        {games.slice(0, 5).map((g, i) => {
+          const isOver = g.totalPoints > totalLine;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "w-7 h-5 rounded text-[10px] font-medium flex items-center justify-center",
+                isOver
+                  ? "bg-primary/15 text-primary"
+                  : "bg-muted/60 text-muted-foreground"
+              )}
+              title={`vs ${g.opponent}: ${g.score}-${g.opponentScore} (${g.totalPoints} total)`}
+            >
+              {g.totalPoints}
+            </div>
+          );
+        })}
+      </div>
+      <span className="text-[9px] text-muted-foreground ml-auto">
+        avg {Math.round(games.slice(0, 5).reduce((s, g) => s + g.totalPoints, 0) / Math.min(games.length, 5))}
+      </span>
+    </div>
+  );
+}
+
 function GameTotalCard({
   game,
   analysis,
   explanation,
   loadingAI,
+  homeScores,
+  awayScores,
+  loadingScores,
+  totalLine,
 }: {
   game: GameTotal;
   analysis: TotalAnalysis;
   explanation?: string;
   loadingAI: boolean;
+  homeScores?: RecentGame[];
+  awayScores?: RecentGame[];
+  loadingScores: boolean;
+  totalLine: number;
 }) {
   const { total } = game;
   const logoSport = sportKeyToLogoSport(game.sportKey);
   const gameDate = new Date(game.commenceTime);
+
+  // Get short team names (last word of team name, e.g. "Trail Blazers" -> "Blazers")
+  const awayShort = game.awayTeam.split(' ').pop() || game.awayTeam;
+  const homeShort = game.homeTeam.split(' ').pop() || game.homeTeam;
 
   return (
     <Card className="overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all">
@@ -251,6 +363,15 @@ function GameTotalCard({
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Points</p>
           <p className="text-3xl font-bold text-foreground">{total.over}</p>
         </div>
+
+        {/* Last 5 Games Scores */}
+        {(loadingScores || awayScores?.length || homeScores?.length) && (
+          <div className="space-y-1 border border-border/50 rounded-lg p-2 bg-muted/20">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-1">Last 5 Combined Scores</p>
+            <RecentScoresRow label={awayShort} games={awayScores} totalLine={totalLine} loading={loadingScores} />
+            <RecentScoresRow label={homeShort} games={homeScores} totalLine={totalLine} loading={loadingScores} />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           <button
