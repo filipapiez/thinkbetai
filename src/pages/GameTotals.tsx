@@ -9,7 +9,7 @@ import {
   RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, Trophy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useOddsAPI, LiveGame } from '@/hooks/useOddsAPI';
+import { useQuery } from '@tanstack/react-query';
 
 const SPORTS = [
   { key: 'nba', label: 'NBA' },
@@ -20,13 +20,25 @@ const SPORTS = [
   { key: 'ncaaf', label: 'NCAAF' },
 ];
 
+interface GameTotal {
+  id: string;
+  sportKey: string;
+  sportTitle: string;
+  commenceTime: string;
+  homeTeam: string;
+  awayTeam: string;
+  total: { over: number; overOdds: number; under: number; underOdds: number };
+  moneyline: { home: number; away: number };
+  hasTotals: boolean;
+}
+
 interface TotalAnalysis {
   lean: 'OVER' | 'UNDER' | 'EVEN';
   confidence: number;
 }
 
-function analyzeTotal(game: LiveGame): TotalAnalysis {
-  const { overOdds, underOdds } = game.odds.total;
+function analyzeTotal(game: GameTotal): TotalAnalysis {
+  const { overOdds, underOdds } = game.total;
   if (!overOdds && !underOdds) return { lean: 'EVEN', confidence: 50 };
 
   const overImpl = overOdds > 0
@@ -44,13 +56,25 @@ function analyzeTotal(game: LiveGame): TotalAnalysis {
   return { lean, confidence };
 }
 
+async function fetchGameTotals(sport: string): Promise<GameTotal[]> {
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const res = await fetch(`${baseUrl}/functions/v1/get-game-totals?sport=${sport}`);
+  if (!res.ok) throw new Error('Failed to fetch game totals');
+  const data = await res.json();
+  return data.games || [];
+}
+
 const GameTotals = () => {
   const [sport, setSport] = useState('nba');
-  const { games, isLoading, refetch } = useOddsAPI(sport);
 
-  const totalsGames = useMemo(() => {
+  const { data: games = [], isLoading, refetch } = useQuery({
+    queryKey: ['game-totals', sport],
+    queryFn: () => fetchGameTotals(sport),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const analyzed = useMemo(() => {
     return games
-      .filter(g => g.hasOdds && g.odds.total.over > 0)
       .map(g => ({ ...g, analysis: analyzeTotal(g) }))
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
   }, [games]);
@@ -59,9 +83,9 @@ const GameTotals = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="Game Totals Over/Under — AI Score Predictions"
-        description="AI-analyzed game totals over/under picks for NBA, NFL, MLB, NHL. Find the best over/under bets with confidence scores."
+        description="AI-analyzed game totals over/under picks for NBA, NFL, MLB, NHL."
         url="/game-totals"
-        keywords="over under picks, game totals, score predictions, over under betting, AI sports predictions"
+        keywords="over under picks, game totals, score predictions, over under betting"
       />
       <Header />
 
@@ -73,7 +97,6 @@ const GameTotals = () => {
           </p>
         </div>
 
-        {/* Sport filter */}
         <div className="flex flex-wrap gap-2 mb-6">
           {SPORTS.map(s => (
             <Button
@@ -91,7 +114,6 @@ const GameTotals = () => {
           </Button>
         </div>
 
-        {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
@@ -99,8 +121,7 @@ const GameTotals = () => {
           </div>
         )}
 
-        {/* Empty */}
-        {!isLoading && totalsGames.length === 0 && (
+        {!isLoading && analyzed.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
               <Activity className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
@@ -111,9 +132,8 @@ const GameTotals = () => {
           </Card>
         )}
 
-        {/* Game total cards */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {totalsGames.map((game) => (
+          {analyzed.map((game) => (
             <GameTotalCard key={game.id} game={game} analysis={game.analysis} />
           ))}
         </div>
@@ -124,38 +144,29 @@ const GameTotals = () => {
   );
 };
 
-function GameTotalCard({ game, analysis }: { game: LiveGame; analysis: TotalAnalysis }) {
-  const total = game.odds.total;
+function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAnalysis }) {
+  const { total } = game;
   const gameDate = new Date(game.commenceTime);
 
   return (
     <Card className="overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all">
       <CardContent className="p-4 space-y-3">
-        {/* Matchup header */}
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
             <Trophy className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground truncate text-sm">
-              {game.awayTeam}
-            </p>
-            <p className="font-semibold text-foreground truncate text-sm">
-              @ {game.homeTeam}
-            </p>
+            <p className="font-semibold text-foreground truncate text-sm">{game.awayTeam}</p>
+            <p className="font-semibold text-foreground truncate text-sm">@ {game.homeTeam}</p>
           </div>
-          <Badge variant="outline" className="text-[10px] shrink-0">
-            {game.sportTitle}
-          </Badge>
+          <Badge variant="outline" className="text-[10px] shrink-0">{game.sportTitle}</Badge>
         </div>
 
-        {/* Total line */}
         <div className="text-center py-2">
           <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Points</p>
           <p className="text-3xl font-bold text-foreground">{total.over}</p>
         </div>
 
-        {/* Over / Under buttons */}
         <div className="grid grid-cols-2 gap-2">
           <button
             className={cn(
@@ -187,7 +198,6 @@ function GameTotalCard({ game, analysis }: { game: LiveGame; analysis: TotalAnal
           </button>
         </div>
 
-        {/* AI confidence */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-1.5">
             <Zap className="h-3.5 w-3.5 text-primary" />
