@@ -289,8 +289,8 @@ const GameTotals = () => {
               analysis={game.analysis}
               explanation={explanations[game.id]}
               loadingAI={loadingAI}
-              homeScores={recentScores[game.homeTeam.toLowerCase()] || recentScores[game.homeTeam.toLowerCase().replace('los angeles', 'la')]}
-              awayScores={recentScores[game.awayTeam.toLowerCase()] || recentScores[game.awayTeam.toLowerCase().replace('los angeles', 'la')]}
+              homeScores={findScores(recentScores, game.homeTeam)}
+              awayScores={findScores(recentScores, game.awayTeam)}
               loadingScores={loadingScores}
               totalLine={game.total.over}
             />
