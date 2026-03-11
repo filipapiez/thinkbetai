@@ -102,6 +102,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/bet-history" element={<BetHistory />} />
+                <Route path="/game-totals" element={<GameTotals />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
