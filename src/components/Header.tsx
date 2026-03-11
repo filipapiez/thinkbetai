@@ -28,6 +28,10 @@ export const Header = () => {
             <Layers className="h-4 w-4" />
             Props
           </Link>
+          <Link to="/game-totals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <ArrowUpDown className="h-4 w-4" />
+            Over/Under
+          </Link>
           <Link to="/parlays" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <Sparkles className="h-4 w-4" />
             AI Parlays
