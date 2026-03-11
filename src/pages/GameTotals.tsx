@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity,
+  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, Brain, Sparkles,
 } from 'lucide-react';
 import { TeamLogo } from '@/components/TeamLogo';
 import { cn } from '@/lib/utils';
@@ -65,8 +65,39 @@ async function fetchGameTotals(sport: string): Promise<GameTotal[]> {
   return data.games || [];
 }
 
+async function fetchAIExplanations(games: GameTotal[], analyses: TotalAnalysis[]): Promise<Record<string, string>> {
+  if (!games.length) return {};
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const payload = games.map((g, i) => ({
+    id: g.id,
+    homeTeam: g.homeTeam,
+    awayTeam: g.awayTeam,
+    total: g.total.over,
+    overOdds: g.total.overOdds,
+    underOdds: g.total.underOdds,
+    mlHome: g.moneyline.home,
+    mlAway: g.moneyline.away,
+    lean: analyses[i].lean,
+    confidence: analyses[i].confidence,
+  }));
+
+  const res = await fetch(`${baseUrl}/functions/v1/analyze-game-totals`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ games: payload }),
+  });
+  if (!res.ok) return {};
+  const data = await res.json();
+  return data.explanations || {};
+}
+
 const GameTotals = () => {
   const [sport, setSport] = useState('nba');
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [loadingAI, setLoadingAI] = useState(false);
 
   const { data: games = [], isLoading, refetch } = useQuery({
     queryKey: ['game-totals', sport],
@@ -79,6 +110,27 @@ const GameTotals = () => {
       .map(g => ({ ...g, analysis: analyzeTotal(g) }))
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
   }, [games]);
+
+  // Fetch AI explanations when games load
+  useEffect(() => {
+    if (!analyzed.length) {
+      setExplanations({});
+      return;
+    }
+    let cancelled = false;
+    setLoadingAI(true);
+    setExplanations({});
+    const analyses = analyzed.map(g => g.analysis);
+    fetchAIExplanations(analyzed, analyses)
+      .then(result => {
+        if (!cancelled) setExplanations(result);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingAI(false);
+      });
+    return () => { cancelled = true; };
+  }, [analyzed]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,9 +185,22 @@ const GameTotals = () => {
           </Card>
         )}
 
+        {loadingAI && analyzed.length > 0 && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+            <span>Generating AI analysis…</span>
+          </div>
+        )}
+
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {analyzed.map((game) => (
-            <GameTotalCard key={game.id} game={game} analysis={game.analysis} />
+            <GameTotalCard
+              key={game.id}
+              game={game}
+              analysis={game.analysis}
+              explanation={explanations[game.id]}
+              loadingAI={loadingAI}
+            />
           ))}
         </div>
       </main>
@@ -146,12 +211,21 @@ const GameTotals = () => {
 };
 
 function sportKeyToLogoSport(sportKey: string): string {
-  // sportKey is like "basketball_nba", "americanfootball_nfl", etc.
   const parts = sportKey.split('_');
   return parts[parts.length - 1] || 'nba';
 }
 
-function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAnalysis }) {
+function GameTotalCard({
+  game,
+  analysis,
+  explanation,
+  loadingAI,
+}: {
+  game: GameTotal;
+  analysis: TotalAnalysis;
+  explanation?: string;
+  loadingAI: boolean;
+}) {
   const { total } = game;
   const logoSport = sportKeyToLogoSport(game.sportKey);
   const gameDate = new Date(game.commenceTime);
@@ -219,6 +293,26 @@ function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAna
           <span className="text-[10px] text-muted-foreground">
             {gameDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
           </span>
+        </div>
+
+        {/* AI Explanation */}
+        <div className="border-t border-border pt-2">
+          {loadingAI && !explanation ? (
+            <div className="flex items-center gap-1.5">
+              <Brain className="h-3.5 w-3.5 text-primary animate-pulse" />
+              <span className="text-[11px] text-muted-foreground italic">Analyzing…</span>
+            </div>
+          ) : explanation ? (
+            <div className="flex gap-1.5">
+              <Brain className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{explanation}</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <Brain className="h-3.5 w-3.5 text-muted-foreground/50" />
+              <span className="text-[11px] text-muted-foreground/50 italic">No analysis available</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
