@@ -19,8 +19,8 @@ interface CachedData {
   timestamp: number; // ms since epoch
 }
 
-// Cache TTL: 3 days in ms
-const CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000;
+// Cache TTL: 12 hours in ms
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 
 // localStorage key for game log cache
 const CACHE_VERSION = 'v2-statmuse';
