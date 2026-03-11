@@ -103,10 +103,6 @@ export const Header = () => {
             </div>
           </div>
 
-          <Link to="/settings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Settings className="h-4 w-4" />
-            Settings
-          </Link>
         </nav>
 
         {/* Desktop Actions */}
