@@ -183,9 +183,6 @@ export const Header = () => {
               </div>
             )}
 
-            <Link to="/settings" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <Settings className="h-4 w-4" /> Settings
-            </Link>
             <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
               <User className="h-4 w-4" /> Account
             </Link>
