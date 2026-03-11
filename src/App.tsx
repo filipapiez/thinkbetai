@@ -49,6 +49,7 @@ const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
+const GameTotals = lazy(() => import("./pages/GameTotals"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
