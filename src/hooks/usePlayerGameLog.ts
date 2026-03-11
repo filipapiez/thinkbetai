@@ -65,16 +65,34 @@ let gameLogCache: Map<string, CachedData> = loadLocalCache();
 // Global request queue to prevent rate limiting
 const MAX_CONCURRENT = 2;
 let activeRequests = 0;
+let lastRequestTime = 0;
 const pendingQueue: Array<() => void> = [];
 
+// Safety: if no request has completed in 30s, reset the counter
+function ensureQueueHealth() {
+  if (activeRequests > 0 && Date.now() - lastRequestTime > 30000) {
+    console.warn(`[GameLog] Queue stuck (activeRequests=${activeRequests}), resetting`);
+    activeRequests = 0;
+    // Drain pending queue
+    while (pendingQueue.length > 0 && activeRequests < MAX_CONCURRENT) {
+      const next = pendingQueue.shift();
+      activeRequests++;
+      next?.();
+    }
+  }
+}
+
 function enqueue(): Promise<void> {
+  ensureQueueHealth();
   if (activeRequests < MAX_CONCURRENT) {
     activeRequests++;
+    lastRequestTime = Date.now();
     return Promise.resolve();
   }
   return new Promise((resolve) => {
     pendingQueue.push(() => {
       activeRequests++;
+      lastRequestTime = Date.now();
       resolve();
     });
   });
@@ -82,6 +100,7 @@ function enqueue(): Promise<void> {
 
 function dequeue() {
   activeRequests--;
+  lastRequestTime = Date.now();
   if (pendingQueue.length > 0) {
     setTimeout(() => {
       const next = pendingQueue.shift();
