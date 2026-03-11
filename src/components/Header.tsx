@@ -9,6 +9,7 @@ const resourceLinks = [
   { to: '/about', label: 'About', icon: Info },
   { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },
   { to: '/blog', label: 'Blog', icon: BookOpen },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export const Header = () => {
@@ -102,10 +103,6 @@ export const Header = () => {
             </div>
           </div>
 
-          <Link to="/settings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Settings className="h-4 w-4" />
-            Settings
-          </Link>
         </nav>
 
         {/* Desktop Actions */}
@@ -186,9 +183,6 @@ export const Header = () => {
               </div>
             )}
 
-            <Link to="/settings" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <Settings className="h-4 w-4" /> Settings
-            </Link>
             <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
               <User className="h-4 w-4" /> Account
             </Link>
