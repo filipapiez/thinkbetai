@@ -49,6 +49,7 @@ const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
+const GameTotals = lazy(() => import("./pages/GameTotals"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -101,6 +102,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/bet-history" element={<BetHistory />} />
+                <Route path="/game-totals" element={<GameTotals />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
