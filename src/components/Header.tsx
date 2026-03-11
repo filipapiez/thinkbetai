@@ -29,6 +29,7 @@ export const Header = () => {
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const location = useLocation();
 
   const handleMouseEnter = () => {
     clearTimeout(timeoutRef.current);
@@ -37,6 +38,8 @@ export const Header = () => {
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => setResourcesOpen(false), 150);
   };
+
+  const isResourceActive = resourceLinks.some((r) => location.pathname.startsWith(r.to));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
@@ -52,32 +55,23 @@ export const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link to="/games" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Games
-          </Link>
-          <Link to="/player-props" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Layers className="h-4 w-4" />
-            Props
-          </Link>
-          <Link to="/game-totals" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <ArrowUpDown className="h-4 w-4" />
-            Over/Under
-          </Link>
-          <Link to="/parlays" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <Sparkles className="h-4 w-4" />
-            AI Parlays
-          </Link>
-          <Link to="/bet-history" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <History className="h-4 w-4" />
-            Bet History
-          </Link>
-          <Link to="/chat" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <MessageCircle className="h-4 w-4" />
-            Ask AI
-          </Link>
-          <Link to="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Pricing
-          </Link>
+          <NavLink to="/games" className={navLinkClass}>Games</NavLink>
+          <NavLink to="/player-props" className={navLinkClass}>
+            <Layers className="h-4 w-4" /> Props
+          </NavLink>
+          <NavLink to="/game-totals" className={navLinkClass}>
+            <ArrowUpDown className="h-4 w-4" /> Over/Under
+          </NavLink>
+          <NavLink to="/parlays" className={navLinkClass}>
+            <Sparkles className="h-4 w-4" /> AI Parlays
+          </NavLink>
+          <NavLink to="/bet-history" className={navLinkClass}>
+            <History className="h-4 w-4" /> Bet History
+          </NavLink>
+          <NavLink to="/chat" className={navLinkClass}>
+            <MessageCircle className="h-4 w-4" /> Ask AI
+          </NavLink>
+          <NavLink to="/pricing" className={navLinkClass}>Pricing</NavLink>
 
           {/* Resources Dropdown */}
           <div
@@ -86,7 +80,10 @@ export const Header = () => {
             onMouseLeave={handleMouseLeave}
           >
             <button
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className={cn(
+                "text-sm font-medium transition-colors flex items-center gap-1",
+                isResourceActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
               onClick={() => setResourcesOpen((v) => !v)}
             >
               Resources
@@ -102,19 +99,23 @@ export const Header = () => {
               )}
             >
               {resourceLinks.map(({ to, label, icon: Icon }) => (
-                <Link
+                <NavLink
                   key={to}
                   to={to}
                   onClick={() => setResourcesOpen(false)}
-                  className="flex items-center gap-2 px-3.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-3.5 py-2 text-sm transition-colors",
+                      isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    )
+                  }
                 >
                   <Icon className="h-4 w-4" />
                   {label}
-                </Link>
+                </NavLink>
               ))}
             </div>
           </div>
-
         </nav>
 
         {/* Desktop Actions */}
@@ -148,31 +149,26 @@ export const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl animate-fade-in">
           <nav className="container py-4 flex flex-col gap-3">
-            <Link to="/games" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <Search className="h-4 w-4" /> Search Games
-            </Link>
-            <Link to="/player-props" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <Layers className="h-4 w-4" /> Player Props
-            </Link>
-            <Link to="/game-totals" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <ArrowUpDown className="h-4 w-4" /> Over/Under
-            </Link>
-            <Link to="/parlays" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <Sparkles className="h-4 w-4" /> AI Parlays
-            </Link>
-            <Link to="/bet-history" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <History className="h-4 w-4" /> Bet History
-            </Link>
-            <Link to="/chat" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <MessageCircle className="h-4 w-4" /> Ask AI
-            </Link>
-            <Link to="/pricing" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-              <TrendingUp className="h-4 w-4" /> Pricing
-            </Link>
+            {[
+              { to: '/games', label: 'Search Games', icon: Search },
+              { to: '/player-props', label: 'Player Props', icon: Layers },
+              { to: '/game-totals', label: 'Over/Under', icon: ArrowUpDown },
+              { to: '/parlays', label: 'AI Parlays', icon: Sparkles },
+              { to: '/bet-history', label: 'Bet History', icon: History },
+              { to: '/chat', label: 'Ask AI', icon: MessageCircle },
+              { to: '/pricing', label: 'Pricing', icon: TrendingUp },
+            ].map(({ to, label, icon: Icon }) => (
+              <NavLink key={to} to={to} className={({ isActive }) => mobileLinkClass(isActive)} onClick={() => setMobileMenuOpen(false)}>
+                <Icon className="h-4 w-4" /> {label}
+              </NavLink>
+            ))}
 
             {/* Mobile Resources Accordion */}
             <button
-              className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary transition-colors w-full text-left"
+              className={cn(
+                "flex items-center justify-between px-3 py-2 rounded-lg transition-colors w-full text-left",
+                isResourceActive ? "text-primary bg-primary/10" : "hover:bg-secondary"
+              )}
               onClick={() => setMobileResourcesOpen((v) => !v)}
             >
               <span className="flex items-center gap-2">
@@ -183,21 +179,26 @@ export const Header = () => {
             {mobileResourcesOpen && (
               <div className="flex flex-col gap-1 pl-6">
                 {resourceLinks.map(({ to, label, icon: Icon }) => (
-                  <Link
+                  <NavLink
                     key={to}
                     to={to}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+                        isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
+                      )
+                    }
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Icon className="h-4 w-4" /> {label}
-                  </Link>
+                  </NavLink>
                 ))}
               </div>
             )}
 
-            <Link to="/account" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors" onClick={() => setMobileMenuOpen(false)}>
+            <NavLink to="/account" className={({ isActive }) => mobileLinkClass(isActive)} onClick={() => setMobileMenuOpen(false)}>
               <User className="h-4 w-4" /> Account
-            </Link>
+            </NavLink>
           </nav>
         </div>
       )}
