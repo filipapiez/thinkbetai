@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.admin-cancel-subscription]
 verify_jwt = false
+
+[functions.get-game-totals]
+verify_jwt = false
