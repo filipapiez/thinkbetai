@@ -336,7 +336,7 @@ function RecentScoresRow({
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[10px] text-muted-foreground w-10 shrink-0">{label}</span>
+      <span className="text-[10px] text-muted-foreground w-16 shrink-0 truncate" title={label}>{label}</span>
       <div className="flex gap-1">
         {games.slice(0, 5).map((g, i) => {
           const isOver = g.totalPoints > totalLine;
