@@ -337,11 +337,11 @@ function RecentScoresRow({
           return (
             <div
               key={i}
-              className={cn(
-                "w-7 h-5 rounded text-[10px] font-medium flex items-center justify-center",
+               className={cn(
+                "w-7 h-5 rounded text-[10px] font-bold flex items-center justify-center",
                 isOver
-                  ? "bg-primary/15 text-primary"
-                  : "bg-muted/60 text-muted-foreground"
+                  ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
+                  : "bg-muted/40 text-muted-foreground"
               )}
               title={`vs ${g.opponent}: ${g.score}-${g.opponentScore} (${g.totalPoints} total)`}
             >
