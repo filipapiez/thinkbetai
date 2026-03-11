@@ -1,9 +1,21 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Layers, History, HelpCircle, Sparkles, ArrowUpDown, ChevronDown, Info, BookOpen } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    "text-sm font-medium transition-colors flex items-center gap-1",
+    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+  );
+
+const mobileLinkClass = (isActive: boolean) =>
+  cn(
+    "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+    isActive ? "text-primary bg-primary/10" : "hover:bg-secondary"
+  );
 
 const resourceLinks = [
   { to: '/about', label: 'About', icon: Info },
