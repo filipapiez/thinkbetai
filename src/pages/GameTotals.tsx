@@ -145,8 +145,15 @@ const GameTotals = () => {
   );
 };
 
+function sportKeyToLogoSport(sportKey: string): string {
+  // sportKey is like "basketball_nba", "americanfootball_nfl", etc.
+  const parts = sportKey.split('_');
+  return parts[parts.length - 1] || 'nba';
+}
+
 function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAnalysis }) {
   const { total } = game;
+  const logoSport = sportKeyToLogoSport(game.sportKey);
   const gameDate = new Date(game.commenceTime);
 
   return (
@@ -154,8 +161,8 @@ function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAna
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-center gap-1 shrink-0">
-            <TeamLogo teamName={game.awayTeam} abbreviation="" sport={game.sportKey.includes('nba') ? 'basketball' : game.sportKey.includes('nfl') ? 'football' : game.sportKey.includes('mlb') ? 'baseball' : game.sportKey.includes('nhl') ? 'hockey' : 'basketball'} className="!w-8 !h-8 !rounded-lg" />
-            <TeamLogo teamName={game.homeTeam} abbreviation="" sport={game.sportKey.includes('nba') ? 'basketball' : game.sportKey.includes('nfl') ? 'football' : game.sportKey.includes('mlb') ? 'baseball' : game.sportKey.includes('nhl') ? 'hockey' : 'basketball'} className="!w-8 !h-8 !rounded-lg" />
+            <TeamLogo teamName={game.awayTeam} abbreviation="" sport={logoSport} className="!w-8 !h-8 !rounded-lg" />
+            <TeamLogo teamName={game.homeTeam} abbreviation="" sport={logoSport} className="!w-8 !h-8 !rounded-lg" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-foreground truncate text-sm">{game.awayTeam}</p>
