@@ -15,13 +15,12 @@ interface CachedData {
   statValues: number[];
   hitCount: number;
   total: number;
-  date: string; // YYYY-MM-DD to track when cached
+  date?: string; // legacy field
+  timestamp: number; // ms since epoch
 }
 
-// Get today's date string for cache invalidation
-function getTodayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+// Cache TTL: 3 days in ms
+const CACHE_TTL_MS = 3 * 24 * 60 * 60 * 1000;
 
 // localStorage key for game log cache
 const CACHE_VERSION = 'v2-statmuse';
@@ -112,7 +111,9 @@ function dequeue() {
 // Check if cached data is still valid (same day)
 function isCacheValid(cached: CachedData | undefined): cached is CachedData {
   if (!cached) return false;
-  return cached.date === getTodayStr() && cached.results.length >= 10;
+  // Support legacy 'date' field and new 'timestamp' field
+  const age = cached.timestamp ? Date.now() - cached.timestamp : Infinity;
+  return age < CACHE_TTL_MS && cached.results.length >= 10;
 }
 
 async function fetchGameLog(
@@ -162,7 +163,7 @@ async function fetchGameLog(
       statValues,
       hitCount,
       total: results.length,
-      date: getTodayStr(),
+      timestamp: Date.now(),
     };
 
     // Cache by player+stat+direction (not line), so we can recalculate for different lines
