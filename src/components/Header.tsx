@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, HelpCircle, Sparkles, Hammer } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Info, BookOpen, Layers, History, HelpCircle, Sparkles, Hammer, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
