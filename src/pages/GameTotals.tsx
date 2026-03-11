@@ -145,8 +145,15 @@ const GameTotals = () => {
   );
 };
 
+function sportKeyToLogoSport(sportKey: string): string {
+  // sportKey is like "basketball_nba", "americanfootball_nfl", etc.
+  const parts = sportKey.split('_');
+  return parts[parts.length - 1] || 'nba';
+}
+
 function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAnalysis }) {
   const { total } = game;
+  const logoSport = sportKeyToLogoSport(game.sportKey);
   const gameDate = new Date(game.commenceTime);
 
   return (
