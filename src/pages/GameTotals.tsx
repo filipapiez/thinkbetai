@@ -322,7 +322,7 @@ function RecentScoresRow({
   if (loading) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] text-muted-foreground w-10 shrink-0">{label}</span>
+        <span className="text-[10px] text-muted-foreground w-16 shrink-0 truncate" title={label}>{label}</span>
         <div className="flex gap-1">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="w-7 h-5 rounded bg-muted/50 animate-pulse" />
