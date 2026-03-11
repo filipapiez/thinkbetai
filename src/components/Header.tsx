@@ -113,6 +113,14 @@ export const Header = () => {
               Player Props
             </Link>
             <Link 
+              to="/game-totals" 
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              Over/Under
+            </Link>
+            <Link 
               to="/parlays" 
               className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
               onClick={() => setMobileMenuOpen(false)}
