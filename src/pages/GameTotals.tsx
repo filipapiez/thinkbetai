@@ -159,16 +159,18 @@ function GameTotalCard({ game, analysis }: { game: GameTotal; analysis: TotalAna
   return (
     <Card className="overflow-hidden hover:ring-1 hover:ring-primary/30 transition-all">
       <CardContent className="p-4 space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-center gap-1 shrink-0">
-            <TeamLogo teamName={game.awayTeam} abbreviation="" sport={logoSport} className="!w-8 !h-8 !rounded-lg" />
-            <TeamLogo teamName={game.homeTeam} abbreviation="" sport={logoSport} className="!w-8 !h-8 !rounded-lg" />
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <TeamLogo teamName={game.awayTeam} abbreviation="" sport={logoSport} className="!w-7 !h-7 !rounded-md" />
+              <p className="font-semibold text-foreground truncate text-sm">{game.awayTeam}</p>
+            </div>
+            <Badge variant="outline" className="text-[10px] shrink-0 ml-2">{game.sportTitle}</Badge>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground truncate text-sm">{game.awayTeam}</p>
+          <div className="flex items-center gap-2 min-w-0">
+            <TeamLogo teamName={game.homeTeam} abbreviation="" sport={logoSport} className="!w-7 !h-7 !rounded-md" />
             <p className="font-semibold text-foreground truncate text-sm">@ {game.homeTeam}</p>
           </div>
-          <Badge variant="outline" className="text-[10px] shrink-0">{game.sportTitle}</Badge>
         </div>
 
         <div className="text-center py-2">
