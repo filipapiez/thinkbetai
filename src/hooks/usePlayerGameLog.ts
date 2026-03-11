@@ -15,7 +15,8 @@ interface CachedData {
   statValues: number[];
   hitCount: number;
   total: number;
-  date: string; // YYYY-MM-DD to track when cached
+  date?: string; // legacy field
+  timestamp: number; // ms since epoch
 }
 
 // Get today's date string for cache invalidation
