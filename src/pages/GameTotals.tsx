@@ -197,23 +197,23 @@ const GameTotals = () => {
     return () => { cancelled = true; };
   }, [analyzed, recentScores, loadingScores]);
 
-  // Fetch recent scores when games load
+  // Fetch recent scores when games load (based on raw games, not analyzed)
   useEffect(() => {
-    if (!analyzed.length) {
+    if (!games.length) {
       setRecentScores({});
       return;
     }
     let cancelled = false;
     setLoadingScores(true);
     setRecentScores({});
-    const allTeams = analyzed.flatMap(g => [g.homeTeam, g.awayTeam]);
+    const allTeams = games.flatMap(g => [g.homeTeam, g.awayTeam]);
     const sportKey = sport;
     fetchRecentScores(allTeams, sportKey)
       .then(result => { if (!cancelled) setRecentScores(result); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoadingScores(false); });
     return () => { cancelled = true; };
-  }, [analyzed, sport]);
+  }, [games, sport]);
 
   return (
     <div className="min-h-screen bg-background">
