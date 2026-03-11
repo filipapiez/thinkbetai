@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, Trophy,
+  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity,
 } from 'lucide-react';
+import { TeamLogo } from '@/components/TeamLogo';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 
