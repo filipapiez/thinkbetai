@@ -144,9 +144,9 @@ const GameTotals = () => {
       .sort((a, b) => b.analysis.confidence - a.analysis.confidence);
   }, [games]);
 
-  // Fetch AI explanations when games load
+  // Fetch AI explanations after recent scores are loaded
   useEffect(() => {
-    if (!analyzed.length) {
+    if (!analyzed.length || loadingScores) {
       setExplanations({});
       return;
     }
@@ -154,12 +154,12 @@ const GameTotals = () => {
     setLoadingAI(true);
     setExplanations({});
     const analyses = analyzed.map(g => g.analysis);
-    fetchAIExplanations(analyzed, analyses)
+    fetchAIExplanations(analyzed, analyses, recentScores)
       .then(result => { if (!cancelled) setExplanations(result); })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoadingAI(false); });
     return () => { cancelled = true; };
-  }, [analyzed]);
+  }, [analyzed, recentScores, loadingScores]);
 
   // Fetch recent scores when games load
   useEffect(() => {
