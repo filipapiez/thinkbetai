@@ -450,7 +450,7 @@ function GameTotalCard({
           <div className="flex items-center gap-1.5">
             <Zap className="h-3.5 w-3.5 text-primary" />
             <span className="text-xs font-medium text-foreground">
-              AI: {analysis.lean === 'EVEN' ? 'No edge' : `${analysis.lean} ${analysis.confidence}%`}
+              AI: {analysis.lean === 'EVEN' ? 'PASS' : `${analysis.lean} ${analysis.confidence}%`}
             </span>
           </div>
           <span className="text-[10px] text-muted-foreground">
