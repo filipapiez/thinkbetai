@@ -44,16 +44,16 @@ const Index = () => {
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
+  // Animated live viewer count — slow interval to reduce INP impact
   useEffect(() => {
     const interval = setInterval(() => {
       setViewerCount(prev => {
-        const change = Math.floor(Math.random() * 5) + 1; // 1-5
+        const change = Math.floor(Math.random() * 5) + 1;
         const direction = Math.random() > 0.5 ? 1 : -1;
         const newCount = prev + (change * direction);
-        // Keep within 500-1200 range
         return Math.max(500, Math.min(1200, newCount));
       });
-    }, 1500);
+    }, 5000); // 5s instead of 1.5s to reduce main-thread work
     return () => clearInterval(interval);
   }, []);
 
@@ -228,12 +228,10 @@ const Index = () => {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-16 md:py-28">
-          {/* Background Effects */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 rounded-full blur-3xl opacity-60" />
-            <div className="absolute top-1/3 -left-1/4 w-[400px] h-[400px] bg-accent/10 rounded-full blur-2xl" />
-            <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-2xl" />
+        <section className="relative overflow-hidden py-16 md:py-28" style={{ contain: 'layout style paint' }}>
+          {/* Background Effects - simplified for CWV (no blur on mobile) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/15 rounded-full opacity-60 hidden md:block md:blur-3xl" />
           </div>
 
           <div className="container relative">
@@ -242,7 +240,6 @@ const Index = () => {
               <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8 animate-fade-in">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
                   <span className="text-xs md:text-sm font-semibold text-emerald-400">LIVE</span>
@@ -258,7 +255,7 @@ const Index = () => {
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                 Smarter Picks.{' '}
                 <span className="relative inline-block">
                   <span className="text-gradient">Bigger Wins.</span>
@@ -267,13 +264,13 @@ const Index = () => {
               </h1>
 
               {/* Subheadline */}
-              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-slide-up leading-relaxed" style={{ animationDelay: '100ms' }}>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
                 AI analyzes <span className="text-foreground font-semibold">10,000+ data points</span> across NFL, NBA, UFC & 15+ sports 
                 to find <span className="text-primary font-semibold">high-value picks</span> — spreads, props, and parlays you'd never spot alone.
               </p>
 
               {/* Quick Value Props */}
-              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10 animate-slide-up" style={{ animationDelay: '150ms' }}>
+              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
                   Updated Every 5 Min
@@ -289,7 +286,7 @@ const Index = () => {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '200ms' }}>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="hero" size="xl" asChild className="group relative overflow-hidden">
                   <Link to="/pricing" className="flex items-center">
                     <Sparkles className="h-5 w-5 mr-2 group-hover:animate-pulse" />
@@ -307,7 +304,7 @@ const Index = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[...Array(4)].map((_, i) => (
@@ -361,7 +358,6 @@ const Index = () => {
           <div className="container">
             <div className="flex items-center justify-center gap-3 text-sm">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
               </span>
               <span className="text-sm font-semibold text-red-400 uppercase">Live</span>
@@ -376,10 +372,7 @@ const Index = () => {
         {/* How It Works - Interactive Demo */}
         <section className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
           {/* Background effects */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/4 -left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
-            <div className="absolute bottom-1/4 -right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-          </div>
+          {/* Background effects removed for CWV performance */}
           
           <div className="container relative">
             <div className="text-center mb-12">
@@ -615,7 +608,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
           <div className="container relative">
             <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold mb-6 animate-pulse">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold mb-6">
                 <Zap className="h-4 w-4" />
                 Limited Time: 70% Off All Plans
               </div>
