@@ -44,16 +44,16 @@ const Index = () => {
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
+  // Animated live viewer count — slow interval to reduce INP impact
   useEffect(() => {
     const interval = setInterval(() => {
       setViewerCount(prev => {
-        const change = Math.floor(Math.random() * 5) + 1; // 1-5
+        const change = Math.floor(Math.random() * 5) + 1;
         const direction = Math.random() > 0.5 ? 1 : -1;
         const newCount = prev + (change * direction);
-        // Keep within 500-1200 range
         return Math.max(500, Math.min(1200, newCount));
       });
-    }, 1500);
+    }, 5000); // 5s instead of 1.5s to reduce main-thread work
     return () => clearInterval(interval);
   }, []);
 
