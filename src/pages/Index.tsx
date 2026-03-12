@@ -255,7 +255,7 @@ const Index = () => {
               </div>
 
               {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                 Smarter Picks.{' '}
                 <span className="relative inline-block">
                   <span className="text-gradient">Bigger Wins.</span>
