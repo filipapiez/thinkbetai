@@ -608,7 +608,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
           <div className="container relative">
             <div className="max-w-3xl mx-auto text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold mb-6 animate-pulse">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-400 text-sm font-semibold mb-6">
                 <Zap className="h-4 w-4" />
                 Limited Time: 70% Off All Plans
               </div>
