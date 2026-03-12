@@ -290,6 +290,21 @@ Deno.serve(async (req) => {
         if (extracted) {
           // Supplement with ESPN data if AI extraction has gaps
           const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
+          
+          // If H2H still empty, try EliteProspects as fallback
+          if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+            const epH2H = await fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport);
+            if (epH2H.length > 0) {
+              supplemented.headToHead = epH2H.slice(0, 10);
+              supplemented.headToHeadMeta = {
+                limitedData: epH2H.length < 3,
+                validMatchCount: epH2H.length,
+                message: epH2H.length < 3 ? 'Limited H2H data available.' : undefined,
+              };
+              console.log(`[EliteProspects Fallback] Added ${epH2H.length} H2H matches`);
+            }
+          }
+          
           console.log('Successfully extracted matchup data via Gemini (source-grounded)');
           return new Response(
             JSON.stringify({ success: true, data: supplemented, source: 'ai-research' }),
