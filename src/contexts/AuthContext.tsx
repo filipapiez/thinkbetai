@@ -60,6 +60,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const fetchProfileWithTimeout = async (userId: string, timeoutMs = 6000) => {
+    return Promise.race<Profile | null>([
+      fetchProfile(userId),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+    ]);
+  };
+
   const refreshProfile = async () => {
     if (user) {
       try {
@@ -71,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error invoking check-subscription:', err);
       }
       
-      const updatedProfile = await fetchProfile(user.id);
+      const updatedProfile = await fetchProfileWithTimeout(user.id);
       setProfile(updatedProfile);
     }
   };
@@ -85,42 +92,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let profileFetched = false;
 
-    // Get initial session first, then listen for changes
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const setAuthState = (nextSession: Session | null) => {
       if (!mounted) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const profileData = await fetchProfile(session.user.id);
-        if (mounted) setProfile(profileData);
-      }
-      profileFetched = true;
-      if (mounted) setIsLoading(false);
-    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Skip if initial load already fetched this profile
-          if (!profileFetched || event !== 'INITIAL_SESSION') {
-            const profileData = await fetchProfile(session.user.id);
-            if (mounted) setProfile(profileData);
-          }
-        } else {
-          setProfile(null);
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (!nextSession?.user) {
+        setProfile(null);
+      }
+    };
+
+    const loadProfileInBackground = (userId: string) => {
+      void fetchProfileWithTimeout(userId).then((profileData) => {
+        if (mounted) {
+          setProfile(profileData);
         }
-        if (profileFetched && mounted) {
+      });
+    };
+
+    // Initial auth restore with a timeout-bound profile fetch to avoid indefinite loading.
+    void supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        setAuthState(session);
+
+        if (session?.user) {
+          const profileData = await fetchProfileWithTimeout(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error restoring auth session:', error);
+        setAuthState(null);
+      })
+      .finally(() => {
+        if (mounted) {
           setIsLoading(false);
         }
+      });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Initial event is handled by getSession above.
+      if (event === 'INITIAL_SESSION') return;
+
+      setAuthState(session);
+
+      if (session?.user) {
+        loadProfileInBackground(session.user.id);
       }
-    );
+
+      if (mounted) {
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       mounted = false;
