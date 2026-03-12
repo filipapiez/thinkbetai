@@ -1419,7 +1419,13 @@ function supplementWithEspnData(
   return result;
 }
 
-// --- EliteProspects H2H scraping for international hockey/sports ---
+function shouldPrioritizeEliteProspectsH2H(sport: string): boolean {
+  const sportKey = normalizeSportKey(sport);
+  // Prioritize for hockey markets where EliteProspects has best H2H depth
+  return sportKey === 'nhl';
+}
+
+// --- EliteProspects H2H scraping for hockey/international leagues ---
 async function fetchEliteProspectsH2H(
   firecrawlApiKey: string,
   homeTeam: string,
@@ -1427,38 +1433,78 @@ async function fetchEliteProspectsH2H(
   sport: string
 ): Promise<ScrapedGameData['headToHead']> {
   try {
-    // Search EliteProspects for the H2H page
-    const query = `${homeTeam} vs ${awayTeam} head to head site:eliteprospects.com/games/h2h`;
-    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+    const queries = [
+      `${homeTeam} vs ${awayTeam} site:eliteprospects.com/games/h2h`,
+      `${awayTeam} vs ${homeTeam} site:eliteprospects.com/games/h2h`,
+      `${homeTeam} ${awayTeam} head to head site:eliteprospects.com/games/h2h`,
+    ];
+
+    const searchResponses = await Promise.all(
+      queries.map((query) =>
+        fetch('https://api.firecrawl.dev/v1/search', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${firecrawlApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query,
+            limit: 5,
+          }),
+        })
+      )
+    );
+
+    let h2hUrl = '';
+    for (const response of searchResponses) {
+      if (!response.ok) continue;
+      const searchData = await response.json();
+      const results = searchData?.data || [];
+
+      const h2hResult = results.find((r: any) => {
+        const url = r?.url || r?.metadata?.sourceURL || '';
+        return typeof url === 'string' && url.includes('eliteprospects.com/games/h2h');
+      });
+
+      const matchedUrl = h2hResult?.url || h2hResult?.metadata?.sourceURL;
+      if (typeof matchedUrl === 'string' && matchedUrl.length > 0) {
+        h2hUrl = matchedUrl;
+        break;
+      }
+    }
+
+    if (!h2hUrl) {
+      console.log('[EliteProspects] No H2H URL found from search');
+      return [];
+    }
+
+    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${firecrawlApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query,
-        limit: 3,
-        scrapeOptions: { formats: ['markdown'] },
+        url: h2hUrl,
+        formats: ['markdown'],
+        onlyMainContent: false,
       }),
     });
 
-    if (!response.ok) {
-      console.log(`[EliteProspects] Search failed: ${response.status}`);
+    if (!scrapeResponse.ok) {
+      console.log(`[EliteProspects] Scrape failed: ${scrapeResponse.status}`);
       return [];
     }
 
-    const searchData = await response.json();
-    const results = searchData?.data || [];
-    
-    // Find the H2H page result
-    const h2hResult = results.find((r: any) => {
-      const url = r?.url || r?.metadata?.sourceURL || '';
-      return url.includes('eliteprospects.com/games/h2h');
-    });
+    const scrapeData = await scrapeResponse.json();
+    const markdown = scrapeData?.data?.markdown || scrapeData?.markdown || '';
 
-    const markdown = h2hResult?.markdown || results[0]?.markdown || '';
-    if (!markdown) return [];
+    if (!markdown) {
+      console.log('[EliteProspects] Scrape returned empty markdown');
+      return [];
+    }
 
+    console.log(`[EliteProspects] Using URL: ${h2hUrl}`);
     return parseEliteProspectsH2H(markdown, homeTeam, awayTeam, sport);
   } catch (e) {
     console.error('[EliteProspects] Error:', e);
