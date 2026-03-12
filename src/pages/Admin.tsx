@@ -481,6 +481,7 @@ const Admin = () => {
           <Tabs defaultValue="users" className="space-y-4">
             <TabsList>
               <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="free">Free Users</TabsTrigger>
               <TabsTrigger value="codes">Access Codes</TabsTrigger>
             </TabsList>
 
@@ -676,6 +677,60 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
+            <TabsContent value="free" className="space-y-4">
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle>Signed Up But Never Paid</CardTitle>
+                  <CardDescription>Users who created an account but have no active subscription or promo access.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  ) : (() => {
+                    const freeUsers = profiles.filter(p =>
+                      !p.has_access &&
+                      (!p.subscription_status || p.subscription_status === 'inactive') &&
+                      !p.promo_used &&
+                      !p.stripe_customer_id
+                    );
+                    return (
+                      <div className="rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Signed Up</TableHead>
+                              <TableHead>User ID</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {freeUsers.map((profile) => (
+                              <TableRow key={profile.id}>
+                                <TableCell className="font-medium">{profile.email || 'N/A'}</TableCell>
+                                <TableCell className="text-muted-foreground">{formatDate(profile.created_at, true)}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">{profile.user_id}</TableCell>
+                              </TableRow>
+                            ))}
+                            {freeUsers.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
+                                  All users have subscriptions or promo access
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                        <div className="px-4 py-2 border-t text-sm text-muted-foreground">
+                          {freeUsers.length} free user{freeUsers.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            </TabsContent>
             <TabsContent value="codes" className="space-y-4">
               <Card variant="glass">
                 <CardHeader>
