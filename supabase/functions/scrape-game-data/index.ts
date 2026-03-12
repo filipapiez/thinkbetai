@@ -245,6 +245,7 @@ Deno.serve(async (req) => {
 
     // Always fetch ESPN data in parallel as a reliable supplement
     const espnDataPromise = fetchEspnRecentGames(homeTeam, awayTeam, sport);
+    const prioritizeEliteProspects = shouldPrioritizeEliteProspectsH2H(sport);
 
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
@@ -258,7 +259,11 @@ Deno.serve(async (req) => {
       const trendsQuery = `${homeTeam} ${awayTeam} ATS record over under betting trends ${currentYear} site:covers.com OR site:teamrankings.com OR site:actionnetwork.com`;
       const venueQuery = `${homeTeam} ${awayTeam} venue stadium weather forecast ${currentYear}`;
 
-      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse, statsResponse, trendsResponse, venueResponse, espnData] = await Promise.all([
+      const eliteProspectsPromise = prioritizeEliteProspects
+        ? fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport)
+        : Promise.resolve([] as ScrapedGameData['headToHead']);
+
+      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse, statsResponse, trendsResponse, venueResponse, espnData, eliteProspectsH2H] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
         searchFirecrawl(firecrawlApiKey, formQuery),
         searchFirecrawl(firecrawlApiKey, awayFormQuery),
@@ -267,6 +272,7 @@ Deno.serve(async (req) => {
         searchFirecrawl(firecrawlApiKey, trendsQuery),
         searchFirecrawl(firecrawlApiKey, venueQuery),
         espnDataPromise,
+        eliteProspectsPromise,
       ]);
 
       // Prefer Gemini extraction from sources when available
@@ -290,12 +296,21 @@ Deno.serve(async (req) => {
         if (extracted) {
           // Supplement with ESPN data if AI extraction has gaps
           const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
-          
-          // If H2H still empty, try EliteProspects as fallback
-          if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+
+          // Hockey/international-first flow: force EliteProspects as primary H2H source when available
+          if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
+            supplemented.headToHead = eliteProspectsH2H.slice(0, 20);
+            supplemented.headToHeadMeta = {
+              limitedData: eliteProspectsH2H.length < 3,
+              validMatchCount: eliteProspectsH2H.length,
+              message: eliteProspectsH2H.length < 3 ? 'Limited H2H data available.' : undefined,
+            };
+            console.log(`[EliteProspects Priority] Using ${eliteProspectsH2H.length} H2H matches`);
+          } else if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+            // Fallback for non-priority sports or if priority lookup failed
             const epH2H = await fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport);
             if (epH2H.length > 0) {
-              supplemented.headToHead = epH2H.slice(0, 10);
+              supplemented.headToHead = epH2H.slice(0, 20);
               supplemented.headToHeadMeta = {
                 limitedData: epH2H.length < 3,
                 validMatchCount: epH2H.length,
@@ -304,7 +319,7 @@ Deno.serve(async (req) => {
               console.log(`[EliteProspects Fallback] Added ${epH2H.length} H2H matches`);
             }
           }
-          
+
           console.log('Successfully extracted matchup data via Gemini (source-grounded)');
           return new Response(
             JSON.stringify({ success: true, data: supplemented, source: 'ai-research' }),
@@ -326,20 +341,29 @@ Deno.serve(async (req) => {
 
       // Supplement with ESPN data
       const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam);
-      
-      // If H2H still empty, try EliteProspects as fallback
-      if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+
+      // Hockey/international-first flow: force EliteProspects as primary H2H source when available
+      if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
+        supplemented.headToHead = eliteProspectsH2H.slice(0, 20);
+        supplemented.headToHeadMeta = {
+          limitedData: eliteProspectsH2H.length < 3,
+          validMatchCount: eliteProspectsH2H.length,
+          message: eliteProspectsH2H.length < 3 ? 'Limited H2H data available.' : undefined,
+        };
+        console.log(`[EliteProspects Priority] Using ${eliteProspectsH2H.length} H2H matches (scraped path)`);
+      } else if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
         const epH2H = await fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport);
         if (epH2H.length > 0) {
-          supplemented.headToHead = epH2H.slice(0, 10);
+          supplemented.headToHead = epH2H.slice(0, 20);
           supplemented.headToHeadMeta = {
             limitedData: epH2H.length < 3,
             validMatchCount: epH2H.length,
+            message: epH2H.length < 3 ? 'Limited H2H data available.' : undefined,
           };
           console.log(`[EliteProspects Fallback] Added ${epH2H.length} H2H matches (scraped path)`);
         }
       }
-      
+
       return new Response(
         JSON.stringify({ success: true, data: supplemented, source: 'scraped' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
