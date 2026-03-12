@@ -60,7 +60,7 @@ export const TeamStatsCard = ({ teamStats, keyStats, homeTeam, awayTeam }: TeamS
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Win%: {((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0)}%
+                      Win%: {(stats.wins + stats.losses) > 0 ? ((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(0) : 0}%
                     </div>
                   </>
                 ) : (
