@@ -228,12 +228,10 @@ const Index = () => {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-16 md:py-28">
-          {/* Background Effects */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 rounded-full blur-3xl opacity-60" />
-            <div className="absolute top-1/3 -left-1/4 w-[400px] h-[400px] bg-accent/10 rounded-full blur-2xl" />
-            <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-2xl" />
+        <section className="relative overflow-hidden py-16 md:py-28" style={{ contain: 'layout style paint' }}>
+          {/* Background Effects - simplified for CWV (no blur on mobile) */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/15 rounded-full opacity-60 hidden md:block md:blur-3xl" />
           </div>
 
           <div className="container relative">
