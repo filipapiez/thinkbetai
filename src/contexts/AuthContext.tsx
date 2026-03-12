@@ -109,6 +109,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    const clearLoading = () => {
+      if (mounted) {
+        setIsLoading(false);
+      }
+    };
+
     const setAuthState = (nextSession: Session | null) => {
       if (!mounted) return;
 
@@ -128,17 +134,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     };
 
-    // Initial auth restore with a timeout-bound profile fetch to avoid indefinite loading.
-    void supabase.auth
-      .getSession()
-      .then(async ({ data: { session } }) => {
-        setAuthState(session);
+    const loadingSafetyTimer = setTimeout(() => {
+      console.warn('Auth loading safety timeout reached. Releasing loading state.');
+      clearLoading();
+    }, 6000);
 
-        if (session?.user) {
-          const profileData = await fetchProfileWithTimeout(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      // Initial event is handled by getSessionWithTimeout below.
+      if (event === 'INITIAL_SESSION') return;
+
+      setAuthState(nextSession);
+
+      if (nextSession?.user) {
+        loadProfileInBackground(nextSession.user.id);
+      }
+
+      clearLoading();
+    });
+
+    void getSessionWithTimeout()
+      .then((restoredSession) => {
+        setAuthState(restoredSession);
+
+        if (restoredSession?.user) {
+          loadProfileInBackground(restoredSession.user.id);
         }
       })
       .catch((error) => {
@@ -146,28 +165,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAuthState(null);
       })
       .finally(() => {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        clearTimeout(loadingSafetyTimer);
+        clearLoading();
       });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Initial event is handled by getSession above.
-      if (event === 'INITIAL_SESSION') return;
-
-      setAuthState(session);
-
-      if (session?.user) {
-        loadProfileInBackground(session.user.id);
-      }
-
-      if (mounted) {
-        setIsLoading(false);
-      }
-    });
 
     return () => {
       mounted = false;
+      clearTimeout(loadingSafetyTimer);
       subscription.unsubscribe();
     };
   }, []);
