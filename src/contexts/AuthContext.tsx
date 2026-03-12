@@ -84,40 +84,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    let initialSessionHandled = false;
+    let mounted = true;
+    let profileFetched = false;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Don't set isLoading false until profile is fetched
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
-        } else {
-          setProfile(null);
-        }
-        // Only set loading false from listener after initial session is handled
-        if (initialSessionHandled) {
-          setIsLoading(false);
-        }
-      }
-    );
-
+    // Get initial session first, then listen for changes
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         const profileData = await fetchProfile(session.user.id);
-        setProfile(profileData);
+        if (mounted) setProfile(profileData);
       }
-      initialSessionHandled = true;
-      setIsLoading(false);
+      profileFetched = true;
+      if (mounted) setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Skip if initial load already fetched this profile
+          if (!profileFetched || event !== 'INITIAL_SESSION') {
+            const profileData = await fetchProfile(session.user.id);
+            if (mounted) setProfile(profileData);
+          }
+        } else {
+          setProfile(null);
+        }
+        if (profileFetched && mounted) {
+          setIsLoading(false);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true;
