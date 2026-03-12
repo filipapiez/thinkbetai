@@ -67,6 +67,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     ]);
   };
 
+  const getSessionWithTimeout = async (timeoutMs = 4000): Promise<Session | null> => {
+    try {
+      const sessionResult = await Promise.race([
+        supabase.auth.getSession(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth session restore timeout')), timeoutMs)
+        ),
+      ]);
+
+      return sessionResult.data.session ?? null;
+    } catch (error) {
+      console.error('Error restoring auth session:', error);
+      return null;
+    }
+  };
+
   const refreshProfile = async () => {
     if (user) {
       try {
