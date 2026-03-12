@@ -270,7 +270,7 @@ const Index = () => {
               </p>
 
               {/* Quick Value Props */}
-              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10 animate-slide-up" style={{ animationDelay: '150ms' }}>
+              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
                   Updated Every 5 Min
