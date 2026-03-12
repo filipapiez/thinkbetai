@@ -264,7 +264,7 @@ const Index = () => {
               </h1>
 
               {/* Subheadline */}
-              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto animate-slide-up leading-relaxed" style={{ animationDelay: '100ms' }}>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
                 AI analyzes <span className="text-foreground font-semibold">10,000+ data points</span> across NFL, NBA, UFC & 15+ sports 
                 to find <span className="text-primary font-semibold">high-value picks</span> — spreads, props, and parlays you'd never spot alone.
               </p>
