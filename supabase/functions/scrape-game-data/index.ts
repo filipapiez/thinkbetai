@@ -1176,3 +1176,192 @@ function getDateDaysAgo(days: number): string {
   date.setDate(date.getDate() - days);
   return date.toISOString().split('T')[0];
 }
+
+// ============================================================================
+// ESPN API INTEGRATION - Reliable recent game data supplement
+// ============================================================================
+
+const ESPN_SPORT_MAP: Record<string, { sport: string; league: string }> = {
+  nba: { sport: 'basketball', league: 'nba' },
+  nfl: { sport: 'football', league: 'nfl' },
+  mlb: { sport: 'baseball', league: 'mlb' },
+  nhl: { sport: 'hockey', league: 'nhl' },
+  ncaab: { sport: 'basketball', league: 'mens-college-basketball' },
+  ncaaf: { sport: 'football', league: 'college-football' },
+};
+
+interface EspnRecentGame {
+  opponent: string;
+  score: number;
+  opponentScore: number;
+  won: boolean;
+  date: string;
+}
+
+interface EspnSupplementData {
+  homeGames: EspnRecentGame[];
+  awayGames: EspnRecentGame[];
+}
+
+async function getEspnTeamId(sport: string, league: string, teamName: string): Promise<string | null> {
+  try {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams?limit=100`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const tn = teamName.toLowerCase().trim();
+    for (const entry of data.sports?.[0]?.leagues?.[0]?.teams || []) {
+      const team = entry.team;
+      if (!team?.displayName || !team?.id) continue;
+      const dn = team.displayName.toLowerCase();
+      const sn = (team.shortDisplayName || '').toLowerCase();
+      const nn = (team.nickname || '').toLowerCase();
+      const ab = (team.abbreviation || '').toLowerCase();
+      if (dn === tn || dn.includes(tn) || tn.includes(dn) || sn === tn || tn.includes(sn) || nn === tn || tn.includes(nn) || ab === tn) {
+        return team.id;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function getEspnTeamSchedule(sport: string, league: string, teamId: string, limit = 5): Promise<EspnRecentGame[]> {
+  try {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${teamId}/schedule`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    const events = data.events || [];
+    const completed: EspnRecentGame[] = [];
+    for (const event of [...events].reverse()) {
+      if (completed.length >= limit) break;
+      const comp = event.competitions?.[0];
+      if (!comp || comp.status?.type?.name !== 'STATUS_FINAL') continue;
+      const competitors = comp.competitors || [];
+      const teamComp = competitors.find((c: any) => c.id === teamId);
+      const oppComp = competitors.find((c: any) => c.id !== teamId);
+      if (!teamComp || !oppComp) continue;
+      const teamScore = parseInt(teamComp.score?.value || teamComp.score || '0');
+      const oppScore = parseInt(oppComp.score?.value || oppComp.score || '0');
+      completed.push({
+        opponent: oppComp.team?.displayName || 'Unknown',
+        score: teamScore,
+        opponentScore: oppScore,
+        won: teamComp.winner === true || teamScore > oppScore,
+        date: event.date ? new Date(event.date).toISOString().split('T')[0] : getDateDaysAgo(completed.length + 1),
+      });
+    }
+    return completed;
+  } catch {
+    return [];
+  }
+}
+
+async function fetchEspnRecentGames(homeTeam: string, awayTeam: string, sport: string): Promise<EspnSupplementData> {
+  const sportKey = normalizeSportKey(sport);
+  const espnConfig = ESPN_SPORT_MAP[sportKey];
+  if (!espnConfig) return { homeGames: [], awayGames: [] };
+
+  try {
+    const [homeId, awayId] = await Promise.all([
+      getEspnTeamId(espnConfig.sport, espnConfig.league, homeTeam),
+      getEspnTeamId(espnConfig.sport, espnConfig.league, awayTeam),
+    ]);
+
+    const [homeGames, awayGames] = await Promise.all([
+      homeId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, homeId, 5) : Promise.resolve([]),
+      awayId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, awayId, 5) : Promise.resolve([]),
+    ]);
+
+    console.log(`[ESPN] ${homeTeam}: ${homeGames.length} games, ${awayTeam}: ${awayGames.length} games`);
+    return { homeGames, awayGames };
+  } catch (e) {
+    console.error('[ESPN] Error fetching recent games:', e);
+    return { homeGames: [], awayGames: [] };
+  }
+}
+
+function espnGamesToRecentForm(games: EspnRecentGame[], teamName: string): ScrapedGameData['recentForm'][0] {
+  return {
+    team: teamName,
+    last5: games.slice(0, 5).map(g => ({
+      opponent: g.opponent,
+      result: g.won ? 'W' as const : 'L' as const,
+      score: `${g.score}-${g.opponentScore}`,
+      date: g.date,
+    })),
+    limitedData: games.length < 3,
+  };
+}
+
+function supplementWithEspnData(
+  data: ScrapedGameData,
+  espn: EspnSupplementData,
+  homeTeam: string,
+  awayTeam: string
+): ScrapedGameData {
+  const result = { ...data };
+
+  // Supplement recent form if AI extraction returned empty
+  const homeForm = data.recentForm.find(f => f.team.toLowerCase().includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(f.team.toLowerCase()));
+  const awayForm = data.recentForm.find(f => f.team.toLowerCase().includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(f.team.toLowerCase()));
+
+  const homeEmpty = !homeForm || homeForm.last5.length === 0;
+  const awayEmpty = !awayForm || awayForm.last5.length === 0;
+
+  if ((homeEmpty && espn.homeGames.length > 0) || (awayEmpty && espn.awayGames.length > 0)) {
+    const newForm: ScrapedGameData['recentForm'] = [];
+
+    if (homeEmpty && espn.homeGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(espn.homeGames, homeTeam));
+    } else if (homeForm) {
+      newForm.push(homeForm);
+    } else {
+      newForm.push({ team: homeTeam, last5: [], limitedData: true });
+    }
+
+    if (awayEmpty && espn.awayGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(espn.awayGames, awayTeam));
+    } else if (awayForm) {
+      newForm.push(awayForm);
+    } else {
+      newForm.push({ team: awayTeam, last5: [], limitedData: true });
+    }
+
+    result.recentForm = newForm;
+    console.log(`[ESPN Supplement] Filled recent form gaps: home=${homeEmpty && espn.homeGames.length > 0}, away=${awayEmpty && espn.awayGames.length > 0}`);
+  }
+
+  // Supplement head-to-head from ESPN schedule overlap
+  if (data.headToHead.length === 0 && (espn.homeGames.length > 0 || espn.awayGames.length > 0)) {
+    const h2hFromEspn: ScrapedGameData['headToHead'] = [];
+    
+    // Check if the home team's recent games include the away team (or vice versa)
+    for (const game of espn.homeGames) {
+      const oppName = game.opponent.toLowerCase();
+      if (oppName.includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(oppName)) {
+        h2hFromEspn.push({
+          date: game.date,
+          winner: game.won ? homeTeam : awayTeam,
+          score: `${game.score}-${game.opponentScore}`,
+          sport: normalizeSportKey(data.sportValidation?.sport || 'nba'),
+          competitionLevel: data.sportValidation?.competitionLevel || 'Professional',
+        });
+      }
+    }
+    
+    if (h2hFromEspn.length > 0) {
+      result.headToHead = h2hFromEspn.slice(0, 5);
+      result.headToHeadMeta = {
+        limitedData: h2hFromEspn.length < 3,
+        validMatchCount: h2hFromEspn.length,
+        message: h2hFromEspn.length < 3 ? 'Limited H2H data from recent schedule overlap.' : undefined,
+      };
+      console.log(`[ESPN Supplement] Found ${h2hFromEspn.length} H2H matches from schedule`);
+    }
+  }
+
+  return result;
+}
