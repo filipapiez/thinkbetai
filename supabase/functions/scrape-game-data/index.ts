@@ -1572,7 +1572,7 @@ function parseEliteProspectsH2H(
       competitionLevel: 'Professional',
     });
     
-    if (h2h.length >= 10) break;
+    if (h2h.length >= 20) break;
   }
   
   console.log(`[EliteProspects] Parsed ${h2h.length} H2H matches`);
