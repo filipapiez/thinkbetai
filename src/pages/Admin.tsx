@@ -731,8 +731,7 @@ const Admin = () => {
                 </CardContent>
               </Card>
             </TabsContent>
-
-
+            <TabsContent value="codes" className="space-y-4">
               <Card variant="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
