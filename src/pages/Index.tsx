@@ -372,10 +372,7 @@ const Index = () => {
         {/* How It Works - Interactive Demo */}
         <section className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
           {/* Background effects */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/4 -left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl animate-pulse-slow" />
-            <div className="absolute bottom-1/4 -right-1/4 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-          </div>
+          {/* Background effects removed for CWV performance */}
           
           <div className="container relative">
             <div className="text-center mb-12">
