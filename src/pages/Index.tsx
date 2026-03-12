@@ -304,7 +304,7 @@ const Index = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[...Array(4)].map((_, i) => (
