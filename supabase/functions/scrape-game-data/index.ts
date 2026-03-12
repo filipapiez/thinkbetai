@@ -243,11 +243,8 @@ Deno.serve(async (req) => {
 
     console.log(`Fetching game data: ${homeTeam} vs ${awayTeam} (${sport})`);
 
-    // We only return verified (source-grounded) data.
-    // Strategy:
-    // 1) Retrieve sources via Firecrawl (web search)
-    // 2) Use Gemini to extract structured data ONLY from those sources
-    // 3) If we can't verify, return empty/limited data (no simulation)
+    // Always fetch ESPN data in parallel as a reliable supplement
+    const espnDataPromise = fetchEspnRecentGames(homeTeam, awayTeam, sport);
 
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
@@ -261,7 +258,7 @@ Deno.serve(async (req) => {
       const trendsQuery = `${homeTeam} ${awayTeam} ATS record over under betting trends ${currentYear} site:covers.com OR site:teamrankings.com OR site:actionnetwork.com`;
       const venueQuery = `${homeTeam} ${awayTeam} venue stadium weather forecast ${currentYear}`;
 
-      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse, statsResponse, trendsResponse, venueResponse] = await Promise.all([
+      const [injuryResponse, formHomeResponse, formAwayResponse, h2hResponse, statsResponse, trendsResponse, venueResponse, espnData] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
         searchFirecrawl(firecrawlApiKey, formQuery),
         searchFirecrawl(firecrawlApiKey, awayFormQuery),
@@ -269,6 +266,7 @@ Deno.serve(async (req) => {
         searchFirecrawl(firecrawlApiKey, statsQuery),
         searchFirecrawl(firecrawlApiKey, trendsQuery),
         searchFirecrawl(firecrawlApiKey, venueQuery),
+        espnDataPromise,
       ]);
 
       // Prefer Gemini extraction from sources when available
@@ -290,9 +288,11 @@ Deno.serve(async (req) => {
         });
 
         if (extracted) {
+          // Supplement with ESPN data if AI extraction has gaps
+          const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
           console.log('Successfully extracted matchup data via Gemini (source-grounded)');
           return new Response(
-            JSON.stringify({ success: true, data: extracted, source: 'ai-research' }),
+            JSON.stringify({ success: true, data: supplemented, source: 'ai-research' }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -309,8 +309,10 @@ Deno.serve(async (req) => {
         sport
       );
 
+      // Supplement with ESPN data
+      const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam);
       return new Response(
-        JSON.stringify({ success: true, data: scrapedData, source: 'scraped' }),
+        JSON.stringify({ success: true, data: supplemented, source: 'scraped' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
