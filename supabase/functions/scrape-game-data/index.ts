@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
       const injuryQuery = `${homeTeam} ${awayTeam} injury report ${currentYear} ${sportValidation.competitionLevel}`;
       const formQuery = `${homeTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
       const awayFormQuery = `${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
-      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com`;
+      const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com OR site:eliteprospects.com`;
       const statsQuery = `${homeTeam} ${awayTeam} team stats standings ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:cbssports.com`;
       const trendsQuery = `${homeTeam} ${awayTeam} ATS record over under betting trends ${currentYear} site:covers.com OR site:teamrankings.com OR site:actionnetwork.com`;
       const venueQuery = `${homeTeam} ${awayTeam} venue stadium weather forecast ${currentYear}`;
@@ -290,6 +290,21 @@ Deno.serve(async (req) => {
         if (extracted) {
           // Supplement with ESPN data if AI extraction has gaps
           const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
+          
+          // If H2H still empty, try EliteProspects as fallback
+          if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+            const epH2H = await fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport);
+            if (epH2H.length > 0) {
+              supplemented.headToHead = epH2H.slice(0, 10);
+              supplemented.headToHeadMeta = {
+                limitedData: epH2H.length < 3,
+                validMatchCount: epH2H.length,
+                message: epH2H.length < 3 ? 'Limited H2H data available.' : undefined,
+              };
+              console.log(`[EliteProspects Fallback] Added ${epH2H.length} H2H matches`);
+            }
+          }
+          
           console.log('Successfully extracted matchup data via Gemini (source-grounded)');
           return new Response(
             JSON.stringify({ success: true, data: supplemented, source: 'ai-research' }),
@@ -311,6 +326,20 @@ Deno.serve(async (req) => {
 
       // Supplement with ESPN data
       const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam);
+      
+      // If H2H still empty, try EliteProspects as fallback
+      if (supplemented.headToHead.length === 0 && firecrawlApiKey) {
+        const epH2H = await fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport);
+        if (epH2H.length > 0) {
+          supplemented.headToHead = epH2H.slice(0, 10);
+          supplemented.headToHeadMeta = {
+            limitedData: epH2H.length < 3,
+            validMatchCount: epH2H.length,
+          };
+          console.log(`[EliteProspects Fallback] Added ${epH2H.length} H2H matches (scraped path)`);
+        }
+      }
+      
       return new Response(
         JSON.stringify({ success: true, data: supplemented, source: 'scraped' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -1364,4 +1393,118 @@ function supplementWithEspnData(
   }
 
   return result;
+}
+
+// --- EliteProspects H2H scraping for international hockey/sports ---
+async function fetchEliteProspectsH2H(
+  firecrawlApiKey: string,
+  homeTeam: string,
+  awayTeam: string,
+  sport: string
+): Promise<ScrapedGameData['headToHead']> {
+  try {
+    // Search EliteProspects for the H2H page
+    const query = `${homeTeam} vs ${awayTeam} head to head site:eliteprospects.com/games/h2h`;
+    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        limit: 3,
+        scrapeOptions: { formats: ['markdown'] },
+      }),
+    });
+
+    if (!response.ok) {
+      console.log(`[EliteProspects] Search failed: ${response.status}`);
+      return [];
+    }
+
+    const searchData = await response.json();
+    const results = searchData?.data || [];
+    
+    // Find the H2H page result
+    const h2hResult = results.find((r: any) => {
+      const url = r?.url || r?.metadata?.sourceURL || '';
+      return url.includes('eliteprospects.com/games/h2h');
+    });
+
+    const markdown = h2hResult?.markdown || results[0]?.markdown || '';
+    if (!markdown) return [];
+
+    return parseEliteProspectsH2H(markdown, homeTeam, awayTeam, sport);
+  } catch (e) {
+    console.error('[EliteProspects] Error:', e);
+    return [];
+  }
+}
+
+function parseEliteProspectsH2H(
+  markdown: string,
+  homeTeam: string,
+  awayTeam: string,
+  sport: string
+): ScrapedGameData['headToHead'] {
+  const h2h: ScrapedGameData['headToHead'] = [];
+  
+  // Parse markdown table rows: | date | home | visiting | score | league |
+  const lines = markdown.split('\n');
+  
+  for (const line of lines) {
+    if (!line.startsWith('|') || line.includes('---')) continue;
+    
+    const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+    if (cells.length < 4) continue;
+    
+    // Skip header row
+    if (cells[0].toLowerCase() === 'date') continue;
+    
+    const dateCell = cells[0];
+    const scoreCell = cells[3];
+    
+    // Skip games without scores (upcoming)
+    if (!scoreCell || scoreCell === '-' || scoreCell === '') continue;
+    
+    // Extract score like "8 - 2" or "[8 \- 2](url)"
+    const scoreMatch = scoreCell.match(/(\d+)\s*(?:\\)?-\s*(\d+)/);
+    if (!scoreMatch) continue;
+    
+    const homeScore = parseInt(scoreMatch[1]);
+    const awayScore = parseInt(scoreMatch[2]);
+    
+    // Extract team names from cells (they contain markdown links/images)
+    const homeTeamCell = cells[1];
+    const awayTeamCell = cells[2];
+    
+    // Get clean team names from markdown: ![Team](url)[Team](url) -> Team
+    const extractName = (cell: string) => {
+      const linkMatch = cell.match(/\]\(https?:\/\/[^)]+\)\s*$/);
+      const nameMatch = cell.match(/\[([^\]]+)\]\([^)]+\)\s*$/);
+      return nameMatch ? nameMatch[1] : cell.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[[^\]]*\]\([^)]*\)/g, '').trim();
+    };
+    
+    const homeTeamName = extractName(homeTeamCell);
+    const awayTeamName = extractName(awayTeamCell);
+    const winner = homeScore > awayScore ? homeTeamName : awayTeamName;
+    
+    // Extract date (format: MM/DD/YYYYhh:mm ... )
+    const dateMatch = dateCell.match(/(\d{2}\/\d{2}\/\d{4})/);
+    const dateStr = dateMatch ? dateMatch[1] : dateCell.slice(0, 10);
+    
+    h2h.push({
+      date: dateStr,
+      winner,
+      score: `${homeScore}-${awayScore}`,
+      sport: normalizeSportKey(sport),
+      competitionLevel: 'Professional',
+    });
+    
+    if (h2h.length >= 10) break;
+  }
+  
+  console.log(`[EliteProspects] Parsed ${h2h.length} H2H matches`);
+  return h2h;
 }
