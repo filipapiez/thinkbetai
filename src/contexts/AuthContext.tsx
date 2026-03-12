@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -41,14 +41,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
-      
+
       if (error) {
         console.error('Error fetching profile:', error);
         return null;
@@ -58,123 +58,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error fetching profile:', error);
       return null;
     }
-  };
+  }, []);
 
-  const fetchProfileWithTimeout = async (userId: string, timeoutMs = 6000) => {
-    return Promise.race<Profile | null>([
-      fetchProfile(userId),
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
-    ]);
-  };
-
-  const getSessionWithTimeout = async (timeoutMs = 4000): Promise<Session | null> => {
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
     try {
-      const sessionResult = await Promise.race([
-        supabase.auth.getSession(),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Auth session restore timeout')), timeoutMs)
-        ),
-      ]);
-
-      return sessionResult.data.session ?? null;
-    } catch (error) {
-      console.error('Error restoring auth session:', error);
-      return null;
+      await supabase.functions.invoke('check-subscription');
+    } catch (err) {
+      console.error('Error invoking check-subscription:', err);
     }
-  };
+    const updatedProfile = await fetchProfile(user.id);
+    setProfile(updatedProfile);
+  }, [user, fetchProfile]);
 
-  const refreshProfile = async () => {
-    if (user) {
-      try {
-        const { error } = await supabase.functions.invoke('check-subscription');
-        if (error) {
-          console.error('Error checking subscription:', error);
-        }
-      } catch (err) {
-        console.error('Error invoking check-subscription:', err);
-      }
-      
-      const updatedProfile = await fetchProfileWithTimeout(user.id);
-      setProfile(updatedProfile);
-    }
-  };
-
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
-  };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    const clearLoading = () => {
-      if (mounted) {
-        setIsLoading(false);
-      }
-    };
-
-    const setAuthState = (nextSession: Session | null) => {
+    // 1. Restore session from storage first — this is the synchronous/fast path
+    supabase.auth.getSession().then(({ data: { session: restoredSession } }) => {
       if (!mounted) return;
+      setSession(restoredSession);
+      setUser(restoredSession?.user ?? null);
 
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-
-      if (!nextSession?.user) {
-        setProfile(null);
-      }
-    };
-
-    const loadProfileInBackground = (userId: string) => {
-      void fetchProfileWithTimeout(userId).then((profileData) => {
-        if (mounted) {
-          setProfile(profileData);
-        }
-      });
-    };
-
-    const loadingSafetyTimer = setTimeout(() => {
-      console.warn('Auth loading safety timeout reached. Releasing loading state.');
-      clearLoading();
-    }, 6000);
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      // Initial event is handled by getSessionWithTimeout below.
-      if (event === 'INITIAL_SESSION') return;
-
-      setAuthState(nextSession);
-
-      if (nextSession?.user) {
-        loadProfileInBackground(nextSession.user.id);
+      if (restoredSession?.user) {
+        // Fire-and-forget profile load — don't block isLoading on it
+        fetchProfile(restoredSession.user.id).then((p) => {
+          if (mounted) setProfile(p);
+        });
       }
 
-      clearLoading();
+      // Auth is ready — unblock the UI
+      setIsLoading(false);
+    }).catch(() => {
+      if (mounted) setIsLoading(false);
     });
 
-    void getSessionWithTimeout()
-      .then((restoredSession) => {
-        setAuthState(restoredSession);
+    // 2. Listen for subsequent auth changes (sign-in, sign-out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, nextSession) => {
+        if (!mounted) return;
 
-        if (restoredSession?.user) {
-          loadProfileInBackground(restoredSession.user.id);
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+
+        if (nextSession?.user) {
+          fetchProfile(nextSession.user.id).then((p) => {
+            if (mounted) setProfile(p);
+          });
+        } else {
+          setProfile(null);
         }
-      })
-      .catch((error) => {
-        console.error('Error restoring auth session:', error);
-        setAuthState(null);
-      })
-      .finally(() => {
-        clearTimeout(loadingSafetyTimer);
-        clearLoading();
-      });
+      }
+    );
 
     return () => {
       mounted = false;
-      clearTimeout(loadingSafetyTimer);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   const isSubscribed = profile?.subscription_status === 'active' || profile?.has_access === true;
 
