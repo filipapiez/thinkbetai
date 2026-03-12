@@ -481,6 +481,7 @@ const Admin = () => {
           <Tabs defaultValue="users" className="space-y-4">
             <TabsList>
               <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="free">Free Users</TabsTrigger>
               <TabsTrigger value="codes">Access Codes</TabsTrigger>
             </TabsList>
 
