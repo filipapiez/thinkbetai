@@ -35,12 +35,8 @@ const PlayerProps = () => {
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
 
-  const overStats = useWinRate('Over');
-  const underStats = useWinRate('Under');
-  const totalGames = overStats.totalBets + underStats.totalBets;
-  const winsCount = overStats.wins + underStats.wins;
-  const lossesCount = overStats.losses + underStats.losses;
-  const wr = totalGames > 0 ? Math.round((winsCount / totalGames) * 100) : 0;
+  const { winRate, totalBets: totalGames, wins: winsCount, losses: lossesCount } = useWinRate();
+  const wr = parseFloat(winRate) || 0;
 
   const availableStats = useMemo(
     () => [...new Set(props.map(p => p.statType))].sort(),
