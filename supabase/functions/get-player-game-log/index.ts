@@ -321,7 +321,7 @@ Deno.serve(async (req) => {
     const hitCount = results.filter(Boolean).length;
 
     // Cache the stat values (not the line-specific results)
-    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase
       .from('odds_cache')
       .upsert({
