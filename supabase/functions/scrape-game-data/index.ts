@@ -851,7 +851,7 @@ async function searchFirecrawl(apiKey: string, query: string): Promise<any> {
       },
       body: JSON.stringify({
         query,
-        limit: 8,
+        limit: 4,
         scrapeOptions: { formats: ['markdown'] },
       }),
     });
