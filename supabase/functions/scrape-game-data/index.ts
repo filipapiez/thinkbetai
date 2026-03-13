@@ -267,14 +267,13 @@ Deno.serve(async (req) => {
     const espnDataPromise = fetchEspnRecentGames(homeTeam, awayTeam, sport);
     const prioritizeEliteProspects = shouldPrioritizeEliteProspectsH2H(sport);
 
+    // Fetch Odds API scores FIRST (free, no Firecrawl credits)
+    const oddsApiScoresPromise = fetchOddsAPIScores(homeTeam, awayTeam, sport);
+
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
 
       const currentYear = new Date().getFullYear();
-      // OPTIMIZED: Reduced from 7 Firecrawl searches to 3
-      // - Dropped statsQuery (ESPN provides standings data)
-      // - Dropped venueQuery (AI generates from knowledge)
-      // - Combined home+away form into single query
       const injuryQuery = `${homeTeam} ${awayTeam} injury report ${currentYear} ${sportValidation.competitionLevel}`;
       const formQuery = `${homeTeam} ${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
       const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com OR site:eliteprospects.com`;
@@ -284,10 +283,21 @@ Deno.serve(async (req) => {
         ? fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport)
         : Promise.resolve([] as ScrapedGameData['headToHead']);
 
-      // 3 Firecrawl searches instead of 7 (saves ~57% credits per unique game view)
+      // First: resolve Odds API scores (0 Firecrawl credits)
+      const oddsApiScores = await oddsApiScoresPromise;
+      const hasOddsAPIForm = oddsApiScores.homeGames.length >= 3 || oddsApiScores.awayGames.length >= 3;
+
+      // Only use Firecrawl formQuery if Odds API returned no data (saves ~4 credits per view)
+      const formPromise = hasOddsAPIForm
+        ? Promise.resolve(null)
+        : searchFirecrawl(firecrawlApiKey, formQuery);
+
+      console.log(`[Odds API Scores] home=${oddsApiScores.homeGames.length}, away=${oddsApiScores.awayGames.length} — Firecrawl form search ${hasOddsAPIForm ? 'SKIPPED (saved ~4 credits)' : 'needed'}`);
+
+      // 2-3 Firecrawl searches (form skipped when Odds API has scores)
       const [injuryResponse, formResponse, h2hResponse, trendsResponse, espnData, eliteProspectsH2H] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
-        searchFirecrawl(firecrawlApiKey, formQuery),
+        formPromise,
         searchFirecrawl(firecrawlApiKey, h2hQuery),
         searchFirecrawl(firecrawlApiKey, trendsQuery),
         espnDataPromise,
@@ -329,7 +339,7 @@ Deno.serve(async (req) => {
 
         if (extracted) {
           // Supplement with ESPN data if AI extraction has gaps
-          const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
+          const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam, oddsApiScores);
 
           // Hockey/international-first flow: force EliteProspects as primary H2H source when available
           if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
@@ -369,7 +379,7 @@ Deno.serve(async (req) => {
       );
 
       // Supplement with ESPN data
-      const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam);
+      const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam, oddsApiScores);
 
       // Hockey/international-first flow
       if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
@@ -1379,21 +1389,26 @@ function supplementWithEspnData(
   data: ScrapedGameData,
   espn: EspnSupplementData,
   homeTeam: string,
-  awayTeam: string
+  awayTeam: string,
+  oddsApiScores?: OddsAPIScoresData
 ): ScrapedGameData {
   const result = { ...data };
 
-  // Supplement recent form if AI extraction returned empty
+  // Supplement recent form: priority = Odds API Scores > ESPN > AI extraction
   const homeForm = data.recentForm.find(f => f.team.toLowerCase().includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(f.team.toLowerCase()));
   const awayForm = data.recentForm.find(f => f.team.toLowerCase().includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(f.team.toLowerCase()));
 
   const homeEmpty = !homeForm || homeForm.last5.length === 0;
   const awayEmpty = !awayForm || awayForm.last5.length === 0;
 
-  if ((homeEmpty && espn.homeGames.length > 0) || (awayEmpty && espn.awayGames.length > 0)) {
+  if (homeEmpty || awayEmpty) {
     const newForm: ScrapedGameData['recentForm'] = [];
 
-    if (homeEmpty && espn.homeGames.length > 0) {
+    // Home team form
+    if (homeEmpty && oddsApiScores && oddsApiScores.homeGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(oddsApiScores.homeGames, homeTeam));
+      console.log(`[Odds API] Filled home recent form: ${oddsApiScores.homeGames.length} games`);
+    } else if (homeEmpty && espn.homeGames.length > 0) {
       newForm.push(espnGamesToRecentForm(espn.homeGames, homeTeam));
     } else if (homeForm) {
       newForm.push(homeForm);
@@ -1401,7 +1416,11 @@ function supplementWithEspnData(
       newForm.push({ team: homeTeam, last5: [], limitedData: true });
     }
 
-    if (awayEmpty && espn.awayGames.length > 0) {
+    // Away team form
+    if (awayEmpty && oddsApiScores && oddsApiScores.awayGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(oddsApiScores.awayGames, awayTeam));
+      console.log(`[Odds API] Filled away recent form: ${oddsApiScores.awayGames.length} games`);
+    } else if (awayEmpty && espn.awayGames.length > 0) {
       newForm.push(espnGamesToRecentForm(espn.awayGames, awayTeam));
     } else if (awayForm) {
       newForm.push(awayForm);
@@ -1410,14 +1429,12 @@ function supplementWithEspnData(
     }
 
     result.recentForm = newForm;
-    console.log(`[ESPN Supplement] Filled recent form gaps: home=${homeEmpty && espn.homeGames.length > 0}, away=${awayEmpty && espn.awayGames.length > 0}`);
   }
 
   // Supplement head-to-head from ESPN schedule overlap
   if (data.headToHead.length === 0 && (espn.homeGames.length > 0 || espn.awayGames.length > 0)) {
     const h2hFromEspn: ScrapedGameData['headToHead'] = [];
     
-    // Check if the home team's recent games include the away team (or vice versa)
     for (const game of espn.homeGames) {
       const oppName = game.opponent.toLowerCase();
       if (oppName.includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(oppName)) {
@@ -1603,4 +1620,122 @@ function parseEliteProspectsH2H(
   
   console.log(`[EliteProspects] Parsed ${h2h.length} H2H matches`);
   return h2h;
+}
+
+// ============================================================================
+// THE ODDS API SCORES - Free recent form data (no Firecrawl credits)
+// ============================================================================
+
+const ODDS_API_SPORT_MAP: Record<string, string> = {
+  nba: 'basketball_nba',
+  nfl: 'americanfootball_nfl',
+  mlb: 'baseball_mlb',
+  nhl: 'icehockey_nhl',
+  ncaab: 'basketball_ncaab',
+  ncaaf: 'americanfootball_ncaaf',
+  soccer: 'soccer_epl',
+  mma: 'mma_mixed_martial_arts',
+};
+
+interface OddsAPIScoresData {
+  homeGames: EspnRecentGame[];
+  awayGames: EspnRecentGame[];
+}
+
+async function fetchOddsAPIScores(
+  homeTeam: string,
+  awayTeam: string,
+  sport: string
+): Promise<OddsAPIScoresData> {
+  const empty: OddsAPIScoresData = { homeGames: [], awayGames: [] };
+
+  try {
+    const apiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (!apiKey) return empty;
+
+    const sportKey = normalizeSportKey(sport);
+    const oddsApiSport = ODDS_API_SPORT_MAP[sportKey];
+    if (!oddsApiSport) return empty;
+
+    // Fetch completed games from the last 3 days
+    const url = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/scores/?apiKey=${apiKey}&daysFrom=3&dateFormat=iso`;
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      console.error(`[Odds API Scores] HTTP ${res.status}`);
+      return empty;
+    }
+
+    const games = await res.json();
+    if (!Array.isArray(games)) return empty;
+
+    const fuzzyMatch = (teamName: string, candidate: string): boolean => {
+      const a = teamName.toLowerCase().trim();
+      const b = candidate.toLowerCase().trim();
+      return a === b || a.includes(b) || b.includes(a);
+    };
+
+    const homeGames: EspnRecentGame[] = [];
+    const awayGames: EspnRecentGame[] = [];
+
+    for (const game of games) {
+      if (!game.completed || !game.scores || game.scores.length < 2) continue;
+
+      const homeScoreEntry = game.scores.find((s: any) => s.name === game.home_team);
+      const awayScoreEntry = game.scores.find((s: any) => s.name === game.away_team);
+      if (!homeScoreEntry || !awayScoreEntry) continue;
+
+      const hScore = parseInt(homeScoreEntry.score);
+      const aScore = parseInt(awayScoreEntry.score);
+      if (isNaN(hScore) || isNaN(aScore)) continue;
+
+      const gameDate = game.commence_time
+        ? new Date(game.commence_time).toISOString().split('T')[0]
+        : '';
+
+      // Check if home team played in this game
+      if (fuzzyMatch(homeTeam, game.home_team)) {
+        homeGames.push({
+          opponent: game.away_team,
+          score: hScore,
+          opponentScore: aScore,
+          won: hScore > aScore,
+          date: gameDate,
+        });
+      } else if (fuzzyMatch(homeTeam, game.away_team)) {
+        homeGames.push({
+          opponent: game.home_team,
+          score: aScore,
+          opponentScore: hScore,
+          won: aScore > hScore,
+          date: gameDate,
+        });
+      }
+
+      // Check if away team played in this game
+      if (fuzzyMatch(awayTeam, game.home_team)) {
+        awayGames.push({
+          opponent: game.away_team,
+          score: hScore,
+          opponentScore: aScore,
+          won: hScore > aScore,
+          date: gameDate,
+        });
+      } else if (fuzzyMatch(awayTeam, game.away_team)) {
+        awayGames.push({
+          opponent: game.home_team,
+          score: aScore,
+          opponentScore: hScore,
+          won: aScore > hScore,
+          date: gameDate,
+        });
+      }
+    }
+
+    console.log(`[Odds API Scores] ${homeTeam}: ${homeGames.length} games, ${awayTeam}: ${awayGames.length} games`);
+    return { homeGames: homeGames.slice(0, 5), awayGames: awayGames.slice(0, 5) };
+  } catch (e) {
+    console.error('[Odds API Scores] Error:', e);
+    return empty;
+  }
 }
