@@ -12,7 +12,7 @@ import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown } from 'lucide-r
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
-import { useWinRate } from '@/hooks/useWinRate';
+
 
 const SPORT_FILTERS = [
   { value: 'all', label: 'All Sports' },
