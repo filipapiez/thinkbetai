@@ -54,18 +54,34 @@ Deno.serve(async (req: Request) => {
 
   // The Odds API sport keys
   const oddsApiSportMap: Record<string, string[]> = {
-    all: ["basketball_nba", "americanfootball_nfl", "baseball_mlb", "icehockey_nhl"],
-    basketball: ["basketball_nba"],
-    football: ["americanfootball_nfl"],
+    all: [
+      "basketball_nba", "basketball_ncaab",
+      "americanfootball_nfl", "americanfootball_ncaaf",
+      "baseball_mlb",
+      "icehockey_nhl",
+      "soccer_epl", "soccer_usa_mls",
+      "tennis_atp_french_open", "tennis_atp_us_open", "tennis_atp_wimbledon", "tennis_atp_australian_open",
+      "mma_mixed_martial_arts",
+    ],
+    basketball: ["basketball_nba", "basketball_ncaab"],
+    football: ["americanfootball_nfl", "americanfootball_ncaaf"],
     baseball: ["baseball_mlb"],
     hockey: ["icehockey_nhl"],
+    soccer: ["soccer_epl", "soccer_usa_mls"],
+    tennis: ["tennis_atp_french_open", "tennis_atp_us_open", "tennis_atp_wimbledon", "tennis_atp_australian_open"],
+    mma: ["mma_mixed_martial_arts"],
   };
 
   const propMarkets: Record<string, string[]> = {
-    basketball_nba: ["player_points", "player_rebounds", "player_assists", "player_threes", "player_blocks", "player_steals", "player_turnovers", "player_points_rebounds_assists", "player_points_rebounds", "player_points_assists", "player_rebounds_assists", "player_double_double", "player_first_td"],
+    basketball_nba: ["player_points", "player_rebounds", "player_assists", "player_threes", "player_blocks", "player_steals", "player_turnovers", "player_points_rebounds_assists", "player_points_rebounds", "player_points_assists", "player_rebounds_assists", "player_double_double"],
+    basketball_ncaab: ["player_points", "player_rebounds", "player_assists", "player_threes", "player_blocks", "player_steals", "player_points_rebounds_assists"],
     americanfootball_nfl: ["player_pass_yds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_pass_tds", "player_rush_attempts", "player_pass_completions", "player_pass_attempts", "player_interceptions", "player_anytime_td", "player_first_td", "player_kicking_points"],
+    americanfootball_ncaaf: ["player_pass_yds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_pass_tds", "player_anytime_td"],
     baseball_mlb: ["pitcher_strikeouts", "batter_hits", "batter_total_bases", "batter_rbis", "batter_runs_scored", "batter_stolen_bases", "pitcher_outs", "batter_home_runs", "batter_walks"],
     icehockey_nhl: ["player_points", "player_goals", "player_assists", "player_shots_on_goal", "player_blocked_shots", "player_power_play_points"],
+    soccer_epl: ["player_goals", "player_assists", "player_shots_on_goal"],
+    soccer_usa_mls: ["player_goals", "player_assists", "player_shots_on_goal"],
+    mma_mixed_martial_arts: ["player_points"],
   };
 
   const marketToStat: Record<string, string> = {
