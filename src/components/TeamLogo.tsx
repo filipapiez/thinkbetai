@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { getTeamLogoUrl, sportSupportsLogos, isCombatSportForLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
+import { useTeamLogo } from '@/hooks/useTeamLogo';
+import { isCombatSportForLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
 
 interface TeamLogoProps {
   teamName: string;
@@ -35,11 +36,9 @@ export const TeamLogo = ({
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  const logoUrl = getTeamLogoUrl(teamName, sport);
-  const supportsLogos = sportSupportsLogos(sport);
+  const { logoUrl, loading } = useTeamLogo(teamName, sport);
   const isIndividual = isIndividualSportForLogos(sport);
-  const hasLogo = logoUrl && supportsLogos && !isIndividual;
-  const showImage = hasLogo && !imageError;
+  const showImage = logoUrl && !imageError && !isIndividual;
   
   const teamColor = getTeamColor(teamName);
 
