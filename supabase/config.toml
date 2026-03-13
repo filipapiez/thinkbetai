@@ -101,3 +101,6 @@ verify_jwt = false
 
 [functions.get-odds-history]
 verify_jwt = false
+
+[functions.get-team-logo]
+verify_jwt = false
