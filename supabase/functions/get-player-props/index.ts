@@ -168,7 +168,7 @@ Deno.serve(async (req: Request) => {
         // Step 2: Fetch player props for up to 5 events (to stay within quota)
         const markets = propMarkets[sportKey] || [];
         const marketsStr = markets.join(",");
-        const eventsToFetch = events.slice(0, 12);
+        const eventsToFetch = events.slice(0, 25);
 
         for (let i = 0; i < eventsToFetch.length; i++) {
           const ev = eventsToFetch[i];
