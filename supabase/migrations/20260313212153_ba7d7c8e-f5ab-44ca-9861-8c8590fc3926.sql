@@ -1,0 +1,1 @@
+DROP POLICY "Service role can manage team logos" ON public.team_logos_cache;
