@@ -62,10 +62,10 @@ Deno.serve(async (req: Request) => {
   };
 
   const propMarkets: Record<string, string[]> = {
-    basketball_nba: ["player_points", "player_rebounds", "player_assists", "player_threes"],
-    americanfootball_nfl: ["player_pass_yds", "player_rush_yds", "player_reception_yds", "player_receptions"],
-    baseball_mlb: ["pitcher_strikeouts", "batter_hits", "batter_total_bases"],
-    icehockey_nhl: ["player_points", "player_goals", "player_assists", "player_shots_on_goal"],
+    basketball_nba: ["player_points", "player_rebounds", "player_assists", "player_threes", "player_blocks", "player_steals", "player_turnovers", "player_points_rebounds_assists", "player_points_rebounds", "player_points_assists", "player_rebounds_assists", "player_double_double", "player_first_td"],
+    americanfootball_nfl: ["player_pass_yds", "player_rush_yds", "player_reception_yds", "player_receptions", "player_pass_tds", "player_rush_attempts", "player_pass_completions", "player_pass_attempts", "player_interceptions", "player_anytime_td", "player_first_td", "player_kicking_points"],
+    baseball_mlb: ["pitcher_strikeouts", "batter_hits", "batter_total_bases", "batter_rbis", "batter_runs_scored", "batter_stolen_bases", "pitcher_outs", "batter_home_runs", "batter_walks"],
+    icehockey_nhl: ["player_points", "player_goals", "player_assists", "player_shots_on_goal", "player_blocked_shots", "player_power_play_points"],
   };
 
   const marketToStat: Record<string, string> = {
@@ -73,15 +73,39 @@ Deno.serve(async (req: Request) => {
     player_rebounds: "Rebounds",
     player_assists: "Assists",
     player_threes: "3-Pointers",
+    player_blocks: "Blocks",
+    player_steals: "Steals",
+    player_turnovers: "Turnovers",
+    player_points_rebounds_assists: "Pts+Reb+Ast",
+    player_points_rebounds: "Pts+Reb",
+    player_points_assists: "Pts+Ast",
+    player_rebounds_assists: "Reb+Ast",
+    player_double_double: "Double-Double",
     player_pass_yds: "Pass Yards",
     player_rush_yds: "Rush Yards",
     player_reception_yds: "Rec Yards",
     player_receptions: "Receptions",
+    player_pass_tds: "Pass TDs",
+    player_rush_attempts: "Rush Attempts",
+    player_pass_completions: "Completions",
+    player_pass_attempts: "Pass Attempts",
+    player_interceptions: "Interceptions",
+    player_anytime_td: "Anytime TD",
+    player_first_td: "First TD",
+    player_kicking_points: "Kicking Pts",
     pitcher_strikeouts: "Strikeouts",
     batter_hits: "Hits",
     batter_total_bases: "Total Bases",
+    batter_rbis: "RBIs",
+    batter_runs_scored: "Runs",
+    batter_stolen_bases: "Stolen Bases",
+    pitcher_outs: "Outs Recorded",
+    batter_home_runs: "Home Runs",
+    batter_walks: "Walks",
     player_goals: "Goals",
     player_shots_on_goal: "Shots",
+    player_blocked_shots: "Blocked Shots",
+    player_power_play_points: "PP Points",
   };
 
   const sportLabel: Record<string, string> = {

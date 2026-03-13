@@ -319,6 +319,9 @@ const Games = () => {
             </TabsList>
           </Tabs>
 
+          {/* Live Scores Banner */}
+          <LiveScoresBanner sport={selectedSport || undefined} />
+
           {/* Bet Signal Summary Card */}
           <Card className="mb-6 bg-card border-border">
             <CardContent className="p-5">
