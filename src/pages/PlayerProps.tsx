@@ -20,6 +20,9 @@ const SPORT_FILTERS = [
   { value: 'football', label: 'NFL' },
   { value: 'baseball', label: 'MLB' },
   { value: 'hockey', label: 'NHL' },
+  { value: 'soccer', label: 'Soccer' },
+  { value: 'tennis', label: 'Tennis' },
+  { value: 'mma', label: 'MMA' },
 ];
 
 /** Top N props auto-fetch L20; rest are lazy-loaded on tap */

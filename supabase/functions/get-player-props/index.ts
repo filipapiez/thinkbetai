@@ -126,9 +126,18 @@ Deno.serve(async (req: Request) => {
 
   const sportLabel: Record<string, string> = {
     basketball_nba: "NBA",
+    basketball_ncaab: "NCAAB",
     americanfootball_nfl: "NFL",
+    americanfootball_ncaaf: "NCAAF",
     baseball_mlb: "MLB",
     icehockey_nhl: "NHL",
+    soccer_epl: "EPL",
+    soccer_usa_mls: "MLS",
+    tennis_atp_french_open: "Tennis",
+    tennis_atp_us_open: "Tennis",
+    tennis_atp_wimbledon: "Tennis",
+    tennis_atp_australian_open: "Tennis",
+    mma_mixed_martial_arts: "MMA",
   };
 
   if (ODDS_API_KEY) {
