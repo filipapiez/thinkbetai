@@ -728,6 +728,21 @@ const GameDetail = () => {
             </Card>
           )}
 
+          {/* Line Shopping - Compare odds across bookmakers */}
+          <LineShoppingCard
+            bookmakers={allBookmakers}
+            homeTeam={game.homeTeam.name}
+            awayTeam={game.awayTeam.name}
+          />
+
+          {/* Odds Movement Chart */}
+          <OddsMovementChart
+            eventId={oddsEventId || undefined}
+            sportKey={oddsSportKey || undefined}
+            homeTeam={game.homeTeam.name}
+            awayTeam={game.awayTeam.name}
+          />
+
           {/* === STRUCTURED GAME VIEW ORDER === */}
           
           {/* 3) Key Injuries & Availability */}
