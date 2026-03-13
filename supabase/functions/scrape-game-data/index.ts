@@ -339,7 +339,7 @@ Deno.serve(async (req) => {
 
         if (extracted) {
           // Supplement with ESPN data if AI extraction has gaps
-          const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam);
+          const supplemented = supplementWithEspnData(extracted, espnData, homeTeam, awayTeam, oddsApiScores);
 
           // Hockey/international-first flow: force EliteProspects as primary H2H source when available
           if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
