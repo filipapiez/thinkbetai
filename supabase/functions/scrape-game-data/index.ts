@@ -1621,3 +1621,121 @@ function parseEliteProspectsH2H(
   console.log(`[EliteProspects] Parsed ${h2h.length} H2H matches`);
   return h2h;
 }
+
+// ============================================================================
+// THE ODDS API SCORES - Free recent form data (no Firecrawl credits)
+// ============================================================================
+
+const ODDS_API_SPORT_MAP: Record<string, string> = {
+  nba: 'basketball_nba',
+  nfl: 'americanfootball_nfl',
+  mlb: 'baseball_mlb',
+  nhl: 'icehockey_nhl',
+  ncaab: 'basketball_ncaab',
+  ncaaf: 'americanfootball_ncaaf',
+  soccer: 'soccer_epl',
+  mma: 'mma_mixed_martial_arts',
+};
+
+interface OddsAPIScoresData {
+  homeGames: EspnRecentGame[];
+  awayGames: EspnRecentGame[];
+}
+
+async function fetchOddsAPIScores(
+  homeTeam: string,
+  awayTeam: string,
+  sport: string
+): Promise<OddsAPIScoresData> {
+  const empty: OddsAPIScoresData = { homeGames: [], awayGames: [] };
+
+  try {
+    const apiKey = Deno.env.get('THE_ODDS_API_KEY');
+    if (!apiKey) return empty;
+
+    const sportKey = normalizeSportKey(sport);
+    const oddsApiSport = ODDS_API_SPORT_MAP[sportKey];
+    if (!oddsApiSport) return empty;
+
+    // Fetch completed games from the last 3 days
+    const url = `https://api.the-odds-api.com/v4/sports/${oddsApiSport}/scores/?apiKey=${apiKey}&daysFrom=3&dateFormat=iso`;
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      console.error(`[Odds API Scores] HTTP ${res.status}`);
+      return empty;
+    }
+
+    const games = await res.json();
+    if (!Array.isArray(games)) return empty;
+
+    const fuzzyMatch = (teamName: string, candidate: string): boolean => {
+      const a = teamName.toLowerCase().trim();
+      const b = candidate.toLowerCase().trim();
+      return a === b || a.includes(b) || b.includes(a);
+    };
+
+    const homeGames: EspnRecentGame[] = [];
+    const awayGames: EspnRecentGame[] = [];
+
+    for (const game of games) {
+      if (!game.completed || !game.scores || game.scores.length < 2) continue;
+
+      const homeScoreEntry = game.scores.find((s: any) => s.name === game.home_team);
+      const awayScoreEntry = game.scores.find((s: any) => s.name === game.away_team);
+      if (!homeScoreEntry || !awayScoreEntry) continue;
+
+      const hScore = parseInt(homeScoreEntry.score);
+      const aScore = parseInt(awayScoreEntry.score);
+      if (isNaN(hScore) || isNaN(aScore)) continue;
+
+      const gameDate = game.commence_time
+        ? new Date(game.commence_time).toISOString().split('T')[0]
+        : '';
+
+      // Check if home team played in this game
+      if (fuzzyMatch(homeTeam, game.home_team)) {
+        homeGames.push({
+          opponent: game.away_team,
+          score: hScore,
+          opponentScore: aScore,
+          won: hScore > aScore,
+          date: gameDate,
+        });
+      } else if (fuzzyMatch(homeTeam, game.away_team)) {
+        homeGames.push({
+          opponent: game.home_team,
+          score: aScore,
+          opponentScore: hScore,
+          won: aScore > hScore,
+          date: gameDate,
+        });
+      }
+
+      // Check if away team played in this game
+      if (fuzzyMatch(awayTeam, game.home_team)) {
+        awayGames.push({
+          opponent: game.away_team,
+          score: hScore,
+          opponentScore: aScore,
+          won: hScore > aScore,
+          date: gameDate,
+        });
+      } else if (fuzzyMatch(awayTeam, game.away_team)) {
+        awayGames.push({
+          opponent: game.home_team,
+          score: aScore,
+          opponentScore: hScore,
+          won: aScore > hScore,
+          date: gameDate,
+        });
+      }
+    }
+
+    console.log(`[Odds API Scores] ${homeTeam}: ${homeGames.length} games, ${awayTeam}: ${awayGames.length} games`);
+    return { homeGames: homeGames.slice(0, 5), awayGames: awayGames.slice(0, 5) };
+  } catch (e) {
+    console.error('[Odds API Scores] Error:', e);
+    return empty;
+  }
+}
