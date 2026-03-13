@@ -323,6 +323,36 @@ export type Database = {
         }
         Relationships: []
       }
+      team_logos_cache: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          source: string | null
+          sport: string | null
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          source?: string | null
+          sport?: string | null
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          source?: string | null
+          sport?: string | null
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_parlays: {
         Row: {
           created_at: string
