@@ -363,6 +363,44 @@ function buildOdds(game: TheOddsApiGame) {
   };
 }
 
+// Build odds from ALL bookmakers for line shopping
+function buildAllBookmakerOdds(game: TheOddsApiGame) {
+  if (!game.bookmakers || game.bookmakers.length === 0) return [];
+
+  return game.bookmakers.map((bk) => {
+    const h2h = bk.markets?.find((m) => m.key === "h2h");
+    const spreads = bk.markets?.find((m) => m.key === "spreads");
+    const totals = bk.markets?.find((m) => m.key === "totals");
+
+    const homeH2h = h2h?.outcomes.find((o) => o.name === game.home_team);
+    const awayH2h = h2h?.outcomes.find((o) => o.name === game.away_team);
+    const homeSpread = spreads?.outcomes.find((o) => o.name === game.home_team);
+    const awaySpread = spreads?.outcomes.find((o) => o.name === game.away_team);
+    const over = totals?.outcomes.find((o) => o.name === "Over");
+    const under = totals?.outcomes.find((o) => o.name === "Under");
+
+    return {
+      key: bk.key,
+      title: bk.title,
+      moneyline: {
+        home: homeH2h?.price ?? 0,
+        away: awayH2h?.price ?? 0,
+      },
+      spread: {
+        home: homeSpread?.point ?? 0,
+        homeOdds: homeSpread?.price ?? -110,
+        away: awaySpread?.point ?? 0,
+        awayOdds: awaySpread?.price ?? -110,
+      },
+      total: {
+        line: over?.point ?? 0,
+        overOdds: over?.price ?? -110,
+        underOdds: under?.price ?? -110,
+      },
+    };
+  }).filter((bk) => bk.moneyline.home !== 0 || bk.spread.home !== 0 || bk.total.line !== 0);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -502,6 +540,8 @@ serve(async (req) => {
       });
     }
 
+    const allBookmakers = buildAllBookmakerOdds(best);
+
     const result = {
       eventId: best.id,
       sportKey: best.sport_key,
@@ -509,6 +549,7 @@ serve(async (req) => {
       awayTeam: best.away_team,
       commenceTime: best.commence_time,
       odds,
+      allBookmakers,
       lastUpdated: new Date().toISOString(),
     };
 

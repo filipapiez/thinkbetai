@@ -95,3 +95,9 @@ verify_jwt = false
 
 [functions.get-recent-scores]
 verify_jwt = false
+
+[functions.get-live-scores]
+verify_jwt = false
+
+[functions.get-odds-history]
+verify_jwt = false

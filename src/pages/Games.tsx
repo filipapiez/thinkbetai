@@ -14,6 +14,7 @@ import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTeamLogoUrl, sportSupportsLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
 import { GameParlayBar } from '@/components/GameParlayBar';
+import { LiveScoresBanner } from '@/components/LiveScoresBanner';
 
 
 
@@ -317,6 +318,9 @@ const Games = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+
+          {/* Live Scores Banner */}
+          <LiveScoresBanner sport={selectedSport || undefined} />
 
           {/* Bet Signal Summary Card */}
           <Card className="mb-6 bg-card border-border">

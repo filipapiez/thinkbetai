@@ -38,6 +38,8 @@ import { FullAIReport } from '@/components/FullAIReport';
 import { TeamStatsCard } from '@/components/TeamStatsCard';
 import { BettingTrendsCard } from '@/components/BettingTrendsCard';
 import { VenueWeatherCard } from '@/components/VenueWeatherCard';
+import { LineShoppingCard } from '@/components/LineShoppingCard';
+import { OddsMovementChart } from '@/components/OddsMovementChart';
 import type { PopularGame } from '@/hooks/usePopularGames';
 
 type OddsApiGame = {
@@ -291,6 +293,9 @@ const GameDetail = () => {
 
   // Odds are fetched on-demand (only when user opens a game)
   const [oddsOverride, setOddsOverride] = useState<LiveGame['odds'] | null>(null);
+  const [allBookmakers, setAllBookmakers] = useState<any[]>([]);
+  const [oddsEventId, setOddsEventId] = useState<string | null>(null);
+  const [oddsSportKey, setOddsSportKey] = useState<string | null>(null);
   const [isLoadingOdds, setIsLoadingOdds] = useState(false);
   const oddsFetchKeyRef = useRef<string | null>(null);
 
@@ -402,9 +407,12 @@ const GameDetail = () => {
            }),
          });
  
-         if (!res.ok) return;
-         const data = (await res.json()) as { odds?: LiveGame['odds'] };
-         if (data?.odds) setOddsOverride(data.odds);
+          if (!res.ok) return;
+          const data = (await res.json()) as { odds?: LiveGame['odds']; allBookmakers?: any[]; eventId?: string; sportKey?: string };
+          if (data?.odds) setOddsOverride(data.odds);
+          if (data?.allBookmakers) setAllBookmakers(data.allBookmakers);
+          if (data?.eventId) setOddsEventId(data.eventId);
+          if (data?.sportKey) setOddsSportKey(data.sportKey);
       } finally {
         setIsLoadingOdds(false);
       }
@@ -719,6 +727,21 @@ const GameDetail = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Line Shopping - Compare odds across bookmakers */}
+          <LineShoppingCard
+            bookmakers={allBookmakers}
+            homeTeam={game.homeTeam.name}
+            awayTeam={game.awayTeam.name}
+          />
+
+          {/* Odds Movement Chart */}
+          <OddsMovementChart
+            eventId={oddsEventId || undefined}
+            sportKey={oddsSportKey || undefined}
+            homeTeam={game.homeTeam.name}
+            awayTeam={game.awayTeam.name}
+          />
 
           {/* === STRUCTURED GAME VIEW ORDER === */}
           
