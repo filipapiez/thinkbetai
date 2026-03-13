@@ -540,6 +540,8 @@ serve(async (req) => {
       });
     }
 
+    const allBookmakers = buildAllBookmakerOdds(best);
+
     const result = {
       eventId: best.id,
       sportKey: best.sport_key,
@@ -547,6 +549,7 @@ serve(async (req) => {
       awayTeam: best.away_team,
       commenceTime: best.commence_time,
       odds,
+      allBookmakers,
       lastUpdated: new Date().toISOString(),
     };
 
