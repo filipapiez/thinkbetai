@@ -293,6 +293,9 @@ const GameDetail = () => {
 
   // Odds are fetched on-demand (only when user opens a game)
   const [oddsOverride, setOddsOverride] = useState<LiveGame['odds'] | null>(null);
+  const [allBookmakers, setAllBookmakers] = useState<any[]>([]);
+  const [oddsEventId, setOddsEventId] = useState<string | null>(null);
+  const [oddsSportKey, setOddsSportKey] = useState<string | null>(null);
   const [isLoadingOdds, setIsLoadingOdds] = useState(false);
   const oddsFetchKeyRef = useRef<string | null>(null);
 
