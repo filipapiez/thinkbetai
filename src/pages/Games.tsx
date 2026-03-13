@@ -14,6 +14,7 @@ import { usePopularGames, PopularGame } from '@/hooks/usePopularGames';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTeamLogoUrl, sportSupportsLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
 import { GameParlayBar } from '@/components/GameParlayBar';
+import { LiveScoresBanner } from '@/components/LiveScoresBanner';
 
 
 
