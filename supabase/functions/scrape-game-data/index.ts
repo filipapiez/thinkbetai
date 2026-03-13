@@ -379,7 +379,7 @@ Deno.serve(async (req) => {
       );
 
       // Supplement with ESPN data
-      const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam);
+      const supplemented = supplementWithEspnData(scrapedData, espnData, homeTeam, awayTeam, oddsApiScores);
 
       // Hockey/international-first flow
       if (prioritizeEliteProspects && eliteProspectsH2H.length > 0) {
