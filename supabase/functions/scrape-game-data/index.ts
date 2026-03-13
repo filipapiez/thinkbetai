@@ -267,14 +267,13 @@ Deno.serve(async (req) => {
     const espnDataPromise = fetchEspnRecentGames(homeTeam, awayTeam, sport);
     const prioritizeEliteProspects = shouldPrioritizeEliteProspectsH2H(sport);
 
+    // Fetch Odds API scores FIRST (free, no Firecrawl credits)
+    const oddsApiScoresPromise = fetchOddsAPIScores(homeTeam, awayTeam, sport);
+
     if (firecrawlApiKey) {
       const sportValidation = getSportValidation(sport);
 
       const currentYear = new Date().getFullYear();
-      // OPTIMIZED: Reduced from 7 Firecrawl searches to 3
-      // - Dropped statsQuery (ESPN provides standings data)
-      // - Dropped venueQuery (AI generates from knowledge)
-      // - Combined home+away form into single query
       const injuryQuery = `${homeTeam} ${awayTeam} injury report ${currentYear} ${sportValidation.competitionLevel}`;
       const formQuery = `${homeTeam} ${awayTeam} schedule results ${currentYear} ${sportValidation.competitionLevel} site:espn.com OR site:basketball-reference.com OR site:cbssports.com`;
       const h2hQuery = `${homeTeam} vs ${awayTeam} head to head history results ${sportValidation.competitionLevel} site:espn.com OR site:statmuse.com OR site:basketball-reference.com OR site:eliteprospects.com`;
@@ -284,10 +283,21 @@ Deno.serve(async (req) => {
         ? fetchEliteProspectsH2H(firecrawlApiKey, homeTeam, awayTeam, sport)
         : Promise.resolve([] as ScrapedGameData['headToHead']);
 
-      // 3 Firecrawl searches instead of 7 (saves ~57% credits per unique game view)
+      // First: resolve Odds API scores (0 Firecrawl credits)
+      const oddsApiScores = await oddsApiScoresPromise;
+      const hasOddsAPIForm = oddsApiScores.homeGames.length >= 3 || oddsApiScores.awayGames.length >= 3;
+
+      // Only use Firecrawl formQuery if Odds API returned no data (saves ~4 credits per view)
+      const formPromise = hasOddsAPIForm
+        ? Promise.resolve(null)
+        : searchFirecrawl(firecrawlApiKey, formQuery);
+
+      console.log(`[Odds API Scores] home=${oddsApiScores.homeGames.length}, away=${oddsApiScores.awayGames.length} — Firecrawl form search ${hasOddsAPIForm ? 'SKIPPED (saved ~4 credits)' : 'needed'}`);
+
+      // 2-3 Firecrawl searches (form skipped when Odds API has scores)
       const [injuryResponse, formResponse, h2hResponse, trendsResponse, espnData, eliteProspectsH2H] = await Promise.all([
         searchFirecrawl(firecrawlApiKey, injuryQuery),
-        searchFirecrawl(firecrawlApiKey, formQuery),
+        formPromise,
         searchFirecrawl(firecrawlApiKey, h2hQuery),
         searchFirecrawl(firecrawlApiKey, trendsQuery),
         espnDataPromise,
