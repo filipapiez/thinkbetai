@@ -1389,21 +1389,26 @@ function supplementWithEspnData(
   data: ScrapedGameData,
   espn: EspnSupplementData,
   homeTeam: string,
-  awayTeam: string
+  awayTeam: string,
+  oddsApiScores?: OddsAPIScoresData
 ): ScrapedGameData {
   const result = { ...data };
 
-  // Supplement recent form if AI extraction returned empty
+  // Supplement recent form: priority = Odds API Scores > ESPN > AI extraction
   const homeForm = data.recentForm.find(f => f.team.toLowerCase().includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(f.team.toLowerCase()));
   const awayForm = data.recentForm.find(f => f.team.toLowerCase().includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(f.team.toLowerCase()));
 
   const homeEmpty = !homeForm || homeForm.last5.length === 0;
   const awayEmpty = !awayForm || awayForm.last5.length === 0;
 
-  if ((homeEmpty && espn.homeGames.length > 0) || (awayEmpty && espn.awayGames.length > 0)) {
+  if (homeEmpty || awayEmpty) {
     const newForm: ScrapedGameData['recentForm'] = [];
 
-    if (homeEmpty && espn.homeGames.length > 0) {
+    // Home team form
+    if (homeEmpty && oddsApiScores && oddsApiScores.homeGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(oddsApiScores.homeGames, homeTeam));
+      console.log(`[Odds API] Filled home recent form: ${oddsApiScores.homeGames.length} games`);
+    } else if (homeEmpty && espn.homeGames.length > 0) {
       newForm.push(espnGamesToRecentForm(espn.homeGames, homeTeam));
     } else if (homeForm) {
       newForm.push(homeForm);
@@ -1411,7 +1416,11 @@ function supplementWithEspnData(
       newForm.push({ team: homeTeam, last5: [], limitedData: true });
     }
 
-    if (awayEmpty && espn.awayGames.length > 0) {
+    // Away team form
+    if (awayEmpty && oddsApiScores && oddsApiScores.awayGames.length > 0) {
+      newForm.push(espnGamesToRecentForm(oddsApiScores.awayGames, awayTeam));
+      console.log(`[Odds API] Filled away recent form: ${oddsApiScores.awayGames.length} games`);
+    } else if (awayEmpty && espn.awayGames.length > 0) {
       newForm.push(espnGamesToRecentForm(espn.awayGames, awayTeam));
     } else if (awayForm) {
       newForm.push(awayForm);
@@ -1420,14 +1429,12 @@ function supplementWithEspnData(
     }
 
     result.recentForm = newForm;
-    console.log(`[ESPN Supplement] Filled recent form gaps: home=${homeEmpty && espn.homeGames.length > 0}, away=${awayEmpty && espn.awayGames.length > 0}`);
   }
 
   // Supplement head-to-head from ESPN schedule overlap
   if (data.headToHead.length === 0 && (espn.homeGames.length > 0 || espn.awayGames.length > 0)) {
     const h2hFromEspn: ScrapedGameData['headToHead'] = [];
     
-    // Check if the home team's recent games include the away team (or vice versa)
     for (const game of espn.homeGames) {
       const oppName = game.opponent.toLowerCase();
       if (oppName.includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(oppName)) {
