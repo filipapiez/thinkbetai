@@ -407,9 +407,12 @@ const GameDetail = () => {
            }),
          });
  
-         if (!res.ok) return;
-         const data = (await res.json()) as { odds?: LiveGame['odds'] };
-         if (data?.odds) setOddsOverride(data.odds);
+          if (!res.ok) return;
+          const data = (await res.json()) as { odds?: LiveGame['odds']; allBookmakers?: any[]; eventId?: string; sportKey?: string };
+          if (data?.odds) setOddsOverride(data.odds);
+          if (data?.allBookmakers) setAllBookmakers(data.allBookmakers);
+          if (data?.eventId) setOddsEventId(data.eventId);
+          if (data?.sportKey) setOddsSportKey(data.sportKey);
       } finally {
         setIsLoadingOdds(false);
       }
