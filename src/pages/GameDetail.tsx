@@ -38,6 +38,8 @@ import { FullAIReport } from '@/components/FullAIReport';
 import { TeamStatsCard } from '@/components/TeamStatsCard';
 import { BettingTrendsCard } from '@/components/BettingTrendsCard';
 import { VenueWeatherCard } from '@/components/VenueWeatherCard';
+import { LineShoppingCard } from '@/components/LineShoppingCard';
+import { OddsMovementChart } from '@/components/OddsMovementChart';
 import type { PopularGame } from '@/hooks/usePopularGames';
 
 type OddsApiGame = {
