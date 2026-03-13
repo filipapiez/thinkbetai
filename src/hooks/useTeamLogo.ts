@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getTeamLogoUrl, sportSupportsLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
+import { getTeamLogoUrl, isIndividualSportForLogos } from '@/lib/teamLogos';
 
 // In-memory cache shared across all component instances
-const logoCache = new Map<string, string | null>();
+const logoCache = new Map<string, string>();
 const pendingRequests = new Map<string, Promise<string | null>>();
 
 export function useTeamLogo(teamName: string, sport: string): {
@@ -24,9 +24,10 @@ export function useTeamLogo(teamName: string, sport: string): {
 
     const cacheKey = `${teamName.toLowerCase().trim()}::${sport.toLowerCase().trim()}`;
 
-    // Check in-memory cache
-    if (logoCache.has(cacheKey)) {
-      setDynamicUrl(logoCache.get(cacheKey)!);
+    // Check in-memory cache (positive hits only)
+    const cachedUrl = logoCache.get(cacheKey);
+    if (cachedUrl) {
+      setDynamicUrl(cachedUrl);
       setLoading(false);
       return;
     }
@@ -56,17 +57,23 @@ async function fetchLogo(
   cacheKey: string
 ): Promise<string | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('get-team-logo', {
+    const { data } = await supabase.functions.invoke('get-team-logo', {
       body: { teamName, sport },
     });
 
     const url = data?.logoUrl || null;
-    logoCache.set(cacheKey, url);
+
+    if (url) {
+      logoCache.set(cacheKey, url);
+    } else {
+      logoCache.delete(cacheKey);
+    }
+
     pendingRequests.delete(cacheKey);
     return url;
   } catch (e) {
     console.error('Failed to fetch team logo:', e);
-    logoCache.set(cacheKey, null);
+    logoCache.delete(cacheKey);
     pendingRequests.delete(cacheKey);
     return null;
   }
