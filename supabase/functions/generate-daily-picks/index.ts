@@ -8,27 +8,6 @@ const corsHeaders = {
 
 const ODDS_API_KEY = Deno.env.get("ODDS_API_KEY");
 
-interface DailyPick {
-  id: string;
-  sport: string;
-  sportLabel: string;
-  homeTeam: string;
-  awayTeam: string;
-  gameTime: string;
-  pick: string;
-  pickDetail: string;
-  confidence: number;
-  reasoning: string;
-  odds?: number;
-}
-
-interface DailyPicksResponse {
-  games: DailyPick[];
-  props: DailyPick[];
-  overUnder: DailyPick[];
-  generatedAt: string;
-}
-
 async function fetchTodaysOdds(): Promise<any[]> {
   if (!ODDS_API_KEY) return [];
 
@@ -48,10 +27,9 @@ async function fetchTodaysOdds(): Promise<any[]> {
       );
       if (res.ok) {
         const data = await res.json();
-        // Only today's games
         const today = new Date().toISOString().split("T")[0];
         const todayGames = data.filter((g: any) => g.commence_time?.startsWith(today));
-        allGames.push(...todayGames.slice(0, 4)); // max 4 per sport
+        allGames.push(...todayGames.slice(0, 4));
       }
     } catch (e) {
       console.error(`Error fetching ${sport}:`, e);
@@ -107,17 +85,12 @@ serve(async (req) => {
       fetchInjuries(),
     ]);
 
-    // Format odds for AI
     const oddsContext = odds
       .map((g) => {
         const bookmaker = g.bookmakers?.[0];
         const h2h = bookmaker?.markets?.find((m: any) => m.key === "h2h");
-        const spreads = bookmaker?.markets?.find(
-          (m: any) => m.key === "spreads",
-        );
-        const totals = bookmaker?.markets?.find(
-          (m: any) => m.key === "totals",
-        );
+        const spreads = bookmaker?.markets?.find((m: any) => m.key === "spreads");
+        const totals = bookmaker?.markets?.find((m: any) => m.key === "totals");
         return `${g.away_team} @ ${g.home_team} (${g.sport_title}, ${g.commence_time})
   Moneyline: ${h2h?.outcomes?.map((o: any) => `${o.name} ${o.price > 0 ? "+" : ""}${o.price}`).join(" / ") || "N/A"}
   Spread: ${spreads?.outcomes?.map((o: any) => `${o.name} ${o.point > 0 ? "+" : ""}${o.point} (${o.price > 0 ? "+" : ""}${o.price})`).join(" / ") || "N/A"}
@@ -164,19 +137,21 @@ Return JSON in this exact format:
   "overUnder": [...]
 }`;
 
-    const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const aiRes = await fetch(`${supabaseUrl}/functions/v1/proxy/ai/completions`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+        "Authorization": `Bearer ${supabaseKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
-            content:
-              "You are a sports betting analyst. Return only valid JSON. No markdown, no code blocks.",
+            content: "You are a sports betting analyst. Return only valid JSON. No markdown, no code blocks.",
           },
           { role: "user", content: prompt },
         ],
@@ -186,20 +161,20 @@ Return JSON in this exact format:
     });
 
     if (!aiRes.ok) {
-      throw new Error(`AI API error: ${aiRes.status}`);
+      const errText = await aiRes.text();
+      throw new Error(`AI API error: ${aiRes.status} - ${errText}`);
     }
 
     const aiData = await aiRes.json();
     const content = aiData.choices?.[0]?.message?.content || "{}";
 
-    // Parse JSON (strip any markdown wrapping)
     const cleaned = content
       .replace(/```json\n?/g, "")
       .replace(/```\n?/g, "")
       .trim();
     const picks = JSON.parse(cleaned);
 
-    const response: DailyPicksResponse = {
+    const response = {
       games: picks.games || [],
       props: picks.props || [],
       overUnder: picks.overUnder || [],
