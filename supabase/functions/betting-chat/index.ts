@@ -404,14 +404,19 @@ serve(async (req) => {
     // Always fetch live data to give the AI real-time context
     const latestUserMessage = [...messages].reverse().find(m => m.role === 'user');
     let liveDataContext = '';
+    let injuryContext = '';
     
     if (latestUserMessage) {
       const dataQuery = detectSportsDataQuery(latestUserMessage.content);
-      // Fetch live data for any question — always give the AI fresh odds/scores
-      const liveData = await fetchLiveOddsData(dataQuery.searchTerms);
+      // Fetch live odds AND injury data in parallel
+      const [liveData, injuryData] = await Promise.all([
+        fetchLiveOddsData(dataQuery.searchTerms),
+        fetchESPNInjuries(dataQuery.searchTerms),
+      ]);
       if (liveData) {
         liveDataContext = `\n\nLIVE SPORTS DATA (from licensed API — use this for your analysis):\n${liveData}`;
       }
+      injuryContext = injuryData; // Always has content (either injuries or "no data" message)
     }
 
     // Build context-aware system prompt
