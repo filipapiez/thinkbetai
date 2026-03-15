@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, User,
+  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, User, Share2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { usePlayerProps, PlayerProp } from '@/hooks/usePlayerProps';
 
