@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ODDS_API_KEY = Deno.env.get("ODDS_API_KEY");
+const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY") || Deno.env.get("ODDS_API_KEY");
 
 async function fetchTodaysOdds(): Promise<any[]> {
   if (!ODDS_API_KEY) return [];
