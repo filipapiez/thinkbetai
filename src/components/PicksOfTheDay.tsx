@@ -128,8 +128,8 @@ export default function PicksOfTheDay() {
     if (!force) {
       const cached = loadCache();
       if (cached) {
-        const merged = [...(cached.games || []), ...(cached.props || []), ...(cached.overUnder || [])];
-        setAllPicks(merged.sort((a, b) => b.confidence - a.confidence));
+        const picks = cached.games || [];
+        setAllPicks(picks.sort((a: DailyPick, b: DailyPick) => b.confidence - a.confidence));
         setGeneratedAt(cached.generatedAt);
         setIsLoading(false);
         return;
