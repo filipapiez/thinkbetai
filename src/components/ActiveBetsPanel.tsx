@@ -148,11 +148,16 @@ export function ActiveBetsPanel() {
                           {format(new Date(bet.game_time), 'MMM d, h:mm a')}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{bet.confidence}%</div>
-                        <div className="text-sm text-muted-foreground">
-                          {bet.odds > 0 ? '+' : ''}{bet.odds}
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{bet.confidence}%</div>
+                          <div className="text-sm text-muted-foreground">
+                            {bet.odds > 0 ? '+' : ''}{bet.odds}
+                          </div>
                         </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShareBet(bet)} title="Share bet">
+                          <Share2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}
