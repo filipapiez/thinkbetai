@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff } from 'lucide-react';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff, Target } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminPickBuilder } from '@/components/AdminPickBuilder';
 
 interface Profile {
   id: string;
