@@ -173,8 +173,6 @@ Return JSON in this exact format:
 
     const response = {
       games: picks.games || [],
-      props: picks.props || [],
-      overUnder: picks.overUnder || [],
       generatedAt: new Date().toISOString(),
     };
 
