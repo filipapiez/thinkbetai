@@ -372,6 +372,11 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Picks of the Day */}
+        <Suspense fallback={<div className="py-16 flex items-center justify-center"><div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+          <PicksOfTheDay />
+        </Suspense>
+
         {/* How It Works - Interactive Demo */}
         <section className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
           {/* Background effects */}
