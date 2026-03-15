@@ -203,13 +203,18 @@ export function ActiveBetsPanel() {
                           )}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <div className={cn(
-                          "text-lg font-bold",
-                          bet.result === 'win' ? "text-green-400" : bet.result === 'loss' ? "text-red-400" : ""
-                        )}>
-                          {bet.result?.toUpperCase()}
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className={cn(
+                            "text-lg font-bold",
+                            bet.result === 'win' ? "text-green-400" : bet.result === 'loss' ? "text-red-400" : ""
+                          )}>
+                            {bet.result?.toUpperCase()}
+                          </div>
                         </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShareBet(bet)} title="Share bet">
+                          <Share2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}

@@ -77,14 +77,19 @@ export function PickCard({ pick, isSelected = false, onSelect }: PickCardProps) 
           </div>
         )}
 
-        {/* Header: Platform + Signal */}
+        {/* Header: Platform + Signal + Share */}
         <div className="flex items-center justify-between mb-3">
           <Badge className={platformColors[pick.platform] || 'bg-muted text-muted-foreground'}>
             {pick.platform}
           </Badge>
-          <Badge variant="outline" className={cn(signalColors[signal], isSelected && "mr-8")}>
-            {signal}
-          </Badge>
+          <div className="flex items-center gap-1.5">
+            <Badge variant="outline" className={cn(signalColors[signal], isSelected && "mr-8")}>
+              {signal}
+            </Badge>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleShare} title="Share pick">
+              <Share2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Player Info */}
