@@ -247,9 +247,10 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
             title="Share prop"
             onClick={async () => {
               const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
-              const text = `🎯 ${prop.playerName} (${prop.team}) — ${direction} ${prop.line} ${prop.statType}\n📊 Prob: ${blendedProb.toFixed(0)}% | Edge: +${blendedEdge.toFixed(1)}%${hasRealData ? ` | L${hitTotal} Hit: ${effectiveHitPct}%` : ''}\n🏟️ vs ${prop.opponent} · ${gameDate} ${gameTimeStr}\n\nShared via ThinkBetAI`;
+              const gameLink = `${window.location.origin}/games/${encodeURIComponent(prop.gameId)}`;
+              const text = `🎯 ${prop.playerName} (${prop.team}) — ${direction} ${prop.line} ${prop.statType}\n📊 Prob: ${blendedProb.toFixed(0)}% | Edge: +${blendedEdge.toFixed(1)}%${hasRealData ? ` | L${hitTotal} Hit: ${effectiveHitPct}%` : ''}\n🏟️ vs ${prop.opponent} · ${gameDate} ${gameTimeStr}\n\n🔗 ${gameLink}\n\nShared via ThinkBetAI`;
               if (navigator.share) {
-                try { await navigator.share({ text }); } catch {}
+                try { await navigator.share({ text, url: gameLink }); } catch {}
               } else {
                 await navigator.clipboard.writeText(text);
                 toast.success('Prop copied to clipboard!');
