@@ -131,6 +131,66 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_picks: {
+        Row: {
+          away_team: string | null
+          confidence: number | null
+          created_at: string
+          direction: string | null
+          game_date: string | null
+          home_team: string | null
+          id: string
+          line: number | null
+          notes: string | null
+          odds: number | null
+          pick: string
+          pick_type: string
+          player_name: string | null
+          prop_type: string | null
+          result: string | null
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          away_team?: string | null
+          confidence?: number | null
+          created_at?: string
+          direction?: string | null
+          game_date?: string | null
+          home_team?: string | null
+          id?: string
+          line?: number | null
+          notes?: string | null
+          odds?: number | null
+          pick: string
+          pick_type?: string
+          player_name?: string | null
+          prop_type?: string | null
+          result?: string | null
+          sport?: string
+          updated_at?: string
+        }
+        Update: {
+          away_team?: string | null
+          confidence?: number | null
+          created_at?: string
+          direction?: string | null
+          game_date?: string | null
+          home_team?: string | null
+          id?: string
+          line?: number | null
+          notes?: string | null
+          odds?: number | null
+          pick?: string
+          pick_type?: string
+          player_name?: string | null
+          prop_type?: string | null
+          result?: string | null
+          sport?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string
