@@ -12,6 +12,7 @@ const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 
 import { platformStats } from '@/lib/mockData';
 import { useWinRate } from '@/hooks/useWinRate';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Search, 
   TrendingUp, 
