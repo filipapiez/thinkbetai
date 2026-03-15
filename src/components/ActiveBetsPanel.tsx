@@ -20,6 +20,20 @@ export function ActiveBetsPanel() {
   } = useActiveBets();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
+  const handleShareBet = async (bet: ActiveBet) => {
+    const odds = bet.odds > 0 ? `+${bet.odds}` : `${bet.odds}`;
+    const text = `🎯 ${bet.away_team} @ ${bet.home_team}\n📌 Pick: ${bet.pick} (${odds})\n📊 Confidence: ${bet.confidence}%\n🏟️ ${bet.sport}${bet.result ? `\n✅ Result: ${bet.result.toUpperCase()}` : ''}\n\nShared via ThinkBetAI`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast.success('Bet copied to clipboard!');
+    }
+  };
+
   const getStatusBadge = (bet: ActiveBet) => {
     if (bet.status === 'pending') {
       const gameTime = new Date(bet.game_time);
