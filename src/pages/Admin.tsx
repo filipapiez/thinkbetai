@@ -484,6 +484,10 @@ const Admin = () => {
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="free">Free Users</TabsTrigger>
               <TabsTrigger value="codes">Access Codes</TabsTrigger>
+              <TabsTrigger value="picks" className="flex items-center gap-1">
+                <Target className="h-3.5 w-3.5" />
+                Pick Builder
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="space-y-4">
