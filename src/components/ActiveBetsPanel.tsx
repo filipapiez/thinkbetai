@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { RefreshCw, Clock, CheckCircle, XCircle, Timer, Loader2, Plus } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, XCircle, Timer, Loader2, Plus, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
