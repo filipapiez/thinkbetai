@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
+const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 
 import { platformStats } from '@/lib/mockData';
 import { useWinRate } from '@/hooks/useWinRate';
