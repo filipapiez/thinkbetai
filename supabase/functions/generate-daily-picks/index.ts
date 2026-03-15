@@ -1,0 +1,228 @@
+import "https://deno.land/x/xhr@0.3.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const ODDS_API_KEY = Deno.env.get("ODDS_API_KEY");
+
+interface DailyPick {
+  id: string;
+  sport: string;
+  sportLabel: string;
+  homeTeam: string;
+  awayTeam: string;
+  gameTime: string;
+  pick: string;
+  pickDetail: string;
+  confidence: number;
+  reasoning: string;
+  odds?: number;
+}
+
+interface DailyPicksResponse {
+  games: DailyPick[];
+  props: DailyPick[];
+  overUnder: DailyPick[];
+  generatedAt: string;
+}
+
+async function fetchTodaysOdds(): Promise<any[]> {
+  if (!ODDS_API_KEY) return [];
+
+  const sports = [
+    "basketball_nba",
+    "americanfootball_nfl",
+    "baseball_mlb",
+    "icehockey_nhl",
+  ];
+
+  const allGames: any[] = [];
+
+  for (const sport of sports) {
+    try {
+      const res = await fetch(
+        `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        // Only today's games
+        const today = new Date().toISOString().split("T")[0];
+        const todayGames = data.filter((g: any) => g.commence_time?.startsWith(today));
+        allGames.push(...todayGames.slice(0, 4)); // max 4 per sport
+      }
+    } catch (e) {
+      console.error(`Error fetching ${sport}:`, e);
+    }
+  }
+
+  return allGames;
+}
+
+async function fetchInjuries(): Promise<string> {
+  const sportPaths = [
+    "basketball/nba",
+    "football/nfl",
+    "baseball/mlb",
+    "hockey/nhl",
+  ];
+  const injuries: string[] = [];
+
+  for (const path of sportPaths) {
+    try {
+      const res = await fetch(
+        `https://site.api.espn.com/apis/site/v2/sports/${path}/injuries`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        for (const team of data?.items || []) {
+          const teamName = team?.team?.displayName || "Unknown";
+          for (const athlete of (team?.injuries || []).slice(0, 5)) {
+            const name = athlete?.athlete?.displayName;
+            const status = athlete?.status;
+            if (name && status) {
+              injuries.push(`${name} (${teamName}) — ${status}`);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // skip
+    }
+  }
+
+  return injuries.slice(0, 40).join("\n") || "No injury data available.";
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const [odds, injuryReport] = await Promise.all([
+      fetchTodaysOdds(),
+      fetchInjuries(),
+    ]);
+
+    // Format odds for AI
+    const oddsContext = odds
+      .map((g) => {
+        const bookmaker = g.bookmakers?.[0];
+        const h2h = bookmaker?.markets?.find((m: any) => m.key === "h2h");
+        const spreads = bookmaker?.markets?.find(
+          (m: any) => m.key === "spreads",
+        );
+        const totals = bookmaker?.markets?.find(
+          (m: any) => m.key === "totals",
+        );
+        return `${g.away_team} @ ${g.home_team} (${g.sport_title}, ${g.commence_time})
+  Moneyline: ${h2h?.outcomes?.map((o: any) => `${o.name} ${o.price > 0 ? "+" : ""}${o.price}`).join(" / ") || "N/A"}
+  Spread: ${spreads?.outcomes?.map((o: any) => `${o.name} ${o.point > 0 ? "+" : ""}${o.point} (${o.price > 0 ? "+" : ""}${o.price})`).join(" / ") || "N/A"}
+  Total: ${totals?.outcomes?.map((o: any) => `${o.name} ${o.point} (${o.price > 0 ? "+" : ""}${o.price})`).join(" / ") || "N/A"}`;
+      })
+      .join("\n\n");
+
+    const prompt = `You are an expert sports analyst. Based on the following real-time odds and injury data for today's games, generate your TOP recommended picks of the day.
+
+## TODAY'S ODDS:
+${oddsContext || "No games available today."}
+
+## INJURY REPORT:
+${injuryReport}
+
+## INSTRUCTIONS:
+Generate EXACTLY 3 categories of picks. Return valid JSON only, no markdown.
+
+1. **games** — 3-5 best moneyline or spread picks for today
+2. **props** — 3-5 best player prop recommendations (points, rebounds, passing yards, etc.)
+3. **overUnder** — 3-5 best over/under total picks
+
+For each pick include:
+- id: unique string
+- sport: sport key (NBA, NFL, MLB, NHL)
+- sportLabel: display label
+- homeTeam, awayTeam
+- gameTime: ISO string
+- pick: short pick text (e.g. "Lakers ML", "LeBron Over 25.5 Pts", "Over 215.5")
+- pickDetail: one-line context (e.g. "Lakers are 8-2 in last 10 home games")
+- confidence: 60-95
+- reasoning: 2-3 sentence analysis
+
+CRITICAL RULES:
+- Only use teams and games from the odds data provided above
+- Factor in injuries when making picks
+- Do NOT invent games or players not in the data
+- If no games are available, return empty arrays
+
+Return JSON in this exact format:
+{
+  "games": [...],
+  "props": [...],
+  "overUnder": [...]
+}`;
+
+    const aiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a sports betting analyst. Return only valid JSON. No markdown, no code blocks.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+      }),
+    });
+
+    if (!aiRes.ok) {
+      throw new Error(`AI API error: ${aiRes.status}`);
+    }
+
+    const aiData = await aiRes.json();
+    const content = aiData.choices?.[0]?.message?.content || "{}";
+
+    // Parse JSON (strip any markdown wrapping)
+    const cleaned = content
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+    const picks = JSON.parse(cleaned);
+
+    const response: DailyPicksResponse = {
+      games: picks.games || [],
+      props: picks.props || [],
+      overUnder: picks.overUnder || [],
+      generatedAt: new Date().toISOString(),
+    };
+
+    return new Response(JSON.stringify(response), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error generating daily picks:", error);
+    return new Response(
+      JSON.stringify({
+        games: [],
+        props: [],
+        overUnder: [],
+        generatedAt: new Date().toISOString(),
+        error: error.message,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
+    );
+  }
+});

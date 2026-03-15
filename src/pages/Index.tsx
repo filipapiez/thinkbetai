@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
+const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 
 import { platformStats } from '@/lib/mockData';
 import { useWinRate } from '@/hooks/useWinRate';
@@ -370,6 +371,11 @@ const Index = () => {
             </div>
           </div>
         </section>
+
+        {/* Picks of the Day */}
+        <Suspense fallback={<div className="py-16 flex items-center justify-center"><div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+          <PicksOfTheDay />
+        </Suspense>
 
         {/* How It Works - Interactive Demo */}
         <section className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
