@@ -42,6 +42,7 @@ import {
 
 const Index = () => {
   const { winRate, currentStreak } = useWinRate();
+  const { user, isSubscribed } = useAuth();
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
