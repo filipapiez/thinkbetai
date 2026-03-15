@@ -12,6 +12,7 @@ const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 
 import { platformStats } from '@/lib/mockData';
 import { useWinRate } from '@/hooks/useWinRate';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Search, 
   TrendingUp, 
@@ -41,6 +42,7 @@ import {
 
 const Index = () => {
   const { winRate, currentStreak } = useWinRate();
+  const { user, isSubscribed } = useAuth();
   // Animated live viewer count
   const [viewerCount, setViewerCount] = useState(847);
   
@@ -658,26 +660,27 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Bottom padding for sticky mobile CTA */}
-      <div className="h-16 md:hidden" aria-hidden="true" />
+      {!user && <div className="h-16 md:hidden" aria-hidden="true" />}
 
       <Footer />
 
-      {/* Sticky Mobile Signup CTA – always rendered to avoid CLS */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
-            <p className="text-xs text-muted-foreground truncate">{platformStats.qualifiedWinRate}% win rate • 70% off</p>
+      {/* Sticky Mobile Signup CTA – hide for authenticated/subscribed users */}
+      {!user && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
+              <p className="text-xs text-muted-foreground truncate">{platformStats.qualifiedWinRate}% win rate • 70% off</p>
+            </div>
+            <Button variant="hero" size="sm" asChild className="shrink-0">
+              <Link to="/login?tab=signup">
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                Sign Up Free
+              </Link>
+            </Button>
           </div>
-          <Button variant="hero" size="sm" asChild className="shrink-0">
-            <Link to="/login?tab=signup">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Sign Up Free
-            </Link>
-          </Button>
         </div>
-      </div>
+      )}
       
     </div>
   );
