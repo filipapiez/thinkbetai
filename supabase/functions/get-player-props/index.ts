@@ -165,10 +165,20 @@ Deno.serve(async (req: Request) => {
 
         console.log(`[OddsAPI] ${sportKey}: ${events.length} events`);
 
-        // Step 2: Fetch player props for up to 5 events (to stay within quota)
+        // Filter out games that have already started (with 4h buffer for live games)
+        const now = new Date();
+        const liveBuffer = 4 * 60 * 60 * 1000; // 4 hours for in-progress games
+        const activeEvents = events.filter(ev => {
+          const gameStart = new Date(ev.commence_time).getTime();
+          return gameStart > now.getTime() - liveBuffer;
+        });
+
+        console.log(`[OddsAPI] ${sportKey}: ${activeEvents.length} active events (filtered from ${events.length})`);
+
+        // Step 2: Fetch player props for active events only
         const markets = propMarkets[sportKey] || [];
         const marketsStr = markets.join(",");
-        const eventsToFetch = events; // Fetch ALL events
+        const eventsToFetch = activeEvents;
 
         for (let i = 0; i < eventsToFetch.length; i++) {
           const ev = eventsToFetch[i];
