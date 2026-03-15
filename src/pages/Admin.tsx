@@ -820,6 +820,9 @@ const Admin = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+            <TabsContent value="picks">
+              <AdminPickBuilder />
+            </TabsContent>
           </Tabs>
         </div>
       </main>
