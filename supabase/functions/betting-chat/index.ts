@@ -171,6 +171,66 @@ function detectSportsDataQuery(message: string): { isDataQuery: boolean; queryTy
   return { isDataQuery, queryType, searchTerms };
 }
 
+// Fetch live injury reports from ESPN
+async function fetchESPNInjuries(searchTerms: string[]): Promise<string> {
+  const sportEndpoints: Record<string, string> = {
+    'nba': 'basketball/nba',
+    'nfl': 'football/nfl',
+    'mlb': 'baseball/mlb',
+    'nhl': 'hockey/nhl',
+  };
+
+  const results: string[] = [];
+
+  try {
+    const fetches = Object.entries(sportEndpoints).map(async ([key, path]) => {
+      try {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/injuries`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        
+        const injuries: string[] = [];
+        for (const team of (data.items || [])) {
+          const teamName = team.team?.displayName || team.team?.name || 'Unknown';
+          for (const athlete of (team.injuries || [])) {
+            const playerName = athlete.athlete?.displayName || 'Unknown';
+            const status = athlete.status || 'Unknown';
+            const detail = athlete.details?.detail || athlete.details?.type || '';
+            injuries.push(`${playerName} (${teamName}) — ${status}${detail ? ': ' + detail : ''}`);
+          }
+        }
+        return injuries;
+      } catch {
+        return [];
+      }
+    });
+
+    const allInjuries = (await Promise.all(fetches)).flat();
+    
+    // If user mentioned specific terms, filter relevant injuries
+    if (searchTerms.length > 0) {
+      const searchLower = searchTerms.map(t => t.toLowerCase());
+      const filtered = allInjuries.filter(inj => 
+        searchLower.some(term => inj.toLowerCase().includes(term))
+      );
+      if (filtered.length > 0) {
+        results.push(...filtered.slice(0, 25));
+      } else {
+        // Show all injuries but limited
+        results.push(...allInjuries.slice(0, 30));
+      }
+    } else {
+      results.push(...allInjuries.slice(0, 30));
+    }
+  } catch (e) {
+    console.error('Error fetching ESPN injuries:', e);
+  }
+
+  return results.length > 0
+    ? `\n\n🚑 LIVE INJURY REPORT (ESPN — ${new Date().toISOString()}):\n${results.join('\n')}`
+    : '\n\n🚑 INJURY DATA: No current injury data available. DO NOT guess player availability.';
+}
+
 // Fetch live sports data from The Odds API (same source as Games page)
 async function fetchLiveOddsData(searchTerms: string[]): Promise<string | null> {
   const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
@@ -254,7 +314,7 @@ async function fetchLiveOddsData(searchTerms: string[]): Promise<string | null> 
 
       // Extract best odds from bookmakers
       if (e.bookmakers && e.bookmakers.length > 0) {
-        const book = e.bookmakers[0]; // Use first (usually DraftKings/FanDuel)
+        const book = e.bookmakers[0];
         const bookName = book.title || 'Sportsbook';
 
         const h2h = book.markets?.find((m: any) => m.key === 'h2h');
