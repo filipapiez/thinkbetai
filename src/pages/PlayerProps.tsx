@@ -1,6 +1,5 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
-const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard, SPORTSBOOKS, computeEdge } from '@/components/PlayerPropCard';
 import { gameLogCache } from '@/hooks/usePlayerGameLog';
