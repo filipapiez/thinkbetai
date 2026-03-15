@@ -1,8 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Target, BarChart3, User, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, BarChart3, User, Check, Share2 } from 'lucide-react';
 import type { Pick } from '@/hooks/usePicks';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface PickCardProps {
   pick: Pick;
