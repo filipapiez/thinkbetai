@@ -44,6 +44,20 @@ export function PickCard({ pick, isSelected = false, onSelect }: PickCardProps) 
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = `🎯 ${pick.playerName} (${pick.team}) — ${pick.propType} ${pick.direction} ${pick.line}\n📊 Confidence: ${pick.confidence}%${pick.hitRate ? ` | Hit Rate: ${pick.hitRate}%` : ''}\n🏟️ ${pick.opponent} • ${pick.gameDate} ${pick.gameTime}\n📱 ${pick.platform}\n\nShared via ThinkBetAI`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast.success('Pick copied to clipboard!');
+    }
+  };
+
   return (
     <Card 
       className={cn(
