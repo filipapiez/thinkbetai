@@ -221,9 +221,10 @@ function PlayerPropCard({ prop, analysis }: { prop: PlayerProp; analysis: AIAnal
               title="Share prop"
               onClick={async () => {
                 const dir = analysis.lean === 'EVEN' ? 'No edge' : analysis.lean;
-                const text = `🎯 ${prop.playerName} (${prop.team}) — ${prop.statType} ${prop.line}\n📊 AI: ${dir}${analysis.lean !== 'EVEN' ? ` ${analysis.confidence}%` : ''}\n🏟️ vs ${prop.opponent} · ${prop.league}\n\nShared via ThinkBetAI`;
+                const gameLink = `${window.location.origin}/games/${encodeURIComponent(prop.gameId)}`;
+                const text = `🎯 ${prop.playerName} (${prop.team}) — ${prop.statType} ${prop.line}\n📊 AI: ${dir}${analysis.lean !== 'EVEN' ? ` ${analysis.confidence}%` : ''}\n🏟️ vs ${prop.opponent} · ${prop.league}\n\n🔗 ${gameLink}\n\nShared via ThinkBetAI`;
                 if (navigator.share) {
-                  try { await navigator.share({ text }); } catch {}
+                  try { await navigator.share({ text, url: gameLink }); } catch {}
                 } else {
                   await navigator.clipboard.writeText(text);
                   toast.success('Prop copied to clipboard!');
