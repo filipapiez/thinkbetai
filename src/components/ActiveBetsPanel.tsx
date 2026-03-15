@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { RefreshCw, Clock, CheckCircle, XCircle, Timer, Loader2, Plus } from 'lucide-react';
+import { RefreshCw, Clock, CheckCircle, XCircle, Timer, Loader2, Plus, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,20 @@ export function ActiveBetsPanel() {
     refetch 
   } = useActiveBets();
   const [showAddDialog, setShowAddDialog] = useState(false);
+
+  const handleShareBet = async (bet: ActiveBet) => {
+    const odds = bet.odds > 0 ? `+${bet.odds}` : `${bet.odds}`;
+    const text = `🎯 ${bet.away_team} @ ${bet.home_team}\n📌 Pick: ${bet.pick} (${odds})\n📊 Confidence: ${bet.confidence}%\n🏟️ ${bet.sport}${bet.result ? `\n✅ Result: ${bet.result.toUpperCase()}` : ''}\n\nShared via ThinkBetAI`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast.success('Bet copied to clipboard!');
+    }
+  };
 
   const getStatusBadge = (bet: ActiveBet) => {
     if (bet.status === 'pending') {
@@ -133,11 +148,16 @@ export function ActiveBetsPanel() {
                           {format(new Date(bet.game_time), 'MMM d, h:mm a')}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold">{bet.confidence}%</div>
-                        <div className="text-sm text-muted-foreground">
-                          {bet.odds > 0 ? '+' : ''}{bet.odds}
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{bet.confidence}%</div>
+                          <div className="text-sm text-muted-foreground">
+                            {bet.odds > 0 ? '+' : ''}{bet.odds}
+                          </div>
                         </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShareBet(bet)} title="Share bet">
+                          <Share2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -183,13 +203,18 @@ export function ActiveBetsPanel() {
                           )}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <div className={cn(
-                          "text-lg font-bold",
-                          bet.result === 'win' ? "text-green-400" : bet.result === 'loss' ? "text-red-400" : ""
-                        )}>
-                          {bet.result?.toUpperCase()}
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className={cn(
+                            "text-lg font-bold",
+                            bet.result === 'win' ? "text-green-400" : bet.result === 'loss' ? "text-red-400" : ""
+                          )}>
+                            {bet.result?.toUpperCase()}
+                          </div>
                         </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleShareBet(bet)} title="Share bet">
+                          <Share2 className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}

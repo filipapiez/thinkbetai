@@ -1,8 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Target, BarChart3, User, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, BarChart3, User, Check, Share2 } from 'lucide-react';
 import type { Pick } from '@/hooks/usePicks';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface PickCardProps {
   pick: Pick;
@@ -42,6 +44,20 @@ export function PickCard({ pick, isSelected = false, onSelect }: PickCardProps) 
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = `🎯 ${pick.playerName} (${pick.team}) — ${pick.propType} ${pick.direction} ${pick.line}\n📊 Confidence: ${pick.confidence}%${pick.hitRate ? ` | Hit Rate: ${pick.hitRate}%` : ''}\n🏟️ ${pick.opponent} • ${pick.gameDate} ${pick.gameTime}\n📱 ${pick.platform}\n\nShared via ThinkBetAI`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(text);
+      toast.success('Pick copied to clipboard!');
+    }
+  };
+
   return (
     <Card 
       className={cn(
@@ -61,14 +77,19 @@ export function PickCard({ pick, isSelected = false, onSelect }: PickCardProps) 
           </div>
         )}
 
-        {/* Header: Platform + Signal */}
+        {/* Header: Platform + Signal + Share */}
         <div className="flex items-center justify-between mb-3">
           <Badge className={platformColors[pick.platform] || 'bg-muted text-muted-foreground'}>
             {pick.platform}
           </Badge>
-          <Badge variant="outline" className={cn(signalColors[signal], isSelected && "mr-8")}>
-            {signal}
-          </Badge>
+          <div className="flex items-center gap-1.5">
+            <Badge variant="outline" className={cn(signalColors[signal], isSelected && "mr-8")}>
+              {signal}
+            </Badge>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleShare} title="Share pick">
+              <Share2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Player Info */}
