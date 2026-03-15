@@ -140,10 +140,8 @@ const PlayerProps = () => {
             </div>
           </div>
 
-          {/* Best Picks Today */}
-          <Suspense fallback={<div className="py-8 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
-            <PicksOfTheDay />
-          </Suspense>
+
+
 
           {/* Page Header */}
           <div className="mb-6">
