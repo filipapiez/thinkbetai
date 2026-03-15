@@ -128,8 +128,8 @@ export default function PicksOfTheDay() {
     if (!force) {
       const cached = loadCache();
       if (cached) {
-        const merged = [...(cached.games || []), ...(cached.props || []), ...(cached.overUnder || [])];
-        setAllPicks(merged.sort((a, b) => b.confidence - a.confidence));
+        const picks = cached.games || [];
+        setAllPicks(picks.sort((a: DailyPick, b: DailyPick) => b.confidence - a.confidence));
         setGeneratedAt(cached.generatedAt);
         setIsLoading(false);
         return;
@@ -140,8 +140,8 @@ export default function PicksOfTheDay() {
     try {
       const { data, error } = await supabase.functions.invoke('generate-daily-picks');
       if (error) throw error;
-      const merged = [...(data?.games || []), ...(data?.props || []), ...(data?.overUnder || [])];
-      setAllPicks(merged.sort((a, b) => b.confidence - a.confidence));
+      const picks = data?.games || [];
+      setAllPicks(picks.sort((a: DailyPick, b: DailyPick) => b.confidence - a.confidence));
       setGeneratedAt(data?.generatedAt || new Date().toISOString());
       saveCache(data);
     } catch (err) {

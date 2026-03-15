@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ODDS_API_KEY = Deno.env.get("ODDS_API_KEY");
+const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY") || Deno.env.get("ODDS_API_KEY");
 
 async function fetchTodaysOdds(): Promise<any[]> {
   if (!ODDS_API_KEY) return [];
@@ -98,7 +98,7 @@ serve(async (req) => {
       })
       .join("\n\n");
 
-    const prompt = `You are an expert sports analyst. Based on the following real-time odds and injury data for today's games, generate your TOP recommended picks of the day.
+    const prompt = `You are an expert sports analyst. Based on the following real-time odds and injury data for today's games, generate your TOP recommended picks — focusing on the EASIEST TO WIN picks with the HIGHEST probability of hitting.
 
 ## TODAY'S ODDS:
 ${oddsContext || "No games available today."}
@@ -107,11 +107,7 @@ ${oddsContext || "No games available today."}
 ${injuryReport}
 
 ## INSTRUCTIONS:
-Generate EXACTLY 3 categories of picks. Return valid JSON only, no markdown.
-
-1. **games** — 3-5 best moneyline or spread picks for today
-2. **props** — 3-5 best player prop recommendations (points, rebounds, passing yards, etc.)
-3. **overUnder** — 3-5 best over/under total picks
+Generate a single list of 8-12 of the BEST, HIGHEST PROBABILITY picks across all categories (moneyline, spread, player props, over/under). Prioritize picks that are MOST LIKELY TO WIN. Return valid JSON only, no markdown.
 
 For each pick include:
 - id: unique string
@@ -121,7 +117,7 @@ For each pick include:
 - gameTime: ISO string
 - pick: short pick text (e.g. "Lakers ML", "LeBron Over 25.5 Pts", "Over 215.5")
 - pickDetail: one-line context (e.g. "Lakers are 8-2 in last 10 home games")
-- confidence: 60-95
+- confidence: 60-95 (be accurate — only give 85+ to truly dominant picks)
 - reasoning: 2-3 sentence analysis
 
 CRITICAL RULES:
@@ -129,13 +125,14 @@ CRITICAL RULES:
 - Factor in injuries when making picks
 - Do NOT invent games or players not in the data
 - If no games are available, return empty arrays
+- Sort picks by confidence descending — easiest wins first
+- Include a mix: some moneyline, some spreads, some totals, some props
 
 Return JSON in this exact format:
 {
-  "games": [...],
-  "props": [...],
-  "overUnder": [...]
+  "games": [...all picks in one array sorted by confidence...]
 }`;
+
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -176,8 +173,6 @@ Return JSON in this exact format:
 
     const response = {
       games: picks.games || [],
-      props: picks.props || [],
-      overUnder: picks.overUnder || [],
       generatedAt: new Date().toISOString(),
     };
 
