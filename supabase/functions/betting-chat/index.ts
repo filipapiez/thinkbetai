@@ -171,6 +171,66 @@ function detectSportsDataQuery(message: string): { isDataQuery: boolean; queryTy
   return { isDataQuery, queryType, searchTerms };
 }
 
+// Fetch live injury reports from ESPN
+async function fetchESPNInjuries(searchTerms: string[]): Promise<string> {
+  const sportEndpoints: Record<string, string> = {
+    'nba': 'basketball/nba',
+    'nfl': 'football/nfl',
+    'mlb': 'baseball/mlb',
+    'nhl': 'hockey/nhl',
+  };
+
+  const results: string[] = [];
+
+  try {
+    const fetches = Object.entries(sportEndpoints).map(async ([key, path]) => {
+      try {
+        const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${path}/injuries`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        
+        const injuries: string[] = [];
+        for (const team of (data.items || [])) {
+          const teamName = team.team?.displayName || team.team?.name || 'Unknown';
+          for (const athlete of (team.injuries || [])) {
+            const playerName = athlete.athlete?.displayName || 'Unknown';
+            const status = athlete.status || 'Unknown';
+            const detail = athlete.details?.detail || athlete.details?.type || '';
+            injuries.push(`${playerName} (${teamName}) — ${status}${detail ? ': ' + detail : ''}`);
+          }
+        }
+        return injuries;
+      } catch {
+        return [];
+      }
+    });
+
+    const allInjuries = (await Promise.all(fetches)).flat();
+    
+    // If user mentioned specific terms, filter relevant injuries
+    if (searchTerms.length > 0) {
+      const searchLower = searchTerms.map(t => t.toLowerCase());
+      const filtered = allInjuries.filter(inj => 
+        searchLower.some(term => inj.toLowerCase().includes(term))
+      );
+      if (filtered.length > 0) {
+        results.push(...filtered.slice(0, 25));
+      } else {
+        // Show all injuries but limited
+        results.push(...allInjuries.slice(0, 30));
+      }
+    } else {
+      results.push(...allInjuries.slice(0, 30));
+    }
+  } catch (e) {
+    console.error('Error fetching ESPN injuries:', e);
+  }
+
+  return results.length > 0
+    ? `\n\n🚑 LIVE INJURY REPORT (ESPN — ${new Date().toISOString()}):\n${results.join('\n')}`
+    : '\n\n🚑 INJURY DATA: No current injury data available. DO NOT guess player availability.';
+}
+
 // Fetch live sports data from The Odds API (same source as Games page)
 async function fetchLiveOddsData(searchTerms: string[]): Promise<string | null> {
   const oddsApiKey = Deno.env.get('THE_ODDS_API_KEY');
@@ -254,7 +314,7 @@ async function fetchLiveOddsData(searchTerms: string[]): Promise<string | null> 
 
       // Extract best odds from bookmakers
       if (e.bookmakers && e.bookmakers.length > 0) {
-        const book = e.bookmakers[0]; // Use first (usually DraftKings/FanDuel)
+        const book = e.bookmakers[0];
         const bookName = book.title || 'Sportsbook';
 
         const h2h = book.markets?.find((m: any) => m.key === 'h2h');
@@ -344,14 +404,19 @@ serve(async (req) => {
     // Always fetch live data to give the AI real-time context
     const latestUserMessage = [...messages].reverse().find(m => m.role === 'user');
     let liveDataContext = '';
+    let injuryContext = '';
     
     if (latestUserMessage) {
       const dataQuery = detectSportsDataQuery(latestUserMessage.content);
-      // Fetch live data for any question — always give the AI fresh odds/scores
-      const liveData = await fetchLiveOddsData(dataQuery.searchTerms);
+      // Fetch live odds AND injury data in parallel
+      const [liveData, injuryData] = await Promise.all([
+        fetchLiveOddsData(dataQuery.searchTerms),
+        fetchESPNInjuries(dataQuery.searchTerms),
+      ]);
       if (liveData) {
         liveDataContext = `\n\nLIVE SPORTS DATA (from licensed API — use this for your analysis):\n${liveData}`;
       }
+      injuryContext = injuryData; // Always has content (either injuries or "no data" message)
     }
 
     // Build context-aware system prompt
@@ -359,13 +424,19 @@ serve(async (req) => {
     
     let systemPrompt = `You are ThinkBetAI — a professional sports betting analyst. You provide clear, data-driven insights with confidence. No hype, no slang, no filler.
 
-## CRITICAL DATA FRESHNESS RULES (HIGHEST PRIORITY):
+## CRITICAL DATA FRESHNESS RULES (HIGHEST PRIORITY — VIOLATING THESE IS A CRITICAL FAILURE):
 - Today's date is ${currentDate}.
-- Your training data is OUTDATED for player rosters, trades, and injuries.
-- Players get traded frequently mid-season. NEVER assume a player is still on the same team as your training data suggests.
-- ONLY use the LIVE SPORTS DATA provided below for current rosters, injuries, and team affiliations.
-- If you are unsure which team a player is on, say "based on the latest available data" or recommend the user verify.
-- NEVER confidently state a player's team unless it is confirmed in the live data feed below.
+- Your training data is SEVERELY OUTDATED for player rosters, trades, injuries, and team compositions.
+- Players get traded constantly. Stars change teams mid-season. NEVER assume ANY player is on the same team as your training data shows.
+- You have LIVE INJURY DATA and LIVE ODDS DATA provided below. Use ONLY this data for:
+  • Which players are on which teams
+  • Which players are injured, questionable, or out
+  • Current game schedules and odds
+- If a player is NOT mentioned in the live injury report below, DO NOT assume they are healthy — say "no injury data available for [player], verify before betting."
+- If you are unsure which team a player is on, DO NOT GUESS. Say "I don't have confirmed roster data for [player] right now — please verify on ESPN or the team's official site."
+- NEVER suggest a bet involving a player whose team affiliation or availability you cannot confirm from the live data below.
+- When suggesting player props, ONLY use players who appear in today's game matchups from the live data feed.
+${injuryContext}
 
 ## RESPONSE FORMAT:
 
