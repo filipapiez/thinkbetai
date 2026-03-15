@@ -660,8 +660,7 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Bottom padding for sticky mobile CTA */}
-      <div className="h-16 md:hidden" aria-hidden="true" />
+      {!user && <div className="h-16 md:hidden" aria-hidden="true" />}
 
       <Footer />
 
