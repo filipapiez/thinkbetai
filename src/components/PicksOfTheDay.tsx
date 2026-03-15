@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Trophy, TrendingUp, ArrowUpDown, RefreshCw, Loader2,
+  TrendingUp, RefreshCw, Loader2,
   Flame, ChevronRight, Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
