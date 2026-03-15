@@ -154,58 +154,45 @@ export default function PicksOfTheDay() {
   useEffect(() => { fetchPicks(); }, [fetchPicks]);
 
   return (
-    <section className="py-16 md:py-24 border-t border-border/40">
-      <div className="container">
-        <div className="text-center mb-10">
-          <Badge variant="outline" className="px-4 py-1.5 mb-4 border-primary/30 text-primary">
-            <Flame className="h-3.5 w-3.5 mr-2" />
-            Updated Daily
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-3">
-            Today's <span className="text-gradient">Best Picks</span>
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Flame className="h-5 w-5 text-primary" />
+            Today's Best Picks
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            AI-analyzed picks ranked by confidence — highest win probability first.
-          </p>
-          {generatedAt && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Last updated: {new Date(generatedAt).toLocaleTimeString()}
-            </p>
-          )}
+          <Badge variant="outline" className="border-primary/30 text-primary text-[10px]">
+            <Sparkles className="h-3 w-3 mr-1" />
+            AI
+          </Badge>
         </div>
-
-        <Card variant="glass" className="max-w-3xl mx-auto">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                <span>{allPicks.length} picks ranked by confidence</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => fetchPicks(true)}
-                disabled={isLoading}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-              </Button>
-            </div>
-
-            <PicksList picks={allPicks} isLoading={isLoading} emptyText="No picks available yet — check back soon." />
-
-            <div className="mt-6 text-center">
-              <Button variant="hero" size="lg" asChild className="group">
-                <Link to="/picks">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  View All Picks
-                  <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-2">
+          {generatedAt && (
+            <span className="text-[10px] text-muted-foreground">
+              {new Date(generatedAt).toLocaleTimeString()}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => fetchPicks(true)}
+            disabled={isLoading}
+            className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
+          >
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
+        </div>
       </div>
-    </section>
+
+      <Card className="border-border/50 bg-card/50">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+            <TrendingUp className="h-3.5 w-3.5 text-primary" />
+            <span>{allPicks.length} picks ranked by confidence</span>
+          </div>
+          <PicksList picks={allPicks} isLoading={isLoading} emptyText="No picks available yet — check back soon." />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
