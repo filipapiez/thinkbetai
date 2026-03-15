@@ -1,6 +1,5 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
-const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 import { Footer } from '@/components/Footer';
 import { PlayerPropCard, SPORTSBOOKS, computeEdge } from '@/components/PlayerPropCard';
 import { gameLogCache } from '@/hooks/usePlayerGameLog';
@@ -141,10 +140,8 @@ const PlayerProps = () => {
             </div>
           </div>
 
-          {/* Best Picks Today */}
-          <Suspense fallback={<div className="py-8 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>}>
-            <PicksOfTheDay />
-          </Suspense>
+
+
 
           {/* Page Header */}
           <div className="mb-6">
