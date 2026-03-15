@@ -120,9 +120,7 @@ function PicksList({ picks, isLoading, emptyText }: { picks: DailyPick[]; isLoad
 }
 
 export default function PicksOfTheDay() {
-  const [games, setGames] = useState<DailyPick[]>([]);
-  const [props, setProps] = useState<DailyPick[]>([]);
-  const [overUnder, setOverUnder] = useState<DailyPick[]>([]);
+  const [allPicks, setAllPicks] = useState<DailyPick[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
 
@@ -130,9 +128,8 @@ export default function PicksOfTheDay() {
     if (!force) {
       const cached = loadCache();
       if (cached) {
-        setGames(cached.games || []);
-        setProps(cached.props || []);
-        setOverUnder(cached.overUnder || []);
+        const merged = [...(cached.games || []), ...(cached.props || []), ...(cached.overUnder || [])];
+        setAllPicks(merged.sort((a, b) => b.confidence - a.confidence));
         setGeneratedAt(cached.generatedAt);
         setIsLoading(false);
         return;
@@ -143,9 +140,8 @@ export default function PicksOfTheDay() {
     try {
       const { data, error } = await supabase.functions.invoke('generate-daily-picks');
       if (error) throw error;
-      setGames(data?.games || []);
-      setProps(data?.props || []);
-      setOverUnder(data?.overUnder || []);
+      const merged = [...(data?.games || []), ...(data?.props || []), ...(data?.overUnder || [])];
+      setAllPicks(merged.sort((a, b) => b.confidence - a.confidence));
       setGeneratedAt(data?.generatedAt || new Date().toISOString());
       saveCache(data);
     } catch (err) {
@@ -157,8 +153,6 @@ export default function PicksOfTheDay() {
 
   useEffect(() => { fetchPicks(); }, [fetchPicks]);
 
-  const totalPicks = games.length + props.length + overUnder.length;
-
   return (
     <section className="py-16 md:py-24 border-t border-border/40">
       <div className="container">
@@ -168,10 +162,10 @@ export default function PicksOfTheDay() {
             Updated Daily
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-3">
-            Today's <span className="text-gradient">Top Picks</span>
+            Today's <span className="text-gradient">Best Picks</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            AI-analyzed picks across games, player props, and over/unders — refreshed every day.
+            AI-analyzed picks ranked by confidence — highest win probability first.
           </p>
           {generatedAt && (
             <p className="text-xs text-muted-foreground mt-2">
@@ -182,46 +176,23 @@ export default function PicksOfTheDay() {
 
         <Card variant="glass" className="max-w-3xl mx-auto">
           <CardContent className="p-4 md:p-6">
-            <Tabs defaultValue="games" className="w-full">
-              <div className="flex items-center justify-between mb-4">
-                <TabsList className="bg-muted/50">
-                  <TabsTrigger value="games" className="gap-1.5 text-xs sm:text-sm">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Games
-                    {games.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{games.length}</Badge>}
-                  </TabsTrigger>
-                  <TabsTrigger value="props" className="gap-1.5 text-xs sm:text-sm">
-                    <TrendingUp className="h-3.5 w-3.5" />
-                    Props
-                    {props.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{props.length}</Badge>}
-                  </TabsTrigger>
-                  <TabsTrigger value="overunder" className="gap-1.5 text-xs sm:text-sm">
-                    <ArrowUpDown className="h-3.5 w-3.5" />
-                    Over/Under
-                    {overUnder.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">{overUnder.length}</Badge>}
-                  </TabsTrigger>
-                </TabsList>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => fetchPicks(true)}
-                  disabled={isLoading}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-                </Button>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span>{allPicks.length} picks ranked by confidence</span>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => fetchPicks(true)}
+                disabled={isLoading}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+              </Button>
+            </div>
 
-              <TabsContent value="games">
-                <PicksList picks={games} isLoading={isLoading} emptyText="No game picks available yet — check back soon." />
-              </TabsContent>
-              <TabsContent value="props">
-                <PicksList picks={props} isLoading={isLoading} emptyText="No prop picks available yet — check back soon." />
-              </TabsContent>
-              <TabsContent value="overunder">
-                <PicksList picks={overUnder} isLoading={isLoading} emptyText="No over/under picks available yet — check back soon." />
-              </TabsContent>
-            </Tabs>
+            <PicksList picks={allPicks} isLoading={isLoading} emptyText="No picks available yet — check back soon." />
 
             <div className="mt-6 text-center">
               <Button variant="hero" size="lg" asChild className="group">
