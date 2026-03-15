@@ -22,11 +22,12 @@ export function ActiveBetsPanel() {
 
   const handleShareBet = async (bet: ActiveBet) => {
     const odds = bet.odds > 0 ? `+${bet.odds}` : `${bet.odds}`;
-    const text = `🎯 ${bet.away_team} @ ${bet.home_team}\n📌 Pick: ${bet.pick} (${odds})\n📊 Confidence: ${bet.confidence}%\n🏟️ ${bet.sport}${bet.result ? `\n✅ Result: ${bet.result.toUpperCase()}` : ''}\n\nShared via ThinkBetAI`;
+    const gameLink = `${window.location.origin}/games/${encodeURIComponent(bet.game_id)}`;
+    const text = `🎯 ${bet.away_team} @ ${bet.home_team}\n📌 Pick: ${bet.pick} (${odds})\n📊 Confidence: ${bet.confidence}%\n🏟️ ${bet.sport}${bet.result ? `\n✅ Result: ${bet.result.toUpperCase()}` : ''}\n\n🔗 ${gameLink}\n\nShared via ThinkBetAI`;
 
     if (navigator.share) {
       try {
-        await navigator.share({ text });
+        await navigator.share({ text, url: gameLink });
       } catch {}
     } else {
       await navigator.clipboard.writeText(text);
