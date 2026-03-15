@@ -1,5 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { PlayerProp } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
@@ -227,15 +230,35 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
             {direction} {prop.line} {prop.statType}
           </p>
         </div>
-        <a
-          href={sportsbook.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg p-2 cursor-pointer"
-          title={`Bet on ${sportsbook.name}`}
-        >
-          <img src={sportsbook.logo} alt={sportsbook.name} className="h-5 w-5 object-contain rounded-sm" />
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            href={sportsbook.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg p-2 cursor-pointer"
+            title={`Bet on ${sportsbook.name}`}
+          >
+            <img src={sportsbook.logo} alt={sportsbook.name} className="h-5 w-5 object-contain rounded-sm" />
+          </a>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            title="Share prop"
+            onClick={async () => {
+              const oddsStr = odds > 0 ? `+${odds}` : `${odds}`;
+              const text = `🎯 ${prop.playerName} (${prop.team}) — ${direction} ${prop.line} ${prop.statType}\n📊 Prob: ${blendedProb.toFixed(0)}% | Edge: +${blendedEdge.toFixed(1)}%${hasRealData ? ` | L${hitTotal} Hit: ${effectiveHitPct}%` : ''}\n🏟️ vs ${prop.opponent} · ${gameDate} ${gameTimeStr}\n\nShared via ThinkBetAI`;
+              if (navigator.share) {
+                try { await navigator.share({ text }); } catch {}
+              } else {
+                await navigator.clipboard.writeText(text);
+                toast.success('Prop copied to clipboard!');
+              }
+            }}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {/* Stats row */}

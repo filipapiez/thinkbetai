@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import {
-  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, User,
+  RefreshCw, Loader2, ArrowUp, ArrowDown, Zap, Activity, User, Share2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { usePlayerProps, PlayerProp } from '@/hooks/usePlayerProps';
 
@@ -199,7 +200,7 @@ function PlayerPropCard({ prop, analysis }: { prop: PlayerProp; analysis: AIAnal
           </button>
         </div>
 
-        {/* AI confidence */}
+        {/* AI confidence + Share */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-1.5">
             <Zap className="h-3.5 w-3.5 text-primary" />
@@ -207,11 +208,31 @@ function PlayerPropCard({ prop, analysis }: { prop: PlayerProp; analysis: AIAnal
               AI: {analysis.lean === 'EVEN' ? 'No edge' : `${analysis.lean} ${analysis.confidence}%`}
             </span>
           </div>
-          {prop.gameTime && (
-            <span className="text-[10px] text-muted-foreground">
-              {new Date(prop.gameTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {prop.gameTime && (
+              <span className="text-[10px] text-muted-foreground">
+                {new Date(prop.gameTime).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              title="Share prop"
+              onClick={async () => {
+                const dir = analysis.lean === 'EVEN' ? 'No edge' : analysis.lean;
+                const text = `🎯 ${prop.playerName} (${prop.team}) — ${prop.statType} ${prop.line}\n📊 AI: ${dir}${analysis.lean !== 'EVEN' ? ` ${analysis.confidence}%` : ''}\n🏟️ vs ${prop.opponent} · ${prop.league}\n\nShared via ThinkBetAI`;
+                if (navigator.share) {
+                  try { await navigator.share({ text }); } catch {}
+                } else {
+                  await navigator.clipboard.writeText(text);
+                  toast.success('Prop copied to clipboard!');
+                }
+              }}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
