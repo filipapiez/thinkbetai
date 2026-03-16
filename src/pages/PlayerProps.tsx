@@ -25,6 +25,39 @@ const SPORT_FILTERS = [
   { value: 'mma', label: 'MMA' },
 ];
 
+const TIME_FILTERS = [
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+  { value: 'year', label: 'This Year' },
+];
+
+function getTimeFilterEnd(filter: string): Date {
+  const now = new Date();
+  switch (filter) {
+    case 'today': {
+      const end = new Date(now);
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+    case 'week': {
+      const end = new Date(now);
+      const dayOfWeek = end.getDay();
+      end.setDate(end.getDate() + (6 - dayOfWeek));
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+    case 'month': {
+      return new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+    case 'year': {
+      return new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    }
+    default:
+      return new Date(now.getFullYear() + 1, 0, 1);
+  }
+}
+
 /** Top N props auto-fetch L20; rest are lazy-loaded on tap */
 const AUTO_FETCH_LIMIT = 30;
 
@@ -33,6 +66,7 @@ const PlayerProps = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statFilter, setStatFilter] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [timeFilter, setTimeFilter] = useState('today');
   const { user, isSubscribed } = useAuth();
   const navigate = useNavigate();
 
@@ -50,6 +84,8 @@ const PlayerProps = () => {
   );
 
   const filtered = useMemo(() => {
+    const timeEnd = getTimeFilterEnd(timeFilter);
+    const now = new Date();
     return props
       .filter(p => {
         const matchesSearch =
@@ -57,7 +93,9 @@ const PlayerProps = () => {
           p.playerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.team.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStat = !statFilter || p.statType === statFilter;
-        return matchesSearch && matchesStat;
+        const gameDate = new Date(p.gameTime);
+        const matchesTime = gameDate >= now && gameDate <= timeEnd;
+        return matchesSearch && matchesStat && matchesTime;
       })
       .sort((a, b) => {
         const edgeA = computeEdge(a.overOdds, a.underOdds);
@@ -69,7 +107,7 @@ const PlayerProps = () => {
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
-  }, [props, searchQuery, statFilter]);
+  }, [props, searchQuery, statFilter, timeFilter]);
 
   // Build a set of top-N prop IDs for auto-fetch
   const autoFetchIds = useMemo(() => {
@@ -169,6 +207,21 @@ const PlayerProps = () => {
                 Refresh
               </Button>
             </div>
+          </div>
+
+          {/* Time filter tabs */}
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
+            {TIME_FILTERS.map(tf => (
+              <Button
+                key={tf.value}
+                variant={timeFilter === tf.value ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-3 text-xs"
+                onClick={() => setTimeFilter(tf.value)}
+              >
+                {tf.label}
+              </Button>
+            ))}
           </div>
 
           {/* Platform selector */}
