@@ -66,6 +66,7 @@ const PlayerProps = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statFilter, setStatFilter] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [timeFilter, setTimeFilter] = useState('today');
   const { user, isSubscribed } = useAuth();
   const navigate = useNavigate();
 
