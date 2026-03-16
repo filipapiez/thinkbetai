@@ -167,34 +167,31 @@ export function usePopularGames() {
       
       console.log('[PopularGames] Fetching from edge function', forceRefresh ? '(force refresh)' : '');
       
-      // Get current session for auth token
+      // Get current session for auth token (optional - function allows anonymous)
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        console.log('[PopularGames] No active session, using cached data only');
-        const clientCache = getClientCache();
-        if (clientCache && clientCache.games.length > 0) {
-          const validGames = validateAndDeduplicateGames(clientCache.games);
-          setGames(validGames);
-          setLastUpdated(new Date(clientCache.timestamp).toISOString());
-          setSource('client-cache');
-          setIsLoading(false);
-          return;
-        }
-        throw new Error('Authentication required');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
       }
       
       const url = forceRefresh 
         ? `${baseUrl}/functions/v1/scrape-live-games?refresh=true`
         : `${baseUrl}/functions/v1/scrape-live-games`;
+
+      // Add a client-side timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30_000); // 30s timeout
       
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

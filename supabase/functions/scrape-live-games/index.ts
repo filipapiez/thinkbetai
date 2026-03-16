@@ -132,8 +132,16 @@ interface ScheduledGame {
 
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 5 min)
+const CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours (extended to prevent cold-start timeouts)
 const DB_CACHE_KEY = 'scrape-live-games:all';
+
+// Timeout wrapper for individual fetch calls
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
 
 const LEAGUE_POPULARITY: Record<string, number> = {
   'NFL': 100, 'NBA': 95, 'MLB': 85, 'NHL': 80, 'NCAAF': 85, 'NCAAB': 80,
@@ -2012,23 +2020,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    // L2: DB cache (survives cold starts)
+    // L2: DB cache (survives cold starts) — serve even if expired (stale-while-revalidate)
     if (!forceRefresh) {
-      const dbCached = await getDbCache(DB_CACHE_KEY) as ScheduledGame[] | null;
-      if (dbCached && Array.isArray(dbCached) && dbCached.length > 0) {
-        console.log('[API] Returning L2 DB cached games:', dbCached.length);
-        cachedGames = dbCached;
-        cacheTimestamp = Date.now();
-        return new Response(
-          JSON.stringify({
-            success: true,
-            games: dbCached,
-            source: 'db_cached',
-            lastUpdated: new Date().toISOString(),
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      try {
+        const sb = getSupabaseAdmin();
+        const { data: cacheRow } = await sb
+          .from('odds_cache')
+          .select('data, expires_at')
+          .eq('id', DB_CACHE_KEY)
+          .single();
+
+        if (cacheRow && Array.isArray(cacheRow.data) && (cacheRow.data as ScheduledGame[]).length > 0) {
+          const dbCached = cacheRow.data as ScheduledGame[];
+          const isExpired = new Date(cacheRow.expires_at) <= new Date();
+
+          console.log(`[API] Returning L2 DB cached games: ${dbCached.length} (expired: ${isExpired})`);
+          cachedGames = dbCached;
+          cacheTimestamp = Date.now();
+
+          // Return stale cache immediately — the cron job or next force-refresh will update it
+          return new Response(
+            JSON.stringify({
+              success: true,
+              games: dbCached,
+              source: isExpired ? 'stale-cache' : 'db_cached',
+              lastUpdated: new Date().toISOString(),
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch { /* miss */ }
     }
 
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
@@ -2036,6 +2057,7 @@ Deno.serve(async (req) => {
     console.log('[API] Starting fresh fetch from real APIs only...');
     
     // Fetch from all REAL API sources in parallel
+    const FETCH_TIMEOUT = 15_000; // 15s per source
     const [
       sportsbookGames, 
       nflGames, 
@@ -2051,19 +2073,19 @@ Deno.serve(async (req) => {
       theOddsGames,
       espnGames,
     ] = await Promise.all([
-      rapidApiKey ? fetchSportsbookGames(rapidApiKey) : Promise.resolve([]),
-      fetchNFLGames(),
-      fetchNBAGames(),
-      fetchNHLGames(),
-      fetchMLBGames(),
-      fetchNCAABGames(),
-      fetchNCAAFGames(),
-      fetchUFCGames(),
-      fetchTennisGames(),
-      fetchTableTennisGames(),
-      fetchBoxingGames(),
-      fetchTheOddsAPIGames(),
-      fetchESPNGames(),
+      withTimeout(rapidApiKey ? fetchSportsbookGames(rapidApiKey) : Promise.resolve([]), FETCH_TIMEOUT, []),
+      withTimeout(fetchNFLGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNBAGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNHLGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchMLBGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNCAABGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNCAAFGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchUFCGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTennisGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTableTennisGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchBoxingGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTheOddsAPIGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchESPNGames(), FETCH_TIMEOUT, []),
     ]);
     
     const allGames = [
