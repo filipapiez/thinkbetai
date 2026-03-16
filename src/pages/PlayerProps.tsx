@@ -86,6 +86,8 @@ const PlayerProps = () => {
   const filtered = useMemo(() => {
     const timeEnd = getTimeFilterEnd(timeFilter);
     const now = new Date();
+    // Include games that started up to 4 hours ago (live buffer)
+    const liveBuffer = new Date(now.getTime() - 4 * 60 * 60 * 1000);
     return props
       .filter(p => {
         const matchesSearch =
@@ -94,7 +96,7 @@ const PlayerProps = () => {
           p.team.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStat = !statFilter || p.statType === statFilter;
         const gameDate = new Date(p.gameTime);
-        const matchesTime = gameDate >= now && gameDate <= timeEnd;
+        const matchesTime = gameDate >= liveBuffer && gameDate <= timeEnd;
         return matchesSearch && matchesStat && matchesTime;
       })
       .sort((a, b) => {
