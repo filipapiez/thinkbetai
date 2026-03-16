@@ -107,7 +107,7 @@ const PlayerProps = () => {
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
-  }, [props, searchQuery, statFilter]);
+  }, [props, searchQuery, statFilter, timeFilter]);
 
   // Build a set of top-N prop IDs for auto-fetch
   const autoFetchIds = useMemo(() => {
