@@ -132,8 +132,16 @@ interface ScheduledGame {
 
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
-const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 5 min)
+const CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours (extended to prevent cold-start timeouts)
 const DB_CACHE_KEY = 'scrape-live-games:all';
+
+// Timeout wrapper for individual fetch calls
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
 
 const LEAGUE_POPULARITY: Record<string, number> = {
   'NFL': 100, 'NBA': 95, 'MLB': 85, 'NHL': 80, 'NCAAF': 85, 'NCAAB': 80,
