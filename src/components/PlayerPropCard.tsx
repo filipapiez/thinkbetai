@@ -133,19 +133,15 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
   const position = positionMap[prop.statType] || 'PL';
 
   // Override direction when L20 data strongly contradicts odds direction
-  // If hit rate < 40%, flip to the opposite direction
   const direction = hasRealData && hitPct < 40
     ? (oddsDirection === 'Over' ? 'Under' : 'Over')
     : oddsDirection;
 
-  // Recalculate hit stats for the potentially flipped direction
   const effectiveHitPct = direction !== oddsDirection ? (100 - hitPct) : hitPct;
   const effectiveHitCount = direction !== oddsDirection ? (hitTotal - hitCount) : hitCount;
 
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
-  // Blend odds-implied prob with actual L20 hit rate when available
-  // 75% weight on real data, 25% on odds-implied — trust game logs heavily
   const blendedProb = hasRealData
     ? Math.min(Math.max(effectiveHitPct * 0.75 + prob * 0.25, 10), 95)
     : prob;
@@ -153,13 +149,17 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
     : edge;
 
-  const sportsbook = useMemo(() => {
+  // Determine which sportsbooks to show
+  const visibleBooks = useMemo(() => {
     if (selectedPlatform) {
-      return SPORTSBOOKS.find(s => s.id === selectedPlatform) || SPORTSBOOKS[0];
+      return SPORTSBOOKS.filter(s => s.id === selectedPlatform);
     }
-    const hash = Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
-    return SPORTSBOOKS[hash % SPORTSBOOKS.length];
-  }, [prop.id, selectedPlatform]);
+    // Show all books that have odds for this prop
+    if (prop.bookOdds && Object.keys(prop.bookOdds).length > 0) {
+      return SPORTSBOOKS.filter(s => prop.bookOdds?.[s.id]);
+    }
+    return SPORTSBOOKS;
+  }, [selectedPlatform, prop.bookOdds]);
 
   const gameDate = prop.gameTime
     ? new Date(prop.gameTime).toLocaleDateString('en-US', { weekday: 'short' })
