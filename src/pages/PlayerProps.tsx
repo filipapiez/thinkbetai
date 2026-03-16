@@ -84,6 +84,8 @@ const PlayerProps = () => {
   );
 
   const filtered = useMemo(() => {
+    const timeEnd = getTimeFilterEnd(timeFilter);
+    const now = new Date();
     return props
       .filter(p => {
         const matchesSearch =
@@ -91,7 +93,9 @@ const PlayerProps = () => {
           p.playerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.team.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStat = !statFilter || p.statType === statFilter;
-        return matchesSearch && matchesStat;
+        const gameDate = new Date(p.gameTime);
+        const matchesTime = gameDate >= now && gameDate <= timeEnd;
+        return matchesSearch && matchesStat && matchesTime;
       })
       .sort((a, b) => {
         const edgeA = computeEdge(a.overOdds, a.underOdds);
