@@ -2020,23 +2020,36 @@ Deno.serve(async (req) => {
       );
     }
 
-    // L2: DB cache (survives cold starts)
+    // L2: DB cache (survives cold starts) — serve even if expired (stale-while-revalidate)
     if (!forceRefresh) {
-      const dbCached = await getDbCache(DB_CACHE_KEY) as ScheduledGame[] | null;
-      if (dbCached && Array.isArray(dbCached) && dbCached.length > 0) {
-        console.log('[API] Returning L2 DB cached games:', dbCached.length);
-        cachedGames = dbCached;
-        cacheTimestamp = Date.now();
-        return new Response(
-          JSON.stringify({
-            success: true,
-            games: dbCached,
-            source: 'db_cached',
-            lastUpdated: new Date().toISOString(),
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      try {
+        const sb = getSupabaseAdmin();
+        const { data: cacheRow } = await sb
+          .from('odds_cache')
+          .select('data, expires_at')
+          .eq('id', DB_CACHE_KEY)
+          .single();
+
+        if (cacheRow && Array.isArray(cacheRow.data) && (cacheRow.data as ScheduledGame[]).length > 0) {
+          const dbCached = cacheRow.data as ScheduledGame[];
+          const isExpired = new Date(cacheRow.expires_at) <= new Date();
+
+          console.log(`[API] Returning L2 DB cached games: ${dbCached.length} (expired: ${isExpired})`);
+          cachedGames = dbCached;
+          cacheTimestamp = Date.now();
+
+          // Return stale cache immediately — the cron job or next force-refresh will update it
+          return new Response(
+            JSON.stringify({
+              success: true,
+              games: dbCached,
+              source: isExpired ? 'stale-cache' : 'db_cached',
+              lastUpdated: new Date().toISOString(),
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch { /* miss */ }
     }
 
     const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
