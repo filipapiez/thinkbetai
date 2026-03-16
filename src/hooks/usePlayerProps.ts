@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
+export interface BookOdds {
+  overOdds: number;
+  underOdds: number;
+  line: number;
+}
+
 export interface PlayerProp {
   id: string;
   playerName: string;
@@ -15,6 +21,7 @@ export interface PlayerProp {
   underOdds: number;
   gameTime: string;
   gameId: string;
+  bookOdds?: Record<string, BookOdds>;
 }
 
 export function usePlayerProps(sport: string = 'all') {

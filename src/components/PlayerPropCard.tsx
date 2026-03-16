@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { PlayerProp } from '@/hooks/usePlayerProps';
+import type { PlayerProp, BookOdds } from '@/hooks/usePlayerProps';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -133,19 +133,15 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
   const position = positionMap[prop.statType] || 'PL';
 
   // Override direction when L20 data strongly contradicts odds direction
-  // If hit rate < 40%, flip to the opposite direction
   const direction = hasRealData && hitPct < 40
     ? (oddsDirection === 'Over' ? 'Under' : 'Over')
     : oddsDirection;
 
-  // Recalculate hit stats for the potentially flipped direction
   const effectiveHitPct = direction !== oddsDirection ? (100 - hitPct) : hitPct;
   const effectiveHitCount = direction !== oddsDirection ? (hitTotal - hitCount) : hitCount;
 
   const odds = direction === 'Over' ? prop.overOdds : prop.underOdds;
 
-  // Blend odds-implied prob with actual L20 hit rate when available
-  // 75% weight on real data, 25% on odds-implied — trust game logs heavily
   const blendedProb = hasRealData
     ? Math.min(Math.max(effectiveHitPct * 0.75 + prob * 0.25, 10), 95)
     : prob;
@@ -153,13 +149,17 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
     : edge;
 
-  const sportsbook = useMemo(() => {
+  // Determine which sportsbooks to show
+  const visibleBooks = useMemo(() => {
     if (selectedPlatform) {
-      return SPORTSBOOKS.find(s => s.id === selectedPlatform) || SPORTSBOOKS[0];
+      return SPORTSBOOKS.filter(s => s.id === selectedPlatform);
     }
-    const hash = Math.abs([...prop.id].reduce((h, c) => ((h << 5) - h) + c.charCodeAt(0), 0));
-    return SPORTSBOOKS[hash % SPORTSBOOKS.length];
-  }, [prop.id, selectedPlatform]);
+    // Show all books that have odds for this prop
+    if (prop.bookOdds && Object.keys(prop.bookOdds).length > 0) {
+      return SPORTSBOOKS.filter(s => prop.bookOdds?.[s.id]);
+    }
+    return SPORTSBOOKS;
+  }, [selectedPlatform, prop.bookOdds]);
 
   const gameDate = prop.gameTime
     ? new Date(prop.gameTime).toLocaleDateString('en-US', { weekday: 'short' })
@@ -230,16 +230,30 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
             {direction} {prop.line} {prop.statType}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={sportsbook.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg p-2 cursor-pointer"
-            title={`Bet on ${sportsbook.name}`}
-          >
-            <img src={sportsbook.logo} alt={sportsbook.name} className="h-5 w-5 object-contain rounded-sm" />
-          </a>
+        <div className="flex items-center gap-1.5">
+          {visibleBooks.map(book => {
+            const bookData = prop.bookOdds?.[book.id];
+            const bookOdds = bookData
+              ? (direction === 'Over' ? bookData.overOdds : bookData.underOdds)
+              : (direction === 'Over' ? prop.overOdds : prop.underOdds);
+            const oddsStr = bookOdds > 0 ? `+${bookOdds}` : `${bookOdds}`;
+            return (
+              <a
+                key={book.id}
+                href={book.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-2 py-1.5 cursor-pointer min-w-[52px]"
+                title={`Bet on ${book.name}`}
+              >
+                <img src={book.logo} alt={book.name} className="h-4 w-4 object-contain rounded-sm mb-0.5" />
+                <span className={cn(
+                  "text-[10px] font-bold",
+                  bookOdds > 0 ? 'text-emerald-400' : 'text-foreground'
+                )}>{oddsStr}</span>
+              </a>
+            );
+          })}
           <Button
             variant="ghost"
             size="icon"

@@ -212,52 +212,77 @@ Deno.serve(async (req: Request) => {
               }>;
             };
 
-            // Prefer FanDuel > DraftKings > BetMGM, then any
-            const preferredOrder = ['fanduel', 'draftkings', 'betmgm'];
-            let bookmaker = null;
-            for (const pref of preferredOrder) {
-              bookmaker = propsData.bookmakers?.find(b => b.key === pref && b.markets.length > 0);
-              if (bookmaker) break;
-            }
-            if (!bookmaker) continue;
+            // Collect odds from all three sportsbooks
+            const targetBooks = ['fanduel', 'draftkings', 'betmgm'];
+            const availableBooks = (propsData.bookmakers || []).filter(
+              b => targetBooks.includes(b.key) && b.markets.length > 0
+            );
+            if (availableBooks.length === 0) continue;
 
-            for (const market of bookmaker.markets) {
-              const statType = marketToStat[market.key];
-              if (!statType) continue;
+            // Build a combined player map: player -> statType -> { bookKey -> { over, under } }
+            const combinedMap = new Map<string, Map<string, Map<string, { over?: { point: number; price: number }; under?: { point: number; price: number } }>>>();
 
-              // Group outcomes by player (description field)
-              const playerMap = new Map<string, { over?: { point: number; price: number }; under?: { point: number; price: number } }>();
+            for (const book of availableBooks) {
+              for (const market of book.markets) {
+                const statType = marketToStat[market.key];
+                if (!statType) continue;
 
-              for (const outcome of market.outcomes) {
-                const player = outcome.description;
-                if (!player) continue;
-                if (!playerMap.has(player)) playerMap.set(player, {});
-                const entry = playerMap.get(player)!;
-                if (outcome.name === "Over" && outcome.point !== undefined) {
-                  entry.over = { point: outcome.point, price: outcome.price };
-                } else if (outcome.name === "Under" && outcome.point !== undefined) {
-                  entry.under = { point: outcome.point, price: outcome.price };
+                for (const outcome of market.outcomes) {
+                  const player = outcome.description;
+                  if (!player) continue;
+
+                  if (!combinedMap.has(player)) combinedMap.set(player, new Map());
+                  const statMap = combinedMap.get(player)!;
+                  if (!statMap.has(statType)) statMap.set(statType, new Map());
+                  const bookMap = statMap.get(statType)!;
+                  if (!bookMap.has(book.key)) bookMap.set(book.key, {});
+                  const entry = bookMap.get(book.key)!;
+
+                  if (outcome.name === "Over" && outcome.point !== undefined) {
+                    entry.over = { point: outcome.point, price: outcome.price };
+                  } else if (outcome.name === "Under" && outcome.point !== undefined) {
+                    entry.under = { point: outcome.point, price: outcome.price };
+                  }
                 }
               }
+            }
 
-              for (const [playerName, data] of playerMap.entries()) {
-                const line = data.over?.point || data.under?.point || 0;
+            for (const [playerName, statMap] of combinedMap.entries()) {
+              for (const [statType, bookMap] of statMap.entries()) {
+                // Use first available book for the primary line
+                const firstBook = bookMap.values().next().value;
+                const line = firstBook?.over?.point || firstBook?.under?.point || 0;
                 if (line <= 0) continue;
+
+                // Build per-book odds object
+                const bookOdds: Record<string, { overOdds: number; underOdds: number; line: number }> = {};
+                for (const [bookKey, data] of bookMap.entries()) {
+                  const bookLine = data.over?.point || data.under?.point || line;
+                  bookOdds[bookKey] = {
+                    overOdds: data.over?.price ?? -110,
+                    underOdds: data.under?.price ?? -110,
+                    line: bookLine,
+                  };
+                }
+
+                // Use best available for top-level odds (FanDuel > DK > BetMGM)
+                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm']!;
 
                 allProps.push({
                   id: `${ev.id}-${playerName.replace(/\s/g, "")}-${statType}`,
                   playerName,
                   playerId: playerName.replace(/\s/g, "").toLowerCase(),
-                  team: ev.home_team, // We don't know exact team from this endpoint
+                  team: ev.home_team,
                   opponent: ev.away_team,
                   sport: sportLabel[sportKey] || sportKey,
                   league: sportLabel[sportKey] || sportKey,
                   statType,
                   line,
-                  overOdds: data.over?.price ?? -110,
-                  underOdds: data.under?.price ?? -110,
+                  overOdds: primaryBook.overOdds,
+                  underOdds: primaryBook.underOdds,
                   gameTime: ev.commence_time,
                   gameId: ev.id,
+                  bookOdds,
                 });
               }
             }
