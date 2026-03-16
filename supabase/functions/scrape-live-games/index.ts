@@ -2057,6 +2057,7 @@ Deno.serve(async (req) => {
     console.log('[API] Starting fresh fetch from real APIs only...');
     
     // Fetch from all REAL API sources in parallel
+    const FETCH_TIMEOUT = 15_000; // 15s per source
     const [
       sportsbookGames, 
       nflGames, 
@@ -2072,19 +2073,19 @@ Deno.serve(async (req) => {
       theOddsGames,
       espnGames,
     ] = await Promise.all([
-      rapidApiKey ? fetchSportsbookGames(rapidApiKey) : Promise.resolve([]),
-      fetchNFLGames(),
-      fetchNBAGames(),
-      fetchNHLGames(),
-      fetchMLBGames(),
-      fetchNCAABGames(),
-      fetchNCAAFGames(),
-      fetchUFCGames(),
-      fetchTennisGames(),
-      fetchTableTennisGames(),
-      fetchBoxingGames(),
-      fetchTheOddsAPIGames(),
-      fetchESPNGames(),
+      withTimeout(rapidApiKey ? fetchSportsbookGames(rapidApiKey) : Promise.resolve([]), FETCH_TIMEOUT, []),
+      withTimeout(fetchNFLGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNBAGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNHLGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchMLBGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNCAABGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchNCAAFGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchUFCGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTennisGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTableTennisGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchBoxingGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchTheOddsAPIGames(), FETCH_TIMEOUT, []),
+      withTimeout(fetchESPNGames(), FETCH_TIMEOUT, []),
     ]);
     
     const allGames = [
