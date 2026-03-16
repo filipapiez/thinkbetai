@@ -209,6 +209,21 @@ const PlayerProps = () => {
             </div>
           </div>
 
+          {/* Time filter tabs */}
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
+            {TIME_FILTERS.map(tf => (
+              <Button
+                key={tf.value}
+                variant={timeFilter === tf.value ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-3 text-xs"
+                onClick={() => setTimeFilter(tf.value)}
+              >
+                {tf.label}
+              </Button>
+            ))}
+          </div>
+
           {/* Platform selector */}
           <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
             <Button variant={selectedPlatform === null ? 'default' : 'ghost'} size="sm" className="h-7 px-2 text-xs" onClick={() => setSelectedPlatform(null)}>
