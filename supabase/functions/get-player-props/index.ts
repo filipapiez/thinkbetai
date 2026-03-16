@@ -165,12 +165,10 @@ Deno.serve(async (req: Request) => {
 
         console.log(`[OddsAPI] ${sportKey}: ${events.length} events`);
 
-        // Filter out games that have already started (with 4h buffer for live games)
-        const now = new Date();
-        const liveBuffer = 4 * 60 * 60 * 1000; // 4 hours for in-progress games
+        // Strictly exclude games that have already started
+        const nowMs = Date.now();
         const activeEvents = events.filter(ev => {
-          const gameStart = new Date(ev.commence_time).getTime();
-          return gameStart > now.getTime() - liveBuffer;
+          return new Date(ev.commence_time).getTime() > nowMs;
         });
 
         console.log(`[OddsAPI] ${sportKey}: ${activeEvents.length} active events (filtered from ${events.length})`);
