@@ -25,6 +25,39 @@ const SPORT_FILTERS = [
   { value: 'mma', label: 'MMA' },
 ];
 
+const TIME_FILTERS = [
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+  { value: 'year', label: 'This Year' },
+];
+
+function getTimeFilterEnd(filter: string): Date {
+  const now = new Date();
+  switch (filter) {
+    case 'today': {
+      const end = new Date(now);
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+    case 'week': {
+      const end = new Date(now);
+      const dayOfWeek = end.getDay();
+      end.setDate(end.getDate() + (6 - dayOfWeek));
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+    case 'month': {
+      return new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    }
+    case 'year': {
+      return new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    }
+    default:
+      return new Date(now.getFullYear() + 1, 0, 1);
+  }
+}
+
 /** Top N props auto-fetch L20; rest are lazy-loaded on tap */
 const AUTO_FETCH_LIMIT = 30;
 
