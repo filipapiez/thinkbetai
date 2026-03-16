@@ -221,7 +221,6 @@ Deno.serve(async (req: Request) => {
               bookmaker = propsData.bookmakers?.find(b => b.key === pref && b.markets.length > 0);
               if (bookmaker) break;
             }
-            if (!bookmaker) bookmaker = propsData.bookmakers?.find(b => b.markets.length > 0);
             if (!bookmaker) continue;
 
             for (const market of bookmaker.markets) {
