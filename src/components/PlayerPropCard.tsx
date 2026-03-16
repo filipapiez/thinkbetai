@@ -231,29 +231,18 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
           </p>
         </div>
         <div className="flex items-center gap-1.5">
-          {visibleBooks.map(book => {
-            const bookData = prop.bookOdds?.[book.id];
-            const bookOdds = bookData
-              ? (direction === 'Over' ? bookData.overOdds : bookData.underOdds)
-              : (direction === 'Over' ? prop.overOdds : prop.underOdds);
-            const oddsStr = bookOdds > 0 ? `+${bookOdds}` : `${bookOdds}`;
-            return (
-              <a
-                key={book.id}
-                href={book.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg px-2 py-1.5 cursor-pointer min-w-[52px]"
-                title={`Bet on ${book.name}`}
-              >
-                <img src={book.logo} alt={book.name} className="h-4 w-4 object-contain rounded-sm mb-0.5" />
-                <span className={cn(
-                  "text-[10px] font-bold",
-                  bookOdds > 0 ? 'text-emerald-400' : 'text-foreground'
-                )}>{oddsStr}</span>
-              </a>
-            );
-          })}
+          {visibleBooks.map(book => (
+            <a
+              key={book.id}
+              href={book.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-secondary/60 hover:bg-secondary/80 transition-colors rounded-lg p-2 cursor-pointer"
+              title={`Bet on ${book.name}`}
+            >
+              <img src={book.logo} alt={book.name} className="h-5 w-5 object-contain rounded-sm" />
+            </a>
+          ))}
           <Button
             variant="ghost"
             size="icon"
