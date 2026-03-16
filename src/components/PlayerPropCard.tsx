@@ -151,14 +151,15 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
 
   // Determine which sportsbooks to show
   const visibleBooks = useMemo(() => {
+    const booksWithData = prop.bookOdds && Object.keys(prop.bookOdds).length > 0
+      ? SPORTSBOOKS.filter(s => prop.bookOdds?.[s.id])
+      : [];
+
     if (selectedPlatform) {
-      return SPORTSBOOKS.filter(s => s.id === selectedPlatform);
+      // Only show selected platform if it actually has this prop
+      return booksWithData.filter(s => s.id === selectedPlatform);
     }
-    // Show all books that have odds for this prop
-    if (prop.bookOdds && Object.keys(prop.bookOdds).length > 0) {
-      return SPORTSBOOKS.filter(s => prop.bookOdds?.[s.id]);
-    }
-    return SPORTSBOOKS;
+    return booksWithData;
   }, [selectedPlatform, prop.bookOdds]);
 
   const gameDate = prop.gameTime
