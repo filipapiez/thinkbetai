@@ -185,7 +185,7 @@ Deno.serve(async (req: Request) => {
           try {
             // Request only from major US sportsbooks
             const propsRes = await fetch(
-              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us&bookmakers=fanduel,draftkings,betmgm&markets=${marketsStr}&oddsFormat=american`,
+              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us,us2&bookmakers=fanduel,draftkings,betmgm,hardrockbet&markets=${marketsStr}&oddsFormat=american`,
             );
 
             if (!propsRes.ok) {
