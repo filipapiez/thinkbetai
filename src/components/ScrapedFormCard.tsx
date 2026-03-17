@@ -46,6 +46,8 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
   const h2hCapped = headToHead.slice(0, 5);
   const h2hHomeWins = h2hCapped.filter(h => matchesTeam(h.winner, homeTeam)).length;
   const h2hAwayWins = h2hCapped.filter(h => matchesTeam(h.winner, awayTeam)).length;
+  // Total should be games where we can identify a winner, not the full array length
+  const h2hTotal = h2hHomeWins + h2hAwayWins;
 
   const FormDisplay = ({ form, teamName, stats }: { form: ScrapedRecentForm | undefined; teamName: string; stats?: ScrapedTeamStats }) => {
     const record = getRecord(form?.last5);
@@ -198,7 +200,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold flex items-center gap-2">
-              Head-to-Head (Last 5)
+              Head-to-Head {h2hTotal > 0 ? `(Last ${h2hTotal})` : '(Last 5)'}
             </h4>
             {headToHeadMeta?.limitedData && (
               <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs">
