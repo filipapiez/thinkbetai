@@ -25,7 +25,7 @@ interface CachedData {
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 
 // localStorage key for game log cache
-const CACHE_VERSION = 'v2-statmuse';
+const CACHE_VERSION = 'v3-with-opponents';
 const STORAGE_KEY = 'player-game-log-cache';
 const VERSION_KEY = 'player-game-log-cache-version';
 
