@@ -154,7 +154,10 @@ GENERAL RULES:
 - Keep explanations short but insightful
 
 SIGNAL CONSISTENCY (MANDATORY):
-- Your signal MUST match the initial odds-based signal. GOOD → STRONG_VALUE or QUALIFIED (NEVER AVOID). BORDERLINE → QUALIFIED or RISKY. PASS → RISKY or AVOID.
+- Your signal MUST match the initial odds-based signal UNLESS team stats data is missing for either team.
+- If team stats are MISSING for either team, you MUST NOT output STRONG_VALUE. Use QUALIFIED at best.
+- GOOD → STRONG_VALUE or QUALIFIED (NEVER AVOID). BORDERLINE → QUALIFIED or RISKY. PASS → RISKY or AVOID.
+- EXCEPTION: If one team has NO stats data, treat the signal as BORDERLINE regardless of initial signal.
 - A 3-2 or 2-3 recent record is NORMAL and NEVER justifies contradicting the signal.
 - Be accurate with data: count wins/losses correctly from provided form. Do not exaggerate or miscount.
 - Only contradict the header signal if injuries/form clearly warrant it
