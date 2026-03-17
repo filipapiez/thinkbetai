@@ -213,7 +213,7 @@ Deno.serve(async (req: Request) => {
             };
 
             // Collect odds from all three sportsbooks
-            const targetBooks = ['fanduel', 'draftkings', 'betmgm'];
+            const targetBooks = ['fanduel', 'draftkings', 'betmgm', 'hardrockbet'];
             const availableBooks = (propsData.bookmakers || []).filter(
               b => targetBooks.includes(b.key) && b.markets.length > 0
             );
