@@ -272,6 +272,9 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
             direction === 'Over' ? 'text-emerald-400' : 'text-red-400'
           )}>
             {direction} {prop.line} {prop.statType}
+            <span className="text-muted-foreground font-medium ml-1.5">
+              ({odds > 0 ? `+${odds}` : odds})
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-1.5">
