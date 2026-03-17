@@ -1287,9 +1287,18 @@ interface EspnRecentGame {
   date: string;
 }
 
+interface EspnTeamRecord {
+  wins: number;
+  losses: number;
+  streak: number; // positive = win streak, negative = loss streak
+  ranking: number;
+}
+
 interface EspnSupplementData {
   homeGames: EspnRecentGame[];
   awayGames: EspnRecentGame[];
+  homeRecord: EspnTeamRecord | null;
+  awayRecord: EspnTeamRecord | null;
 }
 
 async function getEspnTeamId(sport: string, league: string, teamName: string): Promise<string | null> {
@@ -1348,10 +1357,34 @@ async function getEspnTeamSchedule(sport: string, league: string, teamId: string
   }
 }
 
+async function getEspnTeamRecord(sport: string, league: string, teamId: string): Promise<EspnTeamRecord | null> {
+  try {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${teamId}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const recordItems = data.team?.record?.items || [];
+    const totalRecord = recordItems.find((r: any) => r.type === 'total');
+    if (!totalRecord?.stats) return null;
+    const getStat = (name: string) => {
+      const s = totalRecord.stats.find((st: any) => st.name === name);
+      return s ? s.value : 0;
+    };
+    return {
+      wins: getStat('wins'),
+      losses: getStat('losses'),
+      streak: getStat('streak'),
+      ranking: getStat('playoffSeed') || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function fetchEspnRecentGames(homeTeam: string, awayTeam: string, sport: string): Promise<EspnSupplementData> {
   const sportKey = normalizeSportKey(sport);
   const espnConfig = ESPN_SPORT_MAP[sportKey];
-  if (!espnConfig) return { homeGames: [], awayGames: [] };
+  if (!espnConfig) return { homeGames: [], awayGames: [], homeRecord: null, awayRecord: null };
 
   try {
     const [homeId, awayId] = await Promise.all([
@@ -1359,16 +1392,18 @@ async function fetchEspnRecentGames(homeTeam: string, awayTeam: string, sport: s
       getEspnTeamId(espnConfig.sport, espnConfig.league, awayTeam),
     ]);
 
-    const [homeGames, awayGames] = await Promise.all([
+    const [homeGames, awayGames, homeRecord, awayRecord] = await Promise.all([
       homeId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, homeId, 5) : Promise.resolve([]),
       awayId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, awayId, 5) : Promise.resolve([]),
+      homeId ? getEspnTeamRecord(espnConfig.sport, espnConfig.league, homeId) : Promise.resolve(null),
+      awayId ? getEspnTeamRecord(espnConfig.sport, espnConfig.league, awayId) : Promise.resolve(null),
     ]);
 
-    console.log(`[ESPN] ${homeTeam}: ${homeGames.length} games, ${awayTeam}: ${awayGames.length} games`);
-    return { homeGames, awayGames };
+    console.log(`[ESPN] ${homeTeam}: ${homeGames.length} games, record=${homeRecord ? `${homeRecord.wins}-${homeRecord.losses}` : 'N/A'} | ${awayTeam}: ${awayGames.length} games, record=${awayRecord ? `${awayRecord.wins}-${awayRecord.losses}` : 'N/A'}`);
+    return { homeGames, awayGames, homeRecord, awayRecord };
   } catch (e) {
     console.error('[ESPN] Error fetching recent games:', e);
-    return { homeGames: [], awayGames: [] };
+    return { homeGames: [], awayGames: [], homeRecord: null, awayRecord: null };
   }
 }
 
@@ -1457,6 +1492,39 @@ function supplementWithEspnData(
       };
       console.log(`[ESPN Supplement] Found ${h2hFromEspn.length} H2H matches from schedule`);
     }
+  }
+
+  // Supplement team stats (season records) from ESPN when missing
+  const hasHomeStats = result.teamStats.some(t => {
+    const tn = t.team.toLowerCase();
+    return (tn.includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(tn)) && (t.wins > 0 || t.losses > 0);
+  });
+  const hasAwayStats = result.teamStats.some(t => {
+    const tn = t.team.toLowerCase();
+    return (tn.includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(tn)) && (t.wins > 0 || t.losses > 0);
+  });
+
+  if (!hasHomeStats && espn.homeRecord) {
+    result.teamStats = result.teamStats.filter(t => !t.team.toLowerCase().includes(homeTeam.toLowerCase()) && !homeTeam.toLowerCase().includes(t.team.toLowerCase()));
+    result.teamStats.push({
+      team: homeTeam,
+      wins: espn.homeRecord.wins,
+      losses: espn.homeRecord.losses,
+      streak: espn.homeRecord.streak > 0 ? `W${espn.homeRecord.streak}` : espn.homeRecord.streak < 0 ? `L${Math.abs(espn.homeRecord.streak)}` : '-',
+      ranking: espn.homeRecord.ranking,
+    });
+    console.log(`[ESPN Record] Filled ${homeTeam}: ${espn.homeRecord.wins}-${espn.homeRecord.losses}`);
+  }
+  if (!hasAwayStats && espn.awayRecord) {
+    result.teamStats = result.teamStats.filter(t => !t.team.toLowerCase().includes(awayTeam.toLowerCase()) && !awayTeam.toLowerCase().includes(t.team.toLowerCase()));
+    result.teamStats.push({
+      team: awayTeam,
+      wins: espn.awayRecord.wins,
+      losses: espn.awayRecord.losses,
+      streak: espn.awayRecord.streak > 0 ? `W${espn.awayRecord.streak}` : espn.awayRecord.streak < 0 ? `L${Math.abs(espn.awayRecord.streak)}` : '-',
+      ranking: espn.awayRecord.ranking,
+    });
+    console.log(`[ESPN Record] Filled ${awayTeam}: ${espn.awayRecord.wins}-${espn.awayRecord.losses}`);
   }
 
   return result;
