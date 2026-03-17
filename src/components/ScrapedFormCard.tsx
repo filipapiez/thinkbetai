@@ -43,8 +43,9 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
   const homeRecord = getRecord(homeForm?.last5);
   const awayRecord = getRecord(awayForm?.last5);
 
-  const h2hHomeWins = headToHead.filter(h => matchesTeam(h.winner, homeTeam)).length;
-  const h2hAwayWins = headToHead.filter(h => matchesTeam(h.winner, awayTeam)).length;
+  const h2hCapped = headToHead.slice(0, 5);
+  const h2hHomeWins = h2hCapped.filter(h => matchesTeam(h.winner, homeTeam)).length;
+  const h2hAwayWins = h2hCapped.filter(h => matchesTeam(h.winner, awayTeam)).length;
 
   const FormDisplay = ({ form, teamName, stats }: { form: ScrapedRecentForm | undefined; teamName: string; stats?: ScrapedTeamStats }) => {
     const record = getRecord(form?.last5);
