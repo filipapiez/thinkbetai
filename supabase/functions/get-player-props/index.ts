@@ -266,7 +266,7 @@ Deno.serve(async (req: Request) => {
                 }
 
                 // Use best available for top-level odds (FanDuel > DK > BetMGM)
-                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm']!;
+                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm'] || bookOdds['hardrockbet']!;
 
                 allProps.push({
                   id: `${ev.id}-${playerName.replace(/\s/g, "")}-${statType}`,
