@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface GameLogResult {
   results: boolean[];
   statValues: number[];
+  opponents: string[];
   hitCount: number;
   total: number;
   isLoading: boolean;
