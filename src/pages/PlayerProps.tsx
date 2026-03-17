@@ -95,7 +95,15 @@ const PlayerProps = () => {
         const matchesStat = !statFilter || p.statType === statFilter;
         const gameDate = new Date(p.gameTime);
         const matchesTime = gameDate > now && gameDate <= timeEnd;
-        return matchesSearch && matchesStat && matchesTime;
+
+        // Platform filter: if a specific book is selected, only show props available on it
+        const books = p.bookOdds ? Object.keys(p.bookOdds) : [];
+        const matchesPlatform = selectedPlatform
+          ? books.includes(selectedPlatform)
+          : // When "All" is selected, require at least one major book (FanDuel or DraftKings)
+            books.some(b => b === 'fanduel' || b === 'draftkings');
+
+        return matchesSearch && matchesStat && matchesTime && matchesPlatform;
       })
       .sort((a, b) => {
         const edgeA = computeEdge(a.overOdds, a.underOdds);
@@ -107,7 +115,7 @@ const PlayerProps = () => {
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
-  }, [props, searchQuery, statFilter, timeFilter]);
+  }, [props, searchQuery, statFilter, timeFilter, selectedPlatform]);
 
   // Build a set of top-N prop IDs for auto-fetch
   const autoFetchIds = useMemo(() => {
