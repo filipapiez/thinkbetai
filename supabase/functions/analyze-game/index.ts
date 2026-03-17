@@ -431,6 +431,22 @@ function buildGameContext(data: GameData): string {
   lines.push(`SPORT: ${sport}`);
   lines.push('');
   
+  // Detect missing data for either team
+  const homeStats = data.teamStats?.find(t => t.team === data.homeTeam);
+  const awayStats = data.teamStats?.find(t => t.team === data.awayTeam);
+  const hasHomeStats = homeStats && (homeStats.wins > 0 || homeStats.losses > 0);
+  const hasAwayStats = awayStats && (awayStats.wins > 0 || awayStats.losses > 0);
+  
+  if (!hasHomeStats || !hasAwayStats) {
+    const missingTeam = !hasHomeStats ? data.homeTeam : data.awayTeam;
+    lines.push(`⚠️ CRITICAL DATA WARNING: Season record data is MISSING for ${missingTeam}.`);
+    lines.push(`- You MUST NOT assume the team with missing data is weak or inferior.`);
+    lines.push(`- They could be a dominant team (e.g., 30-1) whose data simply failed to load.`);
+    lines.push(`- With incomplete data, you MUST cap confidence at 55% max and set risk to Medium or High.`);
+    lines.push(`- Signal MUST be RISKY or QUALIFIED at best — NEVER STRONG_VALUE with missing data.`);
+    lines.push('');
+  }
+  
   // Odds
   if (data.odds) {
     lines.push('ODDS:');
