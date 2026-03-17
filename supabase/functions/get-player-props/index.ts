@@ -185,7 +185,7 @@ Deno.serve(async (req: Request) => {
           try {
             // Request only from major US sportsbooks
             const propsRes = await fetch(
-              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us&bookmakers=fanduel,draftkings,betmgm&markets=${marketsStr}&oddsFormat=american`,
+              `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us,us2&bookmakers=fanduel,draftkings,betmgm,hardrockbet&markets=${marketsStr}&oddsFormat=american`,
             );
 
             if (!propsRes.ok) {
@@ -213,7 +213,7 @@ Deno.serve(async (req: Request) => {
             };
 
             // Collect odds from all three sportsbooks
-            const targetBooks = ['fanduel', 'draftkings', 'betmgm'];
+            const targetBooks = ['fanduel', 'draftkings', 'betmgm', 'hardrockbet'];
             const availableBooks = (propsData.bookmakers || []).filter(
               b => targetBooks.includes(b.key) && b.markets.length > 0
             );
@@ -266,7 +266,7 @@ Deno.serve(async (req: Request) => {
                 }
 
                 // Use best available for top-level odds (FanDuel > DK > BetMGM)
-                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm']!;
+                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm'] || bookOdds['hardrockbet']!;
 
                 allProps.push({
                   id: `${ev.id}-${playerName.replace(/\s/g, "")}-${statType}`,
