@@ -89,6 +89,7 @@ function AutoFetchCard({ prop, direction, edge, prob, selectedPlatform }: {
       prop={prop} direction={direction} edge={edge} prob={prob}
       selectedPlatform={selectedPlatform}
       results={gameLog.results} hitCount={gameLog.hitCount} hitTotal={gameLog.total}
+      opponents={gameLog.opponents} statValues={gameLog.statValues}
       isLoading={gameLog.isLoading} hasRealData={gameLog.results.length >= 10}
     />
   );
@@ -103,6 +104,7 @@ function LazyFetchCard({ prop, direction, edge, prob, selectedPlatform }: {
       prop={prop} direction={direction} edge={edge} prob={prob}
       selectedPlatform={selectedPlatform}
       results={lazy.results} hitCount={lazy.hitCount} hitTotal={lazy.total}
+      opponents={lazy.opponents} statValues={lazy.statValues}
       isLoading={lazy.isLoading} hasRealData={lazy.hasData}
       onLoadL20={lazy.hasData ? undefined : lazy.fetch}
     />
@@ -128,10 +130,11 @@ export function PlayerPropCard({ prop, selectedPlatform, autoFetchL20 = true }: 
   );
 }
 
-function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
+function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, opponents = [], statValues = [], isLoading, hasRealData, onLoadL20 }: {
   prop: PlayerProp; direction: 'Over' | 'Under'; edge: number; prob: number;
   selectedPlatform?: string | null;
   results: boolean[]; hitCount: number; hitTotal: number;
+  opponents?: string[]; statValues?: number[];
   isLoading: boolean; hasRealData: boolean;
   onLoadL20?: () => void;
 }) {
@@ -175,6 +178,22 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     ? new Date(prop.gameTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     : '';
 
+  // Compute H2H stats vs opponent
+  const h2h = useMemo(() => {
+    if (!hasRealData || opponents.length === 0 || !prop.opponent) return null;
+    const oppNorm = prop.opponent.toLowerCase();
+    const matchIndices: number[] = [];
+    opponents.forEach((opp, i) => {
+      if (opp && opp.toLowerCase().includes(oppNorm) || oppNorm.includes(opp.toLowerCase())) {
+        matchIndices.push(i);
+      }
+    });
+    if (matchIndices.length === 0) return null;
+    const h2hValues = matchIndices.map(i => statValues[i]).filter(v => v !== undefined);
+    const h2hHits = h2hValues.filter(v => direction === 'Over' ? v >= prop.line : v < prop.line).length;
+    return { games: h2hValues.length, hits: h2hHits, avg: h2hValues.reduce((a, b) => a + b, 0) / h2hValues.length };
+  }, [hasRealData, opponents, statValues, prop.opponent, prop.line, direction]);
+
   const explanation = useMemo(() => {
     const playerFirst = prop.playerName.split(' ')[0];
     const displayEdge = blendedEdge;
@@ -182,20 +201,23 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     if (hasRealData) {
       const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
       const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${effectiveHitPct}% of his last ${hitTotal} games`;
+      const h2hPhrase = h2h
+        ? ` vs ${prop.opponent}: ${h2h.hits}/${h2h.games} hit (avg ${h2h.avg.toFixed(1)} ${prop.statType}).`
+        : '';
 
       if (effectiveHitPct >= 70) {
-        return `${hitPhrase} — a strong trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
+        return `${hitPhrase} — a strong trend.${h2hPhrase} Combined with a ${displayEdge.toFixed(1)}% blended edge, this is one of the sharper ${direction} plays on the board.`;
       }
       if (effectiveHitPct >= 55) {
-        return `${hitPhrase} — a solid trend. Combined with a ${displayEdge.toFixed(1)}% blended edge, this is a reasonable ${direction} play.`;
+        return `${hitPhrase} — a solid trend.${h2hPhrase} Combined with a ${displayEdge.toFixed(1)}% blended edge, this is a reasonable ${direction} play.`;
       }
       if (effectiveHitPct >= 45) {
-        return `Coin-flip territory. ${hitPhrase}. Minimal edge either way — consider passing or waiting for a better line.`;
+        return `Coin-flip territory. ${hitPhrase}.${h2hPhrase} Minimal edge either way — consider passing or waiting for a better line.`;
       }
       if (effectiveHitPct >= 30) {
-        return `${hitPhrase} — below average. Consider passing or waiting for a better line.`;
+        return `${hitPhrase} — below average.${h2hPhrase} Consider passing or waiting for a better line.`;
       }
-      return `${hitPhrase} — a clear fade. The data strongly suggests avoiding this ${direction}.`;
+      return `${hitPhrase} — a clear fade.${h2hPhrase} The data strongly suggests avoiding this ${direction}.`;
     }
 
     if (displayEdge > 5) {
@@ -205,7 +227,7 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
       return `${playerFirst} shows a ${displayEdge.toFixed(1)}% edge on the ${direction} based on current odds vs ${prop.opponent}. Tap to load L20 data.`;
     }
     return `${playerFirst} vs ${prop.opponent} — ${displayEdge.toFixed(1)}% edge on the ${direction} from odds alone. Tap to load game history.`;
-  }, [prop, direction, blendedEdge, hasRealData, effectiveHitPct, hitTotal]);
+  }, [prop, direction, blendedEdge, hasRealData, effectiveHitPct, hitTotal, h2h]);
 
   return (
     <>

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface GameLogResult {
   results: boolean[];
   statValues: number[];
+  opponents: string[];
   hitCount: number;
   total: number;
   isLoading: boolean;
@@ -13,6 +14,7 @@ interface GameLogResult {
 interface CachedData {
   results: boolean[];
   statValues: number[];
+  opponents: string[];
   hitCount: number;
   total: number;
   date?: string; // legacy field
@@ -150,6 +152,7 @@ async function fetchGameLog(
     }
 
     const statValues = resp.statValues || [];
+    const opponents = resp.opponents || [];
     let results: boolean[];
     if (direction === 'Under') {
       results = statValues.map((val: number) => val < line);
@@ -161,6 +164,7 @@ async function fetchGameLog(
     const result: CachedData = {
       results,
       statValues,
+      opponents,
       hitCount,
       total: results.length,
       timestamp: Date.now(),
@@ -225,6 +229,7 @@ export function usePlayerGameLog(
     return {
       results: data.results,
       statValues: data.statValues,
+      opponents: data.opponents,
       hitCount: data.hitCount,
       total: data.total,
       isLoading: false,
@@ -235,6 +240,7 @@ export function usePlayerGameLog(
   return {
     results: [],
     statValues: [],
+    opponents: [],
     hitCount: 0,
     total: 0,
     isLoading,
@@ -290,6 +296,7 @@ export function useLazyPlayerGameLog(
   return {
     results: data?.results ?? [],
     statValues: data?.statValues ?? [],
+    opponents: data?.opponents ?? [],
     hitCount: data?.hitCount ?? 0,
     total: data?.total ?? 0,
     isLoading,

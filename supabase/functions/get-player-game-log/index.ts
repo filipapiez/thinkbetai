@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     if (cached && new Date(cached.expires_at) > new Date()) {
       const cachedData = cached.data as any;
       const cachedValues = Array.isArray(cachedData?.statValues) ? cachedData.statValues : [];
+      const cachedOpponents = Array.isArray(cachedData?.opponents) ? cachedData.opponents : [];
       // Only use cache if it has at least 10 stat values (reject old small entries)
       if (cachedValues.length >= 10) {
         console.log(`Cache hit for ${playerName} ${statType} (${cachedValues.length} values)`);
@@ -45,6 +46,7 @@ Deno.serve(async (req) => {
             success: true,
             results,
             statValues: cachedValues,
+            opponents: cachedOpponents,
             hitCount: results.filter(Boolean).length,
             total: results.length,
             source: 'cached',
@@ -184,11 +186,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.${columnHint}`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value, the game date, AND the opponent team name from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.${columnHint}`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sportNorm}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINPORTANT COLUMN MAPPING:${columnHint}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. Identify the CORRECT column for "${statType}" using the header row\n3. For EACH game row, extract that column's value AND the game date\n4. Return ALL 20 games\n5. Order: oldest game first, newest game last\n6. Be VERY careful to read the right column — count columns from left to right using the header\n7. Return numeric values only (0 is valid)\n8. For each game, include the date string as found in the source`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sportNorm}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINPORTANT COLUMN MAPPING:${columnHint}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. Identify the CORRECT column for "${statType}" using the header row\n3. For EACH game row, extract that column's value, the game date, AND the opponent team name/abbreviation\n4. Return ALL 20 games\n5. Order: oldest game first, newest game last\n6. Be VERY careful to read the right column — count columns from left to right using the header\n7. Return numeric values only (0 is valid)\n8. For each game, include the date string and opponent as found in the source\n9. The opponent is usually in the "OPP" or "OPPONENT" or "VS" column`,
           },
         ],
         tools: [
@@ -196,7 +198,7 @@ Deno.serve(async (req) => {
             type: 'function',
             function: {
               name: 'extract_stat_values',
-              description: `Extract numeric ${statType} values and dates from the player's recent game log`,
+              description: `Extract numeric ${statType} values, dates, and opponents from the player's recent game log`,
               parameters: {
                 type: 'object',
                 additionalProperties: false,
@@ -204,12 +206,13 @@ Deno.serve(async (req) => {
                 properties: {
                   games: {
                     type: 'array',
-                    description: 'Array of game entries with date and stat value, oldest first',
+                    description: 'Array of game entries with date, stat value, and opponent, oldest first',
                     items: {
                       type: 'object',
                       properties: {
                         date: { type: 'string', description: 'Game date as found in the source' },
                         value: { type: 'number', description: `The ${statType} value for this game` },
+                        opponent: { type: 'string', description: 'Opponent team name or abbreviation as found in the source' },
                       },
                       required: ['date', 'value'],
                     },
@@ -308,25 +311,26 @@ Deno.serve(async (req) => {
           dateStr = `${currentYear} ${dateStr}`;
         }
         const ts = new Date(dateStr).getTime();
-        return { value: g.value as number, date: dateStr, ts: isNaN(ts) ? 0 : ts };
+        return { value: g.value as number, date: dateStr, ts: isNaN(ts) ? 0 : ts, opponent: (g.opponent || '').toString().trim() };
       })
       .sort((a: any, b: any) => a.ts - b.ts)
       .slice(-20);
 
     // Take last 20 values in chronological order
     const statValues = sortedGames.map((g: any) => g.value);
+    const opponents = sortedGames.map((g: any) => g.opponent);
 
     // Calculate hits against the line
     const results = statValues.map((val: number) => val >= line);
     const hitCount = results.filter(Boolean).length;
 
-    // Cache the stat values (not the line-specific results)
+    // Cache the stat values and opponents (not the line-specific results)
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase
       .from('odds_cache')
       .upsert({
         id: cacheKey,
-        data: { statValues, playerName, statType, sport, fetchedAt: new Date().toISOString() },
+        data: { statValues, opponents, playerName, statType, sport, fetchedAt: new Date().toISOString() },
         expires_at: expiresAt,
         updated_at: new Date().toISOString(),
       });
@@ -338,6 +342,7 @@ Deno.serve(async (req) => {
         success: true,
         results,
         statValues,
+        opponents,
         hitCount,
         total: statValues.length,
         source: 'live',
