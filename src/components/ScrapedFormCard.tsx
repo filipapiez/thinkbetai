@@ -43,8 +43,9 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
   const homeRecord = getRecord(homeForm?.last5);
   const awayRecord = getRecord(awayForm?.last5);
 
-  const h2hHomeWins = headToHead.filter(h => matchesTeam(h.winner, homeTeam)).length;
-  const h2hAwayWins = headToHead.filter(h => matchesTeam(h.winner, awayTeam)).length;
+  const h2hCapped = headToHead.slice(0, 5);
+  const h2hHomeWins = h2hCapped.filter(h => matchesTeam(h.winner, homeTeam)).length;
+  const h2hAwayWins = h2hCapped.filter(h => matchesTeam(h.winner, awayTeam)).length;
 
   const FormDisplay = ({ form, teamName, stats }: { form: ScrapedRecentForm | undefined; teamName: string; stats?: ScrapedTeamStats }) => {
     const record = getRecord(form?.last5);
@@ -155,7 +156,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
   
   // Generate H2H conclusion
   const getH2HConclusion = () => {
-    if (headToHead.length === 0) {
+    if (h2hCapped.length === 0) {
       return "No verified head-to-head history available.";
     }
     if (h2hHomeWins > h2hAwayWins + 1) {
@@ -215,7 +216,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
             </div>
           )}
           
-          {headToHead.length > 0 ? (
+          {h2hCapped.length > 0 ? (
             <>
               <div className="flex items-center justify-between mb-3">
                 <div className="text-center">
@@ -230,7 +231,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
               </div>
               
               <div className="space-y-1 mb-3">
-                {headToHead.slice(0, 3).map((match, idx) => (
+                {h2hCapped.slice(0, 3).map((match, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">{match.date}</span>
                     <span className={cn(
