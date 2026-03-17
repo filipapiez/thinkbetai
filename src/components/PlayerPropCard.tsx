@@ -130,10 +130,11 @@ export function PlayerPropCard({ prop, selectedPlatform, autoFetchL20 = true }: 
   );
 }
 
-function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, isLoading, hasRealData, onLoadL20 }: {
+function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatform, results, hitCount, hitTotal, opponents = [], statValues = [], isLoading, hasRealData, onLoadL20 }: {
   prop: PlayerProp; direction: 'Over' | 'Under'; edge: number; prob: number;
   selectedPlatform?: string | null;
   results: boolean[]; hitCount: number; hitTotal: number;
+  opponents?: string[]; statValues?: number[];
   isLoading: boolean; hasRealData: boolean;
   onLoadL20?: () => void;
 }) {
