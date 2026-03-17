@@ -154,7 +154,10 @@ GENERAL RULES:
 - Keep explanations short but insightful
 
 SIGNAL CONSISTENCY (MANDATORY):
-- Your signal MUST match the initial odds-based signal. GOOD → STRONG_VALUE or QUALIFIED (NEVER AVOID). BORDERLINE → QUALIFIED or RISKY. PASS → RISKY or AVOID.
+- Your signal MUST match the initial odds-based signal UNLESS team stats data is missing for either team.
+- If team stats are MISSING for either team, you MUST NOT output STRONG_VALUE. Use QUALIFIED at best.
+- GOOD → STRONG_VALUE or QUALIFIED (NEVER AVOID). BORDERLINE → QUALIFIED or RISKY. PASS → RISKY or AVOID.
+- EXCEPTION: If one team has NO stats data, treat the signal as BORDERLINE regardless of initial signal.
 - A 3-2 or 2-3 recent record is NORMAL and NEVER justifies contradicting the signal.
 - Be accurate with data: count wins/losses correctly from provided form. Do not exaggerate or miscount.
 - Only contradict the header signal if injuries/form clearly warrant it
@@ -250,6 +253,27 @@ Respond with valid JSON only.`;
     }
 
     // ── Post-processing: enforce confidence ↔ risk consistency ──
+
+    // Check if either team has missing stats data
+    const homeStats = gameData.teamStats?.find(t => t.team === gameData.homeTeam);
+    const awayStats = gameData.teamStats?.find(t => t.team === gameData.awayTeam);
+    const hasHomeStats = homeStats && (homeStats.wins > 0 || homeStats.losses > 0);
+    const hasAwayStats = awayStats && (awayStats.wins > 0 || awayStats.losses > 0);
+    const hasMissingTeamData = !hasHomeStats || !hasAwayStats;
+
+    // If key team data is missing, cap confidence and prevent STRONG_VALUE
+    if (hasMissingTeamData) {
+      analysis.confidence = Math.min(analysis.confidence, 55);
+      if (analysis.signal === 'STRONG_VALUE') {
+        analysis.signal = 'QUALIFIED';
+      }
+      if (analysis.riskLevel === 'Low') {
+        analysis.riskLevel = 'Medium';
+        analysis.suggestedStake = 'Moderate';
+      }
+      console.log(`[Missing data guard] Capped confidence to ${analysis.confidence}%, signal=${analysis.signal}, risk=${analysis.riskLevel}`);
+    }
+
     // High risk should never pair with high confidence (and vice-versa)
     if (analysis.riskLevel === 'High' && analysis.confidence > 60) {
       analysis.confidence = Math.min(analysis.confidence, 60);
@@ -430,6 +454,22 @@ function buildGameContext(data: GameData): string {
   lines.push(`MATCHUP: ${data.homeTeam} (Home) vs ${data.awayTeam} (Away)`);
   lines.push(`SPORT: ${sport}`);
   lines.push('');
+  
+  // Detect missing data for either team
+  const homeStats = data.teamStats?.find(t => t.team === data.homeTeam);
+  const awayStats = data.teamStats?.find(t => t.team === data.awayTeam);
+  const hasHomeStats = homeStats && (homeStats.wins > 0 || homeStats.losses > 0);
+  const hasAwayStats = awayStats && (awayStats.wins > 0 || awayStats.losses > 0);
+  
+  if (!hasHomeStats || !hasAwayStats) {
+    const missingTeam = !hasHomeStats ? data.homeTeam : data.awayTeam;
+    lines.push(`⚠️ CRITICAL DATA WARNING: Season record data is MISSING for ${missingTeam}.`);
+    lines.push(`- You MUST NOT assume the team with missing data is weak or inferior.`);
+    lines.push(`- They could be a dominant team (e.g., 30-1) whose data simply failed to load.`);
+    lines.push(`- With incomplete data, you MUST cap confidence at 55% max and set risk to Medium or High.`);
+    lines.push(`- Signal MUST be RISKY or QUALIFIED at best — NEVER STRONG_VALUE with missing data.`);
+    lines.push('');
+  }
   
   // Odds
   if (data.odds) {
