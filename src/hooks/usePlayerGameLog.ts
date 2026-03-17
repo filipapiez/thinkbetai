@@ -152,6 +152,7 @@ async function fetchGameLog(
     }
 
     const statValues = resp.statValues || [];
+    const opponents = resp.opponents || [];
     let results: boolean[];
     if (direction === 'Under') {
       results = statValues.map((val: number) => val < line);
@@ -163,6 +164,7 @@ async function fetchGameLog(
     const result: CachedData = {
       results,
       statValues,
+      opponents,
       hitCount,
       total: results.length,
       timestamp: Date.now(),
