@@ -184,11 +184,11 @@ Deno.serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value AND the game date from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.${columnHint}`,
+            content: `You are a sports statistics expert. Your task is to extract per-game stat values from StatMuse game log data. The data contains a table showing individual game results. Each row represents one game. Extract the "${statType}" column value, the game date, AND the opponent team name from each game row. You MUST find all 20 games if the data is present. Do NOT stop early — scan the ENTIRE table. Return ONLY real numeric values from the table. Do NOT fabricate or estimate data.${columnHint}`,
           },
           {
             role: 'user',
-            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sportNorm}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINPORTANT COLUMN MAPPING:${columnHint}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. Identify the CORRECT column for "${statType}" using the header row\n3. For EACH game row, extract that column's value AND the game date\n4. Return ALL 20 games\n5. Order: oldest game first, newest game last\n6. Be VERY careful to read the right column — count columns from left to right using the header\n7. Return numeric values only (0 is valid)\n8. For each game, include the date string as found in the source`,
+            content: `Player: ${playerName}\nStat to extract: ${statType}\nSport: ${sportNorm}\n\nSOURCE DATA (StatMuse game log):\n${snippets.join('\n\n---\n\n')}\n\nINPORTANT COLUMN MAPPING:${columnHint}\n\nINSTRUCTIONS:\n1. Find the game log table in the StatMuse data above\n2. Identify the CORRECT column for "${statType}" using the header row\n3. For EACH game row, extract that column's value, the game date, AND the opponent team name/abbreviation\n4. Return ALL 20 games\n5. Order: oldest game first, newest game last\n6. Be VERY careful to read the right column — count columns from left to right using the header\n7. Return numeric values only (0 is valid)\n8. For each game, include the date string and opponent as found in the source\n9. The opponent is usually in the "OPP" or "OPPONENT" or "VS" column`,
           },
         ],
         tools: [
@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
             type: 'function',
             function: {
               name: 'extract_stat_values',
-              description: `Extract numeric ${statType} values and dates from the player's recent game log`,
+              description: `Extract numeric ${statType} values, dates, and opponents from the player's recent game log`,
               parameters: {
                 type: 'object',
                 additionalProperties: false,
@@ -204,12 +204,13 @@ Deno.serve(async (req) => {
                 properties: {
                   games: {
                     type: 'array',
-                    description: 'Array of game entries with date and stat value, oldest first',
+                    description: 'Array of game entries with date, stat value, and opponent, oldest first',
                     items: {
                       type: 'object',
                       properties: {
                         date: { type: 'string', description: 'Game date as found in the source' },
                         value: { type: 'number', description: `The ${statType} value for this game` },
+                        opponent: { type: 'string', description: 'Opponent team name or abbreviation as found in the source' },
                       },
                       required: ['date', 'value'],
                     },
