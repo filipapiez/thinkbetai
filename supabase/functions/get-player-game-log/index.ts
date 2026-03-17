@@ -36,6 +36,7 @@ Deno.serve(async (req) => {
     if (cached && new Date(cached.expires_at) > new Date()) {
       const cachedData = cached.data as any;
       const cachedValues = Array.isArray(cachedData?.statValues) ? cachedData.statValues : [];
+      const cachedOpponents = Array.isArray(cachedData?.opponents) ? cachedData.opponents : [];
       // Only use cache if it has at least 10 stat values (reject old small entries)
       if (cachedValues.length >= 10) {
         console.log(`Cache hit for ${playerName} ${statType} (${cachedValues.length} values)`);
@@ -45,6 +46,7 @@ Deno.serve(async (req) => {
             success: true,
             results,
             statValues: cachedValues,
+            opponents: cachedOpponents,
             hitCount: results.filter(Boolean).length,
             total: results.length,
             source: 'cached',
