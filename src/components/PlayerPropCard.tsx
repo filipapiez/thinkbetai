@@ -181,18 +181,20 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
   // Compute H2H stats vs opponent
   const h2h = useMemo(() => {
     if (!hasRealData || opponents.length === 0 || !prop.opponent) return null;
-    const oppNorm = prop.opponent.toLowerCase();
-    const matchIndices: number[] = [];
-    opponents.forEach((opp, i) => {
-      if (opp && opp.toLowerCase().includes(oppNorm) || oppNorm.includes(opp.toLowerCase())) {
-        matchIndices.push(i);
+
+    const matchIndices = opponents.reduce<number[]>((acc, opponent, index) => {
+      if (areTeamsEquivalent(opponent, prop.opponent, prop.sport)) {
+        acc.push(index);
       }
-    });
+      return acc;
+    }, []);
+
     if (matchIndices.length === 0) return null;
-    const h2hValues = matchIndices.map(i => statValues[i]).filter(v => v !== undefined);
-    const h2hHits = h2hValues.filter(v => direction === 'Over' ? v >= prop.line : v < prop.line).length;
-    return { games: h2hValues.length, hits: h2hHits, avg: h2hValues.reduce((a, b) => a + b, 0) / h2hValues.length };
-  }, [hasRealData, opponents, statValues, prop.opponent, prop.line, direction]);
+
+    const h2hValues = matchIndices
+      .map((index) => statValues[index])
+      .filter((value): value is number => typeof value === 'number');
+
 
   const explanation = useMemo(() => {
     const playerFirst = prop.playerName.split(' ')[0];
