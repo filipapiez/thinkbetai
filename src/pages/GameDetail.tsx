@@ -269,7 +269,7 @@ const GameDetail = () => {
   const cachedPopularGame = useMemo(() => {
     if (!gameId) return undefined;
     try {
-      const raw = localStorage.getItem('popular_games_cache');
+      const raw = localStorage.getItem('popular_games_cache_v2') || localStorage.getItem('popular_games_cache');
       if (!raw) return undefined;
       const parsed = JSON.parse(raw);
       const list = parsed?.games;
@@ -313,13 +313,28 @@ const GameDetail = () => {
   const [isLoadingScrapedData, setIsLoadingScrapedData] = useState(false);
   const scrapedFetchKeyRef = useRef<string | null>(null);
 
+  const scrapedSport = useMemo(() => {
+    const sport = game?.sport || '';
+    const league = stateGame?.league || cachedPopularGame?.league || '';
+    const combined = `${sport} ${league}`.toLowerCase();
+
+    if ((combined.includes('ncaa') || combined.includes('college')) && combined.includes('basketball')) {
+      return 'ncaab';
+    }
+    if ((combined.includes('ncaa') || combined.includes('college')) && combined.includes('football')) {
+      return 'ncaaf';
+    }
+
+    return sport;
+  }, [game?.sport, stateGame?.league, cachedPopularGame?.league]);
+
   // Always fetch fresh game data (injuries, form, H2H) every time a user opens a game
   useEffect(() => {
     if (!game) return;
 
     const homeTeamName = game.homeTeam.name;
     const awayTeamName = game.awayTeam.name;
-    const sport = game.sport;
+    const sport = scrapedSport;
 
     // Use a timestamp-based key so data refreshes on every page visit
     const fetchKey = `${homeTeamName}:${awayTeamName}:${sport}:${Date.now()}`;
@@ -341,7 +356,7 @@ const GameDetail = () => {
         }
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game?.homeTeam?.name, game?.awayTeam?.name, game?.sport]);
+  }, [game?.homeTeam?.name, game?.awayTeam?.name, scrapedSport]);
 
   useEffect(() => {
     if (!gameId || !game) return;
@@ -884,6 +899,7 @@ const GameDetail = () => {
                 recentForm={scrapedData.recentForm}
                 headToHead={scrapedData.headToHead}
                 headToHeadMeta={scrapedData.headToHeadMeta}
+                teamStats={scrapedData.teamStats}
                 homeTeam={game.homeTeam.name}
                 awayTeam={game.awayTeam.name}
               />
