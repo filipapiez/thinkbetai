@@ -1357,10 +1357,34 @@ async function getEspnTeamSchedule(sport: string, league: string, teamId: string
   }
 }
 
+async function getEspnTeamRecord(sport: string, league: string, teamId: string): Promise<EspnTeamRecord | null> {
+  try {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${teamId}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const recordItems = data.team?.record?.items || [];
+    const totalRecord = recordItems.find((r: any) => r.type === 'total');
+    if (!totalRecord?.stats) return null;
+    const getStat = (name: string) => {
+      const s = totalRecord.stats.find((st: any) => st.name === name);
+      return s ? s.value : 0;
+    };
+    return {
+      wins: getStat('wins'),
+      losses: getStat('losses'),
+      streak: getStat('streak'),
+      ranking: getStat('playoffSeed') || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function fetchEspnRecentGames(homeTeam: string, awayTeam: string, sport: string): Promise<EspnSupplementData> {
   const sportKey = normalizeSportKey(sport);
   const espnConfig = ESPN_SPORT_MAP[sportKey];
-  if (!espnConfig) return { homeGames: [], awayGames: [] };
+  if (!espnConfig) return { homeGames: [], awayGames: [], homeRecord: null, awayRecord: null };
 
   try {
     const [homeId, awayId] = await Promise.all([
@@ -1368,16 +1392,18 @@ async function fetchEspnRecentGames(homeTeam: string, awayTeam: string, sport: s
       getEspnTeamId(espnConfig.sport, espnConfig.league, awayTeam),
     ]);
 
-    const [homeGames, awayGames] = await Promise.all([
+    const [homeGames, awayGames, homeRecord, awayRecord] = await Promise.all([
       homeId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, homeId, 5) : Promise.resolve([]),
       awayId ? getEspnTeamSchedule(espnConfig.sport, espnConfig.league, awayId, 5) : Promise.resolve([]),
+      homeId ? getEspnTeamRecord(espnConfig.sport, espnConfig.league, homeId) : Promise.resolve(null),
+      awayId ? getEspnTeamRecord(espnConfig.sport, espnConfig.league, awayId) : Promise.resolve(null),
     ]);
 
-    console.log(`[ESPN] ${homeTeam}: ${homeGames.length} games, ${awayTeam}: ${awayGames.length} games`);
-    return { homeGames, awayGames };
+    console.log(`[ESPN] ${homeTeam}: ${homeGames.length} games, record=${homeRecord ? `${homeRecord.wins}-${homeRecord.losses}` : 'N/A'} | ${awayTeam}: ${awayGames.length} games, record=${awayRecord ? `${awayRecord.wins}-${awayRecord.losses}` : 'N/A'}`);
+    return { homeGames, awayGames, homeRecord, awayRecord };
   } catch (e) {
     console.error('[ESPN] Error fetching recent games:', e);
-    return { homeGames: [], awayGames: [] };
+    return { homeGames: [], awayGames: [], homeRecord: null, awayRecord: null };
   }
 }
 
