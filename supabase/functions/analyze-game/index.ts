@@ -250,6 +250,27 @@ Respond with valid JSON only.`;
     }
 
     // ── Post-processing: enforce confidence ↔ risk consistency ──
+
+    // Check if either team has missing stats data
+    const homeStats = gameData.teamStats?.find(t => t.team === gameData.homeTeam);
+    const awayStats = gameData.teamStats?.find(t => t.team === gameData.awayTeam);
+    const hasHomeStats = homeStats && (homeStats.wins > 0 || homeStats.losses > 0);
+    const hasAwayStats = awayStats && (awayStats.wins > 0 || awayStats.losses > 0);
+    const hasMissingTeamData = !hasHomeStats || !hasAwayStats;
+
+    // If key team data is missing, cap confidence and prevent STRONG_VALUE
+    if (hasMissingTeamData) {
+      analysis.confidence = Math.min(analysis.confidence, 55);
+      if (analysis.signal === 'STRONG_VALUE') {
+        analysis.signal = 'QUALIFIED';
+      }
+      if (analysis.riskLevel === 'Low') {
+        analysis.riskLevel = 'Medium';
+        analysis.suggestedStake = 'Moderate';
+      }
+      console.log(`[Missing data guard] Capped confidence to ${analysis.confidence}%, signal=${analysis.signal}, risk=${analysis.riskLevel}`);
+    }
+
     // High risk should never pair with high confidence (and vice-versa)
     if (analysis.riskLevel === 'High' && analysis.confidence > 60) {
       analysis.confidence = Math.min(analysis.confidence, 60);
