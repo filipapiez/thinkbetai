@@ -200,7 +200,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-semibold flex items-center gap-2">
-              Head-to-Head (Last 5)
+              Head-to-Head {h2hTotal > 0 ? `(Last ${h2hTotal})` : '(Last 5)'}
             </h4>
             {headToHeadMeta?.limitedData && (
               <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/40 text-xs">
