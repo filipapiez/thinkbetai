@@ -309,25 +309,26 @@ Deno.serve(async (req) => {
           dateStr = `${currentYear} ${dateStr}`;
         }
         const ts = new Date(dateStr).getTime();
-        return { value: g.value as number, date: dateStr, ts: isNaN(ts) ? 0 : ts };
+        return { value: g.value as number, date: dateStr, ts: isNaN(ts) ? 0 : ts, opponent: (g.opponent || '').toString().trim() };
       })
       .sort((a: any, b: any) => a.ts - b.ts)
       .slice(-20);
 
     // Take last 20 values in chronological order
     const statValues = sortedGames.map((g: any) => g.value);
+    const opponents = sortedGames.map((g: any) => g.opponent);
 
     // Calculate hits against the line
     const results = statValues.map((val: number) => val >= line);
     const hitCount = results.filter(Boolean).length;
 
-    // Cache the stat values (not the line-specific results)
+    // Cache the stat values and opponents (not the line-specific results)
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await supabase
       .from('odds_cache')
       .upsert({
         id: cacheKey,
-        data: { statValues, playerName, statType, sport, fetchedAt: new Date().toISOString() },
+        data: { statValues, opponents, playerName, statType, sport, fetchedAt: new Date().toISOString() },
         expires_at: expiresAt,
         updated_at: new Date().toISOString(),
       });
@@ -339,6 +340,7 @@ Deno.serve(async (req) => {
         success: true,
         results,
         statValues,
+        opponents,
         hitCount,
         total: statValues.length,
         source: 'live',
