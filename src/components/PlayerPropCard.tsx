@@ -104,6 +104,7 @@ function LazyFetchCard({ prop, direction, edge, prob, selectedPlatform }: {
       prop={prop} direction={direction} edge={edge} prob={prob}
       selectedPlatform={selectedPlatform}
       results={lazy.results} hitCount={lazy.hitCount} hitTotal={lazy.total}
+      opponents={lazy.opponents} statValues={lazy.statValues}
       isLoading={lazy.isLoading} hasRealData={lazy.hasData}
       onLoadL20={lazy.hasData ? undefined : lazy.fetch}
     />
