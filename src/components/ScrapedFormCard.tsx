@@ -216,7 +216,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
             </div>
           )}
           
-          {headToHead.length > 0 ? (
+          {h2hCapped.length > 0 ? (
             <>
               <div className="flex items-center justify-between mb-3">
                 <div className="text-center">
@@ -231,7 +231,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
               </div>
               
               <div className="space-y-1 mb-3">
-                {headToHead.slice(0, 3).map((match, idx) => (
+                {h2hCapped.slice(0, 3).map((match, idx) => (
                   <div key={idx} className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">{match.date}</span>
                     <span className={cn(
