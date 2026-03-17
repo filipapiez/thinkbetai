@@ -1287,9 +1287,18 @@ interface EspnRecentGame {
   date: string;
 }
 
+interface EspnTeamRecord {
+  wins: number;
+  losses: number;
+  streak: number; // positive = win streak, negative = loss streak
+  ranking: number;
+}
+
 interface EspnSupplementData {
   homeGames: EspnRecentGame[];
   awayGames: EspnRecentGame[];
+  homeRecord: EspnTeamRecord | null;
+  awayRecord: EspnTeamRecord | null;
 }
 
 async function getEspnTeamId(sport: string, league: string, teamName: string): Promise<string | null> {
