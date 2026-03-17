@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Users, AlertTriangle } from 'lucide-react';
-import { ScrapedRecentForm, ScrapedH2H, ScrapedH2HMeta } from '@/lib/api/gameData';
+import { ScrapedRecentForm, ScrapedH2H, ScrapedH2HMeta, ScrapedTeamStats } from '@/lib/api/gameData';
 import { cn } from '@/lib/utils';
 import { areTeamsEquivalent } from '@/lib/teamMatching';
 
@@ -9,11 +9,12 @@ interface ScrapedFormCardProps {
   recentForm: ScrapedRecentForm[];
   headToHead: ScrapedH2H[];
   headToHeadMeta?: ScrapedH2HMeta;
+  teamStats?: ScrapedTeamStats[];
   homeTeam: string;
   awayTeam: string;
 }
 
-export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTeam, awayTeam }: ScrapedFormCardProps) => {
+export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamStats = [], homeTeam, awayTeam }: ScrapedFormCardProps) => {
   const normalizeTeam = (value: string) =>
     value
       .toLowerCase()
@@ -30,6 +31,8 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
 
   const homeForm = recentForm.find(f => matchesTeam(f.team, homeTeam));
   const awayForm = recentForm.find(f => matchesTeam(f.team, awayTeam));
+  const homeStats = teamStats.find(s => matchesTeam(s.team, homeTeam));
+  const awayStats = teamStats.find(s => matchesTeam(s.team, awayTeam));
 
   const getRecord = (games: { result: 'W' | 'L' }[] | undefined) => {
     if (!games) return { wins: 0, losses: 0 };
@@ -43,9 +46,16 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
   const h2hHomeWins = headToHead.filter(h => matchesTeam(h.winner, homeTeam)).length;
   const h2hAwayWins = headToHead.filter(h => matchesTeam(h.winner, awayTeam)).length;
 
-  const FormDisplay = ({ form, teamName }: { form: ScrapedRecentForm | undefined; teamName: string }) => {
+  const FormDisplay = ({ form, teamName, stats }: { form: ScrapedRecentForm | undefined; teamName: string; stats?: ScrapedTeamStats }) => {
     const record = getRecord(form?.last5);
-    const isGood = record.wins >= 3;
+    const hasRecentForm = Boolean(form?.last5 && form.last5.length > 0);
+    const hasSeasonRecord = Boolean(stats && (stats.wins > 0 || stats.losses > 0));
+    const isGood = hasRecentForm ? record.wins >= 3 : Boolean(stats && stats.wins > stats.losses);
+    const badgeText = hasRecentForm
+      ? `${record.wins}-${record.losses} Last 5`
+      : hasSeasonRecord
+        ? `${stats!.wins}-${stats!.losses} Overall`
+        : 'No form data';
     
     return (
       <div className="space-y-3">
@@ -62,14 +72,14 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
             "text-xs",
             isGood ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" : "bg-rose-500/20 text-rose-400 border-rose-500/40"
           )}>
-            {record.wins}-{record.losses} Last 5
+            {badgeText}
           </Badge>
         </div>
         
-        {form?.last5 && form.last5.length > 0 ? (
+        {hasRecentForm ? (
           <>
             <div className="flex gap-1">
-              {form.last5.map((game, idx) => (
+              {form!.last5.map((game, idx) => (
                 <div
                   key={idx}
                   className={cn(
@@ -85,7 +95,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
             </div>
             
             <div className="space-y-1">
-              {form.last5.slice(0, 3).map((game, idx) => (
+              {form!.last5.slice(0, 3).map((game, idx) => (
                 <div key={idx} className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>vs {game.opponent}</span>
                   <span className={cn(
@@ -97,6 +107,14 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTe
               ))}
             </div>
           </>
+        ) : hasSeasonRecord ? (
+          <div className="p-3 rounded-lg bg-muted/50 text-center space-y-1">
+            <p className="text-xs text-foreground">Season record: {stats!.wins}-{stats!.losses}</p>
+            {stats!.ranking > 0 && (
+              <p className="text-xs text-muted-foreground">Ranked #{stats!.ranking}</p>
+            )}
+            <p className="text-xs text-muted-foreground">Recent match history is temporarily unavailable.</p>
+          </div>
         ) : (
           <div className="p-3 rounded-lg bg-muted/50 text-center">
             <p className="text-xs text-muted-foreground">No verified recent matches found</p>
