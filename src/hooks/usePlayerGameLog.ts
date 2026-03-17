@@ -229,6 +229,7 @@ export function usePlayerGameLog(
     return {
       results: data.results,
       statValues: data.statValues,
+      opponents: data.opponents,
       hitCount: data.hitCount,
       total: data.total,
       isLoading: false,
@@ -239,6 +240,7 @@ export function usePlayerGameLog(
   return {
     results: [],
     statValues: [],
+    opponents: [],
     hitCount: 0,
     total: 0,
     isLoading,
