@@ -182,8 +182,8 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormDisplay form={homeForm} teamName={homeTeam} />
-          <FormDisplay form={awayForm} teamName={awayTeam} />
+          <FormDisplay form={homeForm} teamName={homeTeam} stats={homeStats} />
+          <FormDisplay form={awayForm} teamName={awayTeam} stats={awayStats} />
         </div>
         
         {/* Form Conclusion */}

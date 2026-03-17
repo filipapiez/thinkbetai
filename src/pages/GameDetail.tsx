@@ -899,6 +899,7 @@ const GameDetail = () => {
                 recentForm={scrapedData.recentForm}
                 headToHead={scrapedData.headToHead}
                 headToHeadMeta={scrapedData.headToHeadMeta}
+                teamStats={scrapedData.teamStats}
                 homeTeam={game.homeTeam.name}
                 awayTeam={game.awayTeam.name}
               />
