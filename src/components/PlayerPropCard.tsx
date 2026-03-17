@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { PlayerProp, BookOdds } from '@/hooks/usePlayerProps';
+import { usePlayerGameLog, useLazyPlayerGameLog } from '@/hooks/usePlayerGameLog';
 import { cn } from '@/lib/utils';
 import { areTeamsEquivalent } from '@/lib/teamMatching';
 import { useMemo } from 'react';
-import { PlayerAvatar } from './PlayerAvatar';
 
 export const SPORTSBOOKS = [
   {
