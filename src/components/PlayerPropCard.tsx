@@ -217,7 +217,7 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
       const directionVerb = direction === 'Over' ? 'cleared' : 'stayed under';
       const hitPhrase = `${playerFirst} has ${directionVerb} this line in ${effectiveHitPct}% of his last ${hitTotal} games`;
       const h2hPhrase = h2h
-        ? ` vs ${prop.opponent}: ${h2h.hits}/${h2h.games} hit (avg ${h2h.avg.toFixed(1)} ${prop.statType}).`
+        ? ` vs ${prop.opponent}: went ${direction.toLowerCase()} in ${h2h.hits}/${h2h.games} (avg ${h2h.avg.toFixed(1)} ${prop.statType}).`
         : '';
 
       if (effectiveHitPct >= 70) {
