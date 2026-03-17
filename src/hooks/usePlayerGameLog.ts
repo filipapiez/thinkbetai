@@ -14,6 +14,7 @@ interface GameLogResult {
 interface CachedData {
   results: boolean[];
   statValues: number[];
+  opponents: string[];
   hitCount: number;
   total: number;
   date?: string; // legacy field
