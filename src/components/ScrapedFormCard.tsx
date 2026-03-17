@@ -156,7 +156,7 @@ export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, teamSt
   
   // Generate H2H conclusion
   const getH2HConclusion = () => {
-    if (headToHead.length === 0) {
+    if (h2hCapped.length === 0) {
       return "No verified head-to-head history available.";
     }
     if (h2hHomeWins > h2hAwayWins + 1) {
