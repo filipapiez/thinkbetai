@@ -296,6 +296,7 @@ export function useLazyPlayerGameLog(
   return {
     results: data?.results ?? [],
     statValues: data?.statValues ?? [],
+    opponents: data?.opponents ?? [],
     hitCount: data?.hitCount ?? 0,
     total: data?.total ?? 0,
     isLoading,
