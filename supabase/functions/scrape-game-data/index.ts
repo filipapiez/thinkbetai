@@ -1494,6 +1494,39 @@ function supplementWithEspnData(
     }
   }
 
+  // Supplement team stats (season records) from ESPN when missing
+  const hasHomeStats = result.teamStats.some(t => {
+    const tn = t.team.toLowerCase();
+    return (tn.includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(tn)) && (t.wins > 0 || t.losses > 0);
+  });
+  const hasAwayStats = result.teamStats.some(t => {
+    const tn = t.team.toLowerCase();
+    return (tn.includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(tn)) && (t.wins > 0 || t.losses > 0);
+  });
+
+  if (!hasHomeStats && espn.homeRecord) {
+    result.teamStats = result.teamStats.filter(t => !t.team.toLowerCase().includes(homeTeam.toLowerCase()) && !homeTeam.toLowerCase().includes(t.team.toLowerCase()));
+    result.teamStats.push({
+      team: homeTeam,
+      wins: espn.homeRecord.wins,
+      losses: espn.homeRecord.losses,
+      streak: espn.homeRecord.streak > 0 ? `W${espn.homeRecord.streak}` : espn.homeRecord.streak < 0 ? `L${Math.abs(espn.homeRecord.streak)}` : '-',
+      ranking: espn.homeRecord.ranking,
+    });
+    console.log(`[ESPN Record] Filled ${homeTeam}: ${espn.homeRecord.wins}-${espn.homeRecord.losses}`);
+  }
+  if (!hasAwayStats && espn.awayRecord) {
+    result.teamStats = result.teamStats.filter(t => !t.team.toLowerCase().includes(awayTeam.toLowerCase()) && !awayTeam.toLowerCase().includes(t.team.toLowerCase()));
+    result.teamStats.push({
+      team: awayTeam,
+      wins: espn.awayRecord.wins,
+      losses: espn.awayRecord.losses,
+      streak: espn.awayRecord.streak > 0 ? `W${espn.awayRecord.streak}` : espn.awayRecord.streak < 0 ? `L${Math.abs(espn.awayRecord.streak)}` : '-',
+      ranking: espn.awayRecord.ranking,
+    });
+    console.log(`[ESPN Record] Filled ${awayTeam}: ${espn.awayRecord.wins}-${espn.awayRecord.losses}`);
+  }
+
   return result;
 }
 
