@@ -89,6 +89,7 @@ function AutoFetchCard({ prop, direction, edge, prob, selectedPlatform }: {
       prop={prop} direction={direction} edge={edge} prob={prob}
       selectedPlatform={selectedPlatform}
       results={gameLog.results} hitCount={gameLog.hitCount} hitTotal={gameLog.total}
+      opponents={gameLog.opponents} statValues={gameLog.statValues}
       isLoading={gameLog.isLoading} hasRealData={gameLog.results.length >= 10}
     />
   );
