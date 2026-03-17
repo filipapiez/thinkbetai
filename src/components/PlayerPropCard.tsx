@@ -8,6 +8,7 @@ import { usePlayerGameLog, useLazyPlayerGameLog } from '@/hooks/usePlayerGameLog
 import { cn } from '@/lib/utils';
 import { areTeamsEquivalent } from '@/lib/teamMatching';
 import { useMemo } from 'react';
+import { PlayerAvatar } from './PlayerAvatar';
 
 export const SPORTSBOOKS = [
   {
