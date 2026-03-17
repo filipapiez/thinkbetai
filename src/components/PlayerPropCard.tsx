@@ -195,6 +195,18 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
       .map((index) => statValues[index])
       .filter((value): value is number => typeof value === 'number');
 
+    if (h2hValues.length === 0) return null;
+
+    const h2hHits = h2hValues.filter((value) =>
+      direction === 'Over' ? value >= prop.line : value < prop.line
+    ).length;
+
+    return {
+      games: h2hValues.length,
+      hits: h2hHits,
+      avg: h2hValues.reduce((sum, value) => sum + value, 0) / h2hValues.length,
+    };
+  }, [hasRealData, opponents, statValues, prop.opponent, prop.sport, prop.line, direction]);
 
   const explanation = useMemo(() => {
     const playerFirst = prop.playerName.split(' ')[0];
