@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Users, AlertTriangle } from 'lucide-react';
 import { ScrapedRecentForm, ScrapedH2H, ScrapedH2HMeta } from '@/lib/api/gameData';
 import { cn } from '@/lib/utils';
+import { areTeamsEquivalent } from '@/lib/teamMatching';
 
 interface ScrapedFormCardProps {
   recentForm: ScrapedRecentForm[];
@@ -13,11 +14,18 @@ interface ScrapedFormCardProps {
 }
 
 export const ScrapedFormCard = ({ recentForm, headToHead, headToHeadMeta, homeTeam, awayTeam }: ScrapedFormCardProps) => {
+  const normalizeTeam = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
   // Fuzzy match helper for team names
   const matchesTeam = (name: string, team: string): boolean => {
-    const n = name.toLowerCase().trim();
-    const t = team.toLowerCase().trim();
-    return n === t || n.includes(t) || t.includes(n);
+    const n = normalizeTeam(name);
+    const t = normalizeTeam(team);
+    return areTeamsEquivalent(name, team) || n === t || n.includes(t) || t.includes(n);
   };
 
   const homeForm = recentForm.find(f => matchesTeam(f.team, homeTeam));

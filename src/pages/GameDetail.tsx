@@ -356,7 +356,7 @@ const GameDetail = () => {
         }
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game?.homeTeam?.name, game?.awayTeam?.name, game?.sport]);
+  }, [game?.homeTeam?.name, game?.awayTeam?.name, scrapedSport]);
 
   useEffect(() => {
     if (!gameId || !game) return;

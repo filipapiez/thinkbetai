@@ -73,6 +73,14 @@ function validateSport(sport: unknown): string {
   }
   if (raw.includes('wtt')) return 'wtt';
 
+  // Detect college sports before generic basketball/football branches.
+  if (raw.includes('ncaab') || ((raw.includes('ncaa') || raw.includes('college')) && raw.includes('basketball'))) {
+    return 'ncaab';
+  }
+  if (raw.includes('ncaaf') || ((raw.includes('ncaa') || raw.includes('college')) && raw.includes('football'))) {
+    return 'ncaaf';
+  }
+
   // Soccer vs American football
   if (raw.includes('soccer')) return 'soccer';
   if (raw.includes('football')) {
@@ -81,9 +89,8 @@ function validateSport(sport: unknown): string {
     return 'soccer';
   }
 
-  if (raw.includes('nba') || raw.includes('basketball')) return 'nba';
-  if ((raw.includes('ncaa') || raw.includes('ncaab')) && raw.includes('basketball')) return 'ncaab';
-  if ((raw.includes('ncaa') || raw.includes('ncaaf')) && raw.includes('football')) return 'ncaaf';
+  if (raw.includes('nba')) return 'nba';
+  if (raw.includes('basketball')) return 'nba';
 
   if (raw.includes('mlb') || raw.includes('baseball')) return 'mlb';
   if (raw.includes('nhl') || raw.includes('hockey')) return 'nhl';
