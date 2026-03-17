@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart3, Trophy, TrendingUp, TrendingDown } from 'lucide-react';
 import type { ScrapedTeamStats, ScrapedKeyStats } from '@/lib/api/gameData';
 import { cn } from '@/lib/utils';
+import { areTeamsEquivalent } from '@/lib/teamMatching';
 
 interface TeamStatsCardProps {
   teamStats: ScrapedTeamStats[];
@@ -11,13 +12,32 @@ interface TeamStatsCardProps {
   awayTeam: string;
 }
 
+const normalizeTeam = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const matchesTeam = (source: string, target: string) => {
+  const sourceNormalized = normalizeTeam(source);
+  const targetNormalized = normalizeTeam(target);
+
+  return (
+    areTeamsEquivalent(source, target) ||
+    sourceNormalized === targetNormalized ||
+    sourceNormalized.includes(targetNormalized) ||
+    targetNormalized.includes(sourceNormalized)
+  );
+};
+
 export const TeamStatsCard = ({ teamStats, keyStats, homeTeam, awayTeam }: TeamStatsCardProps) => {
   if (teamStats.length === 0 && (!keyStats || keyStats.length === 0)) return null;
 
-  const homeStats = teamStats.find(s => s.team.toLowerCase().includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(s.team.toLowerCase()));
-  const awayStats = teamStats.find(s => s.team.toLowerCase().includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(s.team.toLowerCase()));
-  const homeKey = keyStats?.find(s => s.team.toLowerCase().includes(homeTeam.toLowerCase()) || homeTeam.toLowerCase().includes(s.team.toLowerCase()));
-  const awayKey = keyStats?.find(s => s.team.toLowerCase().includes(awayTeam.toLowerCase()) || awayTeam.toLowerCase().includes(s.team.toLowerCase()));
+  const homeStats = teamStats.find((s) => matchesTeam(s.team, homeTeam));
+  const awayStats = teamStats.find((s) => matchesTeam(s.team, awayTeam));
+  const homeKey = keyStats?.find((s) => matchesTeam(s.team, homeTeam));
+  const awayKey = keyStats?.find((s) => matchesTeam(s.team, awayTeam));
 
   return (
     <Card>
@@ -28,7 +48,6 @@ export const TeamStatsCard = ({ teamStats, keyStats, homeTeam, awayTeam }: TeamS
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Win-Loss Records */}
         {(homeStats || awayStats) && (
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -44,11 +63,20 @@ export const TeamStatsCard = ({ teamStats, keyStats, homeTeam, awayTeam }: TeamS
                     </div>
                     <div className="flex items-center gap-2">
                       {stats.streak && stats.streak !== 'N/A' && (
-                        <Badge variant="outline" className={cn(
-                          "text-xs",
-                          stats.streak.startsWith('W') ? 'text-emerald-400 border-emerald-500/40' : 'text-red-400 border-red-500/40'
-                        )}>
-                          {stats.streak.startsWith('W') ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'text-xs',
+                            stats.streak.startsWith('W')
+                              ? 'text-emerald-400 border-emerald-500/40'
+                              : 'text-red-400 border-red-500/40'
+                          )}
+                        >
+                          {stats.streak.startsWith('W') ? (
+                            <TrendingUp className="h-3 w-3 mr-1" />
+                          ) : (
+                            <TrendingDown className="h-3 w-3 mr-1" />
+                          )}
                           {stats.streak}
                         </Badge>
                       )}
@@ -71,7 +99,6 @@ export const TeamStatsCard = ({ teamStats, keyStats, homeTeam, awayTeam }: TeamS
           </div>
         )}
 
-        {/* Key Stats */}
         {(homeKey || awayKey) && (
           <div className="space-y-3">
             <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Key Performance Stats</h4>
