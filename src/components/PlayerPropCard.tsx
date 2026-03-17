@@ -28,6 +28,12 @@ export const SPORTSBOOKS = [
     logo: '/images/betmgm-logo.png',
     url: 'https://sports.betmgm.com',
   },
+  {
+    id: 'hardrockbet',
+    name: 'Hard Rock',
+    logo: '/images/hardrock-logo.png',
+    url: 'https://www.hardrock.bet',
+  },
 ] as const;
 
 interface PlayerPropCardProps {
