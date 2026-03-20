@@ -159,6 +159,40 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
     : edge;
 
+  // --- NEW: Season avg, streak, matchup ranking ---
+  const seasonAvg = useMemo(() => {
+    if (!hasRealData || statValues.length === 0) return null;
+    const valid = statValues.filter((v): v is number => typeof v === 'number');
+    if (valid.length === 0) return null;
+    return valid.reduce((s, v) => s + v, 0) / valid.length;
+  }, [hasRealData, statValues]);
+
+  const streak = useMemo(() => {
+    if (!hasRealData || results.length === 0) return null;
+    const effectiveResults = direction !== oddsDirection ? results.map(r => !r) : results;
+    // Count from most recent (end of array)
+    const last = effectiveResults[effectiveResults.length - 1];
+    let count = 0;
+    for (let i = effectiveResults.length - 1; i >= 0; i--) {
+      if (effectiveResults[i] === last) count++;
+      else break;
+    }
+    return { hit: last, count };
+  }, [hasRealData, results, direction, oddsDirection]);
+
+  const matchupRank = useMemo(() => {
+    if (!hasRealData || opponents.length === 0 || !prop.opponent) return null;
+    // Count how many times opponent appears and their avg allowed
+    const matchIndices = opponents.reduce<number[]>((acc, opp, i) => {
+      if (areTeamsEquivalent(opp, prop.opponent, prop.sport)) acc.push(i);
+      return acc;
+    }, []);
+    if (matchIndices.length < 2) return null;
+    const vals = matchIndices.map(i => statValues[i]).filter((v): v is number => typeof v === 'number');
+    if (vals.length === 0) return null;
+    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+    return { games: vals.length, avg };
+  }, [hasRealData, opponents, statValues, prop.opponent, prop.sport]);
   // Determine which sportsbooks to show
   const visibleBooks = useMemo(() => {
     const booksWithData = prop.bookOdds && Object.keys(prop.bookOdds).length > 0
