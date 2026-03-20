@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { PlayerPropCard, SPORTSBOOKS, computeEdge } from '@/components/PlayerPropCard';
+import { PlayerPropCard, SPORTSBOOKS, computeEdge, computePropQuality } from '@/components/PlayerPropCard';
 import { gameLogCache } from '@/hooks/usePlayerGameLog';
 import { usePlayerProps } from '@/hooks/usePlayerProps';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
@@ -67,6 +67,7 @@ const PlayerProps = () => {
   const [statFilter, setStatFilter] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState('today');
+  const [signalFilter, setSignalFilter] = useState<'all' | 'GOOD' | 'BORDERLINE' | 'PASS'>('all');
   const { user, isSubscribed } = useAuth();
   const navigate = useNavigate();
 
@@ -103,7 +104,15 @@ const PlayerProps = () => {
           : // When "All" is selected, require at least one major book (FanDuel or DraftKings)
             books.some(b => b === 'fanduel' || b === 'draftkings');
 
-        return matchesSearch && matchesStat && matchesTime && matchesPlatform;
+        // Signal filter
+        let matchesSignal = true;
+        if (signalFilter !== 'all') {
+          const { edge, prob } = computeEdge(p.overOdds, p.underOdds);
+          const quality = computePropQuality(edge, prob);
+          matchesSignal = quality.signal === signalFilter;
+        }
+
+        return matchesSearch && matchesStat && matchesTime && matchesPlatform && matchesSignal;
       })
       .sort((a, b) => {
         const edgeA = computeEdge(a.overOdds, a.underOdds);
@@ -115,7 +124,7 @@ const PlayerProps = () => {
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
-  }, [props, searchQuery, statFilter, timeFilter, selectedPlatform]);
+  }, [props, searchQuery, statFilter, timeFilter, selectedPlatform, signalFilter]);
 
   // Build a set of top-N prop IDs for auto-fetch
   const autoFetchIds = useMemo(() => {
@@ -243,6 +252,22 @@ const PlayerProps = () => {
                 <span className="text-xs hidden sm:inline">{sb.name}</span>
               </Button>
             ))}
+          </div>
+
+          {/* Signal quality filter */}
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
+            <Button variant={signalFilter === 'all' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter('all')}>
+              All
+            </Button>
+            <Button variant={signalFilter === 'GOOD' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs gap-1" onClick={() => setSignalFilter(signalFilter === 'GOOD' ? 'all' : 'GOOD')}>
+              <Zap className="h-3 w-3" /> Best Bets
+            </Button>
+            <Button variant={signalFilter === 'BORDERLINE' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter(signalFilter === 'BORDERLINE' ? 'all' : 'BORDERLINE')}>
+              ⚠️ Borderline
+            </Button>
+            <Button variant={signalFilter === 'PASS' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter(signalFilter === 'PASS' ? 'all' : 'PASS')}>
+              🚫 Pass
+            </Button>
           </div>
 
           {/* Search + stat filter */}
