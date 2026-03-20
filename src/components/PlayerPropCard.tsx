@@ -44,6 +44,69 @@ interface PlayerPropCardProps {
   autoFetchL20?: boolean;
 }
 
+export type PropSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
+
+export interface PropQuality {
+  signal: PropSignal;
+  score: number; // 0-100 composite quality score
+}
+
+// Compute prop quality signal from available metrics
+export function computePropQuality(
+  edge: number,
+  prob: number,
+  hitPct?: number,
+  streakHit?: boolean,
+  streakCount?: number,
+  seasonAvg?: number | null,
+  line?: number,
+  direction?: 'Over' | 'Under',
+): PropQuality {
+  let score = 40; // baseline
+
+  // Edge contribution (0-25 pts)
+  if (edge >= 8) score += 25;
+  else if (edge >= 5) score += 18;
+  else if (edge >= 3) score += 12;
+  else if (edge >= 1) score += 5;
+
+  // Probability contribution (0-20 pts)
+  if (prob >= 70) score += 20;
+  else if (prob >= 60) score += 14;
+  else if (prob >= 55) score += 8;
+
+  // L20 hit rate contribution (0-25 pts)
+  if (hitPct !== undefined) {
+    if (hitPct >= 75) score += 25;
+    else if (hitPct >= 65) score += 18;
+    else if (hitPct >= 55) score += 10;
+    else if (hitPct < 40) score -= 15;
+  }
+
+  // Streak bonus (0-10 pts)
+  if (streakHit !== undefined && streakCount !== undefined) {
+    if (streakHit && streakCount >= 5) score += 10;
+    else if (streakHit && streakCount >= 3) score += 6;
+    else if (!streakHit && streakCount >= 3) score -= 5;
+  }
+
+  // Season avg alignment (0-10 pts)
+  if (seasonAvg !== null && seasonAvg !== undefined && line !== undefined && direction) {
+    const avgSupports = direction === 'Over' ? seasonAvg >= line : seasonAvg < line;
+    if (avgSupports) score += 10;
+    else score -= 5;
+  }
+
+  score = Math.min(100, Math.max(0, score));
+
+  let signal: PropSignal;
+  if (score >= 72) signal = 'GOOD';
+  else if (score >= 50) signal = 'BORDERLINE';
+  else signal = 'PASS';
+
+  return { signal, score };
+}
+
 // Convert American odds to implied probability
 export function impliedProb(odds: number): number {
   if (odds > 0) return 100 / (odds + 100);
