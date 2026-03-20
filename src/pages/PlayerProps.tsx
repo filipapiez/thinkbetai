@@ -254,6 +254,22 @@ const PlayerProps = () => {
             ))}
           </div>
 
+          {/* Signal quality filter */}
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1 border border-border/50 mb-4 w-fit">
+            <Button variant={signalFilter === 'all' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter('all')}>
+              All
+            </Button>
+            <Button variant={signalFilter === 'GOOD' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs gap-1" onClick={() => setSignalFilter(signalFilter === 'GOOD' ? 'all' : 'GOOD')}>
+              <Zap className="h-3 w-3" /> Best Bets
+            </Button>
+            <Button variant={signalFilter === 'BORDERLINE' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter(signalFilter === 'BORDERLINE' ? 'all' : 'BORDERLINE')}>
+              ⚠️ Borderline
+            </Button>
+            <Button variant={signalFilter === 'PASS' ? 'default' : 'ghost'} size="sm" className="h-7 px-3 text-xs" onClick={() => setSignalFilter(signalFilter === 'PASS' ? 'all' : 'PASS')}>
+              🚫 Pass
+            </Button>
+          </div>
+
           {/* Search + stat filter */}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
