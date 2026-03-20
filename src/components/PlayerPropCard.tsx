@@ -159,6 +159,40 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     ? Math.min(Math.max(blendedProb - 50, 0), 45)
     : edge;
 
+  // --- NEW: Season avg, streak, matchup ranking ---
+  const seasonAvg = useMemo(() => {
+    if (!hasRealData || statValues.length === 0) return null;
+    const valid = statValues.filter((v): v is number => typeof v === 'number');
+    if (valid.length === 0) return null;
+    return valid.reduce((s, v) => s + v, 0) / valid.length;
+  }, [hasRealData, statValues]);
+
+  const streak = useMemo(() => {
+    if (!hasRealData || results.length === 0) return null;
+    const effectiveResults = direction !== oddsDirection ? results.map(r => !r) : results;
+    // Count from most recent (end of array)
+    const last = effectiveResults[effectiveResults.length - 1];
+    let count = 0;
+    for (let i = effectiveResults.length - 1; i >= 0; i--) {
+      if (effectiveResults[i] === last) count++;
+      else break;
+    }
+    return { hit: last, count };
+  }, [hasRealData, results, direction, oddsDirection]);
+
+  const matchupRank = useMemo(() => {
+    if (!hasRealData || opponents.length === 0 || !prop.opponent) return null;
+    // Count how many times opponent appears and their avg allowed
+    const matchIndices = opponents.reduce<number[]>((acc, opp, i) => {
+      if (areTeamsEquivalent(opp, prop.opponent, prop.sport)) acc.push(i);
+      return acc;
+    }, []);
+    if (matchIndices.length < 2) return null;
+    const vals = matchIndices.map(i => statValues[i]).filter((v): v is number => typeof v === 'number');
+    if (vals.length === 0) return null;
+    const avg = vals.reduce((s, v) => s + v, 0) / vals.length;
+    return { games: vals.length, avg };
+  }, [hasRealData, opponents, statValues, prop.opponent, prop.sport]);
   // Determine which sportsbooks to show
   const visibleBooks = useMemo(() => {
     const booksWithData = prop.bookOdds && Object.keys(prop.bookOdds).length > 0
@@ -313,7 +347,10 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 gap-2 px-4 pb-3">
+      <div className={cn(
+        "grid gap-2 px-4 pb-3",
+        hasRealData && (seasonAvg !== null || streak) ? "grid-cols-4" : "grid-cols-2"
+      )}>
         <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Edge</div>
           <div className={cn(
@@ -327,8 +364,48 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
           <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Prob</div>
           <div className="font-bold text-sm text-primary">{blendedProb.toFixed(0)}%</div>
         </div>
+        {hasRealData && seasonAvg !== null && (
+          <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Avg</div>
+            <div className={cn(
+              "font-bold text-sm",
+              direction === 'Over'
+                ? seasonAvg >= prop.line ? 'text-emerald-400' : 'text-red-400'
+                : seasonAvg < prop.line ? 'text-emerald-400' : 'text-red-400'
+            )}>
+              {seasonAvg.toFixed(1)}
+            </div>
+          </div>
+        )}
+        {hasRealData && streak && (
+          <div className="bg-secondary/40 rounded-lg p-2 text-center border border-border/50">
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Streak</div>
+            <div className={cn(
+              "font-bold text-sm",
+              streak.hit ? 'text-emerald-400' : 'text-red-400'
+            )}>
+              {streak.hit ? '🔥' : '❄️'} {streak.count}
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Matchup context */}
+      {hasRealData && matchupRank && (
+        <div className="px-4 pb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">vs {prop.opponent}</span>
+            <span className={cn(
+              "text-xs font-semibold",
+              direction === 'Over'
+                ? matchupRank.avg >= prop.line ? 'text-emerald-400' : 'text-red-400'
+                : matchupRank.avg < prop.line ? 'text-emerald-400' : 'text-red-400'
+            )}>
+              avg {matchupRank.avg.toFixed(1)} in {matchupRank.games}G
+            </span>
+          </div>
+        </div>
+      )}
       {/* L20 hit rate bar */}
       {isLoading ? (
         <div className="flex items-center gap-2 px-4 pb-3">
