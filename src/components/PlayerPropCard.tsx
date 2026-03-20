@@ -341,6 +341,24 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
     return `${playerFirst} vs ${prop.opponent} — ${displayEdge.toFixed(1)}% edge on the ${direction} from odds alone. Tap to load game history.`;
   }, [prop, direction, blendedEdge, hasRealData, effectiveHitPct, hitTotal, h2h]);
 
+  // Compute quality signal
+  const quality = useMemo(() => computePropQuality(
+    blendedEdge,
+    blendedProb,
+    hasRealData ? effectiveHitPct : undefined,
+    streak?.hit,
+    streak?.count,
+    seasonAvg,
+    prop.line,
+    direction,
+  ), [blendedEdge, blendedProb, hasRealData, effectiveHitPct, streak, seasonAvg, prop.line, direction]);
+
+  const signalColors: Record<PropSignal, string> = {
+    GOOD: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+    BORDERLINE: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+    PASS: 'bg-red-500/15 text-red-400 border-red-500/30',
+  };
+
   return (
     <>
       {/* Game header */}
@@ -349,7 +367,13 @@ function CardInner({ prop, direction: oddsDirection, edge, prob, selectedPlatfor
           {prop.team}
         </Badge>
         <span className="text-xs text-muted-foreground">VS {prop.opponent}</span>
-        <span className="text-xs text-muted-foreground ml-auto">
+        <Badge className={cn("ml-auto text-[10px] font-bold border px-2 py-0.5", signalColors[quality.signal])}>
+          {quality.signal === 'GOOD' ? '🎯 ' : quality.signal === 'BORDERLINE' ? '⚠️ ' : '🚫 '}
+          {quality.signal} · {quality.score}
+        </Badge>
+      </div>
+      <div className="flex items-center px-4 pb-1">
+        <span className="text-xs text-muted-foreground">
           {gameDate} {gameTimeStr}
         </span>
       </div>
