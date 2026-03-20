@@ -104,7 +104,15 @@ const PlayerProps = () => {
           : // When "All" is selected, require at least one major book (FanDuel or DraftKings)
             books.some(b => b === 'fanduel' || b === 'draftkings');
 
-        return matchesSearch && matchesStat && matchesTime && matchesPlatform;
+        // Signal filter
+        let matchesSignal = true;
+        if (signalFilter !== 'all') {
+          const { edge, prob } = computeEdge(p.overOdds, p.underOdds);
+          const quality = computePropQuality(edge, prob);
+          matchesSignal = quality.signal === signalFilter;
+        }
+
+        return matchesSearch && matchesStat && matchesTime && matchesPlatform && matchesSignal;
       })
       .sort((a, b) => {
         const edgeA = computeEdge(a.overOdds, a.underOdds);
@@ -116,7 +124,7 @@ const PlayerProps = () => {
         if (hasRealB !== hasRealA) return hasRealB - hasRealA;
         return edgeB.prob - edgeA.prob;
       });
-  }, [props, searchQuery, statFilter, timeFilter, selectedPlatform]);
+  }, [props, searchQuery, statFilter, timeFilter, selectedPlatform, signalFilter]);
 
   // Build a set of top-N prop IDs for auto-fetch
   const autoFetchIds = useMemo(() => {
