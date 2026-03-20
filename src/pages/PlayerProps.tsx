@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown } from 'lucide-react';
+import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown, Zap } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
