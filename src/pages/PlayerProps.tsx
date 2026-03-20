@@ -67,6 +67,7 @@ const PlayerProps = () => {
   const [statFilter, setStatFilter] = useState<string | null>(null);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [timeFilter, setTimeFilter] = useState('today');
+  const [signalFilter, setSignalFilter] = useState<'all' | 'GOOD' | 'BORDERLINE' | 'PASS'>('all');
   const { user, isSubscribed } = useAuth();
   const navigate = useNavigate();
 
