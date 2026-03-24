@@ -378,6 +378,19 @@ const Admin = () => {
                 <Card variant="glass">
                   <CardContent className="pt-6">
                     <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-emerald-500/20">
+                        <BarChart3 className="h-6 w-6 text-emerald-500" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">${stats.totalMoneyMade?.toFixed(2) ?? '0.00'}</p>
+                        <p className="text-sm text-muted-foreground">Total Revenue</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
                       <div className="p-3 rounded-lg bg-accent/20">
                         <TrendingUp className="h-6 w-6 text-accent-foreground" />
                       </div>
