@@ -76,7 +76,8 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
     if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  // Fetch total money made from all successful charges
+  // Fetch total money made — only count subscription plan amounts (499, 1399, 4999 cents)
+  const VALID_PLAN_AMOUNTS = new Set([499, 1399, 4999]);
   let totalMoneyMade = 0;
   let chargeHasMore = true;
   let chargeStartingAfter: string | undefined;
@@ -85,7 +86,7 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
     if (chargeStartingAfter) chargeParams.starting_after = chargeStartingAfter;
     const charges = await stripe.charges.list(chargeParams);
     for (const charge of charges.data) {
-      if (charge.status === "succeeded" && !charge.refunded) {
+      if (charge.status === "succeeded" && !charge.refunded && VALID_PLAN_AMOUNTS.has(charge.amount)) {
         totalMoneyMade += (charge.amount - (charge.amount_refunded || 0));
       }
     }
