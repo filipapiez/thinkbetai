@@ -76,8 +76,25 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
     if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} newSince0304=${newSubsSinceMarch4} plans=${JSON.stringify(planCounts)}`);
-  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, newSubsSinceMarch4 };
+  // Fetch total money made from all successful charges
+  let totalMoneyMade = 0;
+  let chargeHasMore = true;
+  let chargeStartingAfter: string | undefined;
+  while (chargeHasMore) {
+    const chargeParams: Record<string, unknown> = { limit: 100 };
+    if (chargeStartingAfter) chargeParams.starting_after = chargeStartingAfter;
+    const charges = await stripe.charges.list(chargeParams);
+    for (const charge of charges.data) {
+      if (charge.status === "succeeded" && !charge.refunded) {
+        totalMoneyMade += (charge.amount - (charge.amount_refunded || 0));
+      }
+    }
+    chargeHasMore = charges.has_more;
+    if (charges.data.length > 0) chargeStartingAfter = charges.data[charges.data.length - 1].id;
+  }
+
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} newSince0304=${newSubsSinceMarch4} totalMoneyMade=${totalMoneyMade} plans=${JSON.stringify(planCounts)}`);
+  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, newSubsSinceMarch4, totalMoneyMade };
 }
 
 function mergeStats(a: StripeStats, b: StripeStats): StripeStats {
