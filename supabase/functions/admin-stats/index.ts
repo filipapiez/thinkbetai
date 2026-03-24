@@ -181,6 +181,7 @@ serve(async (req) => {
         scheduledCancels: stats.scheduledCancels,
         cancelRate,
         newSubsSinceMarch4: stats.newSubsSinceMarch4,
+        totalMoneyMade: stats.totalMoneyMade / 100,
         plans: Object.entries(stats.planCounts).map(([key, count]) => {
           const sc = stats.planScheduledCancels[key] || 0;
           const planCancelRate = count > 0 ? ((sc / count) * 100).toFixed(1) : "0";

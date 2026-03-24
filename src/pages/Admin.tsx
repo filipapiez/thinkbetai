@@ -55,6 +55,7 @@ interface AdminStats {
   scheduledCancels: number;
   cancelRate: string;
   newSubsSinceMarch4: number;
+  totalMoneyMade: number;
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
 }
 
