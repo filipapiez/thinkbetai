@@ -55,6 +55,7 @@ interface AdminStats {
   scheduledCancels: number;
   cancelRate: string;
   newSubsSinceMarch4: number;
+  totalMoneyMade: number;
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
 }
 
@@ -370,6 +371,19 @@ const Admin = () => {
                       <div>
                         <p className="text-2xl font-bold">${stats.mrr.toFixed(2)}</p>
                         <p className="text-sm text-muted-foreground">Current MRR</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card variant="glass">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-lg bg-emerald-500/20">
+                        <BarChart3 className="h-6 w-6 text-emerald-500" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold">${stats.totalMoneyMade?.toFixed(2) ?? '0.00'}</p>
+                        <p className="text-sm text-muted-foreground">Total Revenue</p>
                       </div>
                     </div>
                   </CardContent>

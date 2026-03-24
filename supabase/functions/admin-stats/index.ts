@@ -24,6 +24,7 @@ type StripeStats = {
   planCounts: Record<string, number>;
   planScheduledCancels: Record<string, number>;
   newSubsSinceMarch4: number;
+  totalMoneyMade: number;
 };
 
 async function fetchStripeStats(stripeKey: string, label: string): Promise<StripeStats> {
@@ -75,8 +76,25 @@ async function fetchStripeStats(stripeKey: string, label: string): Promise<Strip
     if (subs.data.length > 0) startingAfter = subs.data[subs.data.length - 1].id;
   }
 
-  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} newSince0304=${newSubsSinceMarch4} plans=${JSON.stringify(planCounts)}`);
-  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, newSubsSinceMarch4 };
+  // Fetch total money made from all successful charges
+  let totalMoneyMade = 0;
+  let chargeHasMore = true;
+  let chargeStartingAfter: string | undefined;
+  while (chargeHasMore) {
+    const chargeParams: Record<string, unknown> = { limit: 100 };
+    if (chargeStartingAfter) chargeParams.starting_after = chargeStartingAfter;
+    const charges = await stripe.charges.list(chargeParams);
+    for (const charge of charges.data) {
+      if (charge.status === "succeeded" && !charge.refunded) {
+        totalMoneyMade += (charge.amount - (charge.amount_refunded || 0));
+      }
+    }
+    chargeHasMore = charges.has_more;
+    if (charges.data.length > 0) chargeStartingAfter = charges.data[charges.data.length - 1].id;
+  }
+
+  console.log(`[ADMIN-STATS][${label}] active=${totalActive} scheduledCancels=${scheduledCancels} newSince0304=${newSubsSinceMarch4} totalMoneyMade=${totalMoneyMade} plans=${JSON.stringify(planCounts)}`);
+  return { totalActive, scheduledCancels, planCounts, planScheduledCancels, newSubsSinceMarch4, totalMoneyMade };
 }
 
 function mergeStats(a: StripeStats, b: StripeStats): StripeStats {
@@ -92,6 +110,7 @@ function mergeStats(a: StripeStats, b: StripeStats): StripeStats {
     planCounts,
     planScheduledCancels,
     newSubsSinceMarch4: a.newSubsSinceMarch4 + b.newSubsSinceMarch4,
+    totalMoneyMade: a.totalMoneyMade + b.totalMoneyMade,
   };
 }
 
@@ -162,6 +181,7 @@ serve(async (req) => {
         scheduledCancels: stats.scheduledCancels,
         cancelRate,
         newSubsSinceMarch4: stats.newSubsSinceMarch4,
+        totalMoneyMade: stats.totalMoneyMade / 100,
         plans: Object.entries(stats.planCounts).map(([key, count]) => {
           const sc = stats.planScheduledCancels[key] || 0;
           const planCancelRate = count > 0 ? ((sc / count) * 100).toFixed(1) : "0";
