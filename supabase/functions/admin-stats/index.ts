@@ -24,6 +24,7 @@ type StripeStats = {
   planCounts: Record<string, number>;
   planScheduledCancels: Record<string, number>;
   newSubsSinceMarch4: number;
+  totalMoneyMade: number;
 };
 
 async function fetchStripeStats(stripeKey: string, label: string): Promise<StripeStats> {
