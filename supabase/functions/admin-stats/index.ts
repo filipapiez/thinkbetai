@@ -110,6 +110,7 @@ function mergeStats(a: StripeStats, b: StripeStats): StripeStats {
     planCounts,
     planScheduledCancels,
     newSubsSinceMarch4: a.newSubsSinceMarch4 + b.newSubsSinceMarch4,
+    totalMoneyMade: a.totalMoneyMade + b.totalMoneyMade,
   };
 }
 
