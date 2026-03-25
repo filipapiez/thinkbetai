@@ -80,8 +80,14 @@ const Admin = () => {
   const [actionUserId, setActionUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) checkAdminStatus();
-  }, [user]);
+    if (authLoading) return;
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsCheckingAdmin(false);
+      setIsAdmin(false);
+    }
+  }, [user, authLoading]);
 
   useEffect(() => {
     if (isAdmin) fetchAllData();
