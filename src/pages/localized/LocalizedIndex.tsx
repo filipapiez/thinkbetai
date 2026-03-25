@@ -8,7 +8,7 @@ import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
-import { platformStats } from '@/lib/mockData';
+import { platformStats } from '@/lib/platformStats';
 import { useWinRate } from '@/hooks/useWinRate';
 import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
 import {

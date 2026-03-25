@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Trophy, TrendingUp, Target, CheckCircle, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { platformStats } from '@/lib/mockData';
+import { platformStats } from '@/lib/platformStats';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 

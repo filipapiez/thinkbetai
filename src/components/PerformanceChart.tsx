@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart, BarChart, Bar } from 'recharts';
 import { TrendingUp, Target, Award, Activity, Info } from 'lucide-react';
-import { PerformanceData, GameResult, platformStats } from '@/lib/mockData';
+import { PerformanceData, GameResult } from '@/lib/mockData';
+import { platformStats } from '@/lib/platformStats';
 
 interface PerformanceChartProps {
   data: PerformanceData[];
