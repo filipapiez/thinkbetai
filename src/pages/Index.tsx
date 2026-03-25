@@ -11,7 +11,7 @@ import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 
-import { platformStats } from '@/lib/mockData';
+import { platformStats } from '@/lib/platformStats';
 import { useWinRate } from '@/hooks/useWinRate';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
