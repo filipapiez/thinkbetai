@@ -342,8 +342,7 @@ const Index = () => {
               ].map((stat, index) => (
                 <div 
                   key={stat.label} 
-                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300 animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <stat.icon className={`h-6 w-6 mx-auto mb-3 ${stat.color}`} />
