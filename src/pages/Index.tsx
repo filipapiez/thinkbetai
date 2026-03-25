@@ -11,7 +11,7 @@ import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 
-import { platformStats } from '@/lib/mockData';
+import { platformStats } from '@/lib/platformStats';
 import { useWinRate } from '@/hooks/useWinRate';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -240,7 +240,7 @@ const Index = () => {
           <div className="container relative">
             <div className="max-w-4xl mx-auto text-center">
               {/* Live Badge */}
-              <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8 animate-fade-in">
+              <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -342,8 +342,7 @@ const Index = () => {
               ].map((stat, index) => (
                 <div 
                   key={stat.label} 
-                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300 animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <stat.icon className={`h-6 w-6 mx-auto mb-3 ${stat.color}`} />
