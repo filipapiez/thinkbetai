@@ -28,7 +28,7 @@
     <meta name="p:domain_verify" content="975dbc13efad26184fb4a3d9f7789de5"/>
     <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <link rel="canonical" href="https://thinkbetai.com" />
+    <!-- Canonical is set dynamically per page via React Helmet -->
     
     <!-- Geo Tags -->
     <meta name="geo.region" content="US" />
@@ -87,7 +87,7 @@
     
     <!-- Inline critical CSS for instant FCP + above-the-fold hero -->
     <style>
-      :root{--background:240 10% 3.9%;--foreground:0 0% 98%;--primary:262.1 83.3% 57.8%;--primary-foreground:210 20% 98%;--card:240 10% 3.9%;--border:240 3.7% 15.9%;--muted-foreground:240 5% 64.9%;--accent:240 3.7% 15.9%;--ring:262.1 83.3% 57.8%;--radius:0.5rem}
+      :root{--background:222 47% 6%;--foreground:210 40% 98%;--primary:174 72% 50%;--primary-foreground:222 47% 6%;--card:222 47% 8%;--border:222 30% 18%;--muted-foreground:215 20% 55%;--accent:174 72% 40%;--ring:174 72% 50%;--radius:0.5rem}
       *,::after,::before{box-sizing:border-box;margin:0;padding:0}
       body{font-family:Inter,system-ui,-apple-system,sans-serif;background:hsl(var(--background));color:hsl(var(--foreground));-webkit-font-smoothing:antialiased}
       #root{min-height:100vh}
@@ -104,7 +104,7 @@
       .px-4{padding-left:1rem;padding-right:1rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}
       .font-semibold{font-weight:600}.font-bold{font-weight:700}.font-medium{font-weight:500}
       .bg-background{background-color:hsl(var(--background))}
-      .text-gradient{background:linear-gradient(135deg,hsl(var(--primary)),hsl(280 80% 65%));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+      .text-gradient{background:linear-gradient(135deg,hsl(174 72% 50%),hsl(174 72% 40%));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
       .flex-wrap{flex-wrap:wrap}.justify-between{justify-content:space-between}.border-b{border-bottom-width:1px}.h-16{height:4rem}
       @keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}
       @keyframes fade-in{from{transform:translateY(0)}to{transform:translateY(0)}}.animate-fade-in{animation:fade-in .3s ease-out forwards}

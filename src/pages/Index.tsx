@@ -221,7 +221,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO />
+      <SEO canonical="/" />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(reviewStructuredData)}
