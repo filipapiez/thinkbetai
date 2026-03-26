@@ -153,6 +153,7 @@ const Login = () => {
         description="Sign in to ThinkBetAI to access AI-powered sports betting predictions, real-time analysis, and expert picks for all major sports."
         keywords="ThinkBetAI login, sports betting login, AI predictions access"
         url="/login"
+        canonical="/login"
       />
       <Header />
       
