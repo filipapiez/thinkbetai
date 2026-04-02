@@ -69,6 +69,15 @@ serve(async (req) => {
     // Validate and normalize sport
     const validatedSport = validateAndNormalizeSport(gameData.sport);
     gameData.sport = validatedSport;
+
+    // Season guard — block offseason sports
+    const seasonCheck = checkSportSeason(validatedSport);
+    if (!seasonCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: seasonCheck.message, offseason: true }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
