@@ -1,20 +1,20 @@
-// Platform win ratio stats - QUALIFIED PICKS ONLY (GOOD bets)
-// Extracted to a separate file so the landing page doesn't load the entire mockData module (28KB).
+// Platform win ratio stats - QUALIFIED PICKS ONLY (confidence >= 75)
+// Extracted to a separate file so the landing page doesn't load the entire mockData module.
 export const platformStats = {
-  totalQualified: 487,
-  correctQualified: 408,
-  qualifiedWinRate: 83.8,
+  totalQualified: 1806,
+  correctQualified: 1616,
+  qualifiedWinRate: 89.5,
   averageConfidence: 82.5,
-  streakCurrent: 12,
+  streakCurrent: 8,
   streakBest: 18,
   sportBreakdown: [
-    { sport: 'NFL', qualified: 68, wins: 60, winRate: 88.2 },
-    { sport: 'UFC', qualified: 52, wins: 46, winRate: 88.5 },
-    { sport: 'NBA', qualified: 98, wins: 84, winRate: 85.7 },
-    { sport: 'Tennis', qualified: 78, wins: 66, winRate: 84.6 },
-    { sport: 'Soccer', qualified: 72, wins: 59, winRate: 81.9 },
-    { sport: 'MLB', qualified: 45, wins: 37, winRate: 82.2 },
-    { sport: 'Table Tennis', qualified: 38, wins: 31, winRate: 81.6 },
-    { sport: 'NHL', qualified: 36, wins: 25, winRate: 69.4 },
+    { sport: 'NBA', qualified: 560, wins: 505, winRate: 90.2 },
+    { sport: 'NHL', qualified: 403, wins: 360, winRate: 89.3 },
+    { sport: 'Soccer', qualified: 364, wins: 327, winRate: 89.8 },
+    { sport: 'MLB', qualified: 191, wins: 172, winRate: 90.1 },
+    { sport: 'College Baseball', qualified: 92, wins: 79, winRate: 85.9 },
+    { sport: 'Table Tennis', qualified: 46, wins: 40, winRate: 87.0 },
+    { sport: 'UFC', qualified: 33, wins: 29, winRate: 87.9 },
+    { sport: 'NFL', qualified: 29, wins: 26, winRate: 89.7 },
   ],
 };
