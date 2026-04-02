@@ -75,14 +75,18 @@ serve(async (req) => {
       `${i + 1}. ${p.playerName} (${p.team}) - ${p.direction} ${p.line} ${p.propType} | Confidence: ${p.confidence}% | Sport: ${p.sport}${p.opponent ? ` vs ${p.opponent}` : ''}`
     ).join('\n');
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const systemPrompt = `You are an elite sports betting analyst. Provide an extremely detailed, professional-grade parlay analysis. Be data-driven, specific, and actionable.
+
+${dataFreshnessPrompt(currentDate)}
 
 RULES:
 - Never mention data sources or APIs
 - Never guarantee outcomes
-- Be specific about each matchup — reference team/player tendencies, matchup dynamics, and situational factors
+- Be specific about each matchup — reference team/player tendencies, matchup dynamics, and situational factors ONLY if confirmed by the provided data
 - Treat each leg as its own mini-analysis before combining
 - Be direct, insightful, and professional
+- Do NOT mention specific players by name unless they appear in the provided pick data
 
 OUTPUT FORMAT (JSON):
 {

@@ -61,7 +61,10 @@ serve(async (req) => {
       return line;
     }).join("\n");
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const systemPrompt = `You are an expert sports betting analyst. For each game, provide a concise 1-2 sentence explanation of WHY the total leans OVER or UNDER (or is even).
+
+${dataFreshnessPrompt(currentDate)}
 
 CRITICAL RULES:
 - You MUST factor in the recent game scores provided. If both teams' last 5 games consistently went OVER the current line, your lean MUST reflect that (lean OVER). If they consistently went UNDER, lean UNDER.

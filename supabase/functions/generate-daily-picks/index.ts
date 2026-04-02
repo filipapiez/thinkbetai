@@ -104,7 +104,10 @@ serve(async (req) => {
       })
       .join("\n\n");
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const prompt = `You are an expert sports analyst. Based on the following real-time odds and injury data for today's games, generate your TOP recommended picks — focusing on the EASIEST TO WIN picks with the HIGHEST probability of hitting.
+
+${dataFreshnessPrompt(currentDate)}
 
 ## TODAY'S ODDS:
 ${oddsContext || "No games available today."}
