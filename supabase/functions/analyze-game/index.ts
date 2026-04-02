@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkSportSeason, dataFreshnessPrompt } from "../_shared/seasonGuard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -85,6 +86,16 @@ serve(async (req) => {
     const validatedSport = validateAndNormalizeSport(gameData.sport, gameData.homeTeam, gameData.awayTeam);
     gameData.sport = validatedSport;
     console.log(`Sport normalized: "${gameData.sport}" -> "${validatedSport}" for ${gameData.homeTeam} vs ${gameData.awayTeam}`);
+
+    // Season guard — block offseason sports
+    const seasonCheck = checkSportSeason(validatedSport);
+    if (!seasonCheck.allowed) {
+      console.log(`Blocked offseason analysis: ${validatedSport}`);
+      return new Response(
+        JSON.stringify({ error: seasonCheck.message, offseason: true }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -124,15 +135,7 @@ serve(async (req) => {
     
     const systemPrompt = `You are an expert ${validatedSport} analyst providing concise, actionable betting insights.
 
-CRITICAL DATA FRESHNESS RULES (HIGHEST PRIORITY — VIOLATING THESE IS A CRITICAL FAILURE):
-- Today's date is ${currentDate}.
-- Your training data is SEVERELY OUTDATED for player rosters, trades, and injuries.
-- Players get traded constantly. Stars change teams mid-season.
-- ONLY use the injury and roster data PROVIDED in this prompt. If a player is listed under a team in the provided data, trust that — even if it contradicts your training data.
-- If no injury/roster data is provided for a player, DO NOT speculate about their team or status. Say the data is unavailable.
-- NEVER state which team a player plays for unless that information is explicitly in the provided data.
-- NEVER mention a player by name in your analysis unless they appear in the provided injury/roster data. Use general terms like "the team's point guard" instead.
-- When discussing players, focus on their impact, not their team affiliation, unless the data confirms it.
+${dataFreshnessPrompt(currentDate)}
 
 CRITICAL SPORT ISOLATION RULES:
 - This is a ${validatedSport} game ONLY

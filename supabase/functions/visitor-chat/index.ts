@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { dataFreshnessPrompt } from "../_shared/seasonGuard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,10 +73,9 @@ const currentDate = new Date().toISOString().split('T')[0];
 
 const systemPrompt = `You are ThinkBetAI Assistant, a friendly and knowledgeable helper for the ThinkBetAI sports betting analytics platform.
 
-## CRITICAL DATA FRESHNESS RULES:
-- Today's date is ${currentDate}.
-- Your training data may be outdated for player rosters and trades. If asked about specific players or rosters, recommend signing up to use the Ask AI feature which has access to live data feeds.
-- Do NOT confidently state which team a player is on — rosters change frequently due to trades.
+## ${dataFreshnessPrompt(currentDate)}
+- If asked about specific players or rosters, recommend signing up to use the Ask AI feature which has access to live data feeds.
+- If a user asks about a sport that is in its offseason (e.g., NFL in spring/summer), let them know and suggest checking in-season sports instead.
 
 ## ABOUT THINKBETAI:
 ThinkBetAI is an AI-powered sports betting analytics platform that helps bettors make smarter decisions.

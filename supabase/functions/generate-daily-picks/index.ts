@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.3.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkSportSeason, dataFreshnessPrompt } from "../_shared/seasonGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,12 +12,17 @@ const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY") || Deno.env.get("ODDS_API_
 async function fetchTodaysOdds(): Promise<any[]> {
   if (!ODDS_API_KEY) return [];
 
-  const sports = [
-    "basketball_nba",
-    "americanfootball_nfl",
-    "baseball_mlb",
-    "icehockey_nhl",
+  // Only fetch sports that are currently in-season
+  const allSports = [
+    { key: "basketball_nba", tag: "NBA" },
+    { key: "americanfootball_nfl", tag: "NFL" },
+    { key: "baseball_mlb", tag: "MLB" },
+    { key: "icehockey_nhl", tag: "NHL" },
   ];
+
+  const sports = allSports
+    .filter(s => checkSportSeason(s.tag).allowed)
+    .map(s => s.key);
 
   const allGames: any[] = [];
 
@@ -98,7 +104,10 @@ serve(async (req) => {
       })
       .join("\n\n");
 
+    const currentDate = new Date().toISOString().split('T')[0];
     const prompt = `You are an expert sports analyst. Based on the following real-time odds and injury data for today's games, generate your TOP recommended picks — focusing on the EASIEST TO WIN picks with the HIGHEST probability of hitting.
+
+${dataFreshnessPrompt(currentDate)}
 
 ## TODAY'S ODDS:
 ${oddsContext || "No games available today."}

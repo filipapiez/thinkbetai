@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkSportSeason, dataFreshnessPrompt } from "../_shared/seasonGuard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,6 +69,15 @@ serve(async (req) => {
     // Validate and normalize sport
     const validatedSport = validateAndNormalizeSport(gameData.sport);
     gameData.sport = validatedSport;
+
+    // Season guard — block offseason sports
+    const seasonCheck = checkSportSeason(validatedSport);
+    if (!seasonCheck.allowed) {
+      return new Response(
+        JSON.stringify({ error: seasonCheck.message, offseason: true }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -86,13 +96,7 @@ serve(async (req) => {
     
     const systemPrompt = `You are an expert ${validatedSport} analyst writing a comprehensive game report.
 
-CRITICAL DATA FRESHNESS RULES (HIGHEST PRIORITY):
-- Today's date is ${currentDate}.
-- Your training data is OUTDATED for player rosters, trades, and injuries.
-- Players get traded frequently. NEVER assume a player is still on the same team as your training data suggests.
-- ONLY use the injury and roster data PROVIDED in this prompt. If a player is listed under a team in the provided data, trust that — even if it contradicts your training data.
-- If no injury/roster data is provided for a player, DO NOT speculate about their team or status.
-- NEVER state which team a player plays for unless that information is explicitly in the provided data.
+${dataFreshnessPrompt(currentDate)}
 
 CRITICAL SPORT ISOLATION RULES:
 - This is a ${validatedSport} game ONLY
