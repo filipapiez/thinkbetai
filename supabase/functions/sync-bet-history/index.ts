@@ -528,10 +528,10 @@ Return ONLY valid JSON array, no markdown.`;
       }
     }
 
-    // Insert new bets
+    // Insert new bets (ignore duplicates via unique constraint)
     const { data: inserted, error: insertError } = await supabase
       .from('historical_bets')
-      .insert(betsToInsert)
+      .upsert(betsToInsert, { onConflict: 'sport,home_team,away_team,pick,date', ignoreDuplicates: true })
       .select();
 
     if (insertError) {
