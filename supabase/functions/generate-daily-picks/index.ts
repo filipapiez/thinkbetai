@@ -12,12 +12,17 @@ const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY") || Deno.env.get("ODDS_API_
 async function fetchTodaysOdds(): Promise<any[]> {
   if (!ODDS_API_KEY) return [];
 
-  const sports = [
-    "basketball_nba",
-    "americanfootball_nfl",
-    "baseball_mlb",
-    "icehockey_nhl",
+  // Only fetch sports that are currently in-season
+  const allSports = [
+    { key: "basketball_nba", tag: "NBA" },
+    { key: "americanfootball_nfl", tag: "NFL" },
+    { key: "baseball_mlb", tag: "MLB" },
+    { key: "icehockey_nhl", tag: "NHL" },
   ];
+
+  const sports = allSports
+    .filter(s => checkSportSeason(s.tag).allowed)
+    .map(s => s.key);
 
   const allGames: any[] = [];
 
