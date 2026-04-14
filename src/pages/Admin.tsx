@@ -134,7 +134,7 @@ const ReferralsTab = ({ profiles }: { profiles: Profile[] }) => {
   );
 };
 
-
+const Admin = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   
