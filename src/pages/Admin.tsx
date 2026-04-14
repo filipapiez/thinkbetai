@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff, Target } from 'lucide-react';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff, Target, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminPickBuilder } from '@/components/AdminPickBuilder';
 
@@ -29,6 +29,7 @@ interface Profile {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   price_id: string | null;
+  referred_by: string | null;
 }
 
 interface AccessCode {
@@ -58,6 +59,80 @@ interface AdminStats {
   totalMoneyMade: number;
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
 }
+
+const ReferralsTab = ({ profiles }: { profiles: Profile[] }) => {
+  const referred = profiles.filter(p => p.referred_by);
+
+  // Group by referral code
+  const grouped = referred.reduce<Record<string, Profile[]>>((acc, p) => {
+    const code = p.referred_by!;
+    if (!acc[code]) acc[code] = [];
+    acc[code].push(p);
+    return acc;
+  }, {});
+
+  const sorted = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+
+  return (
+    <Card variant="glass">
+      <CardHeader>
+        <CardTitle>Affiliate Referrals</CardTitle>
+        <CardDescription>Signups from referral links (e.g. thinkbetai.com/ref/code)</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {sorted.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No referral signups yet.</p>
+        ) : (
+          <div className="space-y-6">
+            {sorted.map(([code, users]) => {
+              const paying = users.filter(u => u.subscription_status === 'active' && u.has_access);
+              return (
+                <div key={code} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="text-sm font-mono">{code}</Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {users.length} signup{users.length !== 1 ? 's' : ''} · {paying.length} paying
+                    </span>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Signed Up</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map(u => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-mono text-xs">{u.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={u.has_access ? 'default' : 'outline'}>
+                              {u.access_type || u.subscription_status || 'free'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={u.subscription_status === 'active' ? 'default' : 'secondary'}>
+                              {u.subscription_status || 'none'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {new Date(u.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -508,6 +583,10 @@ const Admin = () => {
                 <Target className="h-3.5 w-3.5" />
                 Pick Builder
               </TabsTrigger>
+              <TabsTrigger value="referrals" className="flex items-center gap-1">
+                <Link2 className="h-3.5 w-3.5" />
+                Referrals
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="users" className="space-y-4">
@@ -842,6 +921,9 @@ const Admin = () => {
             </TabsContent>
             <TabsContent value="picks">
               <AdminPickBuilder />
+            </TabsContent>
+            <TabsContent value="referrals">
+              <ReferralsTab profiles={profiles} />
             </TabsContent>
           </Tabs>
         </div>
