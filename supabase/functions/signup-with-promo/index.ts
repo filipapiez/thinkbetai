@@ -13,6 +13,7 @@ interface SignupRequest {
   firstName?: string;
   lastName?: string;
   promoCode?: string;
+  referred_by?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, password, firstName, lastName, promoCode }: SignupRequest = await req.json();
+    const { email, password, firstName, lastName, promoCode, referred_by }: SignupRequest = await req.json();
 
     // Validate inputs
     if (!email || !password) {
@@ -104,14 +105,19 @@ const handler = async (req: Request): Promise<Response> => {
     const promoUsed = isPro ? normalizedPromo : null;
 
     // Update the profile (created by trigger) with promo status
+    const updatePayload: Record<string, any> = {
+      has_access: isPro,
+      access_type: isPro ? "promo" : null,
+      subscription_status: isPro ? "active" : "inactive",
+      promo_used: promoUsed,
+    };
+    if (referred_by) {
+      updatePayload.referred_by = referred_by.toLowerCase().trim();
+    }
+
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
-        has_access: isPro,
-        access_type: isPro ? "promo" : null,
-        subscription_status: isPro ? "active" : "inactive",
-        promo_used: promoUsed,
-      })
+      .update(updatePayload)
       .eq("user_id", userId);
 
     if (profileError) {

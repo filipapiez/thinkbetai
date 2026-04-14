@@ -136,6 +136,8 @@ const Login = () => {
         return;
       }
       
+      localStorage.removeItem('ref_code');
+      
       if (data?.isPro) {
         toast.success('Account created with PRO access!');
       } else {
