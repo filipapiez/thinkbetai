@@ -150,6 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin: 8px 0;"><strong>Email:</strong> ${email}</p>
                 <p style="margin: 8px 0;"><strong>Plan:</strong> ${isPro ? "✅ PRO (Free forever – promo)" : "❌ No plan (Free / Locked)"}</p>
                 <p style="margin: 8px 0;"><strong>Promo code used:</strong> ${promoUsed || "None"}</p>
+                <p style="margin: 8px 0;"><strong>Referred by:</strong> ${referred_by || "Direct"}</p>
                 <p style="margin: 8px 0;"><strong>Signup date:</strong> ${createdAt}</p>
               </div>
             </div>
