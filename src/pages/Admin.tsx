@@ -29,6 +29,7 @@ interface Profile {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   price_id: string | null;
+  referred_by: string | null;
 }
 
 interface AccessCode {
