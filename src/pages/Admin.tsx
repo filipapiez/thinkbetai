@@ -59,7 +59,81 @@ interface AdminStats {
   plans: { name: string; count: number; revenue: number; scheduledCancels: number; cancelRate: string }[];
 }
 
-const Admin = () => {
+const ReferralsTab = ({ profiles }: { profiles: Profile[] }) => {
+  const referred = profiles.filter(p => p.referred_by);
+
+  // Group by referral code
+  const grouped = referred.reduce<Record<string, Profile[]>>((acc, p) => {
+    const code = (p as any).referred_by as string;
+    if (!acc[code]) acc[code] = [];
+    acc[code].push(p);
+    return acc;
+  }, {});
+
+  const sorted = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+
+  return (
+    <Card variant="glass">
+      <CardHeader>
+        <CardTitle>Affiliate Referrals</CardTitle>
+        <CardDescription>Signups from referral links (e.g. thinkbetai.com/ref/code)</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {sorted.length === 0 ? (
+          <p className="text-muted-foreground text-sm">No referral signups yet.</p>
+        ) : (
+          <div className="space-y-6">
+            {sorted.map(([code, users]) => {
+              const paying = users.filter(u => u.subscription_status === 'active' && u.has_access);
+              return (
+                <div key={code} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="text-sm font-mono">{code}</Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {users.length} signup{users.length !== 1 ? 's' : ''} · {paying.length} paying
+                    </span>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Signed Up</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map(u => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-mono text-xs">{u.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={u.has_access ? 'default' : 'outline'}>
+                              {u.access_type || u.subscription_status || 'free'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={u.subscription_status === 'active' ? 'default' : 'secondary'}>
+                              {u.subscription_status || 'none'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {new Date(u.created_at).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   
