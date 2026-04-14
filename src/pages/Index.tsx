@@ -111,7 +111,7 @@ const Index = () => {
   ];
 
   const stats = [
-    { value: `${winRate}%`, label: 'Win Rate', sublabel: 'on qualified picks' },
+    { value: '80.3%', label: 'Win Rate', sublabel: 'on qualified picks' },
     { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
     { value: `${currentStreak}`, label: 'Current Streak', sublabel: 'consecutive wins' },
     { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
@@ -249,7 +249,7 @@ const Index = () => {
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">{winRate}%</span> Win Rate
+                  <span className="text-primary font-bold">80.3%</span> Win Rate
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
@@ -335,7 +335,7 @@ const Index = () => {
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: `${platformStats.qualifiedWinRate}%`, label: 'Win Rate', sublabel: 'on qualified picks', icon: Target, color: 'text-emerald-400' },
+                { value: '80.3%', label: 'Win Rate', sublabel: 'on qualified picks', icon: Target, color: 'text-emerald-400' },
                 { value: '$2.4M+', label: 'User Winnings', sublabel: 'tracked this year', icon: DollarSign, color: 'text-amber-400' },
                 { value: `${platformStats.streakCurrent}`, label: 'Win Streak', sublabel: 'and counting', icon: TrendingUp, color: 'text-primary' },
                 { value: '15+', label: 'Sports', sublabel: 'covered daily', icon: Trophy, color: 'text-purple-400' },
@@ -628,7 +628,7 @@ const Index = () => {
                 {[
                   { icon: Target, text: 'AI-Powered Picks' },
                   { icon: Layers, text: 'Smart Parlay Builder' },
-                  { icon: TrendingUp, text: `${platformStats.qualifiedWinRate}% Win Rate` },
+                  { icon: TrendingUp, text: '80.3% Win Rate' },
                 ].map((item) => (
                   <div key={item.text} className="flex items-center justify-center gap-2 text-sm">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
@@ -671,7 +671,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
-              <p className="text-xs text-muted-foreground truncate">{platformStats.qualifiedWinRate}% win rate • 70% off</p>
+              <p className="text-xs text-muted-foreground truncate">80.3% win rate • 70% off</p>
             </div>
             <Button variant="hero" size="sm" asChild className="shrink-0">
               <Link to="/login?tab=signup">
