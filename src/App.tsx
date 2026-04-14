@@ -48,6 +48,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Referral = lazy(() => import("./pages/Referral"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 const GameTotals = lazy(() => import("./pages/GameTotals"));
@@ -100,6 +101,7 @@ const App = () => (
                 <Route path="/best-ai-sports-betting-tools" element={<BestAISportsBettingTools />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/ref/:code" element={<Referral />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/bet-history" element={<BetHistory />} />

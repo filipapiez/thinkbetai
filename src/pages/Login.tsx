@@ -105,10 +105,12 @@ const Login = () => {
     setIsLoading(true);
     try {
       // Use server-side signup
+      const refCode = localStorage.getItem('ref_code') || undefined;
       const { data, error } = await supabase.functions.invoke('signup-with-promo', {
         body: {
           email: email.trim(),
           password,
+          referred_by: refCode,
         },
       });
       
