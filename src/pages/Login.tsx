@@ -105,10 +105,12 @@ const Login = () => {
     setIsLoading(true);
     try {
       // Use server-side signup
+      const refCode = localStorage.getItem('ref_code') || undefined;
       const { data, error } = await supabase.functions.invoke('signup-with-promo', {
         body: {
           email: email.trim(),
           password,
+          referred_by: refCode,
         },
       });
       
@@ -133,6 +135,8 @@ const Login = () => {
         toast.error('Account created but failed to sign in. Please log in manually.');
         return;
       }
+      
+      localStorage.removeItem('ref_code');
       
       if (data?.isPro) {
         toast.success('Account created with PRO access!');

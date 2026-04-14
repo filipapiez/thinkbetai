@@ -294,6 +294,7 @@ export type Database = {
           last_name: string | null
           price_id: string | null
           promo_used: string | null
+          referred_by: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status: string | null
@@ -313,6 +314,7 @@ export type Database = {
           last_name?: string | null
           price_id?: string | null
           promo_used?: string | null
+          referred_by?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
@@ -332,6 +334,7 @@ export type Database = {
           last_name?: string | null
           price_id?: string | null
           promo_used?: string | null
+          referred_by?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
