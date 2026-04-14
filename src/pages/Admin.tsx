@@ -65,7 +65,7 @@ const ReferralsTab = ({ profiles }: { profiles: Profile[] }) => {
 
   // Group by referral code
   const grouped = referred.reduce<Record<string, Profile[]>>((acc, p) => {
-    const code = (p as any).referred_by as string;
+    const code = p.referred_by!;
     if (!acc[code]) acc[code] = [];
     acc[code].push(p);
     return acc;
