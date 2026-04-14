@@ -13,14 +13,14 @@ Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
   const sportFilter = (url.searchParams.get("sport") || "all").toLowerCase();
 
-  // --- DB cache (30 min TTL) ---
   const CACHE_KEY = `player-props-v2-${sportFilter}`;
-  const CACHE_TTL_MS = 15 * 60 * 1000; // 15 min to keep props fresh
+  const CACHE_TTL_MS = 15 * 60 * 1000;
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, serviceKey);
 
+  // --- Check cache first ---
   try {
     const { data: cached } = await sb
       .from("odds_cache")
@@ -28,16 +28,41 @@ Deno.serve(async (req: Request) => {
       .eq("id", CACHE_KEY)
       .maybeSingle();
 
-    if (cached && new Date(cached.expires_at) > new Date()) {
-      console.log("Serving player props from cache");
+    if (cached) {
       const cacheData = cached.data as Record<string, unknown>;
+      const isExpired = new Date(cached.expires_at) <= new Date();
+
+      if (!isExpired) {
+        console.log("Serving player props from fresh cache");
+        return new Response(
+          JSON.stringify({
+            success: true,
+            props: cacheData.props || [],
+            lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
+            count: (cacheData.props as unknown[])?.length || 0,
+            source: "cache",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      // Stale cache: serve it immediately, trigger background refresh
+      console.log("Serving stale cache, will refresh in background");
+
+      // Fire-and-forget background refresh
+      const bgUrl = `${supabaseUrl}/functions/v1/get-player-props?sport=${sportFilter}&_refresh=1`;
+      fetch(bgUrl, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }).catch(() => {});
+
       return new Response(
         JSON.stringify({
           success: true,
           props: cacheData.props || [],
           lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
           count: (cacheData.props as unknown[])?.length || 0,
-          source: "cache",
+          source: "stale-cache",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -46,13 +71,14 @@ Deno.serve(async (req: Request) => {
     console.warn("Cache read failed:", e);
   }
 
-  // --- Try The Odds API first (more reliable), fallback to SportsGameOdds ---
+  // Check if this is a background refresh call (avoid infinite loop)
+  const isRefresh = url.searchParams.get("_refresh") === "1";
+
   const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY");
   const SGO_API_KEY = Deno.env.get("SPORTSGAMEODDS_API_KEY");
 
   let allProps: Array<Record<string, unknown>> = [];
 
-  // The Odds API sport keys
   const oddsApiSportMap: Record<string, string[]> = {
     all: [
       "basketball_nba", "basketball_ncaab",
@@ -85,214 +111,183 @@ Deno.serve(async (req: Request) => {
   };
 
   const marketToStat: Record<string, string> = {
-    player_points: "Points",
-    player_rebounds: "Rebounds",
-    player_assists: "Assists",
-    player_threes: "3-Pointers",
-    player_blocks: "Blocks",
-    player_steals: "Steals",
-    player_turnovers: "Turnovers",
-    player_points_rebounds_assists: "Pts+Reb+Ast",
-    player_points_rebounds: "Pts+Reb",
-    player_points_assists: "Pts+Ast",
-    player_rebounds_assists: "Reb+Ast",
-    player_double_double: "Double-Double",
-    player_pass_yds: "Pass Yards",
-    player_rush_yds: "Rush Yards",
-    player_reception_yds: "Rec Yards",
-    player_receptions: "Receptions",
-    player_pass_tds: "Pass TDs",
-    player_rush_attempts: "Rush Attempts",
-    player_pass_completions: "Completions",
-    player_pass_attempts: "Pass Attempts",
-    player_interceptions: "Interceptions",
-    player_anytime_td: "Anytime TD",
-    player_first_td: "First TD",
-    player_kicking_points: "Kicking Pts",
-    pitcher_strikeouts: "Strikeouts",
-    batter_hits: "Hits",
-    batter_total_bases: "Total Bases",
-    batter_rbis: "RBIs",
-    batter_runs_scored: "Runs",
-    batter_stolen_bases: "Stolen Bases",
-    pitcher_outs: "Outs Recorded",
-    batter_home_runs: "Home Runs",
-    batter_walks: "Walks",
-    player_goals: "Goals",
-    player_shots_on_goal: "Shots",
-    player_blocked_shots: "Blocked Shots",
-    player_power_play_points: "PP Points",
+    player_points: "Points", player_rebounds: "Rebounds", player_assists: "Assists",
+    player_threes: "3-Pointers", player_blocks: "Blocks", player_steals: "Steals",
+    player_turnovers: "Turnovers", player_points_rebounds_assists: "Pts+Reb+Ast",
+    player_points_rebounds: "Pts+Reb", player_points_assists: "Pts+Ast",
+    player_rebounds_assists: "Reb+Ast", player_double_double: "Double-Double",
+    player_pass_yds: "Pass Yards", player_rush_yds: "Rush Yards",
+    player_reception_yds: "Rec Yards", player_receptions: "Receptions",
+    player_pass_tds: "Pass TDs", player_rush_attempts: "Rush Attempts",
+    player_pass_completions: "Completions", player_pass_attempts: "Pass Attempts",
+    player_interceptions: "Interceptions", player_anytime_td: "Anytime TD",
+    player_first_td: "First TD", player_kicking_points: "Kicking Pts",
+    pitcher_strikeouts: "Strikeouts", batter_hits: "Hits", batter_total_bases: "Total Bases",
+    batter_rbis: "RBIs", batter_runs_scored: "Runs", batter_stolen_bases: "Stolen Bases",
+    pitcher_outs: "Outs Recorded", batter_home_runs: "Home Runs", batter_walks: "Walks",
+    player_goals: "Goals", player_shots_on_goal: "Shots",
+    player_blocked_shots: "Blocked Shots", player_power_play_points: "PP Points",
   };
 
   const sportLabel: Record<string, string> = {
-    basketball_nba: "NBA",
-    basketball_ncaab: "NCAAB",
-    americanfootball_nfl: "NFL",
-    americanfootball_ncaaf: "NCAAF",
-    baseball_mlb: "MLB",
-    icehockey_nhl: "NHL",
-    soccer_epl: "EPL",
-    soccer_usa_mls: "MLS",
-    tennis_atp_french_open: "Tennis",
-    tennis_atp_us_open: "Tennis",
-    tennis_atp_wimbledon: "Tennis",
-    tennis_atp_australian_open: "Tennis",
+    basketball_nba: "NBA", basketball_ncaab: "NCAAB",
+    americanfootball_nfl: "NFL", americanfootball_ncaaf: "NCAAF",
+    baseball_mlb: "MLB", icehockey_nhl: "NHL",
+    soccer_epl: "EPL", soccer_usa_mls: "MLS",
+    tennis_atp_french_open: "Tennis", tennis_atp_us_open: "Tennis",
+    tennis_atp_wimbledon: "Tennis", tennis_atp_australian_open: "Tennis",
     mma_mixed_martial_arts: "MMA",
   };
+
+  // --- Helper: fetch props for a single event ---
+  function parseEventProps(
+    sportKey: string,
+    ev: { id: string; home_team: string; away_team: string; commence_time: string },
+    propsData: { bookmakers?: Array<{ key: string; markets: Array<{ key: string; outcomes: Array<{ name: string; description: string; price: number; point?: number }> }> }> },
+  ): Array<Record<string, unknown>> {
+    const targetBooks = ['fanduel', 'draftkings', 'betmgm', 'hardrockbet'];
+    const availableBooks = (propsData.bookmakers || []).filter(
+      b => targetBooks.includes(b.key) && b.markets.length > 0,
+    );
+    if (availableBooks.length === 0) return [];
+
+    const combinedMap = new Map<string, Map<string, Map<string, { over?: { point: number; price: number }; under?: { point: number; price: number } }>>>();
+
+    for (const book of availableBooks) {
+      for (const market of book.markets) {
+        const statType = marketToStat[market.key];
+        if (!statType) continue;
+        for (const outcome of market.outcomes) {
+          const player = outcome.description;
+          if (!player) continue;
+          if (!combinedMap.has(player)) combinedMap.set(player, new Map());
+          const statMap = combinedMap.get(player)!;
+          if (!statMap.has(statType)) statMap.set(statType, new Map());
+          const bookMap = statMap.get(statType)!;
+          if (!bookMap.has(book.key)) bookMap.set(book.key, {});
+          const entry = bookMap.get(book.key)!;
+          if (outcome.name === "Over" && outcome.point !== undefined) {
+            entry.over = { point: outcome.point, price: outcome.price };
+          } else if (outcome.name === "Under" && outcome.point !== undefined) {
+            entry.under = { point: outcome.point, price: outcome.price };
+          }
+        }
+      }
+    }
+
+    const results: Array<Record<string, unknown>> = [];
+    for (const [playerName, statMap] of combinedMap.entries()) {
+      for (const [statType, bookMap] of statMap.entries()) {
+        const firstBook = bookMap.values().next().value;
+        const line = firstBook?.over?.point || firstBook?.under?.point || 0;
+        if (line <= 0) continue;
+
+        const bookOdds: Record<string, { overOdds: number; underOdds: number; line: number }> = {};
+        for (const [bookKey, data] of bookMap.entries()) {
+          const bookLine = data.over?.point || data.under?.point || line;
+          bookOdds[bookKey] = {
+            overOdds: data.over?.price ?? -110,
+            underOdds: data.under?.price ?? -110,
+            line: bookLine,
+          };
+        }
+
+        const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm'] || bookOdds['hardrockbet']!;
+        results.push({
+          id: `${ev.id}-${playerName.replace(/\s/g, "")}-${statType}`,
+          playerName,
+          playerId: playerName.replace(/\s/g, "").toLowerCase(),
+          team: ev.home_team,
+          opponent: ev.away_team,
+          sport: sportLabel[sportKey] || sportKey,
+          league: sportLabel[sportKey] || sportKey,
+          statType, line,
+          overOdds: primaryBook.overOdds,
+          underOdds: primaryBook.underOdds,
+          gameTime: ev.commence_time,
+          gameId: ev.id,
+          bookOdds,
+        });
+      }
+    }
+    return results;
+  }
+
+  // --- Concurrency limiter ---
+  async function parallelLimit<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+    const results: T[] = [];
+    let idx = 0;
+    async function worker() {
+      while (idx < tasks.length) {
+        const i = idx++;
+        results[i] = await tasks[i]();
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
+    return results;
+  }
 
   if (ODDS_API_KEY) {
     const sportKeys = oddsApiSportMap[sportFilter] || oddsApiSportMap["all"];
 
-    for (const sportKey of sportKeys) {
-      try {
-        // Step 1: Get events for this sport
-        console.log(`[OddsAPI] Fetching events for ${sportKey}`);
-        const eventsRes = await fetch(
-          `https://api.the-odds-api.com/v4/sports/${sportKey}/events?apiKey=${ODDS_API_KEY}&dateFormat=iso`,
-        );
-
-        if (!eventsRes.ok) {
-          console.error(`[OddsAPI] Events ${sportKey}: ${eventsRes.status}`);
-          continue;
+    // Step 1: Fetch ALL sport events in PARALLEL (max 5 concurrent)
+    const eventsPerSport = await parallelLimit(
+      sportKeys.map((sportKey) => async () => {
+        try {
+          const res = await fetch(
+            `https://api.the-odds-api.com/v4/sports/${sportKey}/events?apiKey=${ODDS_API_KEY}&dateFormat=iso`,
+          );
+          if (!res.ok) {
+            console.error(`[OddsAPI] Events ${sportKey}: ${res.status}`);
+            return { sportKey, events: [] as Array<{ id: string; home_team: string; away_team: string; commence_time: string }> };
+          }
+          const events = await res.json() as Array<{ id: string; home_team: string; away_team: string; commence_time: string }>;
+          const nowMs = Date.now();
+          const active = events.filter(ev => new Date(ev.commence_time).getTime() > nowMs);
+          console.log(`[OddsAPI] ${sportKey}: ${active.length}/${events.length} active`);
+          return { sportKey, events: active };
+        } catch (err) {
+          console.error(`[OddsAPI] ${sportKey} events error:`, err);
+          return { sportKey, events: [] as Array<{ id: string; home_team: string; away_team: string; commence_time: string }> };
         }
+      }),
+      5,
+    );
 
-        const events = await eventsRes.json() as Array<{
-          id: string;
-          home_team: string;
-          away_team: string;
-          commence_time: string;
-        }>;
+    // Step 2: Build flat list of all event prop fetch tasks
+    type PropTask = () => Promise<Array<Record<string, unknown>>>;
+    const propTasks: PropTask[] = [];
 
-        console.log(`[OddsAPI] ${sportKey}: ${events.length} events`);
+    for (const { sportKey, events } of eventsPerSport) {
+      const markets = propMarkets[sportKey] || [];
+      if (markets.length === 0) continue;
+      const marketsStr = markets.join(",");
 
-        // Strictly exclude games that have already started
-        const nowMs = Date.now();
-        const activeEvents = events.filter(ev => {
-          return new Date(ev.commence_time).getTime() > nowMs;
-        });
-
-        console.log(`[OddsAPI] ${sportKey}: ${activeEvents.length} active events (filtered from ${events.length})`);
-
-        // Step 2: Fetch player props for active events only
-        const markets = propMarkets[sportKey] || [];
-        const marketsStr = markets.join(",");
-        const eventsToFetch = activeEvents;
-
-        for (let i = 0; i < eventsToFetch.length; i++) {
-          const ev = eventsToFetch[i];
-          if (i > 0) await new Promise(r => setTimeout(r, 300));
-
+      for (const ev of events) {
+        propTasks.push(async () => {
           try {
-            // Request only from major US sportsbooks
             const propsRes = await fetch(
               `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${ev.id}/odds?apiKey=${ODDS_API_KEY}&regions=us,us2&bookmakers=fanduel,draftkings,betmgm,hardrockbet&markets=${marketsStr}&oddsFormat=american`,
             );
-
             if (!propsRes.ok) {
               console.error(`[OddsAPI] Props ${ev.id}: ${propsRes.status}`);
-              continue;
+              return [];
             }
-
-            const propsData = await propsRes.json() as {
-              id: string;
-              home_team: string;
-              away_team: string;
-              commence_time: string;
-              bookmakers?: Array<{
-                key: string;
-                markets: Array<{
-                  key: string;
-                  outcomes: Array<{
-                    name: string;
-                    description: string;
-                    price: number;
-                    point?: number;
-                  }>;
-                }>;
-              }>;
-            };
-
-            // Collect odds from all three sportsbooks
-            const targetBooks = ['fanduel', 'draftkings', 'betmgm', 'hardrockbet'];
-            const availableBooks = (propsData.bookmakers || []).filter(
-              b => targetBooks.includes(b.key) && b.markets.length > 0
-            );
-            if (availableBooks.length === 0) continue;
-
-            // Build a combined player map: player -> statType -> { bookKey -> { over, under } }
-            const combinedMap = new Map<string, Map<string, Map<string, { over?: { point: number; price: number }; under?: { point: number; price: number } }>>>();
-
-            for (const book of availableBooks) {
-              for (const market of book.markets) {
-                const statType = marketToStat[market.key];
-                if (!statType) continue;
-
-                for (const outcome of market.outcomes) {
-                  const player = outcome.description;
-                  if (!player) continue;
-
-                  if (!combinedMap.has(player)) combinedMap.set(player, new Map());
-                  const statMap = combinedMap.get(player)!;
-                  if (!statMap.has(statType)) statMap.set(statType, new Map());
-                  const bookMap = statMap.get(statType)!;
-                  if (!bookMap.has(book.key)) bookMap.set(book.key, {});
-                  const entry = bookMap.get(book.key)!;
-
-                  if (outcome.name === "Over" && outcome.point !== undefined) {
-                    entry.over = { point: outcome.point, price: outcome.price };
-                  } else if (outcome.name === "Under" && outcome.point !== undefined) {
-                    entry.under = { point: outcome.point, price: outcome.price };
-                  }
-                }
-              }
-            }
-
-            for (const [playerName, statMap] of combinedMap.entries()) {
-              for (const [statType, bookMap] of statMap.entries()) {
-                // Use first available book for the primary line
-                const firstBook = bookMap.values().next().value;
-                const line = firstBook?.over?.point || firstBook?.under?.point || 0;
-                if (line <= 0) continue;
-
-                // Build per-book odds object
-                const bookOdds: Record<string, { overOdds: number; underOdds: number; line: number }> = {};
-                for (const [bookKey, data] of bookMap.entries()) {
-                  const bookLine = data.over?.point || data.under?.point || line;
-                  bookOdds[bookKey] = {
-                    overOdds: data.over?.price ?? -110,
-                    underOdds: data.under?.price ?? -110,
-                    line: bookLine,
-                  };
-                }
-
-                // Use best available for top-level odds (FanDuel > DK > BetMGM)
-                const primaryBook = bookOdds['fanduel'] || bookOdds['draftkings'] || bookOdds['betmgm'] || bookOdds['hardrockbet']!;
-
-                allProps.push({
-                  id: `${ev.id}-${playerName.replace(/\s/g, "")}-${statType}`,
-                  playerName,
-                  playerId: playerName.replace(/\s/g, "").toLowerCase(),
-                  team: ev.home_team,
-                  opponent: ev.away_team,
-                  sport: sportLabel[sportKey] || sportKey,
-                  league: sportLabel[sportKey] || sportKey,
-                  statType,
-                  line,
-                  overOdds: primaryBook.overOdds,
-                  underOdds: primaryBook.underOdds,
-                  gameTime: ev.commence_time,
-                  gameId: ev.id,
-                  bookOdds,
-                });
-              }
-            }
+            const propsData = await propsRes.json();
+            return parseEventProps(sportKey, ev, propsData);
           } catch (err) {
             console.error(`[OddsAPI] Event ${ev.id} error:`, err);
+            return [];
           }
-        }
-      } catch (err) {
-        console.error(`[OddsAPI] ${sportKey} error:`, err);
+        });
       }
+    }
+
+    // Step 3: Fetch all event props in parallel (max 8 concurrent)
+    console.log(`[OddsAPI] Fetching props for ${propTasks.length} events (8 concurrent)`);
+    const propResults = await parallelLimit(propTasks, 8);
+    for (const batch of propResults) {
+      allProps.push(...batch);
     }
 
     console.log(`[OddsAPI] Total props: ${allProps.length}`);
@@ -303,10 +298,7 @@ Deno.serve(async (req: Request) => {
     console.log("[SGO] Falling back to SportsGameOdds...");
     const sgoLeagueMap: Record<string, string[]> = {
       all: ["NBA", "NFL", "MLB", "NHL"],
-      basketball: ["NBA"],
-      football: ["NFL"],
-      baseball: ["MLB"],
-      hockey: ["NHL"],
+      basketball: ["NBA"], football: ["NFL"], baseball: ["MLB"], hockey: ["NHL"],
     };
     const leagues = sgoLeagueMap[sportFilter] || sgoLeagueMap["all"];
 
@@ -342,15 +334,11 @@ Deno.serve(async (req: Request) => {
       const lid = leagues[i];
       if (i > 0) await new Promise(r => setTimeout(r, 1500));
       try {
-        console.log("[SGO] Fetching " + lid);
         const res = await fetch(
           `https://api.sportsgameodds.com/v2/events?leagueID=${lid}&oddsAvailable=true&limit=20`,
           { headers: { "x-api-key": SGO_API_KEY } },
         );
-        if (!res.ok) {
-          console.error(`[SGO] ${lid} error ${res.status}`);
-          continue;
-        }
+        if (!res.ok) continue;
         const json = await res.json();
         const events = json?.data || [];
 
@@ -384,14 +372,10 @@ Deno.serve(async (req: Request) => {
             const isH = Object.keys(odds).some(k => k.includes(entry.pid) && k.includes("home"));
             allProps.push({
               id: `${gid}-${entry.pid}-${entry.stat}`,
-              playerName: fmtName(entry.pid),
-              playerId: entry.pid,
-              team: isH ? home : away,
-              opponent: isH ? away : home,
-              sport: lid, league: lid,
-              statType: entry.stat, line: ln,
-              overOdds: entry.ov?.o ?? -110,
-              underOdds: entry.un?.o ?? -110,
+              playerName: fmtName(entry.pid), playerId: entry.pid,
+              team: isH ? home : away, opponent: isH ? away : home,
+              sport: lid, league: lid, statType: entry.stat, line: ln,
+              overOdds: entry.ov?.o ?? -110, underOdds: entry.un?.o ?? -110,
               gameTime: gt, gameId: gid,
             });
           }
@@ -400,10 +384,9 @@ Deno.serve(async (req: Request) => {
         console.error(`[SGO] ${lid} error:`, err);
       }
     }
-    console.log(`[SGO] Total props: ${allProps.length}`);
   }
 
-  // Save to cache if we got data
+  // Save to cache
   const now = new Date();
   if (allProps.length > 0) {
     try {
