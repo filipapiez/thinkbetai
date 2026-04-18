@@ -543,9 +543,9 @@ const Games = () => {
           {filteredGames.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGames.map((game, index) => {
-                // For non-subscribers: unlock 2 best games, lock the rest
-                const isFreePreview = !isSubscribed && index < 2;
-                const isLocked = !isSubscribed && index >= 2;
+                // Lock follows the game identity (top 2 of global sort), not the filtered index
+                const isFreePreview = freePreviewIds.has(game.id);
+                const isLocked = !isSubscribed && !isFreePreview;
 
                 if (isLocked) {
                   return (
