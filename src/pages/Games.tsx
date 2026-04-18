@@ -189,39 +189,44 @@ const Games = () => {
     return !!(homeLogo && awayLogo);
   }, []);
 
-  // Filter and sort games by signal (GOOD first, then BORDERLINE, then PASS)
-  // For non-subscribers, also prioritize games with logos so the 2 free previews look best
-  const filteredGames = useMemo(() => {
+  // Sort all games (unfiltered) so the 2 free preview games are stable regardless of search/filters
+  const sortedGames = useMemo(() => {
     const signalPriority: Record<BetSignal, number> = { GOOD: 0, BORDERLINE: 1, PASS: 2 };
-    
-    return gamesWithSignals
-      .filter(({ game, signal }) => {
-        const matchesSearch = searchQuery === '' || 
-          game.homeTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          game.awayTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          game.league.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesSport = !selectedSport || game.sport === selectedSport;
-        const matchesLeague = !selectedLeague || game.league === selectedLeague;
-        const matchesSignal = !selectedSignal || signal === selectedSignal;
-
-        return matchesSearch && matchesSport && matchesLeague && matchesSignal;
-      })
+    return [...gamesWithSignals]
       .sort((a, b) => {
-        // For non-subscribers, prioritize games with logos first
         if (!isSubscribed) {
           const aHasLogos = gameHasLogos(a.game);
           const bHasLogos = gameHasLogos(b.game);
           if (aHasLogos && !bHasLogos) return -1;
           if (!aHasLogos && bHasLogos) return 1;
         }
-        // Then sort by signal priority, then by confidence
         const priorityDiff = signalPriority[a.signal] - signalPriority[b.signal];
         if (priorityDiff !== 0) return priorityDiff;
         return b.confidence - a.confidence;
       })
       .map(({ game }) => game);
-  }, [gamesWithSignals, searchQuery, selectedSport, selectedLeague, selectedSignal, isSubscribed, gameHasLogos]);
+  }, [gamesWithSignals, isSubscribed, gameHasLogos]);
+
+  // IDs of the 2 free preview games — locked status follows the game, not the filtered index
+  const freePreviewIds = useMemo(
+    () => new Set(isSubscribed ? [] : sortedGames.slice(0, 2).map(g => g.id)),
+    [sortedGames, isSubscribed]
+  );
+
+  // Filter games by search/sport/league/signal while preserving global sort order
+  const filteredGames = useMemo(() => {
+    const signalById = new Map(gamesWithSignals.map(gs => [gs.game.id, gs.signal]));
+    return sortedGames.filter((game) => {
+      const matchesSearch = searchQuery === '' ||
+        game.homeTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.awayTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        game.league.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSport = !selectedSport || game.sport === selectedSport;
+      const matchesLeague = !selectedLeague || game.league === selectedLeague;
+      const matchesSignal = !selectedSignal || signalById.get(game.id) === selectedSignal;
+      return matchesSearch && matchesSport && matchesLeague && matchesSignal;
+    });
+  }, [sortedGames, gamesWithSignals, searchQuery, selectedSport, selectedLeague, selectedSignal]);
 
   const clearFilters = () => {
     setSearchQuery('');
