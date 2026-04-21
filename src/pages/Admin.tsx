@@ -186,18 +186,40 @@ const Admin = () => {
     }
   };
 
+  const fetchAllProfiles = async (): Promise<Profile[]> => {
+    // Supabase has a default 1000-row hard cap per request. Page through in
+    // chunks so admins with 1000+ users see everyone.
+    const PAGE_SIZE = 1000;
+    const all: Profile[] = [];
+    let from = 0;
+    // Hard safety cap to avoid runaway loops
+    for (let i = 0; i < 50; i++) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, from + PAGE_SIZE - 1);
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      all.push(...(data as Profile[]));
+      if (data.length < PAGE_SIZE) break;
+      from += PAGE_SIZE;
+    }
+    return all;
+  };
+
   const fetchAllData = async () => {
     setIsLoading(true);
     setStatsError(null);
     try {
-      const [profilesRes, codesRes, rolesRes, statsRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      const [profiles, codesRes, rolesRes, statsRes] = await Promise.all([
+        fetchAllProfiles(),
         supabase.from('access_codes').select('*').order('created_at', { ascending: false }),
         supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
         supabase.functions.invoke('admin-stats'),
       ]);
 
-      if (profilesRes.data) setProfiles(profilesRes.data as Profile[]);
+      setProfiles(profiles);
       if (codesRes.data) setAccessCodes(codesRes.data);
       if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
 
