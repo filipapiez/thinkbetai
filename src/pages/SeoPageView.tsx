@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Sparkles } from "lucide-react";
 
 interface SeoPage {
   slug: string;
@@ -21,7 +21,7 @@ interface SeoPage {
 }
 
 interface Props {
-  pageType: "game" | "team" | "player" | "prop" | "best";
+  pageType: "game" | "team" | "player" | "prop" | "best" | "matchup" | "league";
 }
 
 const TYPE_FILTER: Record<Props["pageType"], string[]> = {
@@ -30,6 +30,8 @@ const TYPE_FILTER: Record<Props["pageType"], string[]> = {
   player: ["player"],
   prop: ["player_prop"],
   best: ["daily_best"],
+  matchup: ["matchup"],
+  league: ["league"],
 };
 
 const URL_PREFIX: Record<Props["pageType"], string> = {
@@ -38,7 +40,11 @@ const URL_PREFIX: Record<Props["pageType"], string> = {
   player: "/players/",
   prop: "/props/",
   best: "/best/",
+  matchup: "/matchups/",
+  league: "/leagues/",
 };
+
+const SCHEMA_ID = "seo-page-jsonld";
 
 const SeoPageView = ({ pageType }: Props) => {
   const { slug } = useParams<{ slug: string }>();
@@ -60,7 +66,7 @@ const SeoPageView = ({ pageType }: Props) => {
       });
   }, [slug, pageType]);
 
-  // SEO head injection
+  // SEO head + JSON-LD injection
   useEffect(() => {
     if (!page) return;
     document.title = page.title;
@@ -76,7 +82,8 @@ const SeoPageView = ({ pageType }: Props) => {
     if (page.meta_description) setMeta("description", page.meta_description);
     setMeta("og:title", page.title, "property");
     if (page.meta_description) setMeta("og:description", page.meta_description, "property");
-    setMeta("og:url", `https://thinkbetai.com${URL_PREFIX[pageType]}${page.slug}`, "property");
+    const url = `https://thinkbetai.com${URL_PREFIX[pageType]}${page.slug}`;
+    setMeta("og:url", url, "property");
 
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) {
@@ -84,7 +91,50 @@ const SeoPageView = ({ pageType }: Props) => {
       canonical.rel = "canonical";
       document.head.appendChild(canonical);
     }
-    canonical.href = `https://thinkbetai.com${URL_PREFIX[pageType]}${page.slug}`;
+    canonical.href = url;
+
+    // JSON-LD: BreadcrumbList + FAQPage + SportsEvent
+    const c = page.content_json || {};
+    const graph: any[] = [];
+    if (Array.isArray(c.breadcrumbs) && c.breadcrumbs.length) {
+      graph.push({
+        "@type": "BreadcrumbList",
+        itemListElement: c.breadcrumbs.map((b: any, i: number) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: b.name,
+          item: `https://thinkbetai.com${b.href}`,
+        })),
+      });
+    }
+    if (Array.isArray(c.faq) && c.faq.length) {
+      graph.push({
+        "@type": "FAQPage",
+        mainEntity: c.faq.map((f: any) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      });
+    }
+    if (c.sportsEvent) {
+      const ev = { ...c.sportsEvent };
+      delete ev["@context"];
+      graph.push(ev);
+    }
+
+    document.getElementById(SCHEMA_ID)?.remove();
+    if (graph.length) {
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = SCHEMA_ID;
+      script.text = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      document.getElementById(SCHEMA_ID)?.remove();
+    };
   }, [page, pageType]);
 
   if (loading) {
@@ -117,11 +167,28 @@ const SeoPageView = ({ pageType }: Props) => {
   }
 
   const c = page.content_json || {};
+  const ai = c.aiPick;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container max-w-4xl py-8 md:py-12">
+        {/* Visible breadcrumbs */}
+        {Array.isArray(c.breadcrumbs) && c.breadcrumbs.length > 0 && (
+          <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-4">
+            {c.breadcrumbs.map((b: any, i: number) => (
+              <span key={i}>
+                {i > 0 && " / "}
+                {i === c.breadcrumbs.length - 1 ? (
+                  <span className="text-foreground">{b.name}</span>
+                ) : (
+                  <Link to={b.href} className="hover:text-foreground">{b.name}</Link>
+                )}
+              </span>
+            ))}
+          </nav>
+        )}
+
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           {page.sport && <Badge variant="outline">{page.sport}</Badge>}
           <Badge variant={page.status === "final" ? "secondary" : "default"}>
@@ -137,6 +204,25 @@ const SeoPageView = ({ pageType }: Props) => {
         <h1 className="text-3xl md:text-4xl font-bold mb-4">{page.h1 ?? page.title}</h1>
         {page.meta_description && (
           <p className="text-lg text-muted-foreground mb-8">{page.meta_description}</p>
+        )}
+
+        {/* AI Confidence card */}
+        {ai && (
+          <Card variant="glass" className="mb-6 border-primary/40">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                AI Prediction: {ai.pick}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-bold text-primary">{ai.confidence}%</span>
+                <span className="text-sm text-muted-foreground">Confidence Score</span>
+              </div>
+              {ai.rationale && <p className="text-sm text-muted-foreground">{ai.rationale}</p>}
+            </CardContent>
+          </Card>
         )}
 
         {/* Game preview/result */}
@@ -186,7 +272,49 @@ const SeoPageView = ({ pageType }: Props) => {
           </Card>
         )}
 
-        {/* Team / daily-best upcoming games list */}
+        {/* Player prop details */}
+        {page.page_type === "player_prop" && (
+          <Card variant="glass" className="mb-6">
+            <CardHeader><CardTitle>{c.playerName} • {c.statType}</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p>Line: <span className="font-semibold">{c.line}</span></p>
+              <p>Over: {c.overOdds > 0 ? `+${c.overOdds}` : c.overOdds} • Under: {c.underOdds > 0 ? `+${c.underOdds}` : c.underOdds}</p>
+              {c.opponent && <p>Matchup: {c.team} vs {c.opponent}</p>}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Player props list */}
+        {page.page_type === "player" && c.props?.length > 0 && (
+          <Card variant="glass" className="mb-6">
+            <CardHeader><CardTitle>Active Props</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {c.props.map((p: any, i: number) => (
+                <Link key={i} to={`/props/${p.slug}`} className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
+                  <span>{p.statType} {p.line}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Matchup history */}
+        {page.page_type === "matchup" && c.history?.length > 0 && (
+          <Card variant="glass" className="mb-6">
+            <CardHeader><CardTitle>Recent Results</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {c.history.map((h: any, i: number) => (
+                <Link key={i} to={`/predictions/${h.slug}`} className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
+                  <span>{h.away} {h.awayScore}–{h.homeScore} {h.home}</span>
+                  <span className="text-sm text-muted-foreground">{h.date}</span>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Team / daily-best / league / hub upcoming games list */}
         {(c.upcomingGames?.length > 0 || c.games?.length > 0) && (
           <Card variant="glass" className="mb-6">
             <CardHeader><CardTitle>Upcoming Games</CardTitle></CardHeader>
@@ -197,14 +325,36 @@ const SeoPageView = ({ pageType }: Props) => {
                   to={`/predictions/${g.slug}`}
                   className="flex items-center justify-between p-3 rounded border border-border hover:bg-accent/30 transition"
                 >
-                  <span>
-                    {g.away ?? g.opponent}{" "}{g.home === false ? "@" : "vs"}{" "}{g.home ?? g.opponent}
+                  <span className="flex flex-col">
+                    <span>
+                      {g.away ?? g.opponent}{" "}{g.home === false ? "@" : "vs"}{" "}{g.home ?? g.opponent}
+                    </span>
+                    {g.aiPick && (
+                      <span className="text-xs text-primary mt-1">
+                        AI: {g.aiPick.pick} ({g.aiPick.confidence}%)
+                      </span>
+                    )}
                   </span>
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
                     {g.commenceTime && new Date(g.commenceTime).toLocaleDateString()}
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 </Link>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* FAQ section */}
+        {Array.isArray(c.faq) && c.faq.length > 0 && (
+          <Card variant="glass" className="mb-6">
+            <CardHeader><CardTitle>Frequently Asked Questions</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              {c.faq.map((f: any, i: number) => (
+                <div key={i}>
+                  <h3 className="font-semibold mb-1">{f.question}</h3>
+                  <p className="text-sm text-muted-foreground">{f.answer}</p>
+                </div>
               ))}
             </CardContent>
           </Card>
