@@ -371,18 +371,12 @@ const Picks = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {platforms.map(platform => {
-                    const stats = platformStats[platform];
-                    const winRate = stats ? getWinRate(stats) : null;
                     return (
                       <DropdownMenuItem 
                         key={platform}
                         onClick={() => setSelectedPlatform(platform)}
-                        className="flex justify-between"
                       >
                         <span>{platform} ({platformCounts[platform] || 0})</span>
-                        {winRate !== null && (
-                          <span className="text-xs text-emerald-400 ml-2">{winRate}% WR</span>
-                        )}
                       </DropdownMenuItem>
                     );
                   })}
