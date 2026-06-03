@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy } from 'lucide-react';
+import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Account = () => {
@@ -147,28 +147,66 @@ const Account = () => {
                       <CreditCard className="h-5 w-5" />
                       Subscription
                     </CardTitle>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">
-                      {profile?.promo_used ? `Code: ${profile.promo_used}` : 
-                       profile?.access_type === 'pro' ? 'Pro Plan' :
-                       profile?.access_type === 'basic' ? 'Basic Plan' :
-                       profile?.access_type === 'insider' ? 'Insider Plan' :
-                       'Active'}
+                    <Badge
+                      className={
+                        profile?.cancel_at_period_end
+                          ? 'bg-destructive/20 text-destructive border-destructive/30'
+                          : 'bg-primary/20 text-primary border-primary/30'
+                      }
+                    >
+                      {profile?.cancel_at_period_end
+                        ? 'Canceling'
+                        : profile?.promo_used
+                        ? `Code: ${profile.promo_used}`
+                        : profile?.access_type === 'pro'
+                        ? 'Pro Plan'
+                        : profile?.access_type === 'basic'
+                        ? 'Basic Plan'
+                        : profile?.access_type === 'insider'
+                        ? 'Insider Plan'
+                        : 'Active'}
                     </Badge>
                   </div>
                   <CardDescription>
-                    You have full access to ThinkBetAI.
+                    {profile?.cancel_at_period_end
+                      ? 'Your subscription is scheduled to cancel.'
+                      : 'You have full access to ThinkBetAI.'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">Access Active</span>
+                  {profile?.cancel_at_period_end ? (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <XCircle className="h-5 w-5 text-destructive" />
+                        <span className="font-semibold">Cancellation Scheduled</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Status: <span className="font-medium capitalize">{profile?.subscription_status || 'active'}</span>
+                      </p>
+                      {profile?.current_period_end && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Access ends on{' '}
+                          <span className="font-medium text-foreground">
+                            {new Date(profile.current_period_end).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })}
+                          </span>
+                        </p>
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Enjoy unlimited AI analysis, live data, and personalized insights.
-                    </p>
-                  </div>
+                  ) : (
+                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg p-4 border border-primary/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-5 w-5 text-primary" />
+                        <span className="font-semibold">Access Active</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Enjoy unlimited AI analysis, live data, and personalized insights.
+                      </p>
+                    </div>
+                  )}
                   <Button variant="outline" className="w-full" onClick={() => navigate('/subscription')}>
                     <CreditCard className="h-4 w-4 mr-2" />
                     Manage Subscription
