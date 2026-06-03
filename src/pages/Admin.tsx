@@ -208,34 +208,42 @@ const Admin = () => {
     return all;
   };
 
-  const fetchAllData = async () => {
-    setIsLoading(true);
+  const fetchStats = async () => {
     setStatsError(null);
     try {
-      const [profiles, codesRes, rolesRes, statsRes] = await Promise.all([
-        fetchAllProfiles(),
-        supabase.from('access_codes').select('*').order('created_at', { ascending: false }),
-        supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
-        supabase.functions.invoke('admin-stats'),
-      ]);
-
-      setProfiles(profiles);
-      if (codesRes.data) setAccessCodes(codesRes.data);
-      if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
-
+      const statsRes = await supabase.functions.invoke('admin-stats');
       if (statsRes.error) {
         setStats(null);
         setStatsError(statsRes.error.message || 'Could not load revenue stats');
       } else if (statsRes.data) {
         setStats(statsRes.data);
       }
+    } catch {
+      setStatsError('Failed to load revenue stats');
+    }
+  };
+
+  const fetchAllData = async () => {
+    setIsLoading(true);
+    setStatsError(null);
+    try {
+      const [profiles, codesRes, rolesRes] = await Promise.all([
+        fetchAllProfiles(),
+        supabase.from('access_codes').select('*').order('created_at', { ascending: false }),
+        supabase.from('user_roles').select('*').order('created_at', { ascending: false }),
+      ]);
+
+      setProfiles(profiles);
+      if (codesRes.data) setAccessCodes(codesRes.data);
+      if (rolesRes.data) setUserRoles(rolesRes.data as UserRole[]);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setStatsError('Failed to load revenue stats');
       toast.error('Failed to load data');
     } finally {
       setIsLoading(false);
     }
+    // Fire revenue stats separately — Stripe pagination can be slow but shouldn't block the page
+    fetchStats();
   };
 
   const handleCreateCode = async (e: React.FormEvent) => {
