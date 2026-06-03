@@ -83,6 +83,24 @@ const Subscription = () => {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    setIsCanceling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+      if (error || data?.error) {
+        toast.error(data?.error || 'Failed to cancel subscription');
+        return;
+      }
+      toast.success(data?.message || 'Subscription canceled');
+      await fetchSubscriptionDetails();
+    } catch (error) {
+      toast.error('Something went wrong');
+      console.error('Cancel error:', error);
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex flex-col">
