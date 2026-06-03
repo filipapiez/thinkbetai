@@ -52,6 +52,7 @@ const Referral = lazy(() => import("./pages/Referral"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 const GameTotals = lazy(() => import("./pages/GameTotals"));
+const SeoPageView = lazy(() => import("./pages/SeoPageView"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -106,6 +107,13 @@ const App = () => (
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/bet-history" element={<BetHistory />} />
                 <Route path="/game-totals" element={<GameTotals />} />
+
+                {/* Auto-generated SEO pages */}
+                <Route path="/predictions/:slug" element={<SeoPageView pageType="game" />} />
+                <Route path="/teams/:slug" element={<SeoPageView pageType="team" />} />
+                <Route path="/players/:slug" element={<SeoPageView pageType="player" />} />
+                <Route path="/props/:slug" element={<SeoPageView pageType="prop" />} />
+                <Route path="/best/:slug" element={<SeoPageView pageType="best" />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
