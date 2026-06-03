@@ -344,6 +344,140 @@ export type Database = {
         }
         Relationships: []
       }
+      seo_page_errors: {
+        Row: {
+          created_at: string
+          id: string
+          page_type: string | null
+          payload_json: Json | null
+          reason: string
+          run_id: string | null
+          slug: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_type?: string | null
+          payload_json?: Json | null
+          reason: string
+          run_id?: string | null
+          slug?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_type?: string | null
+          payload_json?: Json | null
+          reason?: string
+          run_id?: string | null
+          slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_page_errors_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "seo_run_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_pages: {
+        Row: {
+          content_json: Json
+          created_at: string
+          entity_id: string | null
+          game_date: string | null
+          h1: string | null
+          id: string
+          last_data_hash: string | null
+          meta_description: string | null
+          page_type: string
+          published_at: string
+          slug: string
+          sport: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_json?: Json
+          created_at?: string
+          entity_id?: string | null
+          game_date?: string | null
+          h1?: string | null
+          id?: string
+          last_data_hash?: string | null
+          meta_description?: string | null
+          page_type: string
+          published_at?: string
+          slug: string
+          sport?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_json?: Json
+          created_at?: string
+          entity_id?: string | null
+          game_date?: string | null
+          h1?: string | null
+          id?: string
+          last_data_hash?: string | null
+          meta_description?: string | null
+          page_type?: string
+          published_at?: string
+          slug?: string
+          sport?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      seo_run_logs: {
+        Row: {
+          created_at: string
+          errors_json: Json | null
+          finished_at: string | null
+          id: string
+          job_name: string
+          next_run_at: string | null
+          pages_created: number
+          pages_failed: number
+          pages_updated: number
+          started_at: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          errors_json?: Json | null
+          finished_at?: string | null
+          id?: string
+          job_name: string
+          next_run_at?: string | null
+          pages_created?: number
+          pages_failed?: number
+          pages_updated?: number
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          errors_json?: Json | null
+          finished_at?: string | null
+          id?: string
+          job_name?: string
+          next_run_at?: string | null
+          pages_created?: number
+          pages_failed?: number
+          pages_updated?: number
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
