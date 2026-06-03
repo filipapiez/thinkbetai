@@ -207,6 +207,13 @@ const SeoPageView = ({ pageType }: Props) => {
           <p className="text-lg text-muted-foreground mb-8">{page.meta_description}</p>
         )}
 
+        {/* Long-form unique analysis (SEO body) */}
+        {c.longForm && (
+          <article className="prose prose-invert max-w-none mb-8 prose-headings:mt-8 prose-headings:mb-3 prose-h2:text-2xl prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground">
+            <ReactMarkdown>{c.longForm}</ReactMarkdown>
+          </article>
+        )}
+
         {/* AI Confidence card */}
         {ai && (
           <Card variant="glass" className="mb-6 border-primary/40">
