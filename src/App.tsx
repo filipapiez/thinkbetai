@@ -114,6 +114,8 @@ const App = () => (
                 <Route path="/players/:slug" element={<SeoPageView pageType="player" />} />
                 <Route path="/props/:slug" element={<SeoPageView pageType="prop" />} />
                 <Route path="/best/:slug" element={<SeoPageView pageType="best" />} />
+                <Route path="/matchups/:slug" element={<SeoPageView pageType="matchup" />} />
+                <Route path="/leagues/:slug" element={<SeoPageView pageType="league" />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
