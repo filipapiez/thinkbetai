@@ -104,3 +104,9 @@ verify_jwt = false
 
 [functions.get-team-logo]
 verify_jwt = false
+
+[functions.seo-generate-daily]
+verify_jwt = false
+
+[functions.seo-sitemap]
+verify_jwt = false
