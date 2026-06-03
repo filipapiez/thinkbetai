@@ -7,8 +7,19 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, CheckCircle, ExternalLink, AlertCircle, Ticket } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, CheckCircle, ExternalLink, AlertCircle, Ticket, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface SubscriptionDetails {
   subscribed: boolean;
@@ -23,6 +34,7 @@ const Subscription = () => {
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -68,6 +80,24 @@ const Subscription = () => {
       console.error('Portal error:', error);
     } finally {
       setIsOpeningPortal(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setIsCanceling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+      if (error || data?.error) {
+        toast.error(data?.error || 'Failed to cancel subscription');
+        return;
+      }
+      toast.success(data?.message || 'Subscription canceled');
+      await fetchSubscriptionDetails();
+    } catch (error) {
+      toast.error('Something went wrong');
+      console.error('Cancel error:', error);
+    } finally {
+      setIsCanceling(false);
     }
   };
 
@@ -205,7 +235,7 @@ const Subscription = () => {
                     Update payment method, change plan, or cancel your subscription
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <Button 
                     variant="outline" 
                     className="w-full"
@@ -219,8 +249,48 @@ const Subscription = () => {
                     )}
                     Open Billing Portal
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    You'll be redirected to our secure billing portal
+
+                  {!profile?.cancel_at_period_end ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full" disabled={isCanceling}>
+                          {isCanceling ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <XCircle className="h-4 w-4 mr-2" />
+                          )}
+                          Cancel Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You'll keep access until the end of your current billing period
+                            {subscriptionDetails?.subscription_end
+                              ? ` (${formatDate(subscriptionDetails.subscription_end)})`
+                              : ''}. You can cancel anytime — no refunds for the current period.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleCancelSubscription}>
+                            Yes, Cancel
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <div className="text-xs text-center text-muted-foreground bg-muted/30 rounded-md p-2">
+                      Subscription will end on{' '}
+                      {subscriptionDetails?.subscription_end
+                        ? formatDate(subscriptionDetails.subscription_end)
+                        : 'your next billing date'}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Manage payment method and invoices via the billing portal
                   </p>
                 </CardContent>
               </Card>
