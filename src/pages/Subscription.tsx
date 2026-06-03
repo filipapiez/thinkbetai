@@ -7,8 +7,19 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CreditCard, Calendar, CheckCircle, ExternalLink, AlertCircle, Ticket } from 'lucide-react';
+import { Loader2, CreditCard, Calendar, CheckCircle, ExternalLink, AlertCircle, Ticket, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface SubscriptionDetails {
   subscribed: boolean;
