@@ -53,6 +53,7 @@ const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 const GameTotals = lazy(() => import("./pages/GameTotals"));
 const SeoPageView = lazy(() => import("./pages/SeoPageView"));
+const SeoLanding = lazy(() => import("./pages/SeoLanding"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -116,6 +117,23 @@ const App = () => (
                 <Route path="/best/:slug" element={<SeoPageView pageType="best" />} />
                 <Route path="/matchups/:slug" element={<SeoPageView pageType="matchup" />} />
                 <Route path="/leagues/:slug" element={<SeoPageView pageType="league" />} />
+
+                {/* Permanent SEO landing pages (high-intent keyword clusters) */}
+                <Route path="/ai-sports-predictions" element={<SeoLanding slug="ai-sports-predictions" />} />
+                <Route path="/ai-betting-predictions" element={<SeoLanding slug="ai-betting-predictions" />} />
+                <Route path="/best-ai-betting-picks" element={<SeoLanding slug="best-ai-betting-picks" />} />
+                <Route path="/free-ai-sports-predictions" element={<SeoLanding slug="free-ai-sports-predictions" />} />
+                <Route path="/free-ai-sports-predictions-today" element={<SeoLanding slug="free-ai-sports-predictions-today" />} />
+                <Route path="/sports-betting-ai" element={<SeoLanding slug="sports-betting-ai" />} />
+                <Route path="/ai-sports-picks-today" element={<SeoLanding slug="ai-sports-picks-today" />} />
+                <Route path="/ai-sports-predictor" element={<SeoLanding slug="ai-sports-predictor" />} />
+                <Route path="/ai-betting-app" element={<SeoLanding slug="ai-betting-app" />} />
+                <Route path="/ai-betting-assistant" element={<SeoLanding slug="ai-betting-assistant" />} />
+                <Route path="/ai-parlay-generator" element={<SeoLanding slug="ai-parlay-generator" />} />
+                <Route path="/free-ai-parlay-generator" element={<SeoLanding slug="free-ai-parlay-generator" />} />
+                <Route path="/parlay-builder" element={<SeoLanding slug="parlay-builder" />} />
+                <Route path="/parlay-maker-ai" element={<SeoLanding slug="parlay-maker-ai" />} />
+                <Route path="/thinkbetai-reviews" element={<SeoLanding slug="thinkbetai-reviews" />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
