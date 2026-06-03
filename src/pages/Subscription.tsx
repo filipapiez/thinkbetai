@@ -34,6 +34,7 @@ const Subscription = () => {
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
 
   useEffect(() => {
     if (user) {
