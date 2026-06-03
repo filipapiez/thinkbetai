@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowRight, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface SeoPage {
   slug: string;
