@@ -11,6 +11,8 @@ interface Profile {
   subscription_status: string | null;
   promo_used: string | null;
   trial_ends_at: string | null;
+  cancel_at_period_end?: boolean | null;
+  current_period_end?: string | null;
   created_at: string;
   updated_at: string;
 }
