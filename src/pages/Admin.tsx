@@ -960,6 +960,9 @@ const Admin = () => {
             <TabsContent value="referrals">
               <ReferralsTab profiles={profiles} />
             </TabsContent>
+            <TabsContent value="seo">
+              <SeoAdminPanel />
+            </TabsContent>
           </Tabs>
         </div>
       </main>
