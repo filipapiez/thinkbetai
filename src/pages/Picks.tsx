@@ -416,18 +416,12 @@ const Picks = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   {availableSports.map(sport => {
-                    const stats = sportStats[sport];
-                    const winRate = stats ? getWinRate(stats) : null;
                     return (
                       <DropdownMenuItem 
                         key={sport}
                         onClick={() => { setSelectedSport(sport); setSelectedPropType(null); }}
-                        className="flex justify-between"
                       >
                         <span>{sport} ({sportCounts[sport] || 0})</span>
-                        {winRate !== null && (
-                          <span className="text-xs text-emerald-400 ml-2">{winRate}% WR</span>
-                        )}
                       </DropdownMenuItem>
                     );
                   })}
