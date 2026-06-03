@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowRight, Sparkles } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface SeoPage {
   slug: string;
@@ -204,6 +205,13 @@ const SeoPageView = ({ pageType }: Props) => {
         <h1 className="text-3xl md:text-4xl font-bold mb-4">{page.h1 ?? page.title}</h1>
         {page.meta_description && (
           <p className="text-lg text-muted-foreground mb-8">{page.meta_description}</p>
+        )}
+
+        {/* Long-form unique analysis (SEO body) */}
+        {c.longForm && (
+          <article className="prose prose-invert max-w-none mb-8 prose-headings:mt-8 prose-headings:mb-3 prose-h2:text-2xl prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground">
+            <ReactMarkdown>{c.longForm}</ReactMarkdown>
+          </article>
         )}
 
         {/* AI Confidence card */}

@@ -771,21 +771,82 @@ interface PageUpsert {
   last_data_hash: string;
 }
 
+// Page types that get long-form AI prose (skip player_prop — too many, too thin a query)
+const LONGFORM_TYPES = new Set(["game_preview", "game_result", "team", "matchup", "league", "daily_best"]);
+const MAX_LONGFORM_PER_RUN = 80;
+
+async function generateLongForm(page: PageUpsert, apiKey: string): Promise<string | null> {
+  const ctx = page.content_json ?? {};
+  const targetWords = page.page_type === "game_result" ? 1000 : 1500;
+  const prompt = `You are a professional sports betting analyst writing SEO-optimized content for ThinkBetAI.
+Write a ${targetWords}-word original analysis article for: "${page.h1}".
+Page type: ${page.page_type}. Sport: ${page.sport ?? "multi-sport"}.
+Context JSON: ${JSON.stringify(ctx).slice(0, 3500)}
+
+Requirements:
+- Professional analyst tone. No betting slang ("smash spot", "lock", "hammer"). No money-back guarantees.
+- Cover: matchup context, key trends, injury/lineup factors, market/line analysis, model-based pick rationale, risk factors.
+- Use markdown: 4-6 H2 sections (## headings), short paragraphs, include one bulleted list.
+- End with a "## Bottom Line" section summarizing the pick and confidence.
+- Do not fabricate stats, player names, or scores not present in context. If unknown, speak in general terms.
+- Do not link to external sportsbooks.
+- Output ONLY the article markdown — no preamble, no JSON, no code fences.`;
+
+  try {
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const text = j?.choices?.[0]?.message?.content;
+    return typeof text === "string" && text.length > 400 ? text : null;
+  } catch (e) {
+    console.error("[seo] longform failed:", e);
+    return null;
+  }
+}
+
 async function upsertPages(
   supabase: any,
   pages: PageUpsert[],
   runId: string,
+  lovableKey: string | null,
 ): Promise<{ created: number; updated: number; failed: number }> {
   let created = 0, updated = 0, failed = 0;
+  let longformBudget = MAX_LONGFORM_PER_RUN;
+
   for (const p of pages) {
     try {
       const { data: existing } = await supabase
         .from("seo_pages")
-        .select("id, last_data_hash")
+        .select("id, last_data_hash, content_json")
         .eq("slug", p.slug)
         .maybeSingle();
+
+      const existingLong: string | undefined = existing?.content_json?.longForm;
+      const dataChanged = !existing || existing.last_data_hash !== p.last_data_hash;
+      const wantsLong = LONGFORM_TYPES.has(p.page_type) && !!lovableKey;
+      const needsNewLong = wantsLong && longformBudget > 0 && (!existingLong || dataChanged);
+
+      if (needsNewLong) {
+        const long = await generateLongForm(p, lovableKey!);
+        if (long) {
+          p.content_json = { ...p.content_json, longForm: long };
+          longformBudget--;
+        } else if (existingLong) {
+          p.content_json = { ...p.content_json, longForm: existingLong };
+        }
+      } else if (existingLong) {
+        p.content_json = { ...p.content_json, longForm: existingLong };
+      }
+
       if (existing) {
-        if (existing.last_data_hash !== p.last_data_hash) {
+        if (dataChanged || (needsNewLong && p.content_json.longForm !== existingLong)) {
           const { error } = await supabase
             .from("seo_pages")
             .update({
@@ -938,7 +999,7 @@ serve(async (req) => {
     pages.push(buildParlaysHub() as PageUpsert);
 
     console.log(`[seo] upserting ${pages.length} pages`);
-    const stats = await upsertPages(supabase, pages, runId);
+    const stats = await upsertPages(supabase, pages, runId, Deno.env.get("LOVABLE_API_KEY") ?? null);
 
     // Flip overdue upcoming pages to stale (keep team/matchup/daily_best/league/player/player_prop "live")
     await supabase
