@@ -999,7 +999,7 @@ serve(async (req) => {
     pages.push(buildParlaysHub() as PageUpsert);
 
     console.log(`[seo] upserting ${pages.length} pages`);
-    const stats = await upsertPages(supabase, pages, runId);
+    const stats = await upsertPages(supabase, pages, runId, Deno.env.get("LOVABLE_API_KEY") ?? null);
 
     // Flip overdue upcoming pages to stale (keep team/matchup/daily_best/league/player/player_prop "live")
     await supabase
