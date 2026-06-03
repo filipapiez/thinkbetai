@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff, Target, Link2 } from 'lucide-react';
+import { Loader2, Users, CreditCard, Ticket, Plus, Shield, RefreshCw, Search, XCircle, DollarSign, TrendingUp, BarChart3, Undo2, CalendarClock, ChevronDown, ChevronRight, ShieldOff, Target, Link2, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminPickBuilder } from '@/components/AdminPickBuilder';
+import { SeoAdminPanel } from '@/components/admin/SeoAdminPanel';
 
 interface Profile {
   id: string;
@@ -616,6 +617,10 @@ const Admin = () => {
               <TabsTrigger value="referrals" className="flex items-center gap-1">
                 <Link2 className="h-3.5 w-3.5" />
                 Referrals
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="flex items-center gap-1">
+                <Globe className="h-3.5 w-3.5" />
+                SEO
               </TabsTrigger>
             </TabsList>
 
