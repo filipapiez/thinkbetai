@@ -37,6 +37,8 @@ const TYPE_PREFIX: Record<string, string> = {
   player: "/players/",
   player_prop: "/props/",
   daily_best: "/best/",
+  matchup: "/matchups/",
+  league: "/leagues/",
 };
 
 serve(async (req) => {
