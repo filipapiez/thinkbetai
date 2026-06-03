@@ -235,7 +235,7 @@ const Subscription = () => {
                     Update payment method, change plan, or cancel your subscription
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <Button 
                     variant="outline" 
                     className="w-full"
@@ -249,8 +249,48 @@ const Subscription = () => {
                     )}
                     Open Billing Portal
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2 text-center">
-                    You'll be redirected to our secure billing portal
+
+                  {!profile?.cancel_at_period_end ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="w-full" disabled={isCanceling}>
+                          {isCanceling ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <XCircle className="h-4 w-4 mr-2" />
+                          )}
+                          Cancel Subscription
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You'll keep access until the end of your current billing period
+                            {subscriptionDetails?.subscription_end
+                              ? ` (${formatDate(subscriptionDetails.subscription_end)})`
+                              : ''}. You can cancel anytime — no refunds for the current period.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleCancelSubscription}>
+                            Yes, Cancel
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <div className="text-xs text-center text-muted-foreground bg-muted/30 rounded-md p-2">
+                      Subscription will end on{' '}
+                      {subscriptionDetails?.subscription_end
+                        ? formatDate(subscriptionDetails.subscription_end)
+                        : 'your next billing date'}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground text-center">
+                    Manage payment method and invoices via the billing portal
                   </p>
                 </CardContent>
               </Card>
