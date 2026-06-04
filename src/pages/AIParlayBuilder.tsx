@@ -85,9 +85,9 @@ const AIParlayBuilder = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="AI Parlay Builder — AI Parlay Picks & Predictions"
-        description="Build smarter parlays with ThinkBetAI's AI parlay builder. Get AI parlay picks, correlation analysis, and true-odds optimization for multi-leg bets."
-        keywords="ai parlay builder, ai parlay picks, parlay ai predictions, smart parlay, correlated parlay, same game parlay AI"
+        title="AI Parlay Builder 2026 — Free Smart Parlay Picks (80%+ Win Rate)"
+        description="Free AI parlay builder used by 10,000+ bettors. Get correlated same-game parlays, true-odds analysis & 2-3 leg AI picks for NFL, NBA, MLB & NHL. Build a winning parlay in seconds."
+        keywords="ai parlay builder, free ai parlay generator, ai parlay picks, same game parlay AI, smart parlay builder, parlay ai predictions, correlated parlay"
         url="/ai-parlay-builder"
         type="article"
       />

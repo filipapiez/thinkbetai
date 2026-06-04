@@ -72,8 +72,8 @@ const AISportsBetting = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="AI Sports Betting Platform — AI Bets & Predictions"
-        description="Use ThinkBetAI's AI sports betting tool for data-driven AI bets, predictions, and parlay suggestions across NFL, NBA, MLB, NHL & more. Learn how AI betting works and get started free."
+        title="AI Sports Betting 2026 — Free AI Picks & Predictions (80%+ Accuracy)"
+        description="The #1 AI sports betting platform. Free daily AI picks, parlays & predictions for NFL, NBA, MLB, NHL & UFC — powered by machine learning with 80%+ documented accuracy. Try it free."
         keywords="ai betting, ai bets, ai betting predictions, ai sports betting tool, ai sports betting, ai predictions sports"
         url="/ai-sports-betting"
         type="article"
