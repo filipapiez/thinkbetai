@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "tsx scripts/generate-sitemaps.ts",
+    "predev": "bunx tsx scripts/generate-sitemaps.ts",
     "dev": "vite",
-    "prebuild": "tsx scripts/generate-sitemaps.ts",
+    "prebuild": "bunx tsx scripts/generate-sitemaps.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
