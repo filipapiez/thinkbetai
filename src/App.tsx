@@ -54,6 +54,7 @@ const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 const GameTotals = lazy(() => import("./pages/GameTotals"));
 const SeoPageView = lazy(() => import("./pages/SeoPageView"));
 const SeoLanding = lazy(() => import("./pages/SeoLanding"));
+const SeoIndex = lazy(() => import("./pages/SeoIndex"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -110,6 +111,9 @@ const App = () => (
                 <Route path="/game-totals" element={<GameTotals />} />
 
                 {/* Auto-generated SEO pages */}
+                <Route path="/teams" element={<SeoIndex variant="teams" />} />
+                <Route path="/predictions" element={<SeoIndex variant="predictions" />} />
+                <Route path="/best" element={<SeoIndex variant="best" />} />
                 <Route path="/predictions/:slug" element={<SeoPageView pageType="game" />} />
                 <Route path="/teams/:slug" element={<SeoPageView pageType="team" />} />
                 <Route path="/players/:slug" element={<SeoPageView pageType="player" />} />

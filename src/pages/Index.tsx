@@ -650,6 +650,9 @@ const Index = () => {
                 Cancel anytime
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm px-4">
+                <Link to="/predictions" className="text-primary hover:text-primary/80 font-medium transition-colors">All Game Predictions →</Link>
+                <Link to="/teams" className="text-primary hover:text-primary/80 font-medium transition-colors">All Team Pages →</Link>
+                <Link to="/best" className="text-primary hover:text-primary/80 font-medium transition-colors">Best Picks by Sport →</Link>
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
                 <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
                 <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>
