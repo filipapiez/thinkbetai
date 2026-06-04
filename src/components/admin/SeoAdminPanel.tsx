@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Play, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { GscCoveragePanel } from "./GscCoveragePanel";
 
 interface RunLog {
   id: string;
@@ -189,6 +190,10 @@ export const SeoAdminPanel = () => {
           )}
         </CardContent>
       </Card>
+
+      <div className="pt-4 border-t border-border">
+        <GscCoveragePanel />
+      </div>
     </div>
   );
 };
