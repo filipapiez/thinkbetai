@@ -54,6 +54,7 @@ const PlayerProps = lazy(() => import("./pages/PlayerProps"));
 const GameTotals = lazy(() => import("./pages/GameTotals"));
 const SeoPageView = lazy(() => import("./pages/SeoPageView"));
 const SeoLanding = lazy(() => import("./pages/SeoLanding"));
+const SeoIndex = lazy(() => import("./pages/SeoIndex"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
