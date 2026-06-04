@@ -194,4 +194,9 @@
   <url><loc>https://thinkbetai.com/de/free-ai-predictions</loc><lastmod>2026-02-20</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://thinkbetai.com/de/ai-nfl-picks</loc><lastmod>2026-02-20</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://thinkbetai.com/de/ai-parlay-builder</loc><lastmod>2026-02-20</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <!-- Additional indexable routes -->
+  <url><loc>https://thinkbetai.com/how-it-works</loc><lastmod>2026-06-04</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://thinkbetai.com/player-props</loc><lastmod>2026-06-04</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/picks</loc><lastmod>2026-06-04</lastmod><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://thinkbetai.com/game-totals</loc><lastmod>2026-06-04</lastmod><changefreq>daily</changefreq><priority>0.85</priority></url>
 </urlset>
