@@ -17,7 +17,9 @@ async function submit(sitemapUrl: string) {
 
 Deno.serve(async () => {
   const results = await Promise.all([
+    submit("https://thinkbetai.com/sitemap-index.xml"),
     submit("https://thinkbetai.com/sitemap.xml"),
+    submit("https://thinkbetai.com/sitemap-blog.xml"),
   ]);
   console.log("gsc-ping results", JSON.stringify(results));
   return new Response(JSON.stringify({ ok: true, results }), {
