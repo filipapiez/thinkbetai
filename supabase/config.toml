@@ -2,3 +2,6 @@ project_id = "fmrcmbdgmhoylmxbapdr"
 
 [functions.sitemap-dynamic]
 verify_jwt = false
+
+[functions.gsc-ping]
+verify_jwt = false
