@@ -37,7 +37,9 @@ Allow: /
 Crawl-delay: 2
 
 # Sitemap
+Sitemap: https://thinkbetai.com/sitemap-index.xml
 Sitemap: https://thinkbetai.com/sitemap.xml
+Sitemap: https://thinkbetai.com/sitemap-blog.xml
 Sitemap: https://fmrcmbdgmhoylmxbapdr.supabase.co/functions/v1/sitemap-dynamic
 
 # Disallow private areas
