@@ -190,6 +190,10 @@ export const SeoAdminPanel = () => {
           )}
         </CardContent>
       </Card>
+
+      <div className="pt-4 border-t border-border">
+        <GscCoveragePanel />
+      </div>
     </div>
   );
 };
