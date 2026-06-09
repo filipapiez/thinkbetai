@@ -864,7 +864,11 @@ async function upsertPages(
           updated++;
         }
       } else {
-        const { error } = await supabase.from("seo_pages").insert(p);
+        // Use upsert to avoid race conditions on slug unique constraint
+        // (concurrent runs or repeated slugs within the same batch).
+        const { error } = await supabase
+          .from("seo_pages")
+          .upsert(p, { onConflict: "slug", ignoreDuplicates: false });
         if (error) throw error;
         created++;
       }
