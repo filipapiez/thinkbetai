@@ -1037,6 +1037,32 @@ serve(async (req) => {
       })
       .eq("id", runId);
 
+    // Auto-ping Google Search Console to resubmit sitemaps whenever new pages
+    // were created or existing ones updated. This is the only "force re-crawl"
+    // mechanism Google officially honors for non-job/event content.
+    if (stats.created > 0 || stats.updated > 0) {
+      try {
+        const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+        const gscKey = Deno.env.get("GOOGLE_SEARCH_CONSOLE_API_KEY");
+        if (lovableKey && gscKey) {
+          const SITE = "sc-domain:thinkbetai.com";
+          const sitemaps = [
+            "https://thinkbetai.com/sitemap-index.xml",
+            "https://thinkbetai.com/sitemap-dynamic.xml",
+          ];
+          await Promise.all(sitemaps.map((sm) =>
+            fetch(
+              `https://connector-gateway.lovable.dev/google_search_console/webmasters/v3/sites/${encodeURIComponent(SITE)}/sitemaps/${encodeURIComponent(sm)}`,
+              { method: "PUT", headers: { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": gscKey } },
+            ).then((r) => console.log(`[seo] gsc-ping ${sm} → ${r.status}`))
+             .catch((err) => console.warn(`[seo] gsc-ping failed for ${sm}:`, err))
+          ));
+        }
+      } catch (e) {
+        console.warn("[seo] gsc-ping block failed:", (e as Error).message);
+      }
+    }
+
     return new Response(
       JSON.stringify({ ok: true, runId, ...stats, totalProcessed: pages.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
