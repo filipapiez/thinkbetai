@@ -293,6 +293,25 @@ const AIParlayBuilder = () => {
             </section>
           </article>
 
+          {/* Daily picks hubs — internal links pass crawl signal to /best/* pages */}
+          <section className="pt-8 border-t border-border">
+            <h2 className="text-xl font-semibold mb-3">Today's Best AI Picks</h2>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Curated highest-confidence picks updated daily by sport and market.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+              <Link to="/best/best-nba-bets-today" className="text-primary hover:underline">Best NBA Bets Today</Link>
+              <Link to="/best/best-nfl-bets-today" className="text-primary hover:underline">Best NFL Bets Today</Link>
+              <Link to="/best/best-mlb-bets-today" className="text-primary hover:underline">Best MLB Bets Today</Link>
+              <Link to="/best/best-nhl-bets-today" className="text-primary hover:underline">Best NHL Bets Today</Link>
+              <Link to="/best/best-parlays-today" className="text-primary hover:underline">Best Parlays Today</Link>
+              <Link to="/best/best-nba-player-props-today" className="text-primary hover:underline">Best NBA Player Props</Link>
+              <Link to="/best/best-nfl-player-props-today" className="text-primary hover:underline">Best NFL Player Props</Link>
+              <Link to="/best/best-mlb-player-props-today" className="text-primary hover:underline">Best MLB Player Props</Link>
+              <Link to="/best/best-nhl-player-props-today" className="text-primary hover:underline">Best NHL Player Props</Link>
+            </div>
+          </section>
+
           {/* Nav */}
           <div className="flex flex-wrap gap-4 pt-8 border-t border-border">
             <Button variant="outline" asChild>
