@@ -40,23 +40,21 @@ writeFileSync(resolve("public/sitemap-blog.xml"), blogXml);
 //    rule). Falls back to the edge function output if direct DB read
 //    fails, and leaves the existing file untouched if both fail.
 // -------------------------------------------------------------------
+// IMPORTANT: We only expose high-value SEO pages to Google.
+// Thin DB-generated pages (team rosters, individual game previews/results)
+// were diluting crawl budget and signaling low quality. They still exist
+// at /teams/* and /predictions/* for direct visitors, but we no longer
+// advertise them in the sitemap. Only the curated /best/* (daily_best)
+// pages are indexed.
+const ALLOWED_PAGE_TYPES = new Set(["daily_best"]);
 const PATH_MAP: Record<string, string> = {
-  team: "/teams/",
-  game_preview: "/predictions/",
-  game_result: "/predictions/",
   daily_best: "/best/",
-  player: "/players/",
-  prop: "/props/",
-  matchup: "/matchups/",
-  league: "/leagues/",
 };
 const PRIO: Record<string, string> = {
-  team: "0.75", game_preview: "0.8", game_result: "0.6", daily_best: "0.85",
-  player: "0.7", prop: "0.7", matchup: "0.7", league: "0.75",
+  daily_best: "0.85",
 };
 const FREQ: Record<string, string> = {
-  team: "weekly", game_preview: "daily", game_result: "monthly", daily_best: "daily",
-  player: "weekly", prop: "daily", matchup: "weekly", league: "weekly",
+  daily_best: "daily",
 };
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://fmrcmbdgmhoylmxbapdr.supabase.co";
@@ -74,6 +72,7 @@ async function buildDynamicXml(): Promise<string | null> {
       const { data, error } = await supabase
         .from("seo_pages")
         .select("page_type, slug, updated_at, created_at")
+        .in("page_type", Array.from(ALLOWED_PAGE_TYPES))
         .range(from, from + PAGE - 1);
       if (error) throw error;
       if (!data || data.length === 0) break;
@@ -92,16 +91,7 @@ async function buildDynamicXml(): Promise<string | null> {
       .join("\n");
     return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
   } catch (e) {
-    console.warn("dynamic sitemap DB read failed, trying edge function:", (e as Error).message);
-  }
-
-  // Fallback: fetch the edge function output
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/sitemap-dynamic`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.text();
-  } catch (e) {
-    console.warn("dynamic sitemap edge fetch failed:", (e as Error).message);
+    console.warn("dynamic sitemap DB read failed:", (e as Error).message);
     return null;
   }
 }
