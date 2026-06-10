@@ -886,7 +886,6 @@ async function upsertPages(
   return { created, updated, failed };
 }
 
-import { requireAdminOrCron, unauthorizedResponse } from "../_shared/adminAuth.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
