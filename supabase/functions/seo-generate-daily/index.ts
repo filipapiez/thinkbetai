@@ -3,6 +3,7 @@
 // matchup-history pages, league hubs, today/tomorrow hubs, themed daily hubs.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { requireAdminOrCron, unauthorizedResponse } from "../_shared/adminAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -885,8 +886,14 @@ async function upsertPages(
   return { created, updated, failed };
 }
 
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const auth = await requireAdminOrCron(req);
+  if (!auth.ok) return unauthorizedResponse(auth, corsHeaders);
+
+
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
