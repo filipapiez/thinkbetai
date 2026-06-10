@@ -885,8 +885,15 @@ async function upsertPages(
   return { created, updated, failed };
 }
 
+import { requireAdminOrCron, unauthorizedResponse } from "../_shared/adminAuth.ts";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const auth = await requireAdminOrCron(req);
+  if (!auth.ok) return unauthorizedResponse(auth, corsHeaders);
+
+
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
