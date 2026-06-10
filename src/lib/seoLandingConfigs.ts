@@ -982,6 +982,606 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     primaryCta: { label: "Try It Free Today", href: "/games" },
     secondaryCta: { label: "View Pricing", href: "/pricing" },
   },
+  {
+    slug: "nfl-ai-predictions",
+    title: "NFL AI Predictions - Weekly Picks, Spreads & Player Props",
+    description: "NFL AI predictions for every game on the slate. Spread, total, moneyline and player prop picks with win probability and confidence score. Updated as injuries and lines move.",
+    keywords: "NFL AI predictions, NFL AI picks, AI NFL predictions, NFL AI model, NFL AI spread picks, NFL AI player props",
+    h1: "NFL AI Predictions for Every Game on the Board",
+    tagline: "1,000 simulations per matchup — re-run on every injury and line move",
+    intro: [
+      "ThinkBetAI publishes NFL AI predictions for every regular-season, playoff, and Super Bowl matchup. Each prediction is the output of a Monte Carlo engine that runs the game forward 1,000 times using current injury reports, depth charts, opponent-adjusted EPA/play, pace, red-zone efficiency, weather, and live market data — then compares the simulated win probability against the implied probability of the line you're seeing.",
+      "Unlike most NFL pick sites that post on Tuesday and forget about it, our predictions re-simulate whenever something material changes — a quarterback inactive, a snow forecast, a key offensive lineman ruled out. The pick you see at 11:55 a.m. Sunday reflects the world at 11:55 a.m. Sunday, not the world on Wednesday morning.",
+      "Below: how the NFL model is built, which markets it covers, why weather and rest matter more than most handicappers admit, and where to find this week's free NFL AI predictions.",
+    ],
+    sections: [
+      {
+        heading: "How the NFL AI Model Works",
+        body: [
+          "Our NFL engine starts with opponent-adjusted EPA and success rate on both offense and defense, weighted toward recent games and adjusted for the strength of the opposing units faced. We layer in red-zone efficiency, third-down conversion, explosive-play rates, and pass-rush win rate — the modern stats that actually predict scoring, not the box-score noise (rushing yards on the year) that media tends to lead with.",
+          "From there we simulate the game possession-by-possession 1,000 times. Each simulation samples from realistic distributions for time of possession, turnover variance, and field-position swings. The result is a full distribution of possible scores — not just a single point estimate — which lets us price spreads, totals, team totals, and alternate lines with the same internal probability.",
+        ],
+        bullets: [
+          "Opponent-adjusted EPA/play, weighted toward recent form",
+          "Pass-rush win rate, pressure %, and EPA allowed",
+          "Red-zone TD% and third-down conversion rate",
+          "Live injury reports (QB, OL, top WR, secondary)",
+          "Weather: wind, precipitation, dome vs outdoor",
+          "Rest, travel, and Thursday-night fatigue penalties",
+        ],
+      },
+      {
+        heading: "NFL Markets the AI Covers",
+        body: [
+          "Spreads, totals, moneylines, team totals, first-half and first-quarter lines, alternate spreads/totals, and a full board of player props. Quarterback passing yards, receiver props, rushing props, and anytime touchdown scorer are where the AI does some of its strongest work — sportsbooks shade these lines based on public action, which creates exploitable mispricings the model catches.",
+          "For Sunday slates we publish a daily best bet, an underdog of the day, and a weekly survivor pool pick. For Thursday and Monday standalone games, every available market is graded individually.",
+        ],
+      },
+      {
+        heading: "Why Weather and Wind Matter More Than You Think",
+        body: [
+          "Wind over 15 mph cuts deep-passing efficiency dramatically and drops totals by 2–4 points on average. Most casual bettors notice rain but ignore wind, and most public lines are slow to adjust. Our totals model treats wind speed at kickoff as a first-class input, and our prop model down-weights deep-target receivers in heavy wind games.",
+          "Cold-weather games matter less than people think — players adjust. Wet weather matters more than people think — fumbles spike, third-down conversion drops, and unders cash at a higher clip.",
+        ],
+      },
+      {
+        heading: "Using NFL AI Predictions Through the Season",
+        body: [
+          "Early-season Weeks 1–4 are the highest-variance period of the NFL year — small sample sizes mean the market is slower to price teams correctly, which is when AI models earn the most edge. Mid-season the market tightens and our edges shrink slightly but become more reliable. Late-season look out for teams playing for nothing in Week 18 — our model explicitly accounts for motivation deltas in win-and-in scenarios.",
+          "Playoffs reset everything. Coaching matters more, rest matters more, and our model bumps the weight on coaching efficiency and rest differential. Super Bowl gets its own deep-dive prediction page with prop edges, halftime show novelty bets graded for fun, and a parlay grade for every common ticket structure.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How accurate are NFL AI predictions?", a: "Our high-confidence flagged NFL picks have hit at 80.3% across our tracked sample. Lower-confidence picks hit at lower rates by design — the confidence score is meaningful." },
+      { q: "Are NFL AI picks free?", a: "Yes — we publish a free best bet, underdog, and a free preview for the marquee game every week. Premium unlocks the full board, prop edges, and the AI chat." },
+      { q: "When do NFL predictions go live?", a: "Initial predictions post Tuesday after Monday Night Football and update continuously as injury reports, weather forecasts, and lines move through the week." },
+      { q: "Does the AI cover playoff and Super Bowl predictions?", a: "Yes — every playoff game gets a deep-dive page including adjusted models for rest, weather, and coaching. The Super Bowl includes prop edges and parlay grading for common ticket structures." },
+      { q: "Are NFL player props included?", a: "Yes — passing yards, receiving yards, rushing yards, receptions, anytime TD scorer, and longest play, with a 0–100 signal score combining L20 game logs, defensive matchup, and game-script projection." },
+      { q: "Why does the NFL model weight weather so heavily?", a: "Wind especially cuts deep-passing efficiency more than most lines reflect. Treating wind as a first-class input is one of the biggest edges in NFL totals." },
+    ],
+    primaryCta: { label: "See This Week's NFL Picks", href: "/games?sport=nfl" },
+    secondaryCta: { label: "Best NFL Bets Today", href: "/best/best-nfl-bets-today" },
+  },
+  {
+    slug: "nba-ai-predictions",
+    title: "NBA AI Predictions - Nightly Picks, Spreads & Player Props",
+    description: "NBA AI predictions for every game tonight. Spread, total, moneyline and player prop picks with win probability and confidence. Re-runs on every starting lineup and injury update.",
+    keywords: "NBA AI predictions, NBA AI picks, AI NBA model, NBA AI spread picks, NBA AI player props, NBA AI parlay",
+    h1: "NBA AI Predictions for Tonight's Slate",
+    tagline: "Lineup-aware simulations that re-run when the starting five drops",
+    intro: [
+      "ThinkBetAI generates NBA AI predictions for every regular-season, playoff, and Finals game. The NBA model leans heavily on pace, offensive and defensive rating adjusted for opponent, usage rates, defensive matchup data, and crucially — the confirmed starting lineup, which often doesn't land until ~30 minutes before tip-off.",
+      "Lineup matters more in basketball than any other sport. A star resting on a back-to-back can swing a total by 6+ points and a spread by 5. Our model holds prop predictions at low confidence until the starting five is confirmed, then re-runs immediately with the actual lineup. This is the single biggest reason NBA predictions made an hour before tip-off are more reliable than ones made the morning of.",
+      "Below: how the NBA model weights pace and matchup, why back-to-backs are still mispriced, our approach to player props, and where to find tonight's free NBA picks.",
+    ],
+    sections: [
+      {
+        heading: "Pace, Efficiency, and Matchup Math",
+        body: [
+          "NBA totals are a product of two things: possessions (pace) and points per possession (efficiency). Our model projects both for each team independently, adjusted for the opponent. A high-pace team facing a low-pace opponent doesn't get its full pace — both teams meet in the middle, and most public totals are slow to adjust to that average.",
+          "On the efficiency side we use opponent-adjusted offensive rating against opponent-adjusted defensive rating, weighted by the matchup-specific strengths (3-point defense vs. heavy-3 offense, paint defense vs. drive-heavy offense). This is where modern NBA edges live — generic team ratings miss matchup-specific advantages that compound over a 100-possession game.",
+        ],
+        bullets: [
+          "Opponent-adjusted offensive and defensive rating",
+          "Pace projection averaged between both teams",
+          "3-point shooting vs. 3-point defense matchup",
+          "Paint scoring vs. rim protection matchup",
+          "Usage rate and minutes projection per starter",
+          "Back-to-back, 3-in-4, and travel fatigue penalties",
+        ],
+      },
+      {
+        heading: "Back-to-Backs Are Still Mispriced",
+        body: [
+          "Teams on the second night of a back-to-back have historically covered the spread at a meaningfully lower rate than the market implies, and totals tend to come in lower as well. Sportsbooks adjust, but not fully — there's still real edge in fading a team on a B2B against a rested opponent, especially when travel is involved.",
+          "Our model applies an explicit B2B penalty calibrated against several seasons of data, and adds an additional travel penalty for cross-country trips. The result is consistently +EV in late-season games when load management compounds with fatigue.",
+        ],
+      },
+      {
+        heading: "NBA Player Props: Where the AI Shines",
+        body: [
+          "Player prop coverage is the deepest part of our NBA product. For every starter and rotation player we generate predictions on points, rebounds, assists, threes made, points+rebounds+assists (PRA), and combined props. Each prediction is a 0–100 composite signal built from L20 game logs, defensive matchup, usage projection, and pace-adjusted minutes.",
+          "We hold high-confidence props until the starting lineup is confirmed. This is non-negotiable — a star sitting changes the math for every teammate and any pre-confirmation prop is a guess. Once lineups drop, the model re-runs and surfaces the strongest leans within minutes.",
+        ],
+      },
+      {
+        heading: "Playoffs vs. Regular Season",
+        body: [
+          "Playoff basketball is a different game: rotations shrink to 7–8 players, pace slows by 3–5 possessions per game, and defensive intensity ratchets up. Our model swaps to a playoff-specific calibration once series begin, weighting recent playoff form more heavily and adjusting prop projections for the tightened rotation.",
+          "Series prices (who wins the series, exact games) are graded separately with their own simulation that runs each possible game order forward.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Why do NBA AI predictions update so close to tip-off?", a: "Because starting lineups are the single largest input. We hold high-confidence picks until the official lineup drops, typically ~30 minutes pre-tip." },
+      { q: "Are NBA AI picks free?", a: "Yes — daily free best bet, free underdog, and one free game preview every night. Premium unlocks the full board and prop edges." },
+      { q: "Does the model handle load management?", a: "Yes — it explicitly accounts for back-to-backs, 3-in-4 schedules, and travel. It does not predict surprise rest days, but re-runs immediately once a rest decision is announced." },
+      { q: "Are NBA player props included?", a: "Yes — points, rebounds, assists, threes, PRA, and combined props for every starter and rotation player, with a 0–100 signal score." },
+      { q: "What about NBA playoffs?", a: "Playoff games use a separate calibration that accounts for shorter rotations, slower pace, and increased defensive intensity. Series prices are simulated game-by-game." },
+      { q: "How accurate are NBA AI predictions?", a: "Our high-confidence NBA picks track at 80.3% across the broader sample. Prop edges are graded individually — only the strongest leans surface as flagged picks." },
+    ],
+    primaryCta: { label: "See Tonight's NBA Picks", href: "/games?sport=nba" },
+    secondaryCta: { label: "Best NBA Bets Today", href: "/best/best-nba-bets-today" },
+  },
+  {
+    slug: "mlb-ai-predictions",
+    title: "MLB AI Predictions - Daily Picks, Run Lines & Player Props",
+    description: "MLB AI predictions for every game today. Moneyline, run line, total, F5, and player prop picks built on pitcher xFIP, ballpark factors, and live lineups.",
+    keywords: "MLB AI predictions, MLB AI picks, baseball AI predictions, AI MLB picks today, MLB AI player props, MLB F5 picks",
+    h1: "MLB AI Predictions for Every Game on the Card",
+    tagline: "Pitcher-driven simulations with ballpark and weather adjustments",
+    intro: [
+      "ThinkBetAI generates MLB AI predictions for every regular-season and playoff game across a 162-game grind. The MLB model is pitcher-first — starting pitcher xFIP, SIERA, and recent form drive most of the moneyline and total predictions, layered with ballpark factors, weather (wind direction is enormous in baseball), bullpen strength, and umpire tendencies on strike zone.",
+      "Baseball is the sport where a model's edge compounds most over a long season — small per-game edges of 1–2% translate into real profit over 162 games. It's also where most casual bettors lose: they bet favorites, ignore the bullpen, and don't check the wind. The AI does the opposite.",
+      "Below: how the MLB model is built, why pitcher xFIP beats W-L record by a mile, our F5 (first-five-innings) strategy, and where to find tonight's free MLB predictions.",
+    ],
+    sections: [
+      {
+        heading: "Why Pitcher xFIP Drives MLB Predictions",
+        body: [
+          "Win-loss record is one of the worst predictors of pitcher performance you can use — it's confounded by run support, bullpen, and luck. xFIP and SIERA strip those out and measure actual pitcher skill: strikeouts, walks, ground balls, and home-run rate normalized for ballpark. Our MLB model uses xFIP-style metrics weighted by recent form and opponent batter handedness splits.",
+          "We also project pitch count and likely exit point, then simulate the bullpen takeover. A team with a great starter and a brutal bullpen is fundamentally different from a team with a mediocre starter and a great bullpen, and the model treats them differently even if their team ERAs look similar.",
+        ],
+        bullets: [
+          "Starter xFIP, SIERA, and recent form (last 5 starts)",
+          "Batter handedness splits vs. starting pitcher",
+          "Bullpen ERA and recent usage (overworked = vulnerable)",
+          "Ballpark factor for runs and home runs",
+          "Wind speed and direction (in/out of the park)",
+          "Umpire strike zone tendencies and K-rate effects",
+        ],
+      },
+      {
+        heading: "Ballpark and Weather Effects",
+        body: [
+          "Coors Field is the obvious extreme, but every ballpark has a measurable effect on run scoring and home runs. Wrigley with the wind blowing out is a different park than Wrigley with the wind blowing in — sometimes 3+ runs of expected total difference. Our model treats park factor and live wind as combined inputs and adjusts totals accordingly.",
+          "Temperature matters too. Cold weather suppresses ball flight and run scoring; hot weather increases both. April games at northern parks are systematically lower-scoring than the same teams playing in July, and the market doesn't always adjust as much as it should.",
+        ],
+      },
+      {
+        heading: "F5 (First-Five-Innings) Betting",
+        body: [
+          "First-five-innings lines remove the bullpen variable and let you bet purely on the starting-pitcher matchup. When you have strong conviction on the starters but mistrust one or both bullpens, F5 is the cleaner bet. Our model publishes separate F5 predictions for every game with confirmed starters and flags F5 edges that don't exist in the full-game line.",
+          "F5 is also the right way to bet against a great team that has a vulnerable rotation day — instead of fading them for nine innings against their elite bullpen, fade them for five against their fifth starter.",
+        ],
+      },
+      {
+        heading: "MLB Player Props",
+        body: [
+          "Pitcher strikeout props, hitter total bases, home-run props, and combined props are all graded individually. Pitcher Ks especially are a high-edge market — strikeout projections are pace-stable game-to-game and the lines often lag matchup-specific advantages.",
+          "Hitter props become predictable once the lineup is confirmed and the opposing pitcher's handedness splits are known. We hold high-confidence hitter props until the lineup card drops.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How accurate are MLB AI predictions?", a: "Our high-confidence MLB picks track at 80.3% across the tracked sample. Edges per game are small in baseball — judge over a long stretch, not a single series." },
+      { q: "Are MLB AI picks free?", a: "Yes — daily free best bet, free underdog, and a free preview every day during the season." },
+      { q: "Does the model handle bullpen days and openers?", a: "Yes — when no traditional starter goes, the model treats the bullpen game as a series of relievers and adjusts projections accordingly." },
+      { q: "What's the AI's edge in baseball?", a: "Pitcher xFIP over W-L, treating wind and park as first-class inputs, and being patient with bullpen-fade spots that public bettors avoid." },
+      { q: "Are F5 (first-five-innings) picks included?", a: "Yes — separate F5 picks are graded and flagged when the F5 edge differs from the full-game edge." },
+      { q: "Are MLB player props graded?", a: "Yes — pitcher Ks, hitter bases, HR props, and combined props are all individually scored with the same 0–100 signal system." },
+    ],
+    primaryCta: { label: "Today's MLB Picks", href: "/games?sport=mlb" },
+    secondaryCta: { label: "Best MLB Bets Today", href: "/best/best-mlb-bets-today" },
+  },
+  {
+    slug: "nhl-ai-predictions",
+    title: "NHL AI Predictions - Daily Picks, Puck Lines & Player Props",
+    description: "NHL AI predictions for every game on the card. Moneyline, puck line, total, and player prop picks built on goalie projection, line matchups, and rest.",
+    keywords: "NHL AI predictions, NHL AI picks, hockey AI predictions, AI NHL picks today, NHL AI puck line, NHL AI player props",
+    h1: "NHL AI Predictions Built Around Goalies and Rest",
+    tagline: "Confirmed starting goalies, line matchups, and back-to-back math",
+    intro: [
+      "Hockey is the sport where one player — the goalie — can swing a game more than any other team-sport position. ThinkBetAI's NHL model is built around that reality. We hold high-confidence picks until starting goalies are confirmed, then re-simulate using each goalie's recent save-percentage form, opponent shot-quality, and rest.",
+      "Layered on top of goalie projection is line-matchup data, special-teams strength (PP% and PK% are persistently mispriced markets), and the brutal NHL schedule — back-to-backs, four-games-in-six-nights, and cross-country travel all shave win probability in measurable ways.",
+      "Below: why goalie confirmation matters so much, how to bet puck lines, our take on totals (over/under 5.5 vs 6.5), and where to find tonight's free NHL picks.",
+    ],
+    sections: [
+      {
+        heading: "Goalie-First NHL Modeling",
+        body: [
+          "Save percentage over the last 10 starts is the single best predictor of next-start performance — better than season SV%, better than career numbers. Our model weights recent form heavily, then adjusts for opponent shot-quality (high-danger chances allowed per 60). A backup goalie facing a top-5 offense is a fundamentally different game than the starter facing them, and our predictions reflect that.",
+          "We also flag every game where the backup is confirmed against a heavy favorite — backup-fade spots are some of the most consistent edges in NHL betting when the line hasn't fully adjusted.",
+        ],
+        bullets: [
+          "Confirmed starting goalie required for high-confidence picks",
+          "L10 save percentage weighted over season average",
+          "Opponent high-danger chances per 60 minutes",
+          "Special teams: PP% and PK% adjusted for opponent",
+          "Back-to-back fatigue penalty (especially for goalies)",
+          "Home/road splits and travel distance",
+        ],
+      },
+      {
+        heading: "Puck Lines and How to Bet Them",
+        body: [
+          "NHL spreads are almost always ±1.5 goals, which makes the puck line different from spreads in other sports — you're betting whether the underdog stays within one or whether the favorite wins by two-plus. Empty-net goals dramatically affect puck-line results and the model accounts for the late-game goalie-pull dynamic explicitly.",
+          "Underdog puck-line +1.5 is a common +EV spot when the underdog's goalie is in form and the favorite has shown an inability to score on the PP. Our model flags these matchups daily.",
+        ],
+      },
+      {
+        heading: "Totals: O/U 5.5 vs 6.5 and Why the Number Matters",
+        body: [
+          "The most common NHL totals are 5.5 and 6.5. The market sometimes hangs a number that doesn't reflect the actual goalie matchup or pace. When two top goalies meet, the over-on-6 is a structural loser; when two backups meet, the under-on-5.5 is. Our model prices a probability for every reasonable total and flags when the offered line is materially off our number.",
+        ],
+      },
+      {
+        heading: "NHL Player Props",
+        body: [
+          "Skater props (shots on goal, points, assists), goalie props (saves), and combined player props are graded individually. Shots-on-goal props are particularly stable game-to-game and benefit from L20 ice-time projection plus opponent shot-suppression data — they're one of the highest-edge prop markets in any sport.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How accurate are NHL AI predictions?", a: "Our high-confidence NHL picks track at 80.3% across the broader sample. Edges are biggest on backup-fade spots and goalie-driven totals." },
+      { q: "Are NHL AI picks free?", a: "Yes — daily free best bet, free underdog, and one free preview every day during the season." },
+      { q: "Why hold predictions until goalies are confirmed?", a: "Because goalie is the single largest input in hockey. A predicted starter who scratches changes the math entirely; we don't issue high-confidence picks on a guess." },
+      { q: "Does the model handle empty-net goals for puck lines?", a: "Yes — late-game goalie-pull dynamics are simulated, and the puck-line probability reflects the empty-net goal distribution." },
+      { q: "Are NHL player props included?", a: "Yes — shots on goal, points, assists, saves, and combined props are all scored with the 0–100 signal system." },
+      { q: "Does the AI cover playoffs and Stanley Cup?", a: "Yes — series prices simulate game-by-game and adjust for the slower, more defensive playoff pace." },
+    ],
+    primaryCta: { label: "Tonight's NHL Picks", href: "/games?sport=nhl" },
+    secondaryCta: { label: "Best NHL Bets Today", href: "/best/best-nhl-bets-today" },
+  },
+  {
+    slug: "ufc-ai-predictions",
+    title: "UFC AI Predictions - Fight Picks, Method, and Round Totals",
+    description: "UFC and MMA AI predictions for every fight on the card. Moneyline, method of victory, and round total picks built on striking/grappling data and fight IQ analysis.",
+    keywords: "UFC AI predictions, UFC AI picks, MMA AI predictions, AI UFC picks, UFC method of victory, UFC round totals",
+    h1: "UFC AI Predictions for Every Fight on the Card",
+    tagline: "Striking, grappling, and method-of-victory math for every bout",
+    intro: [
+      "ThinkBetAI generates AI predictions for every UFC card — from the early prelims to the main event championship fights. The MMA model is structurally different from team-sport models: there's no pace to project, no lineup to wait on. Instead it's about striking accuracy, defensive output, takedown defense, grappling control time, gas-tank projection over five rounds, and the specific stylistic matchup.",
+      "MMA is also one of the highest-variance sports in betting — anyone can land a clean shot. We don't pretend to predict knockouts with certainty. What we do is identify when the line meaningfully under- or over-prices a fighter relative to the stylistic matchup, and flag method-of-victory bets where the path to a finish is much clearer than the moneyline suggests.",
+      "Below: how the UFC model is built, the value of method-of-victory and round totals over straight moneylines, and where to find this week's free fight picks.",
+    ],
+    sections: [
+      {
+        heading: "Striking, Grappling, and Stylistic Matchup",
+        body: [
+          "Our UFC model ingests significant strikes landed/absorbed per minute, striking accuracy and defense, takedown attempts and defense, control time per round, and submission attempts. We then compute a stylistic-matchup score — a striker vs. a wrestler is a different fight than two strikers or two wrestlers, and the model weights the relevant inputs accordingly.",
+          "Age and recent fight load also matter. Fighters coming off a war 8 weeks ago perform meaningfully worse than fighters off a long layoff with a clean training camp. Our model penalizes short turnarounds, especially for fighters over 35.",
+        ],
+        bullets: [
+          "Significant strikes landed/absorbed per minute",
+          "Striking accuracy and head-movement defense",
+          "Takedown attempts, accuracy, and defense",
+          "Control time per round and submission rate",
+          "Stylistic-matchup adjustment (striker vs wrestler)",
+          "Age, recent fight load, and layoff effects",
+        ],
+      },
+      {
+        heading: "Method of Victory Is Where the Edge Lives",
+        body: [
+          "Straight moneylines on UFC fights are often efficient — the books care about main-event prices and shade them appropriately. Where edges live is in method-of-victory: 'wins by KO/TKO,' 'wins by submission,' 'wins by decision.' These markets are less heavily bet, the prices are softer, and the AI's stylistic analysis points to method-specific outcomes more often than moneyline outcomes.",
+          "A grappler favored at -180 to win straight up might be +110 to win by submission specifically. If the model thinks 60%+ of his wins come by sub, that's a much better price than the moneyline.",
+        ],
+      },
+      {
+        heading: "Round Totals and Over/Under 2.5",
+        body: [
+          "Over/under round totals (typically 1.5 or 2.5 for three-round fights, 2.5 or 4.5 for five-round main events) are another high-edge market. The AI projects an expected finish-round distribution for every fight and flags when the offered total is materially off — including the relatively rare 'under' edges when both fighters have heavy KO power and limited durability.",
+        ],
+      },
+      {
+        heading: "How to Bet UFC Cards Without Going Broke",
+        body: [
+          "MMA variance is brutal — anyone can land. The right approach is unit-sized bets on the strongest stylistic edges, never round-robins on full cards, and a strict pass on cards where the model has no strong opinion. We publish a 'main card top play' every fight night with the highest-confidence flag from the slate.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How accurate are UFC AI predictions?", a: "Our flagged high-confidence UFC picks track at 80.3% across the broader sample. MMA variance is high — judge across many cards, not a single fight night." },
+      { q: "Does the AI cover prelim fights?", a: "Yes — every fight on every card, from early prelims to main event, gets a graded prediction with confidence score." },
+      { q: "Are method-of-victory bets included?", a: "Yes — and they're often where the strongest edges are, especially on grappling-heavy favorites who win by submission at a high rate." },
+      { q: "Are round totals graded?", a: "Yes — expected finish-round distributions are computed for every fight and totals are flagged when meaningfully off the line." },
+      { q: "Are UFC AI picks free?", a: "We publish a free main-card top play every fight night. Full card predictions are premium." },
+      { q: "Does the model handle short-notice fight changes?", a: "Yes — when a fighter is replaced, the model re-runs with the new matchup. Short-notice fighters get an explicit fitness penalty." },
+    ],
+    primaryCta: { label: "See This Week's UFC Picks", href: "/games?sport=ufc" },
+    secondaryCta: { label: "Try the AI Chat", href: "/chat" },
+  },
+  {
+    slug: "soccer-ai-predictions",
+    title: "Soccer AI Predictions - 1X2, BTTS, Asian Handicap & Corners",
+    description: "Soccer AI predictions across the Premier League, La Liga, Bundesliga, Serie A, Champions League and MLS. 1X2, BTTS, Asian handicap, corners, and player props.",
+    keywords: "soccer AI predictions, football AI predictions, AI soccer picks, EPL AI predictions, Champions League AI, soccer BTTS predictions",
+    h1: "Soccer AI Predictions for Every Major League",
+    tagline: "xG-based simulations across Europe's top five leagues + UCL and MLS",
+    intro: [
+      "ThinkBetAI generates soccer AI predictions across the Premier League, La Liga, Bundesliga, Serie A, Ligue 1, Champions League, Europa League, and MLS. The soccer model is built on expected goals (xG) — both for and against — weighted toward recent form and adjusted for opponent strength, home advantage, and competition tier.",
+      "Soccer is the sport where 1X2 prices are most efficient (huge global betting markets), but where alternative markets — BTTS (both teams to score), Asian handicaps, corners, cards, and player shots — remain consistently mispriced. The model spends more time on those alternative markets than on the moneyline, which is where most public bettors play.",
+      "Below: how the soccer model handles xG, why Asian handicaps beat 3-way moneyline most of the time, our take on corners and cards, and where to find today's free predictions.",
+    ],
+    sections: [
+      {
+        heading: "Expected Goals (xG) and Recent Form",
+        body: [
+          "xG measures the quality of chances created, not the actual goals — which strips out the variance of finishing and gives a much more stable predictor of next-match performance. Our soccer model weights xG-for and xG-against over the last 10 matches, adjusted for opponent quality (xG against a top-4 side is worth more than xG against a relegation candidate).",
+          "We add expected goals on set pieces separately — teams with elite set-piece routines outperform their open-play xG in matches with lots of corners and free-kicks, which is a real and persistent edge.",
+        ],
+        bullets: [
+          "Opponent-adjusted xG-for and xG-against (last 10)",
+          "Set-piece xG broken out separately",
+          "Home advantage by league and team",
+          "European competition fatigue (UCL midweek effect)",
+          "Manager change and tactical-shift adjustments",
+          "Injury and suspension impact on key positions",
+        ],
+      },
+      {
+        heading: "Asian Handicaps Beat 3-Way Moneyline",
+        body: [
+          "Three-way moneyline (1X2) builds in a heavy bookmaker margin because the draw is overpriced relative to its true frequency. Asian handicaps eliminate the draw and split the action into two outcomes, which gives a much smaller bookmaker hold and better expected value. Most of our soccer AI predictions are graded on Asian handicap lines, not 1X2.",
+          "When the model strongly favors a team but a draw is plausible, Asian +0.25 or +0.5 on the underdog often offers better value than the straight moneyline — you win the full bet on a win, half on a draw.",
+        ],
+      },
+      {
+        heading: "BTTS, Corners, and Cards",
+        body: [
+          "BTTS (both teams to score) lines often mispricethe correlation between attacking style and defensive frailty. A team that scores in 80% of matches but concedes in 70% is a structural BTTS yes against any half-decent opponent, regardless of the price.",
+          "Corner and card totals are where the deepest edges sit. They're lower-profile markets that books don't reprice as aggressively. Tactical style (high-press vs. low-block) drives corner counts; referee tendency drives cards. The AI ingests referee history and flags overs/unders on cards specifically when a strict ref is officiating an emotional fixture.",
+        ],
+      },
+      {
+        heading: "European Midweek Fatigue",
+        body: [
+          "Teams playing Champions League or Europa League midweek consistently underperform their xG in the following domestic weekend — especially after long away trips. The market adjusts partially but not fully. The AI explicitly penalizes UCL/UEL participants on the following weekend, more so for clubs with thin squads.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Which soccer leagues does the AI cover?", a: "Premier League, La Liga, Bundesliga, Serie A, Ligue 1, Champions League, Europa League, and MLS at minimum. We add additional competitions during major tournaments." },
+      { q: "How accurate are soccer AI predictions?", a: "Our high-confidence soccer picks track at 80.3% across the broader sample. Edges are best on Asian handicaps, BTTS, and alternative markets — not 1X2." },
+      { q: "Are soccer AI picks free?", a: "Yes — daily free best bet and one featured fixture preview. Premium unlocks the full slate and corners/cards markets." },
+      { q: "What's BTTS and why does the AI flag it?", a: "BTTS = both teams to score. The market often misprices the correlation between attacking style and defensive vulnerability. The AI catches these mispricings consistently." },
+      { q: "Does the AI cover World Cup and Euros?", a: "Yes — international tournaments get expanded coverage including outright winner odds, group-stage simulations, and knockout-round predictions." },
+      { q: "Are player props graded?", a: "Yes — shots, shots on target, anytime goalscorer, and assists for marquee players in major fixtures." },
+    ],
+    primaryCta: { label: "Today's Soccer Picks", href: "/games?sport=soccer" },
+    secondaryCta: { label: "Try the AI Chat", href: "/chat" },
+  },
+  {
+    slug: "ai-player-prop-predictions",
+    title: "AI Player Prop Predictions - Picks for Every Major Market",
+    description: "AI player prop predictions across NFL, NBA, MLB and NHL. Composite 0–100 signal score built on L20 game logs, defensive matchup, pace, and live confirmed lineups.",
+    keywords: "AI player prop predictions, AI player props, AI prop picks, AI prop bets, NBA prop AI, NFL prop AI, MLB prop AI",
+    h1: "AI Player Prop Predictions With a Verified Signal",
+    tagline: "0–100 composite score per prop — L20 + matchup + lineup adjusted",
+    intro: [
+      "Player props are where sportsbooks invest the least manual labor and where mispricings persist the longest — which makes them the highest-edge market in sports betting if you have a good model. ThinkBetAI's prop engine grades every available player prop in NBA, NFL, MLB, and NHL with a 0–100 composite signal score combining last-20-game performance, defensive matchup, usage projection, pace, and confirmed lineup status.",
+      "The composite score is meaningful: 75+ is a high-conviction lean, 60–75 is informational, below 60 we don't flag. We hold high-confidence prop predictions on lineup-dependent sports (NBA, MLB) until the starting lineup is confirmed, because a star resting or hitting in the cleanup vs. seventh changes the math for everyone.",
+      "Below: how the 0–100 prop signal is computed, why props beat sides and totals on EV, the lineup-confirmation rule, and where to find tonight's free prop picks.",
+    ],
+    sections: [
+      {
+        heading: "The 0–100 Composite Signal Explained",
+        body: [
+          "Every prop gets four inputs: (1) L20 game-log fit — does the player's recent distribution support the line? (2) Defensive matchup — how does the opponent defend this prop type? (3) Usage and pace projection — how many opportunities will the player get? (4) Lineup confirmation — is the starting unit in place?",
+          "Each input scores 0–100 individually; the composite is a weighted average with L20 and matchup carrying the most weight. A 75+ composite means all four inputs point the same direction with a meaningful edge — those are the props we flag as picks.",
+        ],
+        bullets: [
+          "L20 game-log distribution fit to the line",
+          "Defensive matchup (opponent vs. this prop type)",
+          "Usage projection (NBA usage rate, NFL target share)",
+          "Pace and minutes projection",
+          "Confirmed lineup gating for high-confidence picks",
+          "Approved sportsbook line cross-check (15-min cache)",
+        ],
+      },
+      {
+        heading: "Why Props Beat Sides and Totals on EV",
+        body: [
+          "Sportsbooks build sides and totals from market consensus and reprice aggressively when sharp money moves the line. Player props are a different operation — there are 100+ markets per game, the volume per market is much lower, and books don't reprice as quickly. That's a structural edge for any model that grades props well.",
+          "It's not free money — props have higher variance than sides — but if you're patient and disciplined, props are where most of the long-term edge lives.",
+        ],
+      },
+      {
+        heading: "The Lineup Confirmation Rule",
+        body: [
+          "We hold high-confidence prop picks for NBA and MLB until the starting lineup or batting order is officially confirmed. This is non-negotiable. A pre-confirmation prop is a guess about who'll play and how much — when a star is a late scratch, every teammate's projection changes, and any pick made before confirmation is operating on incomplete data.",
+          "Once lineups drop, the model re-runs immediately and updates the picks. NFL doesn't have this problem at the same scale (inactives drop 90 minutes pre-kickoff and the model uses them); NHL holds props for confirmed goalies.",
+        ],
+      },
+      {
+        heading: "Approved Sportsbooks and Line Freshness",
+        body: [
+          "Our prop board only sources lines from approved major U.S. sportsbooks with a 15-minute cache. We don't include offshore or low-quality books because their lines aren't reliable benchmarks. When a major book is offline or hasn't posted a market, we explicitly note it rather than fall back to a worse source.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How accurate are AI player prop predictions?", a: "Our 75+ composite-score prop picks track at the same 80.3% high-confidence rate as the broader picks sample. Lower-score props by design hit at lower rates." },
+      { q: "Which sports support player props?", a: "NBA, NFL, MLB, and NHL with full prop boards. Soccer and UFC have partial prop coverage for marquee fixtures." },
+      { q: "Why do you hold prop picks until lineups confirm?", a: "Because lineup-dependent sports have huge projection swings when a star rests. A pre-confirmation prop is a guess; we don't issue high-confidence picks on guesses." },
+      { q: "What markets are graded?", a: "NBA: points, rebounds, assists, threes, PRA, combined props. NFL: passing/rushing/receiving yards, receptions, anytime TD. MLB: pitcher Ks, hitter bases, HR. NHL: shots, points, assists, saves." },
+      { q: "Are AI prop picks free?", a: "We publish a free daily top prop in each major sport. Full prop boards and edge filtering are premium." },
+      { q: "What's the 0–100 composite signal score?", a: "A weighted combination of L20 fit, defensive matchup, usage/pace projection, and lineup confirmation. 75+ is high-conviction; we don't flag picks below 60." },
+    ],
+    primaryCta: { label: "See Tonight's Prop Picks", href: "/player-props" },
+    secondaryCta: { label: "Browse All Games", href: "/games" },
+  },
+  {
+    slug: "ai-pick-of-the-day",
+    title: "AI Pick of the Day - Daily Best Bet With Confidence Score",
+    description: "AI pick of the day: our single highest-confidence bet across every sport in season. Free, updated daily, with full reasoning and confidence score.",
+    keywords: "AI pick of the day, AI best bet of the day, daily AI pick, AI lock of the day, best AI pick today, free AI pick today",
+    h1: "AI Pick of the Day — The Single Highest-Confidence Bet",
+    tagline: "One pick. Highest composite score on the board. Free every day.",
+    intro: [
+      "Every day ThinkBetAI publishes a single \"AI pick of the day\" — the highest-confidence flagged bet across every sport in season. It's not a marketing tactic. It's literally the top output of the composite-confidence ranking applied to every game on the board, then verified that the line is still available at major sportsbooks at posting time.",
+      "We publish the pick of the day free, with full reasoning, the win probability, the implied probability of the line, and the confidence score. You don't need a subscription to see it — that's the entire point. Track it for a few weeks, compare results to your own picks, and decide whether premium is worth your money based on what you actually see.",
+      "Below: how the pick of the day is selected, what \"highest confidence\" actually means in our system, and why we cap at one pick instead of dumping ten on you.",
+    ],
+    sections: [
+      {
+        heading: "How the Pick of the Day Is Selected",
+        body: [
+          "Every game on the board generates a composite confidence score combining edge size (model probability minus implied probability), data quality (lineup confirmation, injury freshness), and simulation stability (low variance across the 1,000 Monte Carlo runs). The pick of the day is the single highest composite score across every sport.",
+          "We then verify the line is still available at a major sportsbook at the price the edge was calculated against. If the line has moved through our number between simulation and posting, the pick is rejected and we move to the next-highest score. We will not publish a pick at a price you can't actually get.",
+        ],
+        bullets: [
+          "Composite confidence: edge × data quality × stability",
+          "Top score across NFL, NBA, MLB, NHL, UFC, soccer in season",
+          "Line-availability verified at posting time",
+          "Full reasoning published, not a black-box output",
+          "Free — no account required to see the daily pick",
+          "Updated daily by mid-morning Eastern",
+        ],
+      },
+      {
+        heading: "Why Only One Pick Instead of Ten",
+        body: [
+          "Most tout services dump 10–20 \"locks\" on you daily because it lets them claim wins on whatever hits and quietly drop whatever loses. The math on volume is brutal — if you bet 20 picks a day at industry-average -110, your expected loss to vig alone is enough to wipe out any small skill edge.",
+          "Disciplined betting works better at low volume: one strong pick a day, flat-staked, tracked honestly. The pick of the day is built to be exactly that. If you want more action, the full premium board is there — but we'll never pretend you should bet everything on it.",
+        ],
+      },
+      {
+        heading: "How to Use the Daily Pick",
+        body: [
+          "Treat it as the day's highest-quality flag, not a guaranteed winner. Even an 80.3% high-confidence rate means roughly 1 in 5 picks lose — that's variance, not failure. Flat-stake at 1% of your bankroll, track results over 30+ picks before judging, and use the daily pick as the anchor for any larger play you build around it.",
+        ],
+      },
+      {
+        heading: "Underdog of the Day and Best Bet — What's the Difference",
+        body: [
+          "The pick of the day is the single highest composite score regardless of price. The 'underdog of the day' is the highest composite score among picks priced at +110 or longer — different metric, different risk profile. Both publish daily; check both before you decide what fits your appetite.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Is the AI pick of the day free?", a: "Yes — published free every day with full reasoning and confidence score. No account required." },
+      { q: "What's the win rate on the pick of the day?", a: "It's drawn from our highest-confidence pool, which tracks at 80.3% across the broader sample. Variance is real — judge across 30+ picks, not five." },
+      { q: "When does the pick of the day get posted?", a: "Typically by mid-morning Eastern, after overnight injury news and early lineup signals are absorbed by the model." },
+      { q: "Can I bet more than one pick a day?", a: "Yes — the full premium board has 10–30 graded plays daily. The daily pick is just the top flagged play for users who want one disciplined bet." },
+      { q: "What if the line moves before I bet?", a: "If the line has moved through our number, the edge is smaller or gone. We list the price the edge was calculated against — if you can't get it, pass." },
+      { q: "How is this different from the underdog of the day?", a: "Pick of the day = highest composite score regardless of price. Underdog of the day = highest composite score among +110-or-longer plays. Different risk profiles, both posted daily." },
+    ],
+    primaryCta: { label: "See Today's Pick", href: "/games" },
+    secondaryCta: { label: "Build an AI Parlay", href: "/ai-parlay-builder" },
+  },
+  {
+    slug: "ai-underdog-picks",
+    title: "AI Underdog Picks - Best Plus-Money Bets With Real Edge",
+    description: "AI underdog picks: best plus-money plays of the day across NFL, NBA, MLB, NHL and UFC. Filtered to underdogs priced +110 or longer with verified model edge.",
+    keywords: "AI underdog picks, AI plus money picks, AI longshot picks, AI value picks, best AI underdog bet, AI underdog of the day",
+    h1: "AI Underdog Picks With Real Edge, Not Random Longshots",
+    tagline: "Plus-money plays where the model and the market disagree",
+    intro: [
+      "Most \"underdog picks\" online are just random longshots dressed up with a confident headline. ThinkBetAI's AI underdog picks are different — they're plays where the model gives the underdog a meaningfully higher win probability than the market-implied probability, filtered to prices of +110 or longer. The price isn't the point; the disagreement between model and market is.",
+      "Underdogs are mathematically the right place to look for AI edge because the public bets favorites and the market shades favorite prices accordingly. When the model and the market disagree, it's almost always the market overrating the favorite — which means the underdog price is soft. The AI catches it, you bet it, and over a large sample the math works.",
+      "Below: how underdog picks are filtered, why public-favorite shading creates persistent edge, and where to find the daily underdog of the day free.",
+    ],
+    sections: [
+      {
+        heading: "How Underdog Picks Are Filtered",
+        body: [
+          "From the full board of graded plays we filter to underdogs priced +110 or longer, then rank by composite confidence score (edge × data quality × simulation stability). The top play becomes the 'AI underdog of the day,' which is published free. Premium users see the full underdog board with all flagged plays.",
+          "We never include picks where the price is +110 but the model probability is also right at the implied probability — that's not edge, that's a coin flip with worse vig math. Every underdog flag requires a meaningful gap between model and market.",
+        ],
+        bullets: [
+          "Filter to +110 or longer prices only",
+          "Require ≥3% gap between model and implied probability",
+          "Verify data quality before flagging",
+          "Rank by composite confidence score",
+          "Top play published free as 'underdog of the day'",
+          "Full underdog board available to premium users",
+        ],
+      },
+      {
+        heading: "Why Public-Favorite Shading Creates Edge",
+        body: [
+          "Sportsbooks know the public bets favorites — especially heavy favorites on primetime games. They shade favorite prices accordingly: a team that's actually a 60% favorite gets priced like a 64% favorite because the public is happy to pay the premium. That shading flows through to the underdog price: the dog gets priced longer than it should be, which is exactly where the AI finds edge.",
+          "This isn't a one-off pattern; it's a structural feature of how sportsbooks operate. It's why disciplined underdog betting is a real edge if your model is good enough to identify which underdogs are mispriced and which are just bad teams.",
+        ],
+      },
+      {
+        heading: "Underdog Plus Spread Plus Moneyline",
+        body: [
+          "An underdog can be played three ways: moneyline (straight upset bet), spread (+1.5 or whatever the line is), or alternate spread (more cushion at a worse price). The AI grades each individually because they're different bets with different payoff structures.",
+          "Often the moneyline has the biggest edge when the model thinks the dog wins outright; the spread has the biggest edge when the model thinks the dog stays close but probably loses. Our underdog board breaks all three out so you can pick the bet structure that fits your read.",
+        ],
+      },
+      {
+        heading: "How to Bet Underdog Picks Without Going Broke",
+        body: [
+          "Underdog picks have lower win rates by definition — even a strong +150 underdog only wins about 45% of the time at fair value. Flat-staking and unit discipline matter more here than anywhere else. A 4–6 record on +150 dogs is profitable (small) over time; a 4–6 record where you doubled up after losses to chase is a wipeout.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Are AI underdog picks free?", a: "The daily underdog of the day is free with full reasoning. The full underdog board with all flagged plays is premium." },
+      { q: "What's the win rate on AI underdog picks?", a: "Lower than the overall flagged-pick rate by design — underdogs win less often at plus prices but pay more when they hit. Expect roughly 45–50% with strong long-term ROI." },
+      { q: "How long do underdog prices have to be?", a: "+110 or longer. Below that we don't classify it as an underdog play." },
+      { q: "Why don't sportsbooks just adjust the underdog prices?", a: "They do — partially. But the public bias toward favorites is persistent and books leave some edge on the underdog side because correcting it would mean accepting more sharp action on dogs." },
+      { q: "Can underdog picks be parlayed?", a: "Yes — the parlay builder grades any combination including underdogs. Underdog parlays have higher variance and higher upside; the letter grade reflects both." },
+      { q: "How do I avoid bad longshots?", a: "Stick to flagged picks with a 60+ composite score. The model explicitly rejects random longshots without an edge, no matter how juicy the price looks." },
+    ],
+    primaryCta: { label: "Today's Underdog Pick", href: "/games" },
+    secondaryCta: { label: "Underdog Parlay Builder", href: "/ai-parlay-builder" },
+  },
+  {
+    slug: "ai-against-the-spread-picks",
+    title: "AI Against the Spread Picks - ATS Picks for NFL, NBA, MLB & NHL",
+    description: "AI against-the-spread (ATS) picks across NFL, NBA, MLB run lines, and NHL puck lines. Verified model edge, full reasoning, and confidence score for every flagged play.",
+    keywords: "AI against the spread picks, AI ATS picks, AI spread predictions, AI NFL ATS, AI NBA ATS, AI cover the spread",
+    h1: "AI Against-the-Spread Picks With a Verified Edge",
+    tagline: "Spread, run line, and puck line picks ranked by composite confidence",
+    intro: [
+      "Against-the-spread betting is the core market for NFL and NBA, the run line for MLB, and the puck line for NHL. ThinkBetAI's AI against-the-spread picks are the model's flagged plays on these spread markets — ranked by composite confidence, filtered for line availability, and published with full reasoning so you can evaluate the edge yourself before you bet.",
+      "The math on ATS is unforgiving: at standard -110 vig you need to hit 52.4% to break even and 55%+ to make real money. Hitting that rate consistently is the difference between a model with actual edge and a model that's just storytelling. Our highest-confidence ATS flags have cleared that bar across our tracked sample, but no streak lasts forever — variance is real and every week has bad beats.",
+      "Below: how ATS picks are generated, why closing line value beats win/loss as a metric, and where to find tonight's free ATS picks.",
+    ],
+    sections: [
+      {
+        heading: "How ATS Picks Are Generated",
+        body: [
+          "The Monte Carlo engine simulates every game 1,000 times and produces a full distribution of possible scores. From that distribution we compute the probability of each side covering the current spread, then compare to the implied probability at -110 (or whatever the actual juice is). When our probability exceeds the implied probability by enough to clear the vig with margin, the play is flagged ATS.",
+          "We don't grade off the opening number or some 'consensus' spread — we grade off the current available price at major sportsbooks at the moment the prediction is generated. If the line moves through our number before posting, the pick is rejected.",
+        ],
+        bullets: [
+          "Full score distribution from 1,000 Monte Carlo runs",
+          "Probability of cover computed against current line",
+          "Edge must clear vig with meaningful margin to flag",
+          "Line availability verified at major sportsbook at posting",
+          "Recalculated whenever line moves materially",
+          "Confidence score gates 'high-conviction' flag",
+        ],
+      },
+      {
+        heading: "Closing Line Value Is the Real Metric",
+        body: [
+          "Short-term ATS win/loss is noisy. The metric that actually predicts long-term profitability is closing line value — did you bet a -3 that closed at -4? Then you got the better number, the market eventually agreed with you, and over a large sample you'll profit even if individual games go against you.",
+          "Our highest-confidence ATS flags consistently beat the closing line because the model identifies mispricings before the rest of the market reacts. Track your CLV, not your last weekend, and you'll have a much clearer signal about whether the picks are actually helping you.",
+        ],
+      },
+      {
+        heading: "Spread vs Alternate Spread",
+        body: [
+          "The standard ATS line is -110 on either side at the main number. Alternate spreads let you take a different number — more cushion for a worse price, or less cushion for a better price. The AI grades alternate spreads independently and sometimes flags an alternate when the main line doesn't have edge but a buy-down or buy-up does.",
+          "Common alternate edges: buying a heavy favorite down through a key number (-7.5 down to -6.5 in NFL) to clear the 7-point margin; buying an underdog up through the same key numbers in the other direction.",
+        ],
+      },
+      {
+        heading: "Public Bias and Persistent ATS Edges",
+        body: [
+          "Two persistent ATS edges exist because of public betting bias: (1) home underdogs in primetime — public loves the favorite, line gets shaded, the dog covers more than it should; (2) road favorites after a big win — public chases the recent winner, line gets shaded, the team underperforms expectations. The model accounts for both and flags them automatically when they appear.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What win rate do I need to make money ATS?", a: "At standard -110 vig you need 52.4% to break even, 55%+ to make real money. Our high-confidence flagged ATS picks track above that bar." },
+      { q: "Are AI ATS picks free?", a: "Daily free best bet covers the top ATS play of the day. Full ATS board is premium." },
+      { q: "Does the AI grade run line and puck line?", a: "Yes — MLB run line and NHL puck line are graded the same way as football and basketball spreads, with empty-net and bullpen dynamics modeled explicitly for hockey and baseball." },
+      { q: "What's closing line value and why does it matter?", a: "CLV = the difference between your bet price and the closing price. Consistently beating the closing line is the single best predictor of long-term profit, more reliable than short-term win/loss." },
+      { q: "Does the model handle key numbers in NFL?", a: "Yes — the score distribution captures 3 and 7 margins explicitly, and alternate spread grading accounts for buying through those numbers." },
+      { q: "Are ATS picks recalculated when lines move?", a: "Yes — when the line moves materially the model re-simulates and republishes if the edge still exists at the new price." },
+    ],
+    primaryCta: { label: "Today's ATS Picks", href: "/games" },
+    secondaryCta: { label: "Best NFL Bets Today", href: "/best/best-nfl-bets-today" },
+  },
 ];
 
 export const SEO_LANDING_SLUGS = SEO_LANDING_CONFIGS.map((c) => c.slug);
