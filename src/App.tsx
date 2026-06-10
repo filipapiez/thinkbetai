@@ -138,6 +138,16 @@ const App = () => (
                 <Route path="/parlay-builder" element={<SeoLanding slug="parlay-builder" />} />
                 <Route path="/parlay-maker-ai" element={<SeoLanding slug="parlay-maker-ai" />} />
                 <Route path="/thinkbetai-reviews" element={<SeoLanding slug="thinkbetai-reviews" />} />
+                <Route path="/nfl-ai-predictions" element={<SeoLanding slug="nfl-ai-predictions" />} />
+                <Route path="/nba-ai-predictions" element={<SeoLanding slug="nba-ai-predictions" />} />
+                <Route path="/mlb-ai-predictions" element={<SeoLanding slug="mlb-ai-predictions" />} />
+                <Route path="/nhl-ai-predictions" element={<SeoLanding slug="nhl-ai-predictions" />} />
+                <Route path="/ufc-ai-predictions" element={<SeoLanding slug="ufc-ai-predictions" />} />
+                <Route path="/soccer-ai-predictions" element={<SeoLanding slug="soccer-ai-predictions" />} />
+                <Route path="/ai-player-prop-predictions" element={<SeoLanding slug="ai-player-prop-predictions" />} />
+                <Route path="/ai-pick-of-the-day" element={<SeoLanding slug="ai-pick-of-the-day" />} />
+                <Route path="/ai-underdog-picks" element={<SeoLanding slug="ai-underdog-picks" />} />
+                <Route path="/ai-against-the-spread-picks" element={<SeoLanding slug="ai-against-the-spread-picks" />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
