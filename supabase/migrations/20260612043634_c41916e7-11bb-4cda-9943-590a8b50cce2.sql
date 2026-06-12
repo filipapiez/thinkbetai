@@ -1,0 +1,1 @@
+DELETE FROM public.odds_cache WHERE id LIKE 'player-props-v2-%';
