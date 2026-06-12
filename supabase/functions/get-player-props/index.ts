@@ -12,67 +12,86 @@ Deno.serve(async (req: Request) => {
 
   const url = new URL(req.url);
   const sportFilter = (url.searchParams.get("sport") || "all").toLowerCase();
+  const isRefresh = url.searchParams.get("_refresh") === "1";
 
   const CACHE_KEY = `player-props-v2-${sportFilter}`;
   const CACHE_TTL_MS = 15 * 60 * 1000;
+  // Hard max age: if cache is older than this and has no future games, drop it
+  const CACHE_HARD_MAX_AGE_MS = 6 * 60 * 60 * 1000; // 6 hours
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const sb = createClient(supabaseUrl, serviceKey);
 
-  // --- Check cache first ---
-  try {
-    const { data: cached } = await sb
-      .from("odds_cache")
-      .select("data, expires_at")
-      .eq("id", CACHE_KEY)
-      .maybeSingle();
+  const filterFutureProps = (props: Array<Record<string, unknown>>) => {
+    const now = Date.now();
+    return props.filter(p => {
+      const gt = p.gameTime as string | undefined;
+      if (!gt) return false;
+      const t = new Date(gt).getTime();
+      return Number.isFinite(t) && t > now;
+    });
+  };
 
-    if (cached) {
-      const cacheData = cached.data as Record<string, unknown>;
-      const isExpired = new Date(cached.expires_at) <= new Date();
+  // --- Check cache first (skip when explicitly refreshing) ---
+  if (!isRefresh) {
+    try {
+      const { data: cached } = await sb
+        .from("odds_cache")
+        .select("data, expires_at, updated_at")
+        .eq("id", CACHE_KEY)
+        .maybeSingle();
 
-      if (!isExpired) {
-        console.log("Serving player props from fresh cache");
-        return new Response(
-          JSON.stringify({
-            success: true,
-            props: cacheData.props || [],
-            lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
-            count: (cacheData.props as unknown[])?.length || 0,
-            source: "cache",
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
+      if (cached) {
+        const cacheData = cached.data as Record<string, unknown>;
+        const isExpired = new Date(cached.expires_at) <= new Date();
+        const cachedProps = filterFutureProps((cacheData.props as Array<Record<string, unknown>>) || []);
+        const updatedAt = new Date(cached.updated_at || (cacheData.lastUpdated as string) || 0).getTime();
+        const tooOld = !updatedAt || (Date.now() - updatedAt) > CACHE_HARD_MAX_AGE_MS;
+
+        if (!isExpired && cachedProps.length > 0) {
+          console.log("Serving player props from fresh cache");
+          return new Response(
+            JSON.stringify({
+              success: true,
+              props: cachedProps,
+              lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
+              count: cachedProps.length,
+              source: "cache",
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        // Stale but still usable: serve and refresh in background
+        if (!tooOld && cachedProps.length > 0) {
+          console.log("Serving stale cache, will refresh in background");
+          const bgUrl = `${supabaseUrl}/functions/v1/get-player-props?sport=${sportFilter}&_refresh=1`;
+          fetch(bgUrl, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": Deno.env.get("SUPABASE_ANON_KEY") || "",
+            },
+          }).catch(() => {});
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              props: cachedProps,
+              lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
+              count: cachedProps.length,
+              source: "stale-cache",
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        console.log("Cache too old or empty of future games, fetching fresh");
       }
-
-      // Stale cache: serve it immediately, trigger background refresh
-      console.log("Serving stale cache, will refresh in background");
-
-      // Fire-and-forget background refresh
-      const bgUrl = `${supabaseUrl}/functions/v1/get-player-props?sport=${sportFilter}&_refresh=1`;
-      fetch(bgUrl, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      }).catch(() => {});
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          props: cacheData.props || [],
-          lastUpdated: cacheData.lastUpdated || new Date().toISOString(),
-          count: (cacheData.props as unknown[])?.length || 0,
-          source: "stale-cache",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    } catch (e) {
+      console.warn("Cache read failed:", e);
     }
-  } catch (e) {
-    console.warn("Cache read failed:", e);
   }
-
-  // Check if this is a background refresh call (avoid infinite loop)
-  const isRefresh = url.searchParams.get("_refresh") === "1";
 
   const ODDS_API_KEY = Deno.env.get("THE_ODDS_API_KEY");
   const SGO_API_KEY = Deno.env.get("SPORTSGAMEODDS_API_KEY");
