@@ -891,11 +891,16 @@ async function upsertPages(
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Allow anon-key bearer as a valid cron caller (pg_cron uses anon JWT).
+  // Allow anon/service_role JWT bearer as a valid cron caller (pg_cron uses anon JWT).
   const authHdr = req.headers.get("authorization") || req.headers.get("Authorization") || "";
   const bearer = authHdr.toLowerCase().startsWith("bearer ") ? authHdr.slice(7).trim() : "";
-  const anonKeyEnv = Deno.env.get("SUPABASE_ANON_KEY") || "";
-  const isCronAnon = bearer && anonKeyEnv && bearer === anonKeyEnv;
+  let isCronAnon = false;
+  if (bearer) {
+    try {
+      const payload = JSON.parse(atob(bearer.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      if (payload.role === "anon" || payload.role === "service_role") isCronAnon = true;
+    } catch {/* ignore */}
+  }
   if (!isCronAnon) {
     const auth = await requireAdminOrCron(req);
     if (!auth.ok) return unauthorizedResponse(auth, corsHeaders);
