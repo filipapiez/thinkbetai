@@ -19,6 +19,7 @@ const SPORT_KEYS: Record<string, { label: string; sport: string }> = {
   basketball_ncaab: { label: "College Basketball", sport: "NCAAB" },
   soccer_epl: { label: "Premier League", sport: "Soccer" },
   soccer_usa_mls: { label: "MLS", sport: "Soccer" },
+  soccer_fifa_world_cup: { label: "FIFA World Cup 2026", sport: "Soccer" },
   mma_mixed_martial_arts: { label: "UFC/MMA", sport: "UFC" },
 };
 
