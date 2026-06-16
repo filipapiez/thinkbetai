@@ -189,10 +189,12 @@ serve(async (req) => {
       })),
     }));
 
-    const totalSubmitted = sitemapSummary.reduce(
+    const sitemapDetailRows = sitemapSummary.filter((s) => !s.isSitemapsIndex);
+    const coverageRows = sitemapDetailRows.length > 0 ? sitemapDetailRows : sitemapSummary;
+    const totalSubmitted = coverageRows.reduce(
       (sum, s) => sum + s.contents.reduce((cs, c) => cs + c.submitted, 0), 0,
     );
-    const totalIndexed = sitemapSummary.reduce(
+    const totalIndexed = coverageRows.reduce(
       (sum, s) => sum + s.contents.reduce((cs, c) => cs + c.indexed, 0), 0,
     );
     const totalWarnings = sitemapSummary.reduce((sum, s) => sum + s.warnings, 0);

@@ -107,6 +107,7 @@ export const GscCoveragePanel = () => {
   const avgPosition = trend.length
     ? trend.reduce((s, r) => s + r.position, 0) / trend.length : 0;
   const issuePages = (data.topPages ?? []).filter((p) => p.impressions > 0 && p.clicks === 0);
+  const rankingPages = data.topPages?.length ?? 0;
 
   return (
     <div className="space-y-4">
@@ -133,12 +134,12 @@ export const GscCoveragePanel = () => {
           <p className="text-2xl font-bold">{cov.totalSubmitted.toLocaleString()}</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
-          <p className="text-xs text-muted-foreground">Indexed</p>
+          <p className="text-xs text-muted-foreground">Indexed from sitemap</p>
           <p className="text-2xl font-bold text-primary">{cov.totalIndexed.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">{Math.round(cov.indexedRate * 100)}% rate</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
-          <p className="text-xs text-muted-foreground">Not indexed</p>
+          <p className="text-xs text-muted-foreground">Unindexed sitemap URLs</p>
           <p className="text-2xl font-bold text-yellow-500">{cov.notIndexed.toLocaleString()}</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
@@ -168,6 +169,15 @@ export const GscCoveragePanel = () => {
           <p className="text-2xl font-bold">{avgPosition ? avgPosition.toFixed(1) : "—"}</p>
         </CardContent></Card>
       </div>
+
+      {rankingPages > 0 && cov.totalIndexed === 0 && (
+        <Card variant="glass">
+          <CardContent className="pt-4 text-sm text-muted-foreground">
+            Search Console is reporting {rankingPages} pages with impressions/clicks, so Google has discovered and ranked pages.
+            The zero above is the sitemap indexing counter, which can lag behind URL performance data.
+          </CardContent>
+        </Card>
+      )}
 
       <Card variant="glass">
         <CardHeader><CardTitle className="text-base">Submitted sitemaps</CardTitle></CardHeader>
