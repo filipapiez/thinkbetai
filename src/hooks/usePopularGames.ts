@@ -38,7 +38,7 @@ interface PopularGamesResponse {
 }
 
 // Local storage cache - reduced TTL to ensure fresh data
-const CACHE_KEY = 'popular_games_cache_v3';
+const CACHE_KEY = 'popular_games_cache_v4';
 const CLIENT_CACHE_TTL = 30 * 1000; // 30 seconds client-side (reduced from 2 min)
 
 function getClientCache(): { games: PopularGame[]; timestamp: number } | null {
