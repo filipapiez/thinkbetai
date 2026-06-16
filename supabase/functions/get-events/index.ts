@@ -256,7 +256,8 @@ serve(async (req) => {
     let remainingRequests: number | null = null;
 
     for (const sportKey of sportsToFetch) {
-      if (allGames.length >= planLimit * 1.5) break;
+      // Only short-circuit fetching for short windows; for nextMonth we need everything.
+      if (dateFilter !== 'nextMonth' && allGames.length >= planLimit * 1.5) break;
 
       try {
         const eventsUrl = `https://api.the-odds-api.com/v4/sports/${encodeURIComponent(sportKey)}/events?apiKey=${encodeURIComponent(API_KEY)}`;
