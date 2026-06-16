@@ -108,6 +108,7 @@ export const GscCoveragePanel = () => {
     ? trend.reduce((s, r) => s + r.position, 0) / trend.length : 0;
   const issuePages = (data.topPages ?? []).filter((p) => p.impressions > 0 && p.clicks === 0);
   const rankingPages = data.topPages?.length ?? 0;
+  const submittedSitemaps = (data.sitemaps ?? []).filter((s) => !s.isPending && !s.path.endsWith("/sitemap-index.xml"));
 
   return (
     <div className="space-y-4">
@@ -130,16 +131,16 @@ export const GscCoveragePanel = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card variant="glass"><CardContent className="pt-4">
-          <p className="text-xs text-muted-foreground">URLs submitted</p>
+          <p className="text-xs text-muted-foreground">Submitted page URLs</p>
           <p className="text-2xl font-bold">{cov.totalSubmitted.toLocaleString()}</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
-          <p className="text-xs text-muted-foreground">Indexed from sitemap</p>
+          <p className="text-xs text-muted-foreground">Sitemap index count</p>
           <p className="text-2xl font-bold text-primary">{cov.totalIndexed.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground">{Math.round(cov.indexedRate * 100)}% rate</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
-          <p className="text-xs text-muted-foreground">Unindexed sitemap URLs</p>
+          <p className="text-xs text-muted-foreground">Pending sitemap count</p>
           <p className="text-2xl font-bold text-yellow-500">{cov.notIndexed.toLocaleString()}</p>
         </CardContent></Card>
         <Card variant="glass"><CardContent className="pt-4">
@@ -170,11 +171,11 @@ export const GscCoveragePanel = () => {
         </CardContent></Card>
       </div>
 
-      {rankingPages > 0 && cov.totalIndexed === 0 && (
+      {(rankingPages > 0 || totalImpressions > 0) && cov.totalIndexed === 0 && (
         <Card variant="glass">
           <CardContent className="pt-4 text-sm text-muted-foreground">
-            Search Console is reporting {rankingPages} pages with impressions/clicks, so Google has discovered and ranked pages.
-            The zero above is the sitemap indexing counter, which can lag behind URL performance data.
+            Google is already showing the site in search: {totalImpressions.toLocaleString()} impressions and {totalClicks.toLocaleString()} clicks in the last {days} days.
+            The zero above is only Google’s sitemap coverage counter, which can lag behind real search performance data.
           </CardContent>
         </Card>
       )}
@@ -184,7 +185,7 @@ export const GscCoveragePanel = () => {
         <CardContent>
           {data.sitemaps && data.sitemaps.length > 0 ? (
             <div className="space-y-2">
-              {data.sitemaps.map((s) => {
+              {submittedSitemaps.map((s) => {
                 const sub = s.contents.reduce((a, c) => a + c.submitted, 0);
                 const idx = s.contents.reduce((a, c) => a + c.indexed, 0);
                 return (
