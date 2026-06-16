@@ -11,6 +11,7 @@ interface SitemapEntry {
   lastSubmitted: string;
   lastDownloaded: string;
   isPending: boolean;
+  isSitemapsIndex?: boolean;
   warnings: number;
   errors: number;
   contents: { type: string; submitted: number; indexed: number }[];
