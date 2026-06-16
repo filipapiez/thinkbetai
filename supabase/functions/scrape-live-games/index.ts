@@ -1499,7 +1499,11 @@ async function fetchTheOddsAPIGames(): Promise<ScheduledGame[]> {
       { key: 'soccer_france_ligue_one', sport: 'Soccer', league: 'Ligue 1', popularity: 75 },
       { key: 'soccer_usa_mls', sport: 'Soccer', league: 'MLS', popularity: 65 },
       
-      // Soccer - European Competitions
+      // Soccer - International / European Competitions
+      { key: 'soccer_fifa_world_cup', sport: 'Soccer', league: 'FIFA World Cup 2026', popularity: 99 },
+      { key: 'soccer_fifa_world_cup_qualifiers_europe', sport: 'Soccer', league: 'WC Qualifiers (UEFA)', popularity: 80 },
+      { key: 'soccer_fifa_world_cup_qualifiers_south_america', sport: 'Soccer', league: 'WC Qualifiers (CONMEBOL)', popularity: 78 },
+      { key: 'soccer_uefa_nations_league', sport: 'Soccer', league: 'UEFA Nations League', popularity: 82 },
       { key: 'soccer_uefa_champs_league', sport: 'Soccer', league: 'Champions League', popularity: 95 },
       { key: 'soccer_uefa_europa_league', sport: 'Soccer', league: 'Europa League', popularity: 78 },
       { key: 'soccer_uefa_europa_conference_league', sport: 'Soccer', league: 'Conference League', popularity: 65 },
