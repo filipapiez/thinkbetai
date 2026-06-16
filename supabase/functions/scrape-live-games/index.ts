@@ -133,7 +133,7 @@ interface ScheduledGame {
 let cachedGames: ScheduledGame[] = [];
 let cacheTimestamp: number = 0;
 const CACHE_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours (extended to prevent cold-start timeouts)
-const DB_CACHE_KEY = 'scrape-live-games:all';
+const DB_CACHE_KEY = 'scrape-live-games:all:v2';
 
 // Timeout wrapper for individual fetch calls
 function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
