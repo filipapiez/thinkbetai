@@ -164,7 +164,9 @@ serve(async (req) => {
     const dateFilter = validateDateFilter(url.searchParams.get('date'));
     const forceRefresh = url.searchParams.get('refresh') === 'true';
 
-    const planLimit = PLAN_LIMITS[plan] || PLAN_LIMITS.basic;
+    // For monthly views, lift caps so users can actually see a full month of fixtures.
+    const basePlanLimit = PLAN_LIMITS[plan] || PLAN_LIMITS.basic;
+    const planLimit = dateFilter === 'nextMonth' ? Math.max(basePlanLimit, 1000) : basePlanLimit;
     const cacheKey = `${sport}-${dateFilter}`;
 
     // Check cache unless force refresh
