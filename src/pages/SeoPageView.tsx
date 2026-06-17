@@ -133,8 +133,62 @@ const SeoPageView = ({ pageType }: Props) => {
       });
     }
     if (c.sportsEvent) {
-      const ev = { ...c.sportsEvent };
+      const ev: any = { ...c.sportsEvent };
       delete ev["@context"];
+
+      // Enrich with fields Google flags as missing for Event rich results.
+      const startISO = ev.startDate || page.game_date;
+      if (startISO && !ev.endDate) {
+        // Default to a 3-hour duration if no explicit end time is known.
+        const start = new Date(startISO);
+        if (!isNaN(start.getTime())) {
+          ev.endDate = new Date(start.getTime() + 3 * 60 * 60 * 1000).toISOString();
+        }
+      }
+      if (!ev.eventStatus) {
+        ev.eventStatus = page.status === "stale" || page.page_type === "game_result"
+          ? "https://schema.org/EventCompleted"
+          : "https://schema.org/EventScheduled";
+      }
+      if (!ev.eventAttendanceMode) {
+        ev.eventAttendanceMode = "https://schema.org/OfflineEventAttendanceMode";
+      }
+      if (!ev.description && page.meta_description) {
+        ev.description = page.meta_description;
+      }
+      if (!ev.image) {
+        ev.image = ["https://thinkbetai.com/og-image.png"];
+      }
+      if (!ev.location) {
+        ev.location = {
+          "@type": "Place",
+          name: c.homeTeam ? `${c.homeTeam} home venue` : "TBD",
+          address: { "@type": "PostalAddress", addressCountry: "US" },
+        };
+      }
+      if (!ev.performer) {
+        const performers: any[] = [];
+        if (c.awayTeam) performers.push({ "@type": "SportsTeam", name: c.awayTeam });
+        if (c.homeTeam) performers.push({ "@type": "SportsTeam", name: c.homeTeam });
+        if (performers.length) ev.performer = performers;
+      }
+      if (!ev.organizer) {
+        ev.organizer = {
+          "@type": "Organization",
+          name: c.league || "ThinkBetAI",
+          url: "https://thinkbetai.com",
+        };
+      }
+      if (!ev.offers) {
+        ev.offers = {
+          "@type": "Offer",
+          url: `https://thinkbetai.com${URL_PREFIX[pageType]}${page.slug}`,
+          price: "0",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+          validFrom: new Date().toISOString(),
+        };
+      }
       graph.push(ev);
     }
 
