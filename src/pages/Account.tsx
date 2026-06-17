@@ -8,8 +8,95 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle } from 'lucide-react';
+import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
+const DeleteAccountSection = ({ onDeleted }: { onDeleted: () => void }) => {
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account');
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || 'Failed to delete account. Please contact support.');
+        setIsDeleting(false);
+        return;
+      }
+      await supabase.auth.signOut();
+      toast.success('Your account has been deleted.');
+      onDeleted();
+    } catch (e) {
+      toast.error('Failed to delete account. Please contact support.');
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <Card variant="glass" className="border-destructive/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-destructive">
+          <AlertTriangle className="h-5 w-5" />
+          Danger Zone
+        </CardTitle>
+        <CardDescription>
+          Permanently delete your account and all associated data. This action cannot be undone. Any active subscription will be canceled.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <AlertDialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setConfirmText(''); }}>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="w-full">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Account
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes your profile, picks, parlays, and access. Any active subscription will be canceled immediately. This cannot be undone.
+                <br /><br />
+                Type <span className="font-mono font-bold text-destructive">DELETE</span> to confirm.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type DELETE"
+              className="font-mono"
+              autoFocus
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); handleDelete(); }}
+                disabled={confirmText !== 'DELETE' || isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                Permanently Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Account = () => {
   const navigate = useNavigate();
