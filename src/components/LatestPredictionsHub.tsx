@@ -34,7 +34,7 @@ export const LatestPredictionsHub = () => {
             .select("slug, title, page_type, sport")
             .eq("page_type", "game_preview")
             .eq("status", "upcoming")
-            .order("kickoff_at", { ascending: true })
+            .order("game_date", { ascending: true })
             .limit(12),
           supabase
             .from("seo_pages")
