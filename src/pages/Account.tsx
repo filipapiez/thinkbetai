@@ -98,6 +98,90 @@ const DeleteAccountSection = ({ onDeleted }: { onDeleted: () => void }) => {
   );
 };
 
+const CancelSubscriptionSection = ({
+  periodEnd,
+  onCanceled,
+}: {
+  periodEnd?: string | null;
+  onCanceled: () => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+
+  const endDateLabel = periodEnd
+    ? new Date(periodEnd).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'the end of your current billing period';
+
+  const handleCancel = async () => {
+    setIsCanceling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+      if (error || (data as any)?.error) {
+        toast.error((data as any)?.error || 'Failed to cancel. Please try again.');
+        setIsCanceling(false);
+        return;
+      }
+      toast.success(`Plan deactivated. You have access until ${endDateLabel}.`);
+      setOpen(false);
+      setIsCanceling(false);
+      onCanceled();
+    } catch {
+      toast.error('Failed to cancel. Please try again.');
+      setIsCanceling(false);
+    }
+  };
+
+  return (
+    <Card variant="glass" className="border-amber-500/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-amber-500">
+          <CalendarClock className="h-5 w-5" />
+          Deactivate Your Plan
+        </CardTitle>
+        <CardDescription>
+          Cancel your subscription. You'll keep full access until {endDateLabel}, then it won't renew. You can reactivate anytime before then.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full border-amber-500/40 text-amber-500 hover:bg-amber-500/10 hover:text-amber-500"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Deactivate Plan
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Deactivate your subscription?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your plan will stay active until <span className="font-semibold text-foreground">{endDateLabel}</span>. After that, it won't renew and you'll lose access to premium features. You can reactivate anytime before then.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isCanceling}>Keep Plan</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={(e) => { e.preventDefault(); handleCancel(); }}
+                disabled={isCanceling}
+                className="bg-amber-500 text-white hover:bg-amber-600"
+              >
+                {isCanceling ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+                Confirm Cancellation
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardContent>
+    </Card>
+  );
+};
+
 const Account = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
