@@ -48,6 +48,8 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const TrackRecord = lazy(() => import("./pages/TrackRecord"));
+const ResponsibleGambling = lazy(() => import("./pages/ResponsibleGambling"));
 const Referral = lazy(() => import("./pages/Referral"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
@@ -90,6 +92,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/track-record" element={<TrackRecord />} />
+                <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />

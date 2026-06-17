@@ -175,7 +175,7 @@ const AboutPage = () => {
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20">
-                <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">82%+</div>
+                <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">80.3%</div>
                 <div className="text-sm text-muted-foreground">Avg. Win Rate</div>
               </div>
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20">
