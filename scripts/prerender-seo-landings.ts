@@ -276,16 +276,27 @@ function buildHtmlForConfig(config: SeoLandingConfig): string {
 }
 
 // ---------- write all snapshots ----------
+// We emit BOTH forms so the snapshot is reachable regardless of how
+// Lovable's edge resolves clean URLs:
+//   dist/<slug>.html          → extensionless-html lookup
+//   dist/<slug>/index.html    → folder-index lookup
+// First verified attempt (folder-index only) was shadowed by the SPA
+// catch-all rewrite. Adding the flat .html gives the host a second
+// matchable static file before the catch-all runs.
 let written = 0;
 for (const config of SEO_LANDING_CONFIGS) {
   try {
+    const html = buildHtmlForConfig(config);
+    // Flat .html (preferred for extensionless serving on Cloudflare-style edges)
+    writeFileSync(join(DIST, `${config.slug}.html`), html);
+    // Nested index.html (folder-index fallback)
     const outDir = join(DIST, config.slug);
     mkdirSync(outDir, { recursive: true });
-    writeFileSync(join(outDir, "index.html"), buildHtmlForConfig(config));
+    writeFileSync(join(outDir, "index.html"), html);
     written++;
   } catch (err) {
     console.warn(`[prerender] failed for /${config.slug}:`, (err as Error).message);
   }
 }
 
-console.log(`[prerender] wrote ${written}/${SEO_LANDING_CONFIGS.length} SEO landing snapshots into dist/`);
+console.log(`[prerender] wrote ${written}/${SEO_LANDING_CONFIGS.length} SEO landing snapshots into dist/ (both .html and /index.html forms)`);
