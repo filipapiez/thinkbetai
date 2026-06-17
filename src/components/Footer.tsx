@@ -40,6 +40,11 @@ export const Footer = () => {
               <li><Link to="/teams" className="hover:text-foreground transition-colors">All Team Pages</Link></li>
               <li><Link to="/best" className="hover:text-foreground transition-colors">Best Picks by Sport</Link></li>
               <li><Link to="/best-ai-betting-app" className="hover:text-foreground transition-colors">Best AI Betting App 2026</Link></li>
+              <li><Link to="/bet-ai" className="hover:text-foreground transition-colors">Bet AI</Link></li>
+              <li><Link to="/betting-ai" className="hover:text-foreground transition-colors">Betting AI</Link></li>
+              <li><Link to="/ai-betting" className="hover:text-foreground transition-colors">AI Betting</Link></li>
+              <li><Link to="/ai-bets" className="hover:text-foreground transition-colors">AI Bets</Link></li>
+              <li><Link to="/ai-picks" className="hover:text-foreground transition-colors">AI Picks</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
             </ul>
