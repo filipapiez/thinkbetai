@@ -321,6 +321,24 @@ const Account = () => {
                   </Button>
                 </CardContent>
               </Card>
+
+              <DeleteAccountSection onDeleted={() => navigate('/')} />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/games')}>
+                    <Trophy className="h-4 w-4 mr-2" />
+                    View Live Games
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/chat')}>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Chat with AI
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/settings')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Settings
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </main>
