@@ -1582,6 +1582,448 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     primaryCta: { label: "Today's ATS Picks", href: "/games" },
     secondaryCta: { label: "Best NFL Bets Today", href: "/best/best-nfl-bets-today" },
   },
+  // -------------------------------------------------------------
+  // GSC-driven exact-match landings (high-impression, near page 1)
+  // -------------------------------------------------------------
+  {
+    slug: "bet-ai",
+    title: "Bet AI — AI-Powered Sports Betting Tool & Daily Picks",
+    description: "Bet AI: an AI sports betting platform with 1,000 Monte Carlo simulations per game, live odds analysis, confidence-scored picks, and free daily best bets across NFL, NBA, MLB, NHL, UFC and soccer.",
+    keywords: "bet ai, bet with ai, ai bet, ai bet tool, ai sports betting",
+    h1: "Bet AI — Use Artificial Intelligence to Bet Smarter",
+    tagline: "Confidence-scored picks, 1,000 simulations per game, transparent reasoning",
+    intro: [
+      "Bet AI is the modern way to approach sports wagering: instead of guessing or following hot takes, you let a purpose-built model run thousands of simulated game outcomes against the current market price and surface only the spots where math says the sportsbook is wrong. ThinkBetAI was built around exactly that workflow — a Monte Carlo engine, live odds intake, and a transparent confidence score so you can tell the difference between a coin-flip lean and a real edge.",
+      "This page walks through what \"betting with AI\" actually means in practice, how our model produces picks, what the confidence numbers mean, and how to use the platform whether you want free daily picks or the full premium board. ThinkBetAI's flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample — see the live ledger on the track record page.",
+    ],
+    sections: [
+      {
+        heading: "What \"Bet AI\" Actually Means",
+        body: [
+          "The phrase \"bet AI\" gets thrown around to describe everything from a chatbot that prints a parlay to a real quantitative model. We're in the second camp. Betting with AI here means feeding live odds, lineup data, injury reports, weather, pace, and matchup splits into a model that simulates the game 1,000 times and compares its win probability to the implied probability the sportsbook is pricing in.",
+          "When those two numbers diverge by enough — usually 3% or more, with strong supporting data — the AI flags a +EV opportunity. You see the recommended side, the confidence score, and a written explanation of the top drivers behind the call. No black box, no hype, no \"trust me, bro.\"",
+        ],
+        bullets: [
+          "Live odds from every major U.S. and offshore sportsbook",
+          "1,000 Monte Carlo simulations re-run on every line move",
+          "Player tracking, injuries, weather, refs, rest/travel splits",
+          "Confidence-scored output (0–100) so you can filter aggressively",
+          "Plain-English reasoning behind every pick",
+        ],
+      },
+      {
+        heading: "How to Bet With AI Without Blowing Your Bankroll",
+        body: [
+          "An AI that finds edges still loses bets. Variance is brutal in short windows — even a model with a true 56% win rate against the spread will have losing weeks and the occasional 0-for-5 Sunday. The bettors who actually compound returns are the ones who pair AI output with strict bankroll rules: flat-stake 1% per play, never chase, track every wager, and pass on slow nights.",
+          "ThinkBetAI is designed to be the analytical partner — surfacing the math, flagging the edges, capping confidence when data is thin — but the discipline has to come from you. Most of our winning subscribers act only on picks scoring 65+ confidence, ignore anything below 55, and bet flat units. That's it. No magic.",
+        ],
+      },
+      {
+        heading: "Where the AI Helps Most",
+        body: [
+          "AI's edge over a human handicapper is biggest where the data is thick and the books invest less manual attention: player props, second-half lines, alt totals, niche leagues, and live in-game spots. That's where you'll find the largest gaps between modeled probability and posted price.",
+          "Sides and totals on marquee games (Monday Night Football, NBA Finals) are sharper markets — the AI still finds edges, but they're smaller. We surface confidence honestly so you don't bet a 1% edge thinking it's a 5% edge.",
+        ],
+      },
+      {
+        heading: "Free vs Premium",
+        body: [
+          "Every day, the daily best bet and daily underdog are free on the games board. Premium unlocks the full slate of picks, every player prop edge, unlimited AI chat, parlay grading, and the live adaptive model for in-game betting. All plans are cancel anytime — no money-back gimmicks, just real value or no value.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What is bet AI?", a: "Bet AI refers to using artificial intelligence — typically machine learning models combined with Monte Carlo simulation — to evaluate sportsbook odds and identify wagers where the modeled probability beats the market price." },
+      { q: "Does betting with AI actually work?", a: "Models that consistently beat the closing line (CLV) win long-term. Our flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample. No model wins every day — variance is real." },
+      { q: "Is bet AI legal?", a: "Yes — using AI tools to analyze odds is legal anywhere sports betting itself is legal. You still place the bet through a licensed sportsbook in your jurisdiction." },
+      { q: "Can I bet AI for free?", a: "Yes — the daily best bet, daily underdog, and a curated slice of analysis are free every day. Premium unlocks the full board." },
+      { q: "What sports does the AI bet engine cover?", a: "NFL, NBA, MLB, NHL, UFC/MMA, soccer (top European leagues + MLS + Champions League), tennis, college football, college basketball, golf majors, and table tennis." },
+      { q: "How is bet AI different from a tipster service?", a: "Tipsters give you a pick. Bet AI gives you the pick plus the win probability, the implied market probability, a confidence score, and a written explanation — so you can verify the reasoning instead of taking it on faith." },
+    ],
+    primaryCta: { label: "See Today's AI Bets", href: "/games" },
+    secondaryCta: { label: "Chat With the AI", href: "/chat" },
+  },
+  {
+    slug: "betting-ai",
+    title: "Betting AI — Smart Sports Bets Powered by Live Models",
+    description: "Betting AI from ThinkBetAI: live odds analysis, 1,000 simulations per game, confidence-scored picks, and an AI chat trained for sports betting. Free daily picks plus premium full-board access.",
+    keywords: "betting ai, betting with ai, ai sports betting, ai betting tool, ai betting platform",
+    h1: "Betting AI That Actually Understands the Market",
+    tagline: "Quantitative model + live odds intake + transparent confidence scoring",
+    intro: [
+      "Betting AI isn't a buzzword here — it's the whole product. ThinkBetAI runs a Monte Carlo engine over live sportsbook odds, lineup data, injury feeds, weather, and matchup splits to surface the spots where the market is mispriced. Every pick comes with a confidence score, a win probability, and a written explanation so you understand the why, not just the what.",
+      "If you've tried generic chatbots that print parlays or tipster services that show you the wins and hide the losses, this is the other direction: numbers-first, transparent ledger, honest about variance. Flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample.",
+    ],
+    sections: [
+      {
+        heading: "How Betting AI Beats a Human Handicapper",
+        body: [
+          "The honest answer: not always, and not in every market. A great handicapper with deep situational knowledge in a niche league can still beat any model. But across the volume of bets a typical user places — multiple sports, hundreds of games a month — AI wins on consistency, speed, and the absence of emotion. It doesn't get attached to a team. It doesn't tilt after a bad beat. It re-prices the model on every line move within seconds.",
+          "That last point matters more than most realize. The market moves constantly. A handicapper publishing a pick at 9 a.m. on a 2:30 p.m. kickoff is working with stale odds by the time you read it. The AI re-simulates on every meaningful move and either reaffirms, downgrades, or kills the pick.",
+        ],
+      },
+      {
+        heading: "The Core Engine: 1,000 Simulations Per Game",
+        body: [
+          "Every game we cover gets run through 1,000 Monte Carlo simulations using updated probability distributions for team scoring, possessions, and key player performance. We then compare the simulated win probability against the implied probability of the current market price. If the model says a team should win 58% of the time but the book is pricing them at -130 (~56.5% implied), that's a 1.5% edge — small, but real.",
+          "When the edge clears 5%+ and the underlying data is high quality (lineups confirmed, injury picture clear, no weather surprises), the pick is flagged as high confidence. When data is thin, confidence is capped automatically — the AI never rates its own ignorance as conviction.",
+        ],
+      },
+      {
+        heading: "Reading Confidence Scores",
+        body: [
+          "70+ is high conviction. These are the picks the model views as multi-percentage-point edges with strong data backing. 55–70 is a lean — math is on your side but the edge is modest. Below 55 is informational only.",
+          "Most disciplined bettors only act on 65+ scores. Some only bet 70+ and skip slow nights entirely — a perfectly valid strategy. Being able to pass is one of the most underrated skills in sports betting, and the AI is designed to make passing easy by showing you when there's no real edge.",
+        ],
+      },
+      {
+        heading: "What's Free, What's Premium",
+        body: [
+          "Daily best bet and daily underdog are free on /games. The full slate of picks, every player prop edge, unlimited AI chat, parlay grading, and the live adaptive model for in-game betting are premium. All plans are cancel anytime.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What is betting AI?", a: "Betting AI is the use of machine learning models, statistical simulation, and live market data to identify sports wagers where the modeled true probability exceeds the implied probability of the sportsbook line." },
+      { q: "Is betting AI worth it?", a: "If you bet regularly, having a model that consistently beats the closing line is worth far more than a subscription. If you only bet for entertainment, the free daily picks are probably enough." },
+      { q: "Can betting AI guarantee wins?", a: "No — anyone promising guaranteed wins is lying. AI gives you an edge over the market over a long sample. Short-term variance is real and unavoidable." },
+      { q: "How fast does the betting AI react to news?", a: "The model re-simulates within seconds of a meaningful line move and within minutes of major injury or lineup news. Picks are updated or killed in real time." },
+      { q: "Do I need a sportsbook account to use the betting AI?", a: "No — you can use ThinkBetAI to analyze games without ever placing a bet. Most users do place bets through licensed sportsbooks in their jurisdiction, but it's not required." },
+      { q: "Which sports does the betting AI cover best?", a: "All major North American leagues plus soccer, tennis, UFC, and golf majors. The model's strongest markets historically are player props and totals." },
+    ],
+    primaryCta: { label: "Today's AI Picks", href: "/games" },
+    secondaryCta: { label: "See the Track Record", href: "/track-record" },
+  },
+  {
+    slug: "ai-betting",
+    title: "AI Betting — Sports Wagers Driven by Live Data & Simulation",
+    description: "AI betting platform: 1,000 Monte Carlo simulations per game, live odds, injury and lineup intake, confidence-scored picks, and an AI chat trained for sports betting. Free daily picks available.",
+    keywords: "ai betting, artificial intelligence betting, ai sports betting, ai bet picks, ai betting platform",
+    h1: "AI Betting Done Right: Model First, Hype Never",
+    tagline: "A purpose-built AI engine for bettors who care about CLV and ROI",
+    intro: [
+      "AI betting is having a moment, and most of what's on the market is noise — chatbots wrapped around generic LLMs, tout services rebranded with a robot logo, parlay generators that don't even check the line. ThinkBetAI is the other thing: a real quantitative model built specifically for sports wagering, with live odds intake, transparent confidence scoring, and an honest, public track record.",
+      "Below is what AI betting looks like when it's built by people who actually bet — what the model does, what it can't do, what's free, and how to use it without setting fire to your bankroll.",
+    ],
+    sections: [
+      {
+        heading: "What AI Betting Should Look Like",
+        body: [
+          "Three things separate a real AI betting product from a wrapper: continuous data intake, statistically valid simulation, and transparent output. We've built around all three since day one.",
+          "Continuous intake means live odds from every major book, refreshed every minute, plus injury, lineup, weather, and referee feeds. Statistically valid simulation means Monte Carlo runs with updated probability distributions, not a closing-line regression in a trench coat. Transparent output means every pick ships with a win probability, the market-implied probability, a confidence score, and written reasoning — so you can audit the model, not just trust it.",
+        ],
+        bullets: [
+          "Live odds intake from every major sportsbook",
+          "Injury, lineup, weather, ref and travel data",
+          "1,000 Monte Carlo simulations per game",
+          "Confidence-scored output with data-quality caps",
+          "Written explanation behind every pick",
+          "Public, ongoing track record at /track-record",
+        ],
+      },
+      {
+        heading: "Where AI Betting Has the Biggest Edge",
+        body: [
+          "AI's edge over the market is largest where books invest the least manual labor in pricing: player props, alt lines, second halves, niche leagues, and live in-game windows. These are the markets where modeled probability and posted price most often diverge by enough to bet.",
+          "Sides and totals on marquee games are sharper. The AI still finds edges there but they're smaller, and the model flags that honestly with lower confidence scores. The whole point of the confidence system is to let you filter for the spots where the math is most clearly on your side.",
+        ],
+      },
+      {
+        heading: "Bankroll, Variance, and the Reality of AI Betting",
+        body: [
+          "No matter how good the model, you will have losing weeks. A 56% true-win-rate strategy still goes 0-for-5 sometimes — that's how independent variables work. The AI's job is to give you an edge over thousands of bets; your job is to bet small enough that variance doesn't ruin you.",
+          "Flat-stake 1% per play, track everything, and treat closing line value (CLV) as the real proof of edge. Win rate is the highlight reel; CLV is the long-term scoreboard.",
+        ],
+      },
+      {
+        heading: "Free Daily Picks vs Premium",
+        body: [
+          "Free: daily best bet, daily underdog, daily analysis writeups. Premium: the full board, every player prop edge, unlimited AI chat, parlay builder grades, and the live adaptive in-game model. All plans cancel anytime.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What is AI betting?", a: "AI betting is the use of machine learning and simulation models to evaluate sportsbook odds and identify wagers where the modeled true probability is higher than the implied probability of the line." },
+      { q: "Is AI betting profitable long-term?", a: "Models that beat the closing line consistently are profitable. Our flagged high-confidence picks have hit 80.3% across our tracked sample, but past performance does not guarantee future results." },
+      { q: "How is AI betting different from a tipster?", a: "AI betting shows you the math behind every pick — win probability, implied probability, confidence score, and reasoning. Tipsters just show you the pick and ask you to trust them." },
+      { q: "Is AI betting legal in the US?", a: "Yes — using analytical tools to evaluate odds is legal wherever sports betting itself is legal. Wagers are still placed through licensed sportsbooks in your state." },
+      { q: "Do I need any technical background to use AI betting?", a: "No. The interface shows the model's recommendation, the confidence score, and a plain-English explanation. If you can read a betting line, you can use the platform." },
+      { q: "Can I trust AI betting picks blindly?", a: "No — and you shouldn't. Use confidence scores to filter, bet flat units, never chase, and treat any individual pick as one trade in a long series." },
+    ],
+    primaryCta: { label: "View Today's AI Picks", href: "/games" },
+    secondaryCta: { label: "Verify the Track Record", href: "/track-record" },
+  },
+  {
+    slug: "ai-bets",
+    title: "AI Bets — Confidence-Scored Picks Across Every Major League",
+    description: "AI bets ranked by confidence: today's best bet, full board of picks, player prop edges, and parlay grades from a model running 1,000 simulations per game. Free daily picks available.",
+    keywords: "ai bets, ai bet picks, ai sports bets, ai betting picks, today's ai bets",
+    h1: "AI Bets, Ranked by Confidence, Updated Live",
+    tagline: "Daily best bet free • Full board premium • All picks explained",
+    intro: [
+      "AI bets on ThinkBetAI are the live output of a Monte Carlo simulation engine that re-runs every game 1,000 times against the current market price. Every pick is ranked by a confidence score and ships with a written explanation of what's driving the call. The daily best bet is free; the full board is premium.",
+      "This page covers how AI bets are generated, how to read the confidence scores, where the AI tends to find the biggest edges, and how to bet the picks responsibly without blowing up your bankroll.",
+    ],
+    sections: [
+      {
+        heading: "How an AI Bet Gets Recommended",
+        body: [
+          "Every game in season runs through the simulation engine. The model produces a win probability for each side and a probability distribution for the total. We compare those probabilities to the implied probabilities from the current sportsbook line. If the model says a team should win 60% of the time but the line implies 53%, that's a 7% edge — a strong AI bet.",
+          "If the edge is real but small (2–4%) and supporting data is good, the bet still gets flagged but with a moderate confidence score. If the data is thin (no confirmed starting lineup, weather still uncertain), confidence is capped automatically.",
+        ],
+      },
+      {
+        heading: "Today's AI Bets Board",
+        body: [
+          "Tonight's recommended AI bets appear on /games, sorted by confidence. The top of the board is where you'll find the high-conviction plays. Each card shows the recommended side, the line, the modeled probability, the implied probability, and a one-line explanation. Click any pick to see the full AI report.",
+          "The daily best bet is highlighted and free. Free users see the headline picks for each sport; premium users see the full board across every game in season.",
+        ],
+      },
+      {
+        heading: "AI Player Prop Bets",
+        body: [
+          "Player props are where the AI bet engine historically finds the largest edges, because books invest less manual labor in pricing them. The dedicated player props board surfaces tonight's prop edges with composite signal scores combining L20 game logs, defensive matchup, usage rate, pace, and recent form.",
+          "Approved sportsbooks only — we don't deep-link to prop bets externally, but we tell you exactly which book is posting the value.",
+        ],
+      },
+      {
+        heading: "How to Bet the AI Picks Without Going Broke",
+        body: [
+          "Flat-stake 1% of your bankroll per pick. Don't parlay more than 3 legs unless the parlay builder grades it well. Don't chase losses. Pass on nights when nothing clears your confidence threshold. That's the whole system. The AI gives you the edges; the discipline is on you.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "How many AI bets are posted per day?", a: "It varies by sport in season. NBA night during the season: typically 8–15 games covered. NFL Sunday: every game on the slate. UFC card: every fight." },
+      { q: "Are AI bets free?", a: "The daily best bet and daily underdog are free. The full board across every game is premium." },
+      { q: "What's the historical win rate on AI bets?", a: "80.3% on flagged high-confidence picks across our tracked sample. See /track-record for the live ledger." },
+      { q: "Can I see why the AI made each bet?", a: "Yes — every pick has a written explanation showing the top factors driving the model's view." },
+      { q: "Do AI bets update if the line moves?", a: "Yes — picks are re-simulated on every meaningful line move and either reaffirmed, downgraded, or killed if the edge disappears." },
+      { q: "Which sports get the most AI bets?", a: "NFL, NBA, and MLB during the regular season drive the highest volume. UFC, NHL, soccer and tennis are also covered in season." },
+    ],
+    primaryCta: { label: "See Today's AI Bets", href: "/games" },
+    secondaryCta: { label: "AI Player Prop Bets", href: "/player-props" },
+  },
+  {
+    slug: "ai-bet",
+    title: "AI Bet — Build & Analyze Bets With Artificial Intelligence",
+    description: "AI bet platform: analyze any sportsbook bet, get an AI confidence grade, see line value, and find better alternatives — all from a Monte Carlo simulation engine. Free analyzer included.",
+    keywords: "ai bet, ai bet analyzer, ai bet tool, analyze bet with ai, ai betting analyzer",
+    h1: "AI Bet Analysis: Grade Any Wager in Seconds",
+    tagline: "Paste your bet • Get a confidence grade • See the line value",
+    intro: [
+      "An AI bet on ThinkBetAI can mean two things: a pick generated by our simulation engine, or a bet you already built that you want the AI to grade. Both work the same way under the hood — Monte Carlo simulation against the live market — and both ship with a confidence score and reasoning.",
+      "This page covers what \"AI bet\" means here, how to use the AI bet analyzer to grade your own wagers, and how to find the AI's recommended bets for tonight.",
+    ],
+    sections: [
+      {
+        heading: "Grading Your Own Bet With the AI",
+        body: [
+          "Open the AI bet analyzer, paste your single or parlay, and the model runs the simulation against the current line for each leg. You get back a letter grade, the modeled probability of cashing, the break-even probability implied by the price, and a written rationale per leg. If a leg is poorly priced, the AI suggests an alternative — same game, better number.",
+          "It works on sides, totals, player props, alt lines, and parlays up to 20 legs. The grade isn't sentimental; if your bet is bad, it'll tell you.",
+        ],
+      },
+      {
+        heading: "How the AI Builds Its Own Bets",
+        body: [
+          "Every game in season runs through 1,000 Monte Carlo simulations using live odds, lineups, injuries, weather, pace, and matchup splits. When the modeled win probability exceeds the implied market probability by enough — and the underlying data is high quality — the AI flags the bet with a confidence score from 0 to 100.",
+          "70+ is high conviction. 55–70 is a lean. Below 55 is informational only. Most disciplined bettors only act on 65+ scores. Some only bet 70+ and skip slow nights.",
+        ],
+      },
+      {
+        heading: "AI Bet vs Sportsbook Bet Builder",
+        body: [
+          "Sportsbook bet builders are great for one thing: making your parlay feel customized. They are not designed to maximize your win probability. The book sets the price; you put the legs in; you ship.",
+          "The AI bet analyzer runs that same parlay through the model and tells you whether the combined price is fair, generous, or terrible. It's the math layer the sportsbook isn't going to give you.",
+        ],
+      },
+      {
+        heading: "Free Use",
+        body: [
+          "Basic AI bet analysis is free for one bet a day. Premium gets you unlimited analyses, full prop board access, the parlay builder grades, and live AI chat. All plans cancel anytime.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What is an AI bet?", a: "An AI bet is a wager evaluated or generated by a machine learning model — either one the AI recommends, or one you build that the AI grades against the live market." },
+      { q: "How does the AI bet analyzer work?", a: "Paste your bet. The AI runs 1,000 simulations against the current line for each leg, calculates the modeled probability of cashing, compares it to the break-even price, and returns a letter grade plus reasoning." },
+      { q: "Can the AI bet on anything?", a: "It evaluates sides, totals, player props, alt lines, and parlays up to 20 legs across NFL, NBA, MLB, NHL, UFC, soccer, tennis, college football, college basketball, golf majors, and table tennis." },
+      { q: "Is the AI bet analyzer free?", a: "Yes — one analysis per day free. Premium unlocks unlimited grading plus the full pick board." },
+      { q: "Will the AI ever say my bet is bad?", a: "Yes, frequently. If you paste a -300 favorite parlayed with a low-confidence under, the AI will tell you. It's not designed to flatter your picks." },
+      { q: "What if I disagree with the AI's grade?", a: "Use it as one input, not gospel. The AI surfaces the math; you bring the situational read. Sometimes you're right and the model misses context." },
+    ],
+    primaryCta: { label: "Analyze a Bet", href: "/ai-bet-analyzer" },
+    secondaryCta: { label: "See AI's Picks Tonight", href: "/games" },
+  },
+  {
+    slug: "ai-picks",
+    title: "AI Picks — Daily Sports Picks From a Live Simulation Engine",
+    description: "AI picks across NFL, NBA, MLB, NHL, UFC and soccer. Today's daily best bet free, full board premium. Every pick comes with a confidence score, win probability, and written reasoning.",
+    keywords: "ai picks, ai sports picks, daily ai picks, today's ai picks, ai betting picks",
+    h1: "AI Picks for Today — Ranked, Explained, Updated",
+    tagline: "Daily best bet free • Full slate premium • Public track record",
+    intro: [
+      "AI picks on ThinkBetAI are the live output of a Monte Carlo simulation engine running over every game in season. Every pick is ranked by confidence, comes with a win probability and a written explanation, and is re-simulated whenever the line moves or news drops. The daily best bet is free.",
+      "Below is how the AI picks are generated, how to read the confidence scores, and how to find the right picks for the way you bet.",
+    ],
+    sections: [
+      {
+        heading: "How AI Picks Are Generated",
+        body: [
+          "Each game in season is simulated 1,000 times using updated probability distributions for team scoring, possessions, and key player performance. The simulated win probability is compared against the implied probability of the current sportsbook line. When the model's number beats the market by enough — and the data backing it is solid — the pick gets flagged.",
+          "Confidence is a 0–100 score combining edge size, data quality, and simulation variance. 70+ is high conviction. 55–70 is a lean. Below 55 is informational only.",
+        ],
+      },
+      {
+        heading: "Sports & Pick Types Covered",
+        body: [
+          "AI picks cover NFL, NBA, MLB, NHL, UFC/MMA, soccer (top European leagues + MLS + Champions League), tennis, college football, college basketball, golf majors, and table tennis. Pick types include sides, totals, player props, alt lines, and AI-graded parlays.",
+          "Off-season sports are excluded. You will never see a hallucinated NFL pick in May. When a league isn't actually playing, it's not on the board.",
+        ],
+        bullets: [
+          "Daily best bet (free)",
+          "Daily underdog of the day (free)",
+          "Full board of confidence-scored picks (premium)",
+          "Player prop edges (premium)",
+          "AI-graded parlays (premium)",
+          "Live in-game adaptive picks (premium)",
+        ],
+      },
+      {
+        heading: "How to Use AI Picks Without Tilting",
+        body: [
+          "Flat-stake 1% per pick. Don't chase. Don't parlay more than 3 legs unless the AI grades it well. Pass on slow nights when nothing clears your confidence threshold.",
+          "Most disciplined users only act on picks scoring 65+ confidence. Some only bet 70+. Being willing to pass is the single most underrated skill in sports betting — and the AI is designed to make passing easy by showing you exactly when there's no edge.",
+        ],
+      },
+      {
+        heading: "Track Record",
+        body: [
+          "Flagged high-confidence AI picks have hit at an 80.3% win rate across our tracked sample. The live ledger is public on the track record page — every flagged pick, every result, no cherry-picking.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Are AI picks free?", a: "Daily best bet and daily underdog are free every day. The full board across every game is premium." },
+      { q: "How accurate are AI picks?", a: "Flagged high-confidence picks have hit 80.3% across our tracked sample. No model wins every day — variance is real." },
+      { q: "How many AI picks are posted per day?", a: "Varies by sport in season. NBA night: typically 8–15 games covered. NFL Sunday: every game on the slate." },
+      { q: "When are today's AI picks finalized?", a: "Best bet typically locked in by 2–4 p.m. ET so late lineup news is included. The full board is live earlier and updates continuously." },
+      { q: "Can I see why the AI made each pick?", a: "Yes — every pick has a written explanation with the top factors driving the model's view." },
+      { q: "Do AI picks include player props?", a: "Yes — the full prop board is premium. The daily prop spotlight on each team/player page is free." },
+    ],
+    primaryCta: { label: "Today's AI Picks", href: "/games" },
+    secondaryCta: { label: "Player Prop Picks", href: "/player-props" },
+  },
+  {
+    slug: "free-ai-sports-betting-app",
+    title: "Free AI Sports Betting App — Daily Picks With No Subscription",
+    description: "Free AI sports betting app: daily best bet, daily underdog, AI bet analyzer, and analysis writeups — all without a paid subscription. Optional premium unlocks the full pick board.",
+    keywords: "free ai sports betting app, free ai betting app, free ai betting, free ai sports picks, ai betting app free",
+    h1: "Free AI Sports Betting — Daily Picks With No Card Required",
+    tagline: "Daily best bet, AI bet analyzer, and analysis — free forever",
+    intro: [
+      "ThinkBetAI's free tier is built to be genuinely useful, not a 24-hour preview that locks the moment you trust it. Every day you get a free best bet, a free underdog of the day, free analysis writeups, and one free AI bet analyzer run — all without a subscription, no card on file.",
+      "Below is exactly what you get for free, what's premium, and why the free tier alone beats most paid tipster services.",
+    ],
+    sections: [
+      {
+        heading: "What's Actually Free",
+        body: [
+          "The daily best bet is the single highest-confidence pick of the day across every sport in season. It's free, posted on the games board, and updated if the line moves through the model's number. The daily underdog highlights the best plus-money play of the day, also free.",
+          "Free users also get daily analysis writeups — the AI's read on the most-bet games of the day, including key injuries, weather, and matchup splits. And the AI bet analyzer (paste your own bet, get a grade) is free for one analysis per day.",
+        ],
+        bullets: [
+          "Daily best bet (free)",
+          "Daily underdog of the day (free)",
+          "Daily analysis writeups (free)",
+          "AI bet analyzer — 1 free analysis per day",
+          "Public track record at /track-record (free)",
+        ],
+      },
+      {
+        heading: "Free vs Premium: What You Get When You Upgrade",
+        body: [
+          "Premium unlocks the full board of confidence-scored picks across every game in season, every player prop edge, unlimited AI chat, the AI parlay builder grading, and the live adaptive model for in-game betting windows.",
+          "There's no money-back gimmick — we don't believe in fake promises — but every plan is cancel-anytime, and you can use the free tier indefinitely before deciding.",
+        ],
+      },
+      {
+        heading: "Why the Free Tier Beats Most Paid Tipsters",
+        body: [
+          "Most paid tipster services charge $50–200/month for one pick a day plus a Discord channel of vibes. The free ThinkBetAI tier gives you a confidence-scored daily best bet, the model's reasoning, the simulated win probability vs the implied market price, and the AI bet analyzer to grade your own bets. All free, every day.",
+          "If you only ever use the free tier, you're already ahead of most retail bettors. The premium tier is for people who want the full slate, every prop, and the parlay grader.",
+        ],
+      },
+      {
+        heading: "Installing the App",
+        body: [
+          "ThinkBetAI runs as a fast mobile web app — no App Store gatekeeping, no install required. Add it to your home screen from Safari (iOS) or Chrome (Android) and it behaves like a native app: full-screen, offline-cache for static pages, push-style alerts on pick releases. A native iOS wrapper is in private beta.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "Is the AI sports betting app really free?", a: "Yes — daily best bet, daily underdog, analysis writeups, and one AI bet analyzer run per day are free forever with no card required." },
+      { q: "What's the catch with the free tier?", a: "There isn't one. The free tier is meant to be genuinely useful. Premium exists for users who want the full board and unlimited features, not as a gate around basic value." },
+      { q: "Do I need to install anything?", a: "No — it runs in the browser. You can add it to your home screen on iOS or Android for a native-app feel." },
+      { q: "How accurate are the free AI picks?", a: "Same model as the premium picks. Flagged high-confidence picks have hit 80.3% across our tracked sample." },
+      { q: "Is there a free trial of the premium tier?", a: "We don't run a forced trial — the free tier is the trial. Use it as long as you want and upgrade only if the math works for your volume." },
+      { q: "Will the free tier disappear?", a: "No plans to remove it. It's a core part of the product." },
+    ],
+    primaryCta: { label: "Get Today's Free Pick", href: "/games" },
+    secondaryCta: { label: "Try the AI Bet Analyzer", href: "/ai-bet-analyzer" },
+  },
+  {
+    slug: "ai-bets-prediction",
+    title: "AI Bets Prediction — Tonight's AI-Powered Bet Predictions",
+    description: "AI bets prediction engine: tonight's predicted winners, totals, and player props ranked by confidence, with win probabilities, market-implied odds, and reasoning behind every prediction.",
+    keywords: "ai bets prediction, ai bet prediction, ai betting predictions, ai prediction bets, predicted ai bets",
+    h1: "AI Bets Prediction — Tonight's Highest-Confidence Calls",
+    tagline: "Win probability • Market-implied price • Confidence score • Reasoning",
+    intro: [
+      "An AI bets prediction here isn't a chatbot guess — it's the output of a Monte Carlo simulation engine that runs each game 1,000 times against the live market price. Every prediction comes with a modeled win probability, the implied probability from the sportsbook line, a confidence score, and a written explanation of what's driving it.",
+      "Below is how AI bet predictions are generated, what the confidence numbers mean, and how to use predictions without falling into the \"AI said so\" trap.",
+    ],
+    sections: [
+      {
+        heading: "How AI Bet Predictions Are Made",
+        body: [
+          "Each game runs through 1,000 Monte Carlo simulations using updated probability distributions for team scoring, possessions, and key player performance. The simulation incorporates live odds, confirmed lineups, injury status, weather, referees, pace, and rest/travel context.",
+          "The simulated win probability is compared against the implied probability of the current line. When they diverge by enough — and the underlying data is good — the prediction is flagged as a recommended AI bet with a confidence score from 0 to 100.",
+        ],
+      },
+      {
+        heading: "What the Prediction Numbers Mean",
+        body: [
+          "Each AI bet prediction shows three numbers you need to read together. Modeled win probability is what the simulation thinks will happen. Implied probability is what the market thinks. Confidence is how robust the edge is given the data we have.",
+          "A 65% modeled probability with low data confidence (lineups unconfirmed, weather still in flux) is a weaker bet than a 58% modeled probability with high data confidence. We cap confidence automatically when key inputs are missing — the AI is built to refuse to overstate its certainty.",
+        ],
+      },
+      {
+        heading: "Predictions Across Markets",
+        body: [
+          "Predictions are generated for sides, totals, player props, alt lines, and AI-graded parlays across NFL, NBA, MLB, NHL, UFC, soccer (top European leagues + Champions League + MLS), tennis, college football, college basketball, golf majors, and table tennis.",
+          "Player props historically carry the largest edges — books invest less manual labor pricing them — and the dedicated prop board surfaces tonight's prop predictions with composite signal scores.",
+        ],
+      },
+      {
+        heading: "Using AI Predictions Without Going Broke",
+        body: [
+          "Predictions are inputs, not guarantees. Flat-stake 1% of your bankroll per play. Filter on confidence (most disciplined bettors only act on 65+). Don't parlay more than 3 legs unless the AI grades the combination well. Don't chase losses.",
+          "Across thousands of bets, an AI model with a true 56% win rate against the spread is profitable. Across a single Sunday, it can absolutely go 0-for-5. Bet sizes that respect that reality are the difference between long-term winners and people who blame the model after one bad week.",
+        ],
+      },
+    ],
+    faqs: [
+      { q: "What is an AI bets prediction?", a: "An AI bets prediction is a wager recommendation generated by a machine-learning + simulation model, complete with modeled win probability, market-implied probability, a confidence score, and reasoning." },
+      { q: "How accurate are AI bet predictions?", a: "Flagged high-confidence AI predictions have hit at an 80.3% win rate across our tracked sample. The live ledger is public at /track-record." },
+      { q: "Are AI predictions free?", a: "Daily best bet and daily underdog predictions are free. The full prediction board across every game is premium." },
+      { q: "When are tonight's predictions ready?", a: "Predictions go live the moment lines open and re-simulate continuously. The locked-in best bet is typically posted by 2–4 p.m. ET so late lineup news is included." },
+      { q: "Do the AI predictions update during the day?", a: "Yes — predictions re-run on every meaningful line move and on injury/lineup news. Stale picks are killed or replaced rather than left up." },
+      { q: "Can I trust an AI prediction over a sharp tipster?", a: "Neither is automatically right. Use predictions as one input alongside your own situational read. Bet flat, track CLV, and the math sorts itself out over time." },
+    ],
+    primaryCta: { label: "Tonight's Predictions", href: "/games" },
+    secondaryCta: { label: "Track Record", href: "/track-record" },
+  },
 ];
 
 export const SEO_LANDING_SLUGS = SEO_LANDING_CONFIGS.map((c) => c.slug);
