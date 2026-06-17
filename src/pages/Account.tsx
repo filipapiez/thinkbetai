@@ -406,6 +406,12 @@ const Account = () => {
                 </CardContent>
               </Card>
 
+              {isSubscribed && !profile?.cancel_at_period_end && !profile?.promo_used && (
+                <CancelSubscriptionSection
+                  periodEnd={profile?.current_period_end}
+                  onCanceled={refreshProfile}
+                />
+              )}
               <DeleteAccountSection onDeleted={() => navigate('/')} />
             </div>
           </div>
