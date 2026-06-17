@@ -12,6 +12,7 @@ import { Search, RefreshCw, TrendingUp, X, Loader2, Lock, Crown, Zap } from 'luc
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { SEO } from '@/components/SEO';
+import { PlayerPropsSEOContent } from '@/components/PlayerPropsSEOContent';
 
 
 const SPORT_FILTERS = [
@@ -373,6 +374,9 @@ const PlayerProps = () => {
               <p className="text-sm">Try a different sport or check back later.</p>
             </div>
           )}
+
+          {/* Static, crawler-visible content (always rendered for SEO) */}
+          <PlayerPropsSEOContent />
         </div>
       </main>
 

@@ -94,16 +94,19 @@ const SeoPageView = ({ pageType }: Props) => {
     }
     canonical.href = url;
 
-    // All generated SEO pages are indexable — they have unique titles, AI
-    // analysis, odds snapshots, FAQs and internal links. The whole point of
-    // the daily SEO pipeline is to scale indexed pages.
+    // Most generated SEO pages are indexable, but past/stale game results
+    // have low ongoing value — noindex them to preserve crawl budget so
+    // Google focuses on upcoming previews and evergreen hub pages.
+    const isStalePastGame =
+      page.status === "stale" ||
+      page.page_type === "game_result";
     let robotsTag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robotsTag) {
       robotsTag = document.createElement("meta");
       robotsTag.name = "robots";
       document.head.appendChild(robotsTag);
     }
-    robotsTag.content = "index, follow";
+    robotsTag.content = isStalePastGame ? "noindex, follow" : "index, follow";
 
     // JSON-LD: BreadcrumbList + FAQPage + SportsEvent
     const c = page.content_json || {};

@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Settings2, Check, Bell, Palette, Database, Moon, Sun } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
+import { SEO } from '@/components/SEO';
 
 interface SportConfig {
   id: string;
@@ -97,6 +98,7 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Settings" url="/settings" noIndex />
       <Header />
       
       <main className="flex-1 py-8">

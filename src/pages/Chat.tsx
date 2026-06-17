@@ -284,6 +284,7 @@ const Chat = () => {
         description="Chat with ThinkBetAI's AI betting assistant. Get instant, data-driven answers about odds, injuries, game predictions, parlay strategies, and betting terminology across NFL, NBA, MLB, NHL & more."
         keywords="AI betting chat, sports betting assistant, AI sports chat, betting questions AI, AI odds chat, sports betting help"
         url="/chat"
+        noIndex
         structuredData={chatFaqSchema as Record<string, unknown>}
       />
       <Header />
