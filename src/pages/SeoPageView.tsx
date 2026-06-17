@@ -207,11 +207,23 @@ const SeoPageView = ({ pageType }: Props) => {
   }, [page, pageType]);
 
   if (loading) {
+    // Reserve a tall main area so the Footer renders below the fold from the
+    // first paint. Otherwise the footer appears in-viewport during loading and
+    // gets pushed down once content arrives, producing a huge CLS (~0.79).
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <main className="flex-1 min-h-[200vh] container max-w-4xl py-8 md:py-12">
+          {/* Reserved skeleton blocks matching the final layout to minimize CLS */}
+          <div className="h-4 w-40 bg-muted/40 rounded mb-4" />
+          <div className="h-10 w-3/4 bg-muted/40 rounded mb-4" />
+          <div className="h-5 w-full bg-muted/30 rounded mb-2" />
+          <div className="h-5 w-5/6 bg-muted/30 rounded mb-8" />
+          <div className="h-48 w-full bg-muted/20 rounded mb-6" />
+          <div className="h-64 w-full bg-muted/20 rounded mb-6" />
+          <div className="flex justify-center pt-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
         </main>
         <Footer />
       </div>
