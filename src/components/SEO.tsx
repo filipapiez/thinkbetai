@@ -31,6 +31,7 @@ export const SEO = ({
   author,
   publishedTime,
   structuredData,
+  noIndex,
 }: SEOProps) => {
   const fullTitle = title ? (title.includes('ThinkBetAI') ? title : `${title} | ThinkBetAI`) : defaultTitle;
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
@@ -43,6 +44,7 @@ export const SEO = ({
       <meta name="title" content={fullTitle} />
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
+      {noIndex && <meta name="robots" content="noindex, follow" />}
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
