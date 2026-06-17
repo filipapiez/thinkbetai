@@ -13,9 +13,9 @@ interface SEOProps {
   structuredData?: Record<string, unknown>;
 }
 
-const defaultTitle = 'ThinkBetAI - #1 AI Betting Platform | AI Sports Predictions';
-const defaultDescription = 'Get AI-powered betting predictions with 83% accuracy. ThinkBetAI uses advanced machine learning to analyze sports data and provide winning picks for NFL, NBA, MLB, NHL & more.';
-const defaultKeywords = 'AI betting, AI sports predictions, betting AI, AI picks, sports betting AI, machine learning betting, AI betting predictions, best AI betting site';
+const defaultTitle = 'ThinkBetAI — AI Sports Betting Analytics & Predictions';
+const defaultDescription = 'AI-powered sports betting analytics with a transparent track record. Model-driven picks and matchup context for NFL, NBA, MLB, NHL, UFC and soccer. Not financial advice.';
+const defaultKeywords = 'AI sports betting, AI betting analytics, AI sports predictions, sports betting model, AI picks';
 const defaultImage = 'https://thinkbetai.com/og-image.png';
 const siteUrl = 'https://thinkbetai.com';
 

@@ -97,7 +97,7 @@ const AISportsPicks = () => {
       rating: 5
     },
     {
-      quote: "Finally, an AI betting tool that actually delivers. The 83%+ win rate on qualified picks is incredible.",
+      quote: "Finally, an AI betting tool that actually delivers. The 80.3% win rate on qualified picks is incredible.",
       author: "Jennifer K.",
       role: "Premium Member",
       rating: 5

@@ -49,10 +49,13 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 text-sm">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/track-record" className="hover:text-foreground transition-colors">Track Record & Methodology</Link></li>
+              <li><Link to="/responsible-gambling" className="hover:text-foreground transition-colors">Responsible Gambling</Link></li>
+              <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>
               <li>
-                <a 
-                  href="https://www.ncpgambling.org/" 
-                  target="_blank" 
+                <a
+                  href="https://www.ncpgambling.org/"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors flex items-center gap-1"
                 >
@@ -60,9 +63,9 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a 
-                  href="https://www.gamblersanonymous.org/" 
-                  target="_blank" 
+                <a
+                  href="https://www.gamblersanonymous.org/"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors flex items-center gap-1"
                 >
