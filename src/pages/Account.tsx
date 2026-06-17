@@ -410,6 +410,8 @@ const Account = () => {
               </CardContent>
             </Card>
 
+            <DeleteAccountSection onDeleted={() => navigate('/')} />
+
             {/* Logout option */}
             <div className="text-center">
               <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground">
