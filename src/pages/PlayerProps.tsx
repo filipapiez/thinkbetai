@@ -374,6 +374,9 @@ const PlayerProps = () => {
               <p className="text-sm">Try a different sport or check back later.</p>
             </div>
           )}
+
+          {/* Static, crawler-visible content (always rendered for SEO) */}
+          <PlayerPropsSEOContent />
         </div>
       </main>
 
