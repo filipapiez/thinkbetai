@@ -8,7 +8,7 @@
     "dev": "vite",
     "prebuild": "bunx tsx scripts/generate-sitemaps.ts",
     "build": "vite build",
-    "postbuild": "bunx tsx scripts/prerender-seo-landings.ts",
+    "postbuild": "bunx tsx scripts/prerender-seo-landings.ts && bunx tsx scripts/prerender-seo-pages.ts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
