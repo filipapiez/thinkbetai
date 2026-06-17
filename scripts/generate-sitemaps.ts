@@ -40,21 +40,47 @@ writeFileSync(resolve("public/sitemap-blog.xml"), blogXml);
 //    rule). Falls back to the edge function output if direct DB read
 //    fails, and leaves the existing file untouched if both fail.
 // -------------------------------------------------------------------
-// IMPORTANT: We only expose high-value SEO pages to Google.
-// Thin DB-generated pages (team rosters, individual game previews/results)
-// were diluting crawl budget and signaling low quality. They still exist
-// at /teams/* and /predictions/* for direct visitors, but we no longer
-// advertise them in the sitemap. Only the curated /best/* (daily_best)
-// pages are indexed.
-const ALLOWED_PAGE_TYPES = new Set(["daily_best"]);
+// Expose all SEO page types now that 700+ pages exist. Google needs the
+// full set in the sitemap to discover and crawl them.
+const ALLOWED_PAGE_TYPES = new Set([
+  "daily_best",
+  "team",
+  "game_preview",
+  "game_result",
+  "player",
+  "player_prop",
+  "matchup",
+  "league",
+]);
 const PATH_MAP: Record<string, string> = {
   daily_best: "/best/",
+  team: "/teams/",
+  game_preview: "/predictions/",
+  game_result: "/predictions/",
+  player: "/players/",
+  player_prop: "/props/",
+  matchup: "/matchups/",
+  league: "/leagues/",
 };
 const PRIO: Record<string, string> = {
   daily_best: "0.85",
+  game_preview: "0.8",
+  matchup: "0.75",
+  league: "0.7",
+  team: "0.6",
+  player: "0.6",
+  player_prop: "0.6",
+  game_result: "0.4",
 };
 const FREQ: Record<string, string> = {
   daily_best: "daily",
+  game_preview: "daily",
+  matchup: "daily",
+  league: "weekly",
+  team: "weekly",
+  player: "weekly",
+  player_prop: "daily",
+  game_result: "monthly",
 };
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://fmrcmbdgmhoylmxbapdr.supabase.co";
