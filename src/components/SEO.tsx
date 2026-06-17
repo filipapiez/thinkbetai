@@ -11,6 +11,7 @@ interface SEOProps {
   author?: string;
   publishedTime?: string;
   structuredData?: Record<string, unknown>;
+  noIndex?: boolean;
 }
 
 const defaultTitle = 'ThinkBetAI — AI Sports Betting Analytics & Predictions';
