@@ -152,6 +152,14 @@ const App = () => (
                 <Route path="/ai-pick-of-the-day" element={<SeoLanding slug="ai-pick-of-the-day" />} />
                 <Route path="/ai-underdog-picks" element={<SeoLanding slug="ai-underdog-picks" />} />
                 <Route path="/ai-against-the-spread-picks" element={<SeoLanding slug="ai-against-the-spread-picks" />} />
+                <Route path="/bet-ai" element={<SeoLanding slug="bet-ai" />} />
+                <Route path="/betting-ai" element={<SeoLanding slug="betting-ai" />} />
+                <Route path="/ai-betting" element={<SeoLanding slug="ai-betting" />} />
+                <Route path="/ai-bets" element={<SeoLanding slug="ai-bets" />} />
+                <Route path="/ai-bet" element={<SeoLanding slug="ai-bet" />} />
+                <Route path="/ai-picks" element={<SeoLanding slug="ai-picks" />} />
+                <Route path="/free-ai-sports-betting-app" element={<SeoLanding slug="free-ai-sports-betting-app" />} />
+                <Route path="/ai-bets-prediction" element={<SeoLanding slug="ai-bets-prediction" />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
