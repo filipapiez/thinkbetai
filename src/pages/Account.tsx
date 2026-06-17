@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle, Trash2, AlertTriangle, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
