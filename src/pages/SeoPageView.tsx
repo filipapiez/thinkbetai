@@ -94,19 +94,16 @@ const SeoPageView = ({ pageType }: Props) => {
     }
     canonical.href = url;
 
-    // Deindex thin DB-generated pages. Only curated daily_best ('/best/*')
-    // pages stay indexed; teams, single-game previews, and game results are
-    // marked noindex so Google's crawl budget focuses on high-value content.
-    const NOINDEX_TYPES = new Set(["team", "game_preview", "game_result"]);
+    // All generated SEO pages are indexable — they have unique titles, AI
+    // analysis, odds snapshots, FAQs and internal links. The whole point of
+    // the daily SEO pipeline is to scale indexed pages.
     let robotsTag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robotsTag) {
       robotsTag = document.createElement("meta");
       robotsTag.name = "robots";
       document.head.appendChild(robotsTag);
     }
-    robotsTag.content = NOINDEX_TYPES.has(page.page_type)
-      ? "noindex, follow"
-      : "index, follow";
+    robotsTag.content = "index, follow";
 
     // JSON-LD: BreadcrumbList + FAQPage + SportsEvent
     const c = page.content_json || {};
