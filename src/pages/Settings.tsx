@@ -98,6 +98,7 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEO title="Settings" url="/settings" noIndex />
       <Header />
       
       <main className="flex-1 py-8">
