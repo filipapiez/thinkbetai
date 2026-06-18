@@ -10,7 +10,7 @@ export const platformStats = {
   sportBreakdown: [
     { sport: 'NBA', qualified: 560, wins: 505, winRate: 90.2 },
     { sport: 'NHL', qualified: 403, wins: 360, winRate: 89.3 },
-    { sport: 'Soccer', qualified: 364, wins: 327, winRate: 89.8 },
+    { sport: 'Soccer', qualified: 364, wins: 298, winRate: 82.0 },
     { sport: 'MLB', qualified: 191, wins: 172, winRate: 90.1 },
     { sport: 'College Baseball', qualified: 92, wins: 79, winRate: 85.9 },
     { sport: 'Table Tennis', qualified: 46, wins: 40, winRate: 87.0 },
