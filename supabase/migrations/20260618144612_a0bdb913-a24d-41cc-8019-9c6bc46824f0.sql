@@ -1,0 +1,1 @@
+SELECT cron.unschedule(4); SELECT cron.unschedule(5);
