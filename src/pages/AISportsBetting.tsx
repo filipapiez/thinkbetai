@@ -3,10 +3,60 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-
-import { Brain, BarChart3, Zap, Target, CheckCircle, ArrowRight, MessageSquare, Layers, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
+/**
+ * Performance: this page targets the "ai sports betting" / "ai betting" head terms
+ * (top traffic page in GSC). It is intentionally lightweight — no radix Accordion,
+ * no lucide-react barrel — to keep mobile LCP low. Use the inline icons below.
+ */
+
+// Tiny inline icons (replace lucide-react to shrink the route chunk)
+const Icon = ({ d, className = 'h-6 w-6' }: { d: string; className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d={d} />
+  </svg>
+);
+const BrainIcon = (p: { className?: string }) => (
+  <Icon
+    {...p}
+    d="M9.5 2a2.5 2.5 0 0 0-2.5 2.5v0A2.5 2.5 0 0 0 4.5 7v0A2.5 2.5 0 0 0 3 9.5v0A2.5 2.5 0 0 0 4.5 12v0A2.5 2.5 0 0 0 3 14.5v0A2.5 2.5 0 0 0 4.5 17v0A2.5 2.5 0 0 0 7 19.5v0A2.5 2.5 0 0 0 9.5 22a2.5 2.5 0 0 0 2.5-2.5V4.5A2.5 2.5 0 0 0 9.5 2zM14.5 2a2.5 2.5 0 0 1 2.5 2.5v0A2.5 2.5 0 0 1 19.5 7v0A2.5 2.5 0 0 1 21 9.5v0a2.5 2.5 0 0 1-1.5 2.5v0A2.5 2.5 0 0 1 21 14.5v0a2.5 2.5 0 0 1-1.5 2.5v0A2.5 2.5 0 0 1 17 19.5v0a2.5 2.5 0 0 1-2.5 2.5 2.5 2.5 0 0 1-2.5-2.5V4.5A2.5 2.5 0 0 1 14.5 2z"
+  />
+);
+const ZapIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+);
+const ChartIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M3 3v18h18 M7 16V10 M12 16V6 M17 16v-4" />
+);
+const TargetIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+);
+const ArrowRight = (p: { className?: string }) => (
+  <Icon {...p} d="M5 12h14 M12 5l7 7-7 7" />
+);
+const CheckIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M21.8 10A10 10 0 1 1 12 2 M9 11l3 3L22 4" />
+);
+const LayersIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M12 2 2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5" />
+);
+const MessageIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+);
+const UserPlusIcon = (p: { className?: string }) => (
+  <Icon {...p} d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M8.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M20 8v6 M23 11h-6" />
+);
 
 const faqs = [
   {
@@ -78,8 +128,8 @@ const AISportsBetting = () => {
         url="/ai-sports-betting"
         type="article"
         structuredData={{
-          "@context": "https://schema.org",
-          "@graph": [faqSchema, softwareSchema],
+          '@context': 'https://schema.org',
+          '@graph': [faqSchema, softwareSchema],
         }}
       />
 
@@ -94,7 +144,7 @@ const AISportsBetting = () => {
           className="mb-8"
         />
 
-        {/* Hero */}
+        {/* Hero — LCP element. Keep above the fold and free of layout-shifting siblings. */}
         <header className="mb-14">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
             AI Sports Betting Platform
@@ -109,79 +159,50 @@ const AISportsBetting = () => {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link to="/picks">
-                Get AI Predictions
-              </Link>
+              <Link to="/picks">Get AI Predictions</Link>
             </Button>
           </div>
         </header>
 
         <article className="prose prose-lg dark:prose-invert max-w-none">
-          {/* Section 1 */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
-              <Brain className="h-6 w-6 text-primary" />
+              <BrainIcon className="h-6 w-6 text-primary" />
               What Is AI Betting?
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-             AI betting uses machine learning algorithms to analyze vast amounts of sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. As the <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">best AI betting tool</Link> available, ThinkBetAI processes thousands of variables simultaneously to surface edges that human analysis might miss.
+              AI betting uses machine learning algorithms to analyze vast amounts of sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. As the <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">best AI betting tool</Link> available, ThinkBetAI processes thousands of variables simultaneously to surface edges that human analysis might miss.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               The result is a set of data-driven <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting picks</Link> and confidence scores that help bettors make more informed decisions. This <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting software</Link> isn't a crystal ball — it's a smarter starting point.
             </p>
           </section>
 
-          {/* Section 2 */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
-              <Zap className="h-6 w-6 text-primary" />
+              <ZapIcon className="h-6 w-6 text-primary" />
               How ThinkBetAI Generates AI Bets
             </h2>
             <div className="space-y-6">
-              <div className="glass-card p-5">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-primary font-bold">1.</span> Real-Time Data Collection
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  We pull live odds, injury reports, lineup changes, and performance metrics from multiple sources every few minutes so models always work with the freshest data.
-                </p>
-              </div>
-              <div className="glass-card p-5">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-primary font-bold">2.</span> Multi-Model Analysis
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Our AI engine runs several specialized models — regression, gradient boosting, and neural networks — then ensembles the outputs into a single probability estimate for each market.
-                </p>
-              </div>
-              <div className="glass-card p-5">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-primary font-bold">3.</span> Edge Detection & Qualification
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  The system compares its probability to the implied probability of the current odds. Only picks that meet a minimum edge threshold are surfaced as qualified AI betting predictions.
-                </p>
-              </div>
-              <div className="glass-card p-5">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <span className="text-primary font-bold">4.</span> Plain-Language Explanations
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Every pick comes with a confidence rating, risk meter, and a short explanation so you know <em>why</em> the AI likes the bet — not just <em>that</em> it does.
-                </p>
-              </div>
-            </div>
-
-            {/* Screenshot placeholder */}
-            <div className="mt-8 rounded-xl border border-border bg-muted/30 flex items-center justify-center h-56 text-muted-foreground text-sm">
-              [ Screenshot: ThinkBetAI pick card with confidence score & explanation ]
+              {[
+                ['Real-Time Data Collection', 'We pull live odds, injury reports, lineup changes, and performance metrics from multiple sources every few minutes so models always work with the freshest data.'],
+                ['Multi-Model Analysis', 'Our AI engine runs several specialized models — regression, gradient boosting, and neural networks — then ensembles the outputs into a single probability estimate for each market.'],
+                ['Edge Detection & Qualification', 'The system compares its probability to the implied probability of the current odds. Only picks that meet a minimum edge threshold are surfaced as qualified AI betting predictions.'],
+                ['Plain-Language Explanations', 'Every pick comes with a confidence rating, risk meter, and a short explanation so you know why the AI likes the bet — not just that it does.'],
+              ].map(([title, body], i) => (
+                <div key={i} className="glass-card p-5">
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    <span className="text-primary font-bold">{i + 1}.</span> {title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{body}</p>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Section 3 */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <ChartIcon className="h-6 w-6 text-primary" />
               AI Betting Predictions Today
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
@@ -195,17 +216,11 @@ const AISportsBetting = () => {
                 <Link to="/games">Browse Live Games</Link>
               </Button>
             </div>
-
-            {/* Screenshot placeholder */}
-            <div className="mt-8 rounded-xl border border-border bg-muted/30 flex items-center justify-center h-56 text-muted-foreground text-sm">
-              [ Screenshot: Picks page showing today's AI predictions ]
-            </div>
           </section>
 
-          {/* Section 4 */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
-              <Target className="h-6 w-6 text-primary" />
+              <TargetIcon className="h-6 w-6 text-primary" />
               Why AI Betting Is More Accurate
             </h2>
             <ul className="space-y-3 text-muted-foreground">
@@ -217,7 +232,7 @@ const AISportsBetting = () => {
                 'Adapts to sport-specific nuances (pace of play, park factors, altitude, etc.).',
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                  <CheckIcon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -227,51 +242,56 @@ const AISportsBetting = () => {
             </p>
           </section>
 
-          {/* Internal links section */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-6">Explore More AI Betting Tools</h2>
             <div className="grid sm:grid-cols-3 gap-4">
-              <Link
-                to="/ai-parlay-builder"
-                className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors"
-              >
-                <Layers className="h-8 w-8 text-primary" />
+              <Link to="/ai-parlay-builder" className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors">
+                <LayersIcon className="h-8 w-8 text-primary" />
                 <span className="font-semibold">AI Parlay Builder</span>
                 <span className="text-xs text-muted-foreground">Build smarter parlays with AI-correlated picks</span>
               </Link>
-              <Link
-                to="/chat"
-                className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors"
-              >
-                <MessageSquare className="h-8 w-8 text-primary" />
+              <Link to="/chat" className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors">
+                <MessageIcon className="h-8 w-8 text-primary" />
                 <span className="font-semibold">AI Betting Chat</span>
                 <span className="text-xs text-muted-foreground">Ask our AI anything about today's games</span>
               </Link>
-              <Link
-                to="/login"
-                className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors"
-              >
-                <UserPlus className="h-8 w-8 text-primary" />
+              <Link to="/login" className="glass-card p-5 flex flex-col items-center text-center gap-3 hover:border-primary/30 transition-colors">
+                <UserPlusIcon className="h-8 w-8 text-primary" />
                 <span className="font-semibold">Sign Up Free</span>
                 <span className="text-xs text-muted-foreground">Create an account and start getting AI picks</span>
               </Link>
             </div>
           </section>
 
-          {/* FAQs */}
+          {/* FAQs — native <details> instead of radix Accordion to avoid pulling
+              @radix-ui/react-accordion (~15KB) into this route's lazy chunk. */}
           <section className="mb-14">
             <h2 className="text-2xl font-semibold mb-6">FAQs About AI Betting</h2>
-            <Accordion type="single" collapsible className="w-full">
+            <div className="divide-y divide-border border-y border-border">
               {faqs.map((f, i) => (
-                <AccordionItem key={i} value={`faq-${i}`}>
-                  <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
-                </AccordionItem>
+                <details key={i} className="group py-4">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
+                    <span>{f.q}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </summary>
+                  <p className="mt-3 text-muted-foreground">{f.a}</p>
+                </details>
               ))}
-            </Accordion>
+            </div>
           </section>
 
-          {/* Bottom CTA */}
           <section className="rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center">
             <h2 className="text-2xl font-bold mb-3">Ready to Try AI Bets?</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
@@ -290,7 +310,6 @@ const AISportsBetting = () => {
           </section>
         </article>
 
-        {/* Nav */}
         <div className="flex flex-wrap gap-4 mt-12 pt-8 border-t border-border">
           <Button variant="outline" asChild>
             <Link to="/blog">← Back to Blog</Link>
