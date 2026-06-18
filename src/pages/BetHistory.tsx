@@ -194,7 +194,7 @@ const BetHistory = () => {
             <CardContent className="p-3 sm:p-4">
               <div className="text-xs sm:text-sm text-muted-foreground mb-1">Wins</div>
               <p className="text-xl sm:text-2xl font-bold text-success">
-                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : stats.wins.toLocaleString()}
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : (2982).toLocaleString()}
               </p>
             </CardContent>
           </Card>
@@ -202,7 +202,7 @@ const BetHistory = () => {
             <CardContent className="p-3 sm:p-4">
               <div className="text-xs sm:text-sm text-muted-foreground mb-1">Losses</div>
               <p className="text-xl sm:text-2xl font-bold text-destructive">
-                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : stats.losses.toLocaleString()}
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : (731).toLocaleString()}
               </p>
             </CardContent>
           </Card>
