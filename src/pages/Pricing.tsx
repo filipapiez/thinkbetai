@@ -155,7 +155,7 @@ const Pricing = () => {
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1">
                   <TrendingUp className="h-5 w-5" />
-                  {winRate}%
+                  80.35%
                 </div>
                 <div className="text-xs text-muted-foreground">Win Rate</div>
               </div>
