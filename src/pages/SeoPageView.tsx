@@ -393,16 +393,16 @@ const SeoPageView = ({ pageType }: Props) => {
           </Card>
         )}
 
-        {/* Team / daily-best / league / hub upcoming games list */}
+        {/* Upcoming games list — rendered as plain text now that the
+            per-game /predictions/* pages have been retired. */}
         {(c.upcomingGames?.length > 0 || c.games?.length > 0) && (
           <Card variant="glass" className="mb-6">
             <CardHeader><CardTitle>Upcoming Games</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {(c.upcomingGames ?? c.games).map((g: any, i: number) => (
-                <Link
+                <div
                   key={i}
-                  to={`/predictions/${g.slug}`}
-                  className="flex items-center justify-between p-3 rounded border border-border hover:bg-accent/30 transition"
+                  className="flex items-center justify-between p-3 rounded border border-border"
                 >
                   <span className="flex flex-col">
                     <span>
@@ -414,10 +414,14 @@ const SeoPageView = ({ pageType }: Props) => {
                       </span>
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
                     {g.commenceTime && new Date(g.commenceTime).toLocaleDateString()}
-                    <ArrowRight className="h-4 w-4" />
                   </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
                 </Link>
               ))}
             </CardContent>
