@@ -422,11 +422,6 @@ const SeoPageView = ({ pageType }: Props) => {
             </CardContent>
           </Card>
         )}
-                </Link>
-              ))}
-            </CardContent>
-          </Card>
-        )}
 
         {/* FAQ section */}
         {Array.isArray(c.faq) && c.faq.length > 0 && (
