@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -7,6 +8,10 @@ import { Home, Search } from 'lucide-react';
 const NotFound = () => {
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Page Not Found — ThinkBetAI</title>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Header />
       
       <main className="flex-1 flex items-center justify-center py-16">

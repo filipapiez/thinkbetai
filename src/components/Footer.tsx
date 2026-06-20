@@ -36,9 +36,8 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 text-sm">Explore</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/predictions" className="hover:text-foreground transition-colors">All Game Predictions</Link></li>
-              <li><Link to="/teams" className="hover:text-foreground transition-colors">All Team Pages</Link></li>
-              <li><Link to="/best" className="hover:text-foreground transition-colors">Best Picks by Sport</Link></li>
+              <li><Link to="/free-ai-predictions" className="hover:text-foreground transition-colors">Free AI Predictions</Link></li>
+              <li><Link to="/ai-sports-picks" className="hover:text-foreground transition-colors">AI Sports Picks</Link></li>
               <li><Link to="/best-ai-betting-app" className="hover:text-foreground transition-colors">Best AI Betting App 2026</Link></li>
               <li><Link to="/bet-ai" className="hover:text-foreground transition-colors">Bet AI</Link></li>
               <li><Link to="/betting-ai" className="hover:text-foreground transition-colors">Betting AI</Link></li>

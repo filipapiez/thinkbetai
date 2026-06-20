@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Client-side www → non-www redirect (fallback only; the real
+         301 should be configured at the domain/CDN layer). Runs before
+         anything else so crawlers and users land on the canonical host. -->
+    <script>
+      (function () {
+        try {
+          if (location.host === 'www.thinkbetai.com') {
+            location.replace('https://thinkbetai.com' + location.pathname + location.search + location.hash);
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!-- Google tag (gtag.js) - deferred for FCP -->
     <script>
       window.dataLayer = window.dataLayer || [];

@@ -21,27 +21,21 @@ interface SeoPage {
   updated_at: string;
 }
 
+// Only "best" (daily_best) and "league" remain — all other programmatic
+// page types were retired for SEO hygiene. Remaining pages are kept live
+// but noindex so we can improve them later without Google penalising the
+// domain for thin content.
 interface Props {
-  pageType: "game" | "team" | "player" | "prop" | "best" | "matchup" | "league";
+  pageType: "best" | "league";
 }
 
 const TYPE_FILTER: Record<Props["pageType"], string[]> = {
-  game: ["game_preview", "game_result"],
-  team: ["team"],
-  player: ["player"],
-  prop: ["player_prop"],
   best: ["daily_best"],
-  matchup: ["matchup"],
   league: ["league"],
 };
 
 const URL_PREFIX: Record<Props["pageType"], string> = {
-  game: "/predictions/",
-  team: "/teams/",
-  player: "/players/",
-  prop: "/props/",
   best: "/best/",
-  matchup: "/matchups/",
   league: "/leagues/",
 };
 
@@ -94,19 +88,16 @@ const SeoPageView = ({ pageType }: Props) => {
     }
     canonical.href = url;
 
-    // Most generated SEO pages are indexable, but past/stale game results
-    // have low ongoing value — noindex them to preserve crawl budget so
-    // Google focuses on upcoming previews and evergreen hub pages.
-    const isStalePastGame =
-      page.status === "stale" ||
-      page.page_type === "game_result";
+    // All remaining programmatic page types (daily_best, league) are kept
+    // live but NOINDEX while their content is improved. Google must still
+    // be able to crawl them (no robots.txt block) to see this tag.
     let robotsTag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robotsTag) {
       robotsTag = document.createElement("meta");
       robotsTag.name = "robots";
       document.head.appendChild(robotsTag);
     }
-    robotsTag.content = isStalePastGame ? "noindex, follow" : "index, follow";
+    robotsTag.content = "noindex, follow";
 
     // JSON-LD: BreadcrumbList + FAQPage + SportsEvent
     const c = page.content_json || {};
