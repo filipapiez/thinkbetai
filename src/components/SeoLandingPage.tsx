@@ -14,31 +14,16 @@ interface Props {
   config: SeoLandingConfig;
 }
 
-const popularGameLinks = [
-  { label: "Today's NBA Best Bets", href: "/best/nba-best-bets-today" },
-  { label: "Today's NFL Best Bets", href: "/best/nfl-best-bets-today" },
-  { label: "Today's MLB Best Bets", href: "/best/mlb-best-bets-today" },
-  { label: "Today's UFC Best Bets", href: "/best/ufc-best-bets-today" },
-  { label: "Best Underdogs Today", href: "/best/best-underdogs-today" },
-  { label: "Sharp Money Picks", href: "/best/sharp-money-today" },
-];
-
-const teamLinks = [
-  { label: "Los Angeles Lakers", href: "/teams/nba-los-angeles-lakers" },
-  { label: "Boston Celtics", href: "/teams/nba-boston-celtics" },
-  { label: "Kansas City Chiefs", href: "/teams/nfl-kansas-city-chiefs" },
-  { label: "Dallas Cowboys", href: "/teams/nfl-dallas-cowboys" },
-  { label: "New York Yankees", href: "/teams/mlb-new-york-yankees" },
-  { label: "Manchester City", href: "/teams/soccer-manchester-city" },
-];
-
-const playerLinks = [
-  { label: "Jayson Tatum Props", href: "/players/nba-jayson-tatum" },
-  { label: "LeBron James Props", href: "/players/nba-lebron-james" },
-  { label: "Patrick Mahomes Props", href: "/players/nfl-patrick-mahomes" },
-  { label: "Aaron Judge Props", href: "/players/mlb-aaron-judge" },
-  { label: "Nikola Jokić Props", href: "/players/nba-nikola-jokic" },
-  { label: "Connor McDavid Props", href: "/players/nhl-connor-mcdavid" },
+// Removed popularGameLinks, teamLinks, playerLinks — they pointed to
+// retired programmatic pages (/best/*, /teams/*, /players/*). Internal
+// linking now only goes to evergreen marketing pages.
+const sportLandingLinks = [
+  { label: "AI NFL Picks", href: "/ai-nfl-picks" },
+  { label: "NBA AI Predictions", href: "/nba-ai-predictions" },
+  { label: "MLB AI Predictions", href: "/mlb-ai-predictions" },
+  { label: "NHL AI Predictions", href: "/nhl-ai-predictions" },
+  { label: "UFC AI Predictions", href: "/ufc-ai-predictions" },
+  { label: "Soccer AI Predictions", href: "/soccer-ai-predictions" },
 ];
 
 const toolLinks = [
@@ -191,38 +176,10 @@ export const SeoLandingPage = ({ config }: Props) => {
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" /> Today's Top Game Predictions
+                <TrendingUp className="h-5 w-5 text-primary" /> Sport-Specific AI Predictions
               </h3>
-              <ul className="grid grid-cols-1 gap-2 text-sm">
-                {popularGameLinks.map((l) => (
-                  <li key={l.href}>
-                    <Link to={l.href} className="text-primary hover:underline">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-bold mb-3">Popular Team Predictions</h3>
               <ul className="grid grid-cols-2 gap-2 text-sm">
-                {teamLinks.map((l) => (
-                  <li key={l.href}>
-                    <Link to={l.href} className="text-primary hover:underline">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-bold mb-3">Top Player Prop Pages</h3>
-              <ul className="grid grid-cols-2 gap-2 text-sm">
-                {playerLinks.map((l) => (
+                {sportLandingLinks.map((l) => (
                   <li key={l.href}>
                     <Link to={l.href} className="text-primary hover:underline">
                       {l.label}

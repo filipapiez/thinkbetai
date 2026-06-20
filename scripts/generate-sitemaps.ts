@@ -1,155 +1,142 @@
-// Generates sitemap-blog.xml, sitemap-dynamic.xml, and sitemap-index.xml.
-// Runs via npm predev/prebuild hooks so newly added blog posts and seo_pages
-// rows are always picked up AND served from the same hostname as the site
-// (Google ignores cross-domain sitemap URLs unless the other host is also
-// a verified property).
-import { writeFileSync } from "fs";
+// Generates a single, clean public/sitemap.xml containing ONLY real,
+// indexable pages: homepage, core marketing routes, keyword-cluster
+// landing pages, and every blog post.
+//
+// Does NOT include the retired programmatic page types (game_preview,
+// game_result, team, player, player_prop, matchup) or the noindex-only
+// hubs (daily_best, league). Including a noindex URL in sitemap.xml
+// would waste crawl budget and is explicitly against Google guidance.
+//
+// Runs via npm predev/prebuild hooks.
+
+import { writeFileSync, existsSync, unlinkSync } from "fs";
 import { resolve } from "path";
-import { createClient } from "@supabase/supabase-js";
 import { blogPosts } from "../src/lib/blogData";
 
 const BASE = "https://thinkbetai.com";
 const today = new Date().toISOString().slice(0, 10);
 
-// -------------------------------------------------------------------
-// 1) Blog sitemap — derived from blogPosts so new entries auto-appear.
-// -------------------------------------------------------------------
-const blogUrls = blogPosts
-  .map((p) => {
-    const lastmod = (p.publishedAt || today).slice(0, 10);
-    return `  <url>\n    <loc>${BASE}/blog/${p.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
-  })
-  .join("\n");
+interface Entry {
+  path: string;
+  changefreq?: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
+  priority?: string;
+  lastmod?: string;
+}
 
-const blogXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${BASE}/blog</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-${blogUrls}
-</urlset>`;
+// 1) Homepage
+const homepage: Entry = { path: "/", changefreq: "daily", priority: "1.0" };
 
-writeFileSync(resolve("public/sitemap-blog.xml"), blogXml);
+// 2) Core marketing / feature pages
+const marketing: Entry[] = [
+  { path: "/ai-sports-betting", changefreq: "weekly", priority: "0.95" },
+  { path: "/ai-parlay-builder", changefreq: "weekly", priority: "0.95" },
+  { path: "/ai-bet-analyzer", changefreq: "weekly", priority: "0.95" },
+  { path: "/ai-sports-picks", changefreq: "daily", priority: "0.95" },
+  { path: "/best-ai-sports-betting-tools", changefreq: "monthly", priority: "0.9" },
+  { path: "/best-ai-betting-app", changefreq: "monthly", priority: "0.9" },
+  { path: "/free-ai-predictions", changefreq: "daily", priority: "0.9" },
+  { path: "/what-is-ai-sports-betting", changefreq: "monthly", priority: "0.8" },
+  { path: "/how-it-works", changefreq: "monthly", priority: "0.8" },
+  { path: "/track-record", changefreq: "weekly", priority: "0.85" },
+  { path: "/pricing", changefreq: "monthly", priority: "0.8" },
+  { path: "/about", changefreq: "monthly", priority: "0.6" },
+  { path: "/faq", changefreq: "monthly", priority: "0.7" },
+  { path: "/responsible-gambling", changefreq: "yearly", priority: "0.4" },
+];
 
-// -------------------------------------------------------------------
-// 2) Dynamic sitemap — pulled from seo_pages and written as a STATIC
-//    file on thinkbetai.com so Google accepts the URLs (same-hostname
-//    rule). Falls back to the edge function output if direct DB read
-//    fails, and leaves the existing file untouched if both fail.
-// -------------------------------------------------------------------
-// Expose all SEO page types now that 700+ pages exist. Google needs the
-// full set in the sitemap to discover and crawl them.
-const ALLOWED_PAGE_TYPES = new Set([
-  "daily_best",
-  "team",
-  "game_preview",
-  "game_result",
-  "player",
-  "player_prop",
-  "matchup",
-  "league",
-]);
-const PATH_MAP: Record<string, string> = {
-  daily_best: "/best/",
-  team: "/teams/",
-  game_preview: "/predictions/",
-  game_result: "/predictions/",
-  player: "/players/",
-  player_prop: "/props/",
-  matchup: "/matchups/",
-  league: "/leagues/",
-};
-const PRIO: Record<string, string> = {
-  daily_best: "0.85",
-  game_preview: "0.8",
-  matchup: "0.75",
-  league: "0.7",
-  team: "0.6",
-  player: "0.6",
-  player_prop: "0.6",
-  game_result: "0.4",
-};
-const FREQ: Record<string, string> = {
-  daily_best: "daily",
-  game_preview: "daily",
-  matchup: "daily",
-  league: "weekly",
-  team: "weekly",
-  player: "weekly",
-  player_prop: "daily",
-  game_result: "monthly",
-};
+// 3) Sport-level + keyword-cluster landing pages (all SeoLanding routes
+//    declared in src/App.tsx).
+const sportLandings: Entry[] = [
+  "/ai-nfl-picks",
+  "/nfl-ai-predictions",
+  "/nba-ai-predictions",
+  "/mlb-ai-predictions",
+  "/nhl-ai-predictions",
+  "/ufc-ai-predictions",
+  "/soccer-ai-predictions",
+  "/ai-player-prop-predictions",
+  "/ai-pick-of-the-day",
+  "/ai-underdog-picks",
+  "/ai-against-the-spread-picks",
+].map((path) => ({ path, changefreq: "weekly" as const, priority: "0.85" }));
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://fmrcmbdgmhoylmxbapdr.supabase.co";
-const SUPABASE_ANON = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+const keywordLandings: Entry[] = [
+  "/ai-sports-predictions",
+  "/ai-betting-predictions",
+  "/best-ai-betting-picks",
+  "/free-ai-sports-predictions",
+  "/free-ai-sports-predictions-today",
+  "/sports-betting-ai",
+  "/ai-sports-picks-today",
+  "/ai-sports-predictor",
+  "/ai-betting-app",
+  "/ai-betting-assistant",
+  "/ai-parlay-generator",
+  "/free-ai-parlay-generator",
+  "/parlay-builder",
+  "/parlay-maker-ai",
+  "/thinkbetai-reviews",
+  "/bet-ai",
+  "/betting-ai",
+  "/ai-betting",
+  "/ai-bets",
+  "/ai-bet",
+  "/ai-picks",
+  "/free-ai-sports-betting-app",
+  "/ai-bets-prediction",
+].map((path) => ({ path, changefreq: "weekly" as const, priority: "0.75" }));
 
-async function buildDynamicXml(): Promise<string | null> {
-  // Try direct DB read first (most reliable, no edge cold-start)
-  try {
-    if (!SUPABASE_ANON) throw new Error("no anon key");
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
-    const rows: { page_type: string; slug: string; updated_at: string | null; created_at: string }[] = [];
-    let from = 0;
-    const PAGE = 1000;
-    while (true) {
-      const { data, error } = await supabase
-        .from("seo_pages")
-        .select("page_type, slug, updated_at, created_at")
-        .in("page_type", Array.from(ALLOWED_PAGE_TYPES))
-        .range(from, from + PAGE - 1);
-      if (error) throw error;
-      if (!data || data.length === 0) break;
-      rows.push(...(data as any[]));
-      if (data.length < PAGE) break;
-      from += PAGE;
+// 4) Blog
+const blogIndex: Entry = { path: "/blog", changefreq: "weekly", priority: "0.8" };
+const blogEntries: Entry[] = blogPosts.map((p) => ({
+  path: `/blog/${p.slug}`,
+  lastmod: (p.publishedAt || today).slice(0, 10),
+  changefreq: "monthly",
+  priority: "0.7",
+}));
+
+const all: Entry[] = [
+  homepage,
+  ...marketing,
+  ...sportLandings,
+  ...keywordLandings,
+  blogIndex,
+  ...blogEntries,
+];
+
+function renderUrl(e: Entry): string {
+  const parts = [
+    `  <url>`,
+    `    <loc>${BASE}${e.path}</loc>`,
+    `    <lastmod>${e.lastmod ?? today}</lastmod>`,
+    e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
+    e.priority ? `    <priority>${e.priority}</priority>` : null,
+    `  </url>`,
+  ].filter(Boolean);
+  return parts.join("\n");
+}
+
+const xml = [
+  `<?xml version="1.0" encoding="UTF-8"?>`,
+  `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+  ...all.map(renderUrl),
+  `</urlset>`,
+  ``,
+].join("\n");
+
+writeFileSync(resolve("public/sitemap.xml"), xml);
+
+// Remove the legacy split-sitemap files so Google doesn't keep crawling
+// stale URLs from them. robots.txt now points at /sitemap.xml only.
+for (const stale of ["sitemap-index.xml", "sitemap-blog.xml", "sitemap-dynamic.xml"]) {
+  const p = resolve("public", stale);
+  if (existsSync(p)) {
+    try {
+      unlinkSync(p);
+    } catch {
+      /* ignore */
     }
-    const urls = rows
-      .map((r) => {
-        const base = PATH_MAP[r.page_type];
-        if (!base) return null;
-        const lm = (r.updated_at || r.created_at).slice(0, 10);
-        return `  <url><loc>${BASE}${base}${r.slug}</loc><lastmod>${lm}</lastmod><changefreq>${FREQ[r.page_type] || "weekly"}</changefreq><priority>${PRIO[r.page_type] || "0.7"}</priority></url>`;
-      })
-      .filter(Boolean)
-      .join("\n");
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
-  } catch (e) {
-    console.warn("dynamic sitemap DB read failed:", (e as Error).message);
-    return null;
   }
 }
 
-const dynamicXml = await buildDynamicXml();
-let dynamicCount = 0;
-if (dynamicXml) {
-  writeFileSync(resolve("public/sitemap-dynamic.xml"), dynamicXml);
-  dynamicCount = (dynamicXml.match(/<url>/g) || []).length;
-} else {
-  console.warn("⚠ sitemap-dynamic.xml not regenerated — keeping existing file (if any).");
-}
-
-// -------------------------------------------------------------------
-// 3) Sitemap index — now all on thinkbetai.com (no cross-domain refs).
-// -------------------------------------------------------------------
-const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>${BASE}/sitemap.xml</loc>
-    <lastmod>${today}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>${BASE}/sitemap-blog.xml</loc>
-    <lastmod>${today}</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>${BASE}/sitemap-dynamic.xml</loc>
-    <lastmod>${today}</lastmod>
-  </sitemap>
-</sitemapindex>`;
-
-writeFileSync(resolve("public/sitemap-index.xml"), indexXml);
-
-console.log(`✓ sitemaps written — blog: ${blogPosts.length}, dynamic: ${dynamicCount}`);
+console.log(`✓ sitemap.xml written (${all.length} URLs, all 200-status indexable)`);

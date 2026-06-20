@@ -114,16 +114,12 @@ const App = () => (
                 <Route path="/bet-history" element={<BetHistory />} />
                 <Route path="/game-totals" element={<GameTotals />} />
 
-                {/* Auto-generated SEO pages */}
-                <Route path="/teams" element={<SeoIndex variant="teams" />} />
-                <Route path="/predictions" element={<SeoIndex variant="predictions" />} />
+                {/* Auto-generated SEO pages (live but noindex — see SeoPageView/SeoIndex).
+                    Removed for SEO hygiene (Dec 2026): /predictions, /predictions/:slug,
+                    /teams, /teams/:slug, /players/:slug, /props/:slug, /matchups/:slug.
+                    These now fall through to the 404 route and are noindex-by-default. */}
                 <Route path="/best" element={<SeoIndex variant="best" />} />
-                <Route path="/predictions/:slug" element={<SeoPageView pageType="game" />} />
-                <Route path="/teams/:slug" element={<SeoPageView pageType="team" />} />
-                <Route path="/players/:slug" element={<SeoPageView pageType="player" />} />
-                <Route path="/props/:slug" element={<SeoPageView pageType="prop" />} />
                 <Route path="/best/:slug" element={<SeoPageView pageType="best" />} />
-                <Route path="/matchups/:slug" element={<SeoPageView pageType="matchup" />} />
                 <Route path="/leagues/:slug" element={<SeoPageView pageType="league" />} />
 
                 {/* Permanent SEO landing pages (high-intent keyword clusters) */}

@@ -21,27 +21,21 @@ interface SeoPage {
   updated_at: string;
 }
 
+// Only "best" (daily_best) and "league" remain — all other programmatic
+// page types were retired for SEO hygiene. Remaining pages are kept live
+// but noindex so we can improve them later without Google penalising the
+// domain for thin content.
 interface Props {
-  pageType: "game" | "team" | "player" | "prop" | "best" | "matchup" | "league";
+  pageType: "best" | "league";
 }
 
 const TYPE_FILTER: Record<Props["pageType"], string[]> = {
-  game: ["game_preview", "game_result"],
-  team: ["team"],
-  player: ["player"],
-  prop: ["player_prop"],
   best: ["daily_best"],
-  matchup: ["matchup"],
   league: ["league"],
 };
 
 const URL_PREFIX: Record<Props["pageType"], string> = {
-  game: "/predictions/",
-  team: "/teams/",
-  player: "/players/",
-  prop: "/props/",
   best: "/best/",
-  matchup: "/matchups/",
   league: "/leagues/",
 };
 
@@ -94,19 +88,16 @@ const SeoPageView = ({ pageType }: Props) => {
     }
     canonical.href = url;
 
-    // Most generated SEO pages are indexable, but past/stale game results
-    // have low ongoing value — noindex them to preserve crawl budget so
-    // Google focuses on upcoming previews and evergreen hub pages.
-    const isStalePastGame =
-      page.status === "stale" ||
-      page.page_type === "game_result";
+    // All remaining programmatic page types (daily_best, league) are kept
+    // live but NOINDEX while their content is improved. Google must still
+    // be able to crawl them (no robots.txt block) to see this tag.
     let robotsTag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
     if (!robotsTag) {
       robotsTag = document.createElement("meta");
       robotsTag.name = "robots";
       document.head.appendChild(robotsTag);
     }
-    robotsTag.content = isStalePastGame ? "noindex, follow" : "index, follow";
+    robotsTag.content = "noindex, follow";
 
     // JSON-LD: BreadcrumbList + FAQPage + SportsEvent
     const c = page.content_json || {};
@@ -402,16 +393,16 @@ const SeoPageView = ({ pageType }: Props) => {
           </Card>
         )}
 
-        {/* Team / daily-best / league / hub upcoming games list */}
+        {/* Upcoming games list — rendered as plain text now that the
+            per-game /predictions/* pages have been retired. */}
         {(c.upcomingGames?.length > 0 || c.games?.length > 0) && (
           <Card variant="glass" className="mb-6">
             <CardHeader><CardTitle>Upcoming Games</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {(c.upcomingGames ?? c.games).map((g: any, i: number) => (
-                <Link
+                <div
                   key={i}
-                  to={`/predictions/${g.slug}`}
-                  className="flex items-center justify-between p-3 rounded border border-border hover:bg-accent/30 transition"
+                  className="flex items-center justify-between p-3 rounded border border-border"
                 >
                   <span className="flex flex-col">
                     <span>
@@ -423,11 +414,10 @@ const SeoPageView = ({ pageType }: Props) => {
                       </span>
                     )}
                   </span>
-                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
                     {g.commenceTime && new Date(g.commenceTime).toLocaleDateString()}
-                    <ArrowRight className="h-4 w-4" />
                   </span>
-                </Link>
+                </div>
               ))}
             </CardContent>
           </Card>

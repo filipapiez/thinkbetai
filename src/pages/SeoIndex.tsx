@@ -15,8 +15,11 @@ interface SeoPageRow {
   game_date: string | null;
 }
 
+// Only "best" remains — /teams and /predictions hubs were retired for
+// SEO hygiene (thin programmatic content). This hub is kept live but
+// noindex while we improve it.
 interface Props {
-  variant: "teams" | "predictions" | "best";
+  variant: "best";
 }
 
 const CONFIG: Record<Props["variant"], {
@@ -28,24 +31,6 @@ const CONFIG: Record<Props["variant"], {
   urlPrefix: string;
   path: string;
 }> = {
-  teams: {
-    title: "All NFL, NBA, MLB & NHL Team Pages — AI Picks Hub | ThinkBetAI",
-    description: "Browse every team page on ThinkBetAI. Get AI-powered picks, upcoming games, schedules, and matchup analysis for every NFL, NBA, MLB, NHL, NCAA team.",
-    h1: "All Team Pages",
-    intro: "AI-powered analysis, upcoming games, and betting insights for every major team. Click any team for picks, props, and predictions.",
-    pageTypes: ["team"],
-    urlPrefix: "/teams/",
-    path: "/teams",
-  },
-  predictions: {
-    title: "All Game Predictions & Recaps — Daily AI Picks | ThinkBetAI",
-    description: "Browse every AI-powered game prediction and recap on ThinkBetAI. NFL, NBA, MLB, NHL, NCAA — daily picks, spread analysis, and win probabilities.",
-    h1: "All Game Predictions",
-    intro: "Every AI-generated game preview and recap with confidence scores, spread analysis, and matchup breakdowns.",
-    pageTypes: ["game_preview", "game_result"],
-    urlPrefix: "/predictions/",
-    path: "/predictions",
-  },
   best: {
     title: "Best AI Picks of the Day by Sport — ThinkBetAI",
     description: "The highest-confidence AI picks of the day for NFL, NBA, MLB, NHL, NCAA, UFC and more. Updated daily with simulation-backed predictions.",
@@ -110,6 +95,7 @@ const SeoIndex = ({ variant }: Props) => {
       <Helmet>
         <title>{cfg.title}</title>
         <meta name="description" content={cfg.description} />
+        <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href={url} />
         <meta property="og:title" content={cfg.title} />
         <meta property="og:description" content={cfg.description} />
@@ -161,15 +147,11 @@ const SeoIndex = ({ variant }: Props) => {
         )}
 
         <div className="mt-12 pt-8 border-t border-border flex flex-wrap gap-3 text-sm">
-          <Link to="/teams" className="text-primary hover:underline">All Teams</Link>
-          <span className="text-muted-foreground">·</span>
-          <Link to="/predictions" className="text-primary hover:underline">All Predictions</Link>
-          <span className="text-muted-foreground">·</span>
-          <Link to="/best" className="text-primary hover:underline">Best Picks</Link>
-          <span className="text-muted-foreground">·</span>
           <Link to="/ai-sports-picks" className="text-primary hover:underline">AI Sports Picks</Link>
           <span className="text-muted-foreground">·</span>
           <Link to="/ai-parlay-builder" className="text-primary hover:underline">AI Parlay Builder</Link>
+          <span className="text-muted-foreground">·</span>
+          <Link to="/free-ai-predictions" className="text-primary hover:underline">Free AI Predictions</Link>
         </div>
       </main>
 
