@@ -83,8 +83,8 @@ const LocalizedLanding = ({ locale, page }: Props) => {
           )}
 
           <div className="text-center py-12 px-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">{t.ctaBottomTitle}</h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">{t.ctaBottomSubtitle}</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">{'ctaBottomTitle' in t ? t.ctaBottomTitle : t.ctaPrimary}</h2>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">{'ctaBottomSubtitle' in t ? t.ctaBottomSubtitle : ''}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild><Link to="/games"><TrendingUp className="h-4 w-4 mr-2" />{'viewPicks' in t ? t.viewPicks : t.ctaPrimary}</Link></Button>
               <Button size="lg" variant="outline" asChild><Link to={lp('/pricing')}>{'ctaSecondary' in t ? t.ctaSecondary : 'unlockUnlimited' in t ? t.unlockUnlimited : getTranslations(locale).nav.pricing}</Link></Button>
