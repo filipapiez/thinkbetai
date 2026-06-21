@@ -43,6 +43,7 @@ const marketing: Entry[] = [
   { path: "/about", changefreq: "monthly", priority: "0.6" },
   { path: "/faq", changefreq: "monthly", priority: "0.7" },
   { path: "/responsible-gambling", changefreq: "yearly", priority: "0.4" },
+  { path: "/editorial-policy", changefreq: "yearly", priority: "0.5" },
 ];
 
 // 3) Sport-level + keyword-cluster landing pages (all SeoLanding routes

@@ -161,20 +161,20 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
   },
   {
     path: "/best-ai-sports-betting-tools",
-    title: "Best AI Sports Betting Tools: What to Compare (2026)",
+    title: "Best AI Sports Betting Tools Compared (2026)",
     description:
-      "Compare AI sports betting tools by data transparency, probability output, pricing, sport coverage, parlay analysis and responsible-use safeguards.",
-    h1: "Best AI Sports Betting Tools: What to Compare in 2026",
+      "An evidence-based comparison of ThinkBetAI, Rithmm, IABET, ParlAI, Outlier, Moddy and BetEdge by workflow, pricing and public proof.",
+    h1: "Best AI Sports Betting Tools: An Evidence-Based Comparison",
     intro:
-      "The best tool depends on the sport, market and analysis you need. This guide explains the criteria to inspect before choosing any AI betting platform.",
+      "The best tool depends on the workflow you need. This commercially disclosed guide compares current provider information and links directly to every source.",
     sections: [
       {
-        heading: "Prioritize transparency",
-        body: "Look for clear probability output, methodology, sample definitions, timestamped results and direct explanations of what the model does not know.",
+        heading: "Compare workflow, evidence and price",
+        body: "Rithmm and Moddy emphasize custom models, Outlier emphasizes market research, ParlAI emphasizes screenshot parlays, and ThinkBetAI emphasizes a lower-cost combined web toolkit.",
       },
       {
-        heading: "Compare the complete product",
-        body: "Sport coverage, pricing, data freshness, parlay support, account controls and responsible-use information matter alongside model performance.",
+        heading: "Verify every provider claim",
+        body: "Prices, trials and product capabilities change. Review the linked provider source, sample definitions, grading rules and limitations before purchasing.",
       },
     ],
     links: [
@@ -236,16 +236,16 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
   },
   {
     path: "/track-record",
-    title: "Track Record & Methodology | ThinkBetAI",
+    title: "Settled Pick Record & Grading Methodology | ThinkBetAI",
     description:
-      "Review how ThinkBetAI defines qualified picks, grades results and communicates the limits of historical model performance.",
-    h1: "ThinkBetAI Track Record and Methodology",
+      "Review ThinkBetAI's live settled-record summary, grading rules, sample limitations and methodology. Past performance does not guarantee future outcomes.",
+    h1: "Settled Pick Record and Methodology",
     intro:
-      "Performance figures only make sense when the sample, date range, qualification rules and grading process are stated clearly.",
+      "The page calculates its summary from settled database records and explains why aggregate product-reported results still require careful interpretation.",
     sections: [
       {
-        heading: "Qualified-pick criteria",
-        body: "A qualified pick must meet the documented confidence, data availability and market-price requirements before the event begins.",
+        heading: "Live settled-record summary",
+        body: "Only records marked as a settled win or loss are included. Pushes, pending events and unavailable outcomes are excluded from the displayed calculation.",
       },
       {
         heading: "Historical results have limits",
@@ -382,6 +382,31 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "How It Works", href: "/how-it-works" },
       { label: "Plans & Pricing", href: "/pricing" },
       { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/editorial-policy",
+    title: "Editorial Policy, AI Use & Corrections | ThinkBetAI",
+    description:
+      "Learn how ThinkBetAI handles data sources, AI-assisted content, performance claims, competitor comparisons, corrections and responsible language.",
+    h1: "Editorial Policy, AI Use and Corrections",
+    intro:
+      "This policy explains how ThinkBetAI verifies factual claims, labels commercial comparisons, handles AI-assisted content and responds to correction requests.",
+    sections: [
+      {
+        heading: "Performance and comparison standards",
+        body: "Performance references should define their sample and grading method. Competitor comparisons should disclose our commercial interest, link to provider sources and state when information was checked.",
+      },
+      {
+        heading: "Corrections and responsible language",
+        body: "Material errors should be corrected promptly. ThinkBetAI does not promise guaranteed wins or risk-free profit and requires clear discussion of uncertainty.",
+      },
+    ],
+    links: [
+      { label: "Track Record & Methodology", href: "/track-record" },
+      { label: "About ThinkBetAI", href: "/about" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      { label: "AI Tools Comparison", href: "/best-ai-sports-betting-tools" },
     ],
   },
   {

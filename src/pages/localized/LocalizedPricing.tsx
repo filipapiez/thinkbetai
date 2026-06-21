@@ -14,9 +14,9 @@ import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
 import { Locale, getTranslations, getLocalePath } from '@/lib/i18n';
 
 const pricingPlans = [
-  { id: 'basic', priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne', price: 4.99, originalPrice: 16.99, icon: Zap, popular: false },
-  { id: 'pro', priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY', price: 14.99, originalPrice: 49.99, icon: Crown, popular: true },
-  { id: 'insider', priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz', price: 49, originalPrice: 163, icon: Trophy, popular: false },
+  { id: 'basic', priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne', price: 4.99, icon: Zap, popular: false },
+  { id: 'pro', priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY', price: 13.99, icon: Crown, popular: true },
+  { id: 'insider', priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz', price: 49, icon: Trophy, popular: false },
 ];
 
 interface Props { locale: Exclude<Locale, 'en'>; }
@@ -55,7 +55,7 @@ const LocalizedPricing = ({ locale }: Props) => {
             <div className="inline-flex items-center gap-4 sm:gap-8 py-4 px-6 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50">
               <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1"><TrendingUp className="h-5 w-5" />{winRate}%</div><div className="text-xs text-muted-foreground">{t.winRateLabel}</div></div>
               <div className="h-10 w-px bg-border" />
-              <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div><div className="text-xs text-muted-foreground">{t.verifiedPicks}</div></div>
+              <div className="text-center"><div className="text-2xl sm:text-3xl font-bold text-primary">Risk</div><div className="text-xs text-muted-foreground">Context</div></div>
               <div className="h-10 w-px bg-border hidden sm:block" />
               <div className="text-center hidden sm:block"><div className="text-2xl sm:text-3xl font-bold text-accent flex items-center justify-center gap-1"><Check className="h-5 w-5" />{t.instantAccess.split(' ')[0]}</div><div className="text-xs text-muted-foreground">{t.instantAccess.split(' ')[1] || 'Access'}</div></div>
             </div>
@@ -84,7 +84,6 @@ const LocalizedPricing = ({ locale }: Props) => {
                     <div className="text-center mb-6 py-4 rounded-xl bg-muted/50">
                       <span className="inline-block mb-2 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">{t.save70}</span>
                       <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-lg text-muted-foreground line-through">${plan.originalPrice}</span>
                         <div className="flex items-baseline"><span className="text-lg text-muted-foreground">$</span><span className="text-5xl font-bold text-success">{plan.price}</span><span className="text-muted-foreground">{t.perMonth}</span></div>
                       </div>
                     </div>

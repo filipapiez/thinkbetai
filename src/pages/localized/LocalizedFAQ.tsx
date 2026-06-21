@@ -46,7 +46,7 @@ const LocalizedFAQ = ({ locale }: Props) => {
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-              {[{ val: '67%', label: t.aiAccuracy }, { val: '15+', label: t.sportsCovered }, { val: '50K+', label: t.gamesAnalyzed }, { val: '24/7', label: t.aiUpdates }].map(s => (
+              {[{ val: 'Model', label: t.aiAccuracy }, { val: '15+', label: t.sportsCovered }, { val: 'Risk', label: t.gamesAnalyzed }, { val: 'Clear', label: t.aiUpdates }].map(s => (
                 <div key={s.label} className="text-center p-4 rounded-xl bg-card/50 border border-border/50">
                   <div className="text-2xl font-bold text-primary">{s.val}</div>
                   <div className="text-sm text-muted-foreground">{s.label}</div>

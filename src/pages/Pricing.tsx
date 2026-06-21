@@ -18,7 +18,6 @@ const pricingPlans = [
     priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne',
     name: 'Basic',
     price: 4.99,
-    originalPrice: 16.99,
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -39,7 +38,6 @@ const pricingPlans = [
     priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY',
     name: 'Pro',
     price: 13.99,
-    originalPrice: 49.99,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -62,7 +60,6 @@ const pricingPlans = [
     priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     name: 'Insider',
     price: 49,
-    originalPrice: 163,
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -123,7 +120,7 @@ const Pricing = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-background to-primary/5">
       <SEO 
         title="ThinkBetAI Plans & Pricing | Compare Features"
-        description="Compare ThinkBetAI plans, included sports-analysis features, billing terms and free access before choosing the option that fits your research needs."
+        description="Compare ThinkBetAI plans starting at $4.99 per month, included sports-analysis features and billing terms before choosing a research workflow."
         keywords="AI betting subscription, sports betting plans, betting software pricing, AI predictions cost"
         url="/pricing"
       />
@@ -144,7 +141,7 @@ const Pricing = () => {
               Compare <span className="text-gradient">Plans and Features</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-              Choose the level of probability analysis and research tools that fits your workflow. Cancel anytime.
+              Paid plans start at $4.99 per month. Choose the analysis depth that fits your workflow and cancel anytime.
             </p>
             
             {/* Social Proof Stats */}
@@ -174,7 +171,7 @@ const Pricing = () => {
 
           {/* Pricing Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-4 max-w-6xl mx-auto items-stretch">
-            {pricingPlans.map((plan, index) => {
+            {pricingPlans.map((plan) => {
               const Icon = plan.icon;
               const isPopular = plan.popular;
               
@@ -212,11 +209,7 @@ const Pricing = () => {
                   <CardContent className="flex-1 flex flex-col">
                     {/* Price */}
                     <div className="text-center mb-6 py-4 rounded-xl bg-muted/50">
-                      <span className="inline-block mb-2 text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                        Save 70%
-                      </span>
-                      <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-lg text-muted-foreground line-through">${plan.originalPrice}</span>
+                      <div className="flex items-baseline justify-center">
                         <div className="flex items-baseline">
                           <span className="text-lg text-muted-foreground">$</span>
                           <span className="text-5xl font-bold text-success">{plan.price}</span>
@@ -272,6 +265,14 @@ const Pricing = () => {
                 </Card>
               );
             })}
+          </div>
+
+          <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
+            <p className="text-sm text-muted-foreground">
+              Comparing the market? Several reviewed competitors currently list entry paid plans from $19.99 to $49.95 per month. Prices and included features differ, so use our{' '}
+              <Link to="/best-ai-sports-betting-tools" className="font-medium text-primary hover:underline">evidence-based comparison</Link>{' '}
+              before deciding.
+            </p>
           </div>
 
           {/* Trust Badges */}

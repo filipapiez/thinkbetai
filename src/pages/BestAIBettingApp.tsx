@@ -26,7 +26,8 @@ const BestAIBettingApp = () => {
     "description": "Compare AI betting apps by probability analysis, sport coverage, pricing, transparency and responsible-use features.",
     "author": {
       "@type": "Organization",
-      "name": "ThinkBetAI"
+      "name": "ThinkBetAI Editorial Team",
+      "url": "https://thinkbetai.com/editorial-policy"
     },
     "publisher": {
       "@type": "Organization",
@@ -37,7 +38,7 @@ const BestAIBettingApp = () => {
       }
     },
     "datePublished": "2026-02-09",
-    "dateModified": "2026-02-09"
+    "dateModified": "2026-06-20"
   };
 
   const faqData = {
@@ -57,7 +58,7 @@ const BestAIBettingApp = () => {
         "name": "Are AI betting apps legal?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, AI betting apps that provide analysis and predictions are legal. They are informational tools that help users make informed decisions, not gambling platforms themselves."
+          "text": "Analytics software is generally distinct from a sportsbook, but gambling, marketing and data-use laws vary by location. Users should verify the rules that apply where they live."
         }
       },
       {
@@ -105,7 +106,7 @@ const BestAIBettingApp = () => {
           <header className="text-center mb-12">
             <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
               <Trophy className="h-3 w-3 mr-1" />
-              2026 Rankings
+              2026 Selection Guide
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
               Best AI Betting App: <span className="text-gradient">Features to Compare</span>
@@ -138,7 +139,7 @@ const BestAIBettingApp = () => {
                       <CheckCircle className="h-4 w-4" /> Published Methodology
                     </span>
                     <span className="flex items-center gap-1 text-success">
-                      <CheckCircle className="h-4 w-4" /> Real-Time Analysis
+                      <CheckCircle className="h-4 w-4" /> Timely Market Context
                     </span>
                     <span className="flex items-center gap-1 text-success">
                       <CheckCircle className="h-4 w-4" /> 15+ Sports
@@ -146,8 +147,8 @@ const BestAIBettingApp = () => {
                   </div>
                 </div>
                 <Button size="lg" asChild className="flex-shrink-0">
-                  <Link to="/games">
-                    Try Free
+                  <Link to="/pricing">
+                    Compare Plans
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
@@ -183,7 +184,7 @@ const BestAIBettingApp = () => {
 
             <h3>Key Evaluation Criteria</h3>
             <ul>
-              <li><strong>Accuracy:</strong> Win rate on qualified predictions over 6+ months</li>
+              <li><strong>Evidence:</strong> Sample size, date range, grading rules and whether losses remain visible</li>
               <li><strong>Coverage:</strong> Number of sports and bet types supported</li>
               <li><strong>Transparency:</strong> Clear explanations for each prediction</li>
               <li><strong>Real-time data:</strong> How frequently odds and analysis update</li>
@@ -197,7 +198,7 @@ const BestAIBettingApp = () => {
             <ul>
               <li>Documented qualification criteria and a public methodology page</li>
               <li>Comprehensive coverage of 15+ sports and leagues</li>
-              <li>Real-time odds updates from 20+ sportsbooks</li>
+              <li>Current market context when data is available</li>
               <li>Clear AI explanations — learn <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">how AI betting works</Link> with every pick</li>
               <li>Built-in <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> with correlation analysis</li>
             </ul>
@@ -215,24 +216,23 @@ const BestAIBettingApp = () => {
 
             <h3>How much does an AI betting app cost?</h3>
             <p>
-              Prices vary from free tiers with basic features to premium subscriptions ($15-50/month) 
-              with full AI analysis. ThinkBetAI offers plans starting at $4.99/month.
+              Prices vary substantially. In our June 2026 review, several competitor entry plans were listed from $19.99 to $49.95 per month, while ThinkBetAI plans started at $4.99. See the <Link to="/best-ai-sports-betting-tools" className="text-primary hover:underline font-medium">sourced comparison</Link> and verify current provider pricing before purchasing.
             </p>
           </article>
 
           {/* CTA */}
           <div className="text-center py-12 px-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Ready to Try the Best AI Betting App?
+              Choose the Workflow That Fits You
             </h2>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
               <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Explore the analysis tools</Link> and review model probabilities, matchup factors and uncertainty before making your own decision.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/games">
+                <Link to="/pricing">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Get Free Picks
+                  Compare ThinkBetAI Plans
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>

@@ -7,7 +7,6 @@ import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
-import { platformStats } from '@/lib/platformStats';
 import { useWinRate } from '@/hooks/useWinRate';
 import { Locale, getTranslations, getLocalePath } from '@/lib/i18n';
 import {
@@ -95,7 +94,7 @@ const LocalizedIndex = ({ locale }: Props) => {
 
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10 animate-slide-up" style={{ animationDelay: '150ms' }}>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50"><Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />{t.badgeUpdated}</Badge>
-                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50"><TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />{platformStats.totalQualified}+ {t.badgeWinningPicks}</Badge>
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50"><TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />Probability context</Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50"><Shield className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />{t.badgeGuarantee}</Badge>
               </div>
 
@@ -219,11 +218,11 @@ const LocalizedIndex = ({ locale }: Props) => {
               <p className="text-muted-foreground max-w-xl mx-auto">{t.performanceSubtitle}</p>
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-4 max-w-6xl mx-auto">
-              {platformStats.sportBreakdown.map((sport, i) => (
-                <div key={sport.sport} className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
-                  <div className="text-lg sm:text-2xl font-bold text-primary mb-0.5 sm:mb-1">{sport.winRate}%</div>
-                  <div className="text-[10px] sm:text-sm font-medium truncate">{sport.sport}</div>
-                  <div className="text-[9px] sm:text-xs text-muted-foreground">{sport.wins}/{sport.qualified}</div>
+              {['NBA', 'NHL', 'Soccer', 'MLB', 'NCAAB', 'UFC', 'NFL', 'Tennis'].map((sport, i) => (
+                <div key={sport} className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                  <Target className="mx-auto mb-2 h-5 w-5 text-primary" />
+                  <div className="text-[10px] sm:text-sm font-medium truncate">{sport}</div>
+                  <div className="text-[9px] sm:text-xs text-muted-foreground">Analysis</div>
                 </div>
               ))}
             </div>

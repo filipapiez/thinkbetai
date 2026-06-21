@@ -175,7 +175,7 @@ const BetHistory = () => {
                 <span className="text-xs sm:text-sm">Win Rate</span>
               </div>
               <p className="text-xl sm:text-2xl font-bold text-primary">
-                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : `80.3%`}
+                {isLoading ? <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" /> : `${stats.winRate}%`}
               </p>
             </CardContent>
           </Card>

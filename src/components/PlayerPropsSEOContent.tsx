@@ -63,10 +63,10 @@ export const PlayerPropsSEOContent = () => {
             <CardContent className="p-5 flex gap-3">
               <Zap className="h-6 w-6 text-primary shrink-0 mt-1" />
               <div>
-                <h3 className="font-semibold mb-1">80.3% Win Rate</h3>
+                <h3 className="font-semibold mb-1">Transparent Evaluation</h3>
                 <p className="text-sm text-muted-foreground">
-                  Across 3,288 graded over/under picks, our model has hit at a
-                  80.3% rate. <Link to="/track-record" className="text-primary hover:underline">See the full track record</Link>.
+                  Review settled results, sample limitations and grading rules before relying on any model output.{' '}
+                  <Link to="/track-record" className="text-primary hover:underline">See the methodology</Link>.
                 </p>
               </div>
             </CardContent>

@@ -1,3 +1,5 @@
+import { AlertTriangle, BarChart3, FileText, Loader2, Scale, ScrollText, ShieldCheck, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
@@ -5,123 +7,118 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Link } from 'react-router-dom';
-import { TrendingUp, ShieldCheck, BarChart3, FileText, AlertTriangle, ScrollText } from 'lucide-react';
+import { useWinRate } from '@/hooks/useWinRate';
 
 const TrackRecord = () => {
+  const { winRate, totalBets, wins, losses, isLoading } = useWinRate();
+  const hasResults = totalBets > 0;
+  const displayValue = (value: string | number) => {
+    if (isLoading) return <Loader2 className="mx-auto h-7 w-7 animate-spin" />;
+    return value;
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <SEO
-        title="Track Record & Methodology — ThinkBetAI"
-        description="Public performance and methodology for ThinkBetAI: sample size, date range, qualified-pick criteria, and how the 80.3% figure is computed. Past performance does not guarantee future results."
+        title="Settled Pick Record & Grading Methodology | ThinkBetAI"
+        description="Review ThinkBetAI's live settled-record summary, grading rules, sample limitations and methodology. Product-reported results; past performance does not guarantee future outcomes."
         url="/track-record"
       />
       <Header />
       <main className="flex-1">
-        <div className="container pt-6">
-          <Breadcrumb items={[{ label: 'Track Record' }]} />
-        </div>
+        <div className="container pt-6"><Breadcrumb items={[{ label: 'Track Record' }]} /></div>
 
         <section className="py-12 md:py-16">
-          <div className="container max-w-4xl">
+          <div className="container max-w-5xl">
             <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
-              <ShieldCheck className="h-3 w-3 mr-1" />
-              Transparency
+              <ShieldCheck className="h-3 w-3 mr-1" />Live database summary
             </Badge>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Track Record & Methodology</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              We publish how our performance figures are calculated so you can judge them honestly.
-              Sports betting carries real financial risk and past performance does not guarantee future results.
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Settled Pick Record &amp; Methodology</h1>
+            <p className="text-lg text-muted-foreground max-w-3xl">
+              These totals are calculated from settled win/loss records in the product database when the page loads. They are not a guarantee, an audited financial statement or a substitute for reviewing the underlying sample.
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10" aria-live="polite">
               <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold text-emerald-400">80.3%</div>
-                <div className="text-xs text-muted-foreground mt-1">Qualified-pick win rate</div>
+                <div className="text-3xl md:text-4xl font-bold text-emerald-400">{displayValue(hasResults ? `${winRate}%` : '—')}</div>
+                <div className="text-xs text-muted-foreground mt-1">Settled win rate</div>
               </div>
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold text-blue-400">Mar 2023 → Now</div>
-                <div className="text-xs text-muted-foreground mt-1">Tracking window</div>
+                <div className="text-3xl md:text-4xl font-bold text-blue-400">{displayValue(totalBets.toLocaleString())}</div>
+                <div className="text-xs text-muted-foreground mt-1">Settled records</div>
               </div>
               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold text-amber-400">6</div>
-                <div className="text-xs text-muted-foreground mt-1">Sports tracked</div>
+                <div className="text-3xl md:text-4xl font-bold text-amber-400">{displayValue(wins.toLocaleString())}</div>
+                <div className="text-xs text-muted-foreground mt-1">Recorded wins</div>
               </div>
               <div className="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold text-purple-400">Qualified</div>
-                <div className="text-xs text-muted-foreground mt-1">Picks only</div>
+                <div className="text-3xl md:text-4xl font-bold text-purple-400">{displayValue(losses.toLocaleString())}</div>
+                <div className="text-xs text-muted-foreground mt-1">Recorded losses</div>
               </div>
             </div>
 
-            <Card className="mt-10">
-              <CardContent className="p-6 md:p-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">How the 80.3% figure is computed</h2>
-                </div>
-                <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
-                  <li><strong className="text-foreground">Universe:</strong> only "qualified" picks — model confidence ≥ 70%, market odds available at pick time, kickoff in the future at recommendation.</li>
-                  <li><strong className="text-foreground">Result:</strong> graded against the official final score from the league feed; pushes are excluded from numerator and denominator.</li>
-                  <li><strong className="text-foreground">Sports:</strong> NFL, NBA, MLB, NHL, UFC, soccer. Off-season sports are excluded from grading.</li>
-                  <li><strong className="text-foreground">Sample:</strong> figure is rolling — recomputed daily from the historical bet ledger. Smaller sub-samples (single sport, single week) can deviate substantially from the headline.</li>
-                </ul>
-              </CardContent>
-            </Card>
+            {!isLoading && !hasResults && (
+              <p className="mt-4 rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                The public summary could not retrieve settled records. No fallback percentage is shown because an unavailable data source should not be replaced with a marketing estimate.
+              </p>
+            )}
 
-            <Card className="mt-6">
-              <CardContent className="p-6 md:p-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">What "qualified pick" means</h2>
-                </div>
-                <p className="text-muted-foreground">
-                  Not every game generates a recommendation. A pick is considered qualified only when the model has
-                  enough recent data (team form, injuries, line movement, head-to-head), the available odds clear our
-                  edge threshold, and there are no known data-integrity issues (e.g. missing roster updates near tip-off).
-                  Picks that don't clear these gates are surfaced as informational, not as recommendations, and do not
-                  count toward the win-rate figure.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardContent className="p-6 md:p-8 space-y-4">
+                  <div className="flex items-center gap-3"><BarChart3 className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold">How the summary is calculated</h2></div>
+                  <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                    <li>Only records marked as a settled win or loss are included.</li>
+                    <li>Win rate equals recorded wins divided by total settled wins and losses.</li>
+                    <li>Pushes, pending events and unavailable outcomes are excluded.</li>
+                    <li>The figures are recalculated from the database rather than hard-coded into this page.</li>
+                  </ul>
+                </CardContent>
+              </Card>
 
-            <Card className="mt-6 border-warning/30 bg-warning/5">
+              <Card>
+                <CardContent className="p-6 md:p-8 space-y-4">
+                  <div className="flex items-center gap-3"><Scale className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold">How to evaluate the sample</h2></div>
+                  <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                    <li>Separate results by sport, market, odds range and time period.</li>
+                    <li>Confirm whether the quoted line was actually available when a pick was recorded.</li>
+                    <li>Review sample size and price, not win percentage alone.</li>
+                    <li>Expect variance and losing streaks even in a historically positive sample.</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="mt-6 border-amber-500/30 bg-amber-500/5">
               <CardContent className="p-6 md:p-8 space-y-3">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle className="h-5 w-5 text-warning" />
-                  <h2 className="text-xl font-semibold">Honest disclaimers</h2>
-                </div>
-                <ul className="list-disc pl-5 space-y-2 text-muted-foreground text-sm">
-                  <li>Past performance does not guarantee future results.</li>
-                  <li>ThinkBetAI is an analytics and educational tool, not financial advice.</li>
-                  <li>No outcome is guaranteed. Variance is real and losing streaks happen even on a long-term winning model.</li>
-                  <li>Only bet what you can afford to lose. See our <Link to="/responsible-gambling" className="underline text-foreground">responsible gambling</Link> page.</li>
-                </ul>
+                <div className="flex items-center gap-3"><AlertTriangle className="h-5 w-5 text-amber-400" /><h2 className="text-xl font-semibold">Important limitations</h2></div>
+                <p className="text-muted-foreground">
+                  This is a product-reported database summary, not an independently audited record. A downloadable, timestamped public ledger would provide stronger evidence than aggregate cards alone. Until that is available, treat these numbers as one input—not proof of future profitability.
+                </p>
               </CardContent>
             </Card>
 
             <Card className="mt-6">
               <CardContent className="p-6 md:p-8 space-y-3">
-                <div className="flex items-center gap-3">
-                  <ScrollText className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Auditability</h2>
-                </div>
+                <div className="flex items-center gap-3"><ScrollText className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold">Corrections and data requests</h2></div>
                 <p className="text-muted-foreground">
-                  Every graded pick is stored in our historical bet ledger with the recommendation timestamp, odds at
-                  pick time, final result, and pick rationale. We're continuously improving the public-facing breakdown;
-                  if a specific sport, week, or sample window matters to you, email{' '}
-                  <a href="mailto:support@thinkbetai.com" className="underline text-foreground">support@thinkbetai.com</a>{' '}
-                  and we'll pull the slice.
+                  If a settled result appears incorrect or you need a specific sample definition, contact{' '}
+                  <a href="mailto:support@thinkbetai.com" className="underline text-foreground">support@thinkbetai.com</a>. Our{' '}
+                  <Link to="/editorial-policy" className="underline text-foreground">editorial policy</Link> explains how performance references, corrections and AI-assisted content should be handled.
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardContent className="p-6 md:p-8 space-y-3">
+                <div className="flex items-center gap-3"><FileText className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold">Responsible interpretation</h2></div>
+                <p className="text-muted-foreground">Past performance does not guarantee future results. ThinkBetAI provides analytical and educational information, not financial advice. Only participate where legal and never risk money you cannot afford to lose.</p>
               </CardContent>
             </Card>
 
             <div className="mt-10 flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/games"><TrendingUp className="h-4 w-4 mr-2" />View today's games</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/pricing">See pricing</Link>
-              </Button>
+              <Button asChild><Link to="/pricing"><TrendingUp className="h-4 w-4 mr-2" />Compare plans</Link></Button>
+              <Button asChild variant="outline"><Link to="/how-it-works">Review how analysis works</Link></Button>
             </div>
           </div>
         </section>

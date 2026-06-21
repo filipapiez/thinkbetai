@@ -74,12 +74,6 @@ const PlayerProps = () => {
 
   const { props, isLoading, error, refetch } = usePlayerProps(sportFilter);
 
-  // Props-specific record (Over/Under picks only)
-  const totalGames = 3288;
-  const winsCount = 2639;
-  const lossesCount = 649;
-  const wr = 80.3;
-
   const availableStats = useMemo(
     () => [...new Set(props.map(p => p.statType))].sort(),
     [props]
@@ -155,42 +149,38 @@ const PlayerProps = () => {
 
       <main className="flex-1 py-8">
         <div className="container">
-          {/* Win Rate Bar */}
+          {/* Current board summary */}
           <div className="relative mb-6 rounded-xl border border-primary/20 overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(var(--card)), hsl(var(--secondary)))' }}>
             <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
             <div className="relative flex flex-col sm:flex-row sm:items-center gap-4 p-5">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Over / Under Record</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Player Prop Board</span>
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                   </span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Live</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Updated</span>
                 </div>
                 <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-4xl font-black text-emerald-400">{wr}%</span>
-                  <span className="text-sm text-muted-foreground font-medium">win rate</span>
-                </div>
-                <div className="w-full bg-secondary/80 rounded-full h-2.5 overflow-hidden flex">
-                  <div className="h-full transition-all duration-500" style={{ width: `${wr}%`, background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))' }} />
-                  <div className="h-full transition-all duration-500 bg-red-500" style={{ width: `${100 - wr}%` }} />
+                  <span className="text-4xl font-black text-emerald-400">{totalProps.toLocaleString()}</span>
+                  <span className="text-sm text-muted-foreground font-medium">matching props</span>
                 </div>
               </div>
               <div className="flex gap-5 sm:gap-6">
                 <div className="text-center">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total</p>
-                  <p className="text-2xl font-black text-foreground">{totalGames.toLocaleString()}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Leagues</p>
+                  <p className="text-2xl font-black text-foreground">{Object.keys(sportBreakdown).length}</p>
                 </div>
                 <div className="w-px bg-border/50 self-stretch" />
                 <div className="text-center">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Wins</p>
-                  <p className="text-2xl font-black text-emerald-400">{winsCount.toLocaleString()}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Markets</p>
+                  <p className="text-2xl font-black text-emerald-400">{availableStats.length}</p>
                 </div>
                 <div className="w-px bg-border/50 self-stretch" />
                 <div className="text-center">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Losses</p>
-                  <p className="text-2xl font-black text-destructive">{lossesCount.toLocaleString()}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Books</p>
+                  <p className="text-2xl font-black text-primary">{SPORTSBOOKS.length}</p>
                 </div>
               </div>
             </div>

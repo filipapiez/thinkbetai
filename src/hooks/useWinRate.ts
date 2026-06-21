@@ -97,6 +97,6 @@ export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
     wins: data?.wins ?? 0,
     losses: data?.losses ?? 0,
     currentStreak: data?.currentStreak ?? 0,
-    isLoading,
+    isLoading: !ready || isLoading,
   };
 };

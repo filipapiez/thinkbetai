@@ -26,8 +26,7 @@ import {
   Dumbbell,
   Sparkles,
   Clock,
-  Users,
-  LogIn
+  Brain
 } from 'lucide-react';
 
 const Index = () => {
@@ -148,7 +147,7 @@ const Index = () => {
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
-                  Updated Every 5 Min
+                  Updated as inputs change
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
@@ -165,14 +164,14 @@ const Index = () => {
                 <Button variant="hero" size="xl" asChild className="group relative overflow-hidden">
                   <Link to="/pricing" className="flex items-center">
                     <Sparkles className="h-5 w-5 mr-2 group-hover:animate-pulse" />
-                    Get Today's Picks
+                    See Plans From $4.99
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
                 <Button variant="glass" size="xl" asChild className="group">
-                  <Link to="/login?tab=signup" className="flex items-center">
-                    <LogIn className="h-5 w-5 mr-2" />
-                    Create Free Account
+                  <Link to="/how-it-works" className="flex items-center">
+                    <Brain className="h-5 w-5 mr-2" />
+                    See How It Works
                     <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
@@ -190,6 +189,40 @@ const Index = () => {
                   <span className="ml-1"><span className="font-semibold text-foreground">Results</span> are not guaranteed</span>
                 </div>
               </div>
+              <p className="mt-5 text-xs text-muted-foreground">
+                Compare us with Rithmm, IABET, Outlier, Moddy and other tools in our{' '}
+                <Link to="/best-ai-sports-betting-tools" className="font-medium text-primary hover:underline">evidence-based buying guide</Link>.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Immediate product proof without fabricated picks or testimonials */}
+        <section className="pb-16 md:pb-20">
+          <div className="container">
+            <div className="mx-auto max-w-5xl rounded-2xl border border-primary/20 bg-card/60 p-6 shadow-xl shadow-primary/5 md:p-8">
+              <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">Inside a matchup report</p>
+                  <h2 className="text-2xl font-bold md:text-3xl">See the estimate, the market and the uncertainty</h2>
+                </div>
+                <Link to="/how-it-works" className="inline-flex items-center text-sm font-medium text-primary hover:underline">
+                  View the full workflow <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  { icon: Target, label: 'Model estimate', text: 'A probability range and recommended interpretation—not a guaranteed outcome.' },
+                  { icon: BarChart3, label: 'Market comparison', text: 'Context for how the estimate compares with the price currently available.' },
+                  { icon: Shield, label: 'Risk notes', text: 'Injuries, limited samples, late lineup news and other reasons to lower confidence.' },
+                ].map(({ icon: Icon, label, text }) => (
+                  <div key={label} className="rounded-xl border border-border/60 bg-background/50 p-5">
+                    <Icon className="mb-3 h-6 w-6 text-primary" />
+                    <h3 className="mb-2 font-semibold">{label}</h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -199,10 +232,10 @@ const Index = () => {
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: 'Public', label: 'Methodology', sublabel: 'qualification criteria', icon: Target, color: 'text-emerald-400' },
-                { value: 'Model', label: 'Probabilities', sublabel: 'with market context', icon: BarChart3, color: 'text-amber-400' },
-                { value: 'Risk', label: 'Assessment', sublabel: 'before every decision', icon: Shield, color: 'text-primary' },
-                { value: '15+', label: 'Sports', sublabel: 'covered daily', icon: Trophy, color: 'text-purple-400' },
+                { value: '$4.99', label: 'Starting Price', sublabel: 'per month', icon: Target, color: 'text-emerald-400' },
+                { value: '3', label: 'Plan Options', sublabel: 'clearly listed', icon: BarChart3, color: 'text-amber-400' },
+                { value: 'Public', label: 'Methodology', sublabel: 'and limitations', icon: Shield, color: 'text-primary' },
+                { value: 'Anytime', label: 'Cancellation', sublabel: 'no long contract', icon: Trophy, color: 'text-purple-400' },
               ].map((stat, index) => (
                 <div 
                   key={stat.label} 
@@ -227,9 +260,9 @@ const Index = () => {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
               </span>
               <span className="text-sm font-semibold text-red-400 uppercase">Updated</span>
-              <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">
-                Matchup analysis refreshes as new data becomes available
+                <Link to="/pricing" className="font-medium text-foreground hover:text-primary">Plans from $4.99/month</Link>
+                {' '}· Compare exact features before subscribing
               </span>
             </div>
           </div>
