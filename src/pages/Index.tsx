@@ -189,10 +189,6 @@ const Index = () => {
                   <span className="ml-1"><span className="font-semibold text-foreground">Results</span> are not guaranteed</span>
                 </div>
               </div>
-              <p className="mt-5 text-xs text-muted-foreground">
-                Compare us with Rithmm, IABET, Outlier, Moddy and other tools in our{' '}
-                <Link to="/best-ai-sports-betting-tools" className="font-medium text-primary hover:underline">evidence-based buying guide</Link>.
-              </p>
             </div>
           </div>
         </section>
