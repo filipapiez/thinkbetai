@@ -36,7 +36,9 @@ if (existsSync(dist)) {
       continue;
     }
     const html = readFileSync(file, "utf8");
-    if (html.includes('<div id="root"></div>')) issues.push(`empty prerender root: ${page.path}`);
+    if (!html.includes('<noscript id="seo-content">')) {
+      issues.push(`missing no-JS SEO fallback: ${page.path}`);
+    }
     if (!html.includes(`<h1>${page.h1}</h1>`)) issues.push(`prerender H1 mismatch: ${page.path}`);
     if (!html.includes('rel="canonical"')) issues.push(`missing canonical: ${page.path}`);
   }
@@ -46,6 +48,9 @@ if (existsSync(dist)) {
     const html = readFileSync(join(dist, file), "utf8");
     if (/href="\/(?:teams|players|predictions|matchups)\//.test(html)) {
       issues.push(`retired internal link in prerender: ${file}`);
+    }
+    if (/"@type":"SportsEvent"/.test(html) && !/"location":\{/.test(html)) {
+      issues.push(`SportsEvent without location in prerender: ${file}`);
     }
   }
 }

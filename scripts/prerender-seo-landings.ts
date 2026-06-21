@@ -1,4 +1,4 @@
-// Post-build prerender for SEO landing pages.
+// Post-build crawler fallback for SEO landing pages.
 //
 // Why: ThinkBetAI is a client-rendered SPA. Crawlers receive an empty
 // <div id="root"> on first byte and only see content after JS executes
@@ -7,8 +7,8 @@
 // each /<slug> in SEO_LANDING_CONFIGS so crawlers get the full content,
 // title, meta description, canonical, og:* and JSON-LD on first request.
 //
-// React still boots normally on these URLs; createRoot().render()
-// replaces the prerendered DOM with the live React tree once JS runs.
+// The semantic fallback lives in <noscript>, leaving #root empty so React
+// does not replace mismatched prerendered markup and trigger a large CLS.
 //
 // Runs as `postbuild` so it reads the production dist/index.html
 // (which includes hashed asset URLs) and writes dist/<slug>/index.html.
@@ -97,13 +97,11 @@ function renderBody(config: SeoLandingConfig): string {
       )
       .join("");
 
-  // Prerendered shell. Layout/typography styles are inherited from the
-  // CSS bundle that the original <link> tags in index.html already
-  // load. We intentionally keep markup minimal & semantic — React will
-  // replace this DOM once it hydrates, so visual fidelity here doesn't
-  // matter; only crawler comprehension does.
+  // Semantic no-JS fallback. Crawlers can read the content in the initial
+  // response while JavaScript users render directly into an empty #root.
   return `
-<div id="root">
+<div id="root"></div>
+<noscript id="seo-content">
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(config.h1)}</span></nav>
     <header style="text-align:center;margin:2rem 0;">
@@ -143,7 +141,7 @@ function renderBody(config: SeoLandingConfig): string {
       </p>
     </section>
   </main>
-</div>`;
+</noscript>`;
 }
 
 // ---------- render head ----------

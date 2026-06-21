@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -8,12 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
-const PicksOfTheDay = lazy(() => import('@/components/PicksOfTheDay'));
 // LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
 
-import { platformStats } from '@/lib/platformStats';
-import { useWinRate } from '@/hooks/useWinRate';
-import { useAuth } from '@/contexts/AuthContext';
 import { 
   Search, 
   TrendingUp, 
@@ -32,7 +28,6 @@ import {
   Sparkles,
   Clock,
   Users,
-  DollarSign,
   TrendingDown,
   Play,
   ChevronLeft,
@@ -42,23 +37,43 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
-  const { currentStreak } = useWinRate();
-  const { user, isSubscribed } = useAuth();
   // Testimonial carousel
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollFrameRef = useRef<number | null>(null);
+  const workflowRef = useRef<HTMLElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [workflowReady, setWorkflowReady] = useState(false);
+
+  useEffect(() => {
+    const section = workflowRef.current;
+    if (!section || typeof IntersectionObserver === 'undefined') {
+      setWorkflowReady(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setWorkflowReady(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px 0px' },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const updateScrollButtons = () => {
-    if (scrollRef.current) {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) {
-          const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-          setCanScrollLeft(scrollLeft > 0);
-          setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-        }
-      });
-    }
+    if (!scrollRef.current || scrollFrameRef.current !== null) return;
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = null;
+      if (!scrollRef.current) return;
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    });
   };
 
   const scrollTestimonials = (direction: 'left' | 'right') => {
@@ -92,13 +107,6 @@ const Index = () => {
       title: 'Risk Analysis',
       description: 'Visual risk meters based on line movement, matchup history, and recent form.',
     },
-  ];
-
-  const stats = [
-    { value: 'Public', label: 'Methodology', sublabel: 'qualification criteria' },
-    { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
-    { value: `${currentStreak}`, label: 'Current Streak', sublabel: 'consecutive wins' },
-    { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
   ];
 
   const allSports = [
@@ -200,7 +208,7 @@ const Index = () => {
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">{currentStreak}</span> Game Streak 🔥
+                  Updated matchup context throughout the slate
                 </span>
               </div>
 
@@ -208,15 +216,15 @@ const Index = () => {
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                 Smarter Picks.{' '}
                 <span className="relative inline-block">
-                  <span className="text-gradient">Bigger Wins.</span>
+                  <span className="text-gradient">Clearer Decisions.</span>
                   <Sparkles className="absolute -top-1 -right-4 md:-top-2 md:-right-6 h-4 w-4 md:h-6 md:w-6 text-primary animate-pulse" />
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-                AI analyzes <span className="text-foreground font-semibold">10,000+ data points</span> across NFL, NBA, UFC & 15+ sports 
-                to find <span className="text-primary font-semibold">high-value picks</span> — spreads, props, and parlays you'd never spot alone.
+                AI organizes matchup data across NFL, NBA, UFC and other major sports into
+                <span className="text-primary font-semibold"> probability estimates</span>, market context and risk notes you can review.
               </p>
 
               {/* Quick Value Props */}
@@ -227,7 +235,7 @@ const Index = () => {
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
-                  {platformStats.totalQualified}+ Qualified Picks Analyzed
+                  Probability and risk context
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
@@ -283,8 +291,8 @@ const Index = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
                 { value: 'Public', label: 'Methodology', sublabel: 'qualification criteria', icon: Target, color: 'text-emerald-400' },
-                { value: '$2.4M+', label: 'User Winnings', sublabel: 'tracked this year', icon: DollarSign, color: 'text-amber-400' },
-                { value: `${platformStats.streakCurrent}`, label: 'Win Streak', sublabel: 'and counting', icon: TrendingUp, color: 'text-primary' },
+                { value: 'Model', label: 'Probabilities', sublabel: 'with market context', icon: BarChart3, color: 'text-amber-400' },
+                { value: 'Risk', label: 'Assessment', sublabel: 'before every decision', icon: Shield, color: 'text-primary' },
                 { value: '15+', label: 'Sports', sublabel: 'covered daily', icon: Trophy, color: 'text-purple-400' },
               ].map((stat, index) => (
                 <div 
@@ -320,7 +328,7 @@ const Index = () => {
 
 
         {/* How It Works - Interactive Demo */}
-        <section className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
+        <section ref={workflowRef} className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
           {/* Background effects */}
           {/* Background effects removed for CWV performance */}
           
@@ -334,13 +342,19 @@ const Index = () => {
                 See the AI in <span className="text-gradient">Action</span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                From real-time data to winning picks in seconds. Watch how our AI processes thousands of data points.
+                See how available data becomes a probability estimate, explanation and risk assessment.
               </p>
             </div>
             
-            <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
-              <WorkflowDemo />
-            </Suspense>
+            <div className="min-h-96" style={{ contentVisibility: 'auto', containIntrinsicSize: '384px' }}>
+              {workflowReady ? (
+                <Suspense fallback={<div className="h-96" aria-hidden="true" />}>
+                  <WorkflowDemo />
+                </Suspense>
+              ) : (
+                <div className="h-96" aria-hidden="true" />
+              )}
+            </div>
           </div>
         </section>
 
@@ -356,7 +370,7 @@ const Index = () => {
                 Every Sport. Every Game. <span className="text-gradient">Every Edge.</span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                From primetime NFL to late-night UFC, our AI never sleeps so you never miss a winning opportunity.
+                From primetime NFL to late-night UFC, review one consistent analysis format across major sports.
               </p>
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 gap-2 sm:gap-3 max-w-5xl mx-auto">
@@ -405,32 +419,36 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Win Rate Breakdown */}
+        {/* Analysis framework */}
         <section className="py-16 md:py-24 bg-card/30 border-t border-border/40">
           <div className="container">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-4">
                 <Target className="h-3 w-3" />
-                Verified Performance
+                Transparent Analysis
               </div>
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Our Picks Win. Here's The Proof.
+                What Every AI Pick Should Explain
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                We only recommend "GOOD" signal bets with high confidence. Here's how our qualified picks perform by league.
+                A useful prediction shows its assumptions and uncertainty—not just a team name and a confidence badge.
               </p>
             </div>
 
-            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-4 max-w-6xl mx-auto">
-              {platformStats.sportBreakdown.map((sport, index) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
+              {[
+                { title: 'Probability', detail: 'Model estimate' },
+                { title: 'Market', detail: 'Implied odds' },
+                { title: 'Context', detail: 'Matchup factors' },
+                { title: 'Risk', detail: 'Uncertainty notes' },
+              ].map((item, index) => (
                 <div 
-                  key={sport.sport} 
+                  key={item.title}
                   className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="text-lg sm:text-2xl font-bold text-primary mb-0.5 sm:mb-1">{sport.winRate}%</div>
-                  <div className="text-[10px] sm:text-sm font-medium truncate">{sport.sport}</div>
-                  <div className="text-[9px] sm:text-xs text-muted-foreground">{sport.wins}/{sport.qualified}</div>
+                  <div className="text-base sm:text-lg font-bold text-primary mb-1">{item.title}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{item.detail}</div>
                 </div>
               ))}
             </div>
@@ -442,10 +460,10 @@ const Index = () => {
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Start Winning in 3 Simple Steps
+                Start Reviewing Picks in 3 Simple Steps
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                No complicated setup. Just pure, data-driven betting intelligence.
+                No complicated setup—just a clearer way to review model-driven sports analysis.
               </p>
             </div>
 
@@ -613,13 +631,12 @@ const Index = () => {
         {/* LatestPredictionsHub removed — pointed to retired programmatic URLs. */}
       </main>
 
-      {!user && <div className="h-16 md:hidden" aria-hidden="true" />}
+      <div className="h-16 md:hidden" aria-hidden="true" />
 
       <Footer />
 
-      {/* Sticky Mobile Signup CTA – hide for authenticated/subscribed users */}
-      {!user && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/95 backdrop-blur-lg border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
+      {/* Stable mobile CTA; account state is intentionally not loaded on this public route. */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
@@ -633,7 +650,6 @@ const Index = () => {
             </Button>
           </div>
         </div>
-      )}
       
     </div>
   );

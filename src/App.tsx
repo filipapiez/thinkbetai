@@ -1,17 +1,16 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
 
-// Lazy-load non-critical UI components to reduce initial bundle
-// Load Toaster/Sonner eagerly — they're tiny and lazy-loading them adds overhead
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+// Toast renderers are non-critical and load only after the first paint window.
+const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute").then(m => ({ default: m.ProtectedRoute })));
+const AuthBoundary = lazy(() => import("@/contexts/AuthBoundary"));
+const QueryBoundary = lazy(() => import("@/contexts/QueryBoundary"));
 
 // Eagerly load the landing page – it's always needed on first visit and
 // lazy-loading it delays FCP / Speed Index because the browser must fetch
@@ -65,11 +64,30 @@ const LocalizedPricing = lazy(() => import("./pages/localized/LocalizedPricing")
 const LocalizedFAQ = lazy(() => import("./pages/localized/LocalizedFAQ"));
 const LocalizedLanding = lazy(() => import("./pages/localized/LocalizedLanding"));
 
-const queryClient = new QueryClient();
-
 const AnalyticsWrapper = ({ children }: { children: React.ReactNode }) => {
   useGoogleAnalytics();
   return <>{children}</>;
+};
+
+const DeferredToasts = () => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof requestIdleCallback === "function") {
+      const id = requestIdleCallback(() => setReady(true), { timeout: 3000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(() => setReady(true), 1500);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  if (!ready) return null;
+  return (
+    <Suspense fallback={null}>
+      <Toaster />
+      <Sonner />
+    </Suspense>
+  );
 };
 
 const PageLoader = () => (
@@ -79,19 +97,16 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  <TooltipProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider>
-          <Toaster />
-          <Sonner />
+        <ThemeProvider>
+          <DeferredToasts />
           <AnalyticsWrapper>
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
-                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/pricing" element={<QueryBoundary><AuthBoundary><Pricing /></AuthBoundary></QueryBoundary>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/track-record" element={<TrackRecord />} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
@@ -108,12 +123,12 @@ const App = () => (
                 <Route path="/ai-bet-analyzer" element={<AIBetAnalyzer />} />
                 <Route path="/best-ai-sports-betting-tools" element={<BestAISportsBettingTools />} />
                 <Route path="/faq" element={<FAQ />} />
-                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<AuthBoundary><Login /></AuthBoundary>} />
                 <Route path="/ref/:code" element={<Referral />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/bet-history" element={<BetHistory />} />
-                <Route path="/game-totals" element={<GameTotals />} />
+                <Route path="/bet-history" element={<QueryBoundary><BetHistory /></QueryBoundary>} />
+                <Route path="/game-totals" element={<QueryBoundary><GameTotals /></QueryBoundary>} />
 
                 {/* Auto-generated SEO pages (live but noindex — see SeoPageView/SeoIndex).
                     Removed for SEO hygiene (Dec 2026): /predictions, /predictions/:slug,
@@ -142,10 +157,18 @@ const App = () => (
                     element={<Navigate to={destination} replace />}
                   />
                 ))}
+
+                {/* Retired programmatic URLs redirect instead of returning soft-404
+                    pages or stale SportsEvent structured data. */}
+                <Route path="/predictions/*" element={<Navigate to="/games" replace />} />
+                <Route path="/teams/*" element={<Navigate to="/games" replace />} />
+                <Route path="/matchups/*" element={<Navigate to="/games" replace />} />
+                <Route path="/players/*" element={<Navigate to="/player-props" replace />} />
+                <Route path="/props/*" element={<Navigate to="/player-props" replace />} />
                 
                 {/* Polish locale */}
-                <Route path="/pl" element={<LocalizedIndex locale="pl" />} />
-                <Route path="/pl/pricing" element={<LocalizedPricing locale="pl" />} />
+                <Route path="/pl" element={<QueryBoundary><LocalizedIndex locale="pl" /></QueryBoundary>} />
+                <Route path="/pl/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="pl" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/pl/faq" element={<LocalizedFAQ locale="pl" />} />
                 <Route path="/pl/best-ai-betting-app" element={<LocalizedLanding locale="pl" page="bestAIBettingApp" />} />
                 <Route path="/pl/free-ai-predictions" element={<LocalizedLanding locale="pl" page="freeAIPredictions" />} />
@@ -153,8 +176,8 @@ const App = () => (
                 <Route path="/pl/ai-parlay-builder" element={<LocalizedLanding locale="pl" page="aiParlayBuilder" />} />
 
                 {/* French locale */}
-                <Route path="/fr" element={<LocalizedIndex locale="fr" />} />
-                <Route path="/fr/pricing" element={<LocalizedPricing locale="fr" />} />
+                <Route path="/fr" element={<QueryBoundary><LocalizedIndex locale="fr" /></QueryBoundary>} />
+                <Route path="/fr/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="fr" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/fr/faq" element={<LocalizedFAQ locale="fr" />} />
                 <Route path="/fr/best-ai-betting-app" element={<LocalizedLanding locale="fr" page="bestAIBettingApp" />} />
                 <Route path="/fr/free-ai-predictions" element={<LocalizedLanding locale="fr" page="freeAIPredictions" />} />
@@ -162,8 +185,8 @@ const App = () => (
                 <Route path="/fr/ai-parlay-builder" element={<LocalizedLanding locale="fr" page="aiParlayBuilder" />} />
 
                 {/* German locale */}
-                <Route path="/de" element={<LocalizedIndex locale="de" />} />
-                <Route path="/de/pricing" element={<LocalizedPricing locale="de" />} />
+                <Route path="/de" element={<QueryBoundary><LocalizedIndex locale="de" /></QueryBoundary>} />
+                <Route path="/de/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="de" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/de/faq" element={<LocalizedFAQ locale="de" />} />
                 <Route path="/de/best-ai-betting-app" element={<LocalizedLanding locale="de" page="bestAIBettingApp" />} />
                 <Route path="/de/free-ai-predictions" element={<LocalizedLanding locale="de" page="freeAIPredictions" />} />
@@ -171,28 +194,26 @@ const App = () => (
                 <Route path="/de/ai-parlay-builder" element={<LocalizedLanding locale="de" page="aiParlayBuilder" />} />
 
                 {/* Protected routes - require auth + subscription */}
-                <Route path="/games" element={<Games />} />
+                <Route path="/games" element={<AuthBoundary><Games /></AuthBoundary>} />
                 <Route path="/games/:gameId" element={<GameDetail />} />
-                <Route path="/picks" element={<Picks />} />
-                <Route path="/player-props" element={<PlayerProps />} />
-                <Route path="/parlays" element={<ProtectedRoute requireSubscription><Parlays /></ProtectedRoute>} />
-                <Route path="/chat" element={<ProtectedRoute requireSubscription><Chat /></ProtectedRoute>} />
+                <Route path="/picks" element={<QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary>} />
+                <Route path="/player-props" element={<AuthBoundary><PlayerProps /></AuthBoundary>} />
+                <Route path="/parlays" element={<AuthBoundary><ProtectedRoute requireSubscription><Parlays /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/chat" element={<AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary>} />
 
                 {/* Protected routes - require auth only */}
-                <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="/account" element={<AuthBoundary><ProtectedRoute><Account /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/subscription" element={<AuthBoundary><ProtectedRoute><Subscription /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/admin" element={<AuthBoundary><ProtectedRoute><Admin /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/settings" element={<AuthBoundary><ProtectedRoute><Settings /></ProtectedRoute></AuthBoundary>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </AnalyticsWrapper>
-          </ThemeProvider>
-        </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  </TooltipProvider>
 );
 
 export default App;

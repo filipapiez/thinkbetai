@@ -203,15 +203,9 @@ function buildGamePreview(ev: OddsEvent, allUpcoming: OddsEvent[]) {
     commenceTime: ev.commence_time,
     odds: { moneyline: h2h, spreads, totals, book: dk?.title ?? null },
     aiPick: ai,
-    sportsEvent: {
-      "@context": "https://schema.org",
-      "@type": "SportsEvent",
-      name: `${ev.away_team} at ${ev.home_team}`,
-      startDate: ev.commence_time,
-      sport: meta.label,
-      homeTeam: { "@type": "SportsTeam", name: ev.home_team },
-      awayTeam: { "@type": "SportsTeam", name: ev.away_team },
-    },
+    // The odds feed does not provide a reliable venue. Event JSON-LD is
+    // intentionally omitted until a real Place or VirtualLocation is known;
+    // placeholder locations make the item misleading even if validation passes.
     faq: gameFaq(ev.away_team, ev.home_team, meta.label),
     breadcrumbs: breadcrumbs([
       { name: "Predictions", href: "/games" },
@@ -264,14 +258,7 @@ function buildGameResult(score: any) {
     sport: meta.sport,
     league: meta.label,
     completedAt: score.last_update,
-    sportsEvent: {
-      "@context": "https://schema.org",
-      "@type": "SportsEvent",
-      name: `${score.away_team} at ${score.home_team}`,
-      startDate: score.commence_time,
-      sport: meta.label,
-      eventStatus: "https://schema.org/EventCompleted",
-    },
+    // See buildGamePreview: no Event JSON-LD without an authoritative venue.
     faq: gameFaq(score.away_team, score.home_team, meta.label),
     breadcrumbs: breadcrumbs([
       { name: "Results", href: "/games" },

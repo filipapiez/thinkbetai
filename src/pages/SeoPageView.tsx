@@ -41,6 +41,22 @@ const URL_PREFIX: Record<Props["pageType"], string> = {
 
 const SCHEMA_ID = "seo-page-jsonld";
 
+interface EventWithLocation {
+  location?: {
+    "@type"?: string;
+    url?: string;
+    name?: string;
+    address?: unknown;
+  };
+}
+
+const hasUsableEventLocation = (event: EventWithLocation | null | undefined) => {
+  const location = event?.location;
+  if (!location || typeof location !== "object") return false;
+  if (location["@type"] === "VirtualLocation") return Boolean(location.url);
+  return location["@type"] === "Place" && Boolean(location.name && location.address);
+};
+
 const SeoPageView = ({ pageType }: Props) => {
   const { slug } = useParams<{ slug: string }>();
   const [page, setPage] = useState<SeoPage | null>(null);
@@ -123,7 +139,10 @@ const SeoPageView = ({ pageType }: Props) => {
         })),
       });
     }
-    if (c.sportsEvent) {
+    // Event rich results require a real venue or virtual URL. Do not invent a
+    // placeholder location merely to satisfy validation; omit Event markup
+    // until the upstream feed supplies an actual location.
+    if (c.sportsEvent && hasUsableEventLocation(c.sportsEvent)) {
       const ev: any = { ...c.sportsEvent };
       delete ev["@context"];
 
@@ -149,13 +168,6 @@ const SeoPageView = ({ pageType }: Props) => {
       }
       if (!ev.image) {
         ev.image = ["https://thinkbetai.com/og-image.png"];
-      }
-      if (!ev.location) {
-        ev.location = {
-          "@type": "Place",
-          name: c.homeTeam ? `${c.homeTeam} home venue` : "TBD",
-          address: { "@type": "PostalAddress", addressCountry: "US" },
-        };
       }
       if (!ev.performer) {
         const performers: any[] = [];
