@@ -54,9 +54,15 @@ function structuredData(page: CoreSeoPage) {
         : [{ "@type": "ListItem", position: 2, name: page.h1, item: url }]),
     ],
   };
-  return [organization, webPage, breadcrumb]
-    .map((data) => `<script type="application/ld+json">${JSON.stringify(data)}</script>`)
-    .join("\n");
+  const nodes = [organization, webPage, breadcrumb].map((data) => {
+    const node = { ...data };
+    delete node["@context"];
+    return node;
+  });
+  return `<script id="thinkbetai-page-schema" type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": nodes,
+  })}</script>`;
 }
 
 function renderBody(page: CoreSeoPage) {

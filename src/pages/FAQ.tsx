@@ -30,7 +30,7 @@ const faqData: FAQItem[] = [
   {
     category: 'AI & Technology',
     question: 'How accurate are AI betting predictions?',
-    answer: 'ThinkBetAI achieves approximately 67% accuracy on qualified bets across major sports. However, accuracy varies by sport and bet type. Our AI continuously learns from new data to improve predictions. Remember that no prediction system is perfect, and past performance does not guarantee future results.'
+    answer: 'Accuracy varies by sport, market, price, sample and time period. No model can guarantee a future result. Evaluate any historical figure together with its date range, qualification rules and complete set of graded outcomes.'
   },
   {
     category: 'AI & Technology',
@@ -45,7 +45,7 @@ const faqData: FAQItem[] = [
   {
     category: 'AI & Technology',
     question: 'What data sources does the AI use for predictions?',
-    answer: 'ThinkBetAI aggregates data from official league statistics, real-time injury reports, weather services, betting market odds from 20+ sportsbooks, historical game outcomes, player tracking data, and social sentiment analysis. This comprehensive approach ensures well-rounded predictions.'
+    answer: 'The analysis can incorporate available league statistics, injury information, weather, historical outcomes and market odds. The exact inputs vary by sport and event, and missing or late information can affect an estimate.'
   },
   // Getting Started
   {
@@ -56,7 +56,7 @@ const faqData: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'What subscription plans are available?',
-    answer: 'We offer various plans starting at $4.99/month with full access to all sports coverage, AI analysis, and features like injury reports and real-time odds tracking. Visit our pricing page to see all available options.'
+    answer: 'Available plans differ by analysis features and tool access. Visit the pricing page for current prices, billing periods and the feature list shown before checkout.'
   },
   {
     category: 'Getting Started',
@@ -72,7 +72,7 @@ const faqData: FAQItem[] = [
   {
     category: 'Betting Strategy',
     question: 'How should I use AI predictions for parlays?',
-    answer: 'For parlays, we recommend: 1) Only include bets with 60%+ AI confidence, 2) Limit to 2-3 legs maximum, 3) Look for correlated outcomes, 4) Never risk more than 5% of your bankroll on any parlay. Our AI Parlay Analysis feature evaluates multi-bet combinations for optimal selection.'
+    answer: 'Parlays combine multiple uncertain outcomes and are high variance. Review each leg, check whether outcomes are correlated, compare the combined probability with the price and keep stakes within a limit you can afford to lose.'
   },
   {
     category: 'Betting Strategy',
@@ -82,13 +82,13 @@ const faqData: FAQItem[] = [
   {
     category: 'Betting Strategy',
     question: 'Should I bet on every AI recommendation?',
-    answer: 'No. AI predictions are tools to inform your decisions, not guarantees. We recommend focusing on bets where AI confidence is 60% or higher, the sport/league is familiar to you, and you\'ve done your own research. Quality over quantity leads to better long-term results.'
+    answer: 'No. AI predictions are research inputs, not instructions or guarantees. Review the underlying explanation, current information, price and uncertainty, and make your own decision.'
   },
   // Subscription & Billing
   {
     category: 'Subscription & Billing',
     question: 'What subscription plans are available?',
-    answer: 'We offer three plans: Basic ($49/month) with access to all sports and basic analysis, Pro ($89/month) with AI-powered game analysis and advanced features, and Elite ($149/month) with everything plus priority support and exclusive insights. All plans include cancel-anytime flexibility.'
+    answer: 'ThinkBetAI offers multiple feature tiers. Because prices and included features can change, the pricing page is the authoritative source for current plan details and billing terms.'
   },
   {
     category: 'Subscription & Billing',
@@ -155,8 +155,8 @@ const FAQ = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO 
-        title="FAQ - AI Betting Questions Answered"
-        description="Get answers to common questions about AI betting, machine learning predictions, sports analytics, and how ThinkBetAI helps you make smarter betting decisions."
+        title="AI Sports Betting FAQ | ThinkBetAI"
+        description="Find answers about AI sports betting models, probability estimates, data inputs, parlays, pricing, account access and responsible use."
         keywords="AI betting FAQ, sports betting questions, machine learning predictions FAQ, betting tips, ThinkBetAI help"
         url="/faq"
         structuredData={generateFAQStructuredData()}
@@ -196,20 +196,20 @@ const FAQ = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
               <div className="text-center p-4 rounded-xl bg-card/50 border border-border/50">
-                <div className="text-2xl font-bold text-primary">67%</div>
-                <div className="text-sm text-muted-foreground">AI Accuracy</div>
+                <div className="text-2xl font-bold text-primary">Model</div>
+                <div className="text-sm text-muted-foreground">Probabilities</div>
               </div>
               <div className="text-center p-4 rounded-xl bg-card/50 border border-border/50">
                 <div className="text-2xl font-bold text-primary">15+</div>
                 <div className="text-sm text-muted-foreground">Sports Covered</div>
               </div>
               <div className="text-center p-4 rounded-xl bg-card/50 border border-border/50">
-                <div className="text-2xl font-bold text-primary">50K+</div>
-                <div className="text-sm text-muted-foreground">Games Analyzed</div>
+                <div className="text-2xl font-bold text-primary">Risk</div>
+                <div className="text-sm text-muted-foreground">Context Included</div>
               </div>
               <div className="text-center p-4 rounded-xl bg-card/50 border border-border/50">
-                <div className="text-2xl font-bold text-primary">24/7</div>
-                <div className="text-sm text-muted-foreground">AI Updates</div>
+                <div className="text-2xl font-bold text-primary">Clear</div>
+                <div className="text-sm text-muted-foreground">Explanations</div>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ const FAQ = () => {
           <div className="container max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Users className="h-4 w-4" />
-              Join thousands of smart bettors
+              Questions about the platform?
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Still have questions?

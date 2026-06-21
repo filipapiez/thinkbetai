@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import { NoIndexContext } from '@/contexts/NoIndexContext';
 
 interface SEOProps {
   title?: string;
@@ -33,6 +34,8 @@ export const SEO = ({
   structuredData,
   noIndex,
 }: SEOProps) => {
+  const inheritedNoIndex = useContext(NoIndexContext);
+  const effectiveNoIndex = noIndex || inheritedNoIndex;
   const fullTitle = title ? (title.includes('ThinkBetAI') ? title : `${title} | ThinkBetAI`) : defaultTitle;
   const toAbsoluteUrl = (value: string) =>
     /^https?:\/\//i.test(value)
@@ -40,7 +43,21 @@ export const SEO = ({
       : `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
   const fullUrl = url ? toAbsoluteUrl(url) : `${siteUrl}/`;
   const canonicalUrl = canonical ? toAbsoluteUrl(canonical) : fullUrl;
-  const structuredDataJson = structuredData ? JSON.stringify(structuredData) : '';
+  const fallbackStructuredData: Record<string, unknown> | undefined = effectiveNoIndex
+    ? undefined
+    : {
+        '@context': 'https://schema.org',
+        '@type': fullUrl === `${siteUrl}/` ? 'WebSite' : type === 'article' ? 'Article' : 'WebPage',
+        name: fullTitle,
+        headline: type === 'article' ? fullTitle : undefined,
+        description,
+        url: canonicalUrl,
+        mainEntityOfPage: type === 'article' ? canonicalUrl : undefined,
+        author: type === 'article' && author ? { '@type': 'Organization', name: author } : undefined,
+        datePublished: type === 'article' ? publishedTime : undefined,
+        isPartOf: type !== 'article' ? { '@type': 'WebSite', name: 'ThinkBetAI', url: `${siteUrl}/` } : undefined,
+      };
+  const structuredDataJson = JSON.stringify(structuredData ?? fallbackStructuredData ?? '');
 
   useEffect(() => {
     const upsertMeta = (attribute: 'name' | 'property', key: string, content?: string) => {
@@ -65,7 +82,7 @@ export const SEO = ({
     upsertMeta(
       'name',
       'robots',
-      noIndex
+      effectiveNoIndex
         ? 'noindex, follow'
         : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
     );
@@ -94,7 +111,7 @@ export const SEO = ({
 
     const schemaId = 'thinkbetai-page-schema';
     const existingSchema = document.head.querySelector<HTMLScriptElement>(`#${schemaId}`);
-    if (structuredDataJson) {
+    if (structuredDataJson && structuredDataJson !== '""') {
       const schema = existingSchema ?? document.createElement('script');
       schema.id = schemaId;
       schema.type = 'application/ld+json';
@@ -111,7 +128,7 @@ export const SEO = ({
     fullUrl,
     image,
     keywords,
-    noIndex,
+    effectiveNoIndex,
     publishedTime,
     structuredDataJson,
     type,

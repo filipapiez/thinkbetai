@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +22,8 @@ const BestAIBettingApp = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Best AI Betting App 2026 - Top AI Sports Betting Platforms Compared",
-    "description": "Compare the best AI betting apps in 2026. Find the top AI sports betting platforms with accurate predictions, real-time analysis, and proven results.",
+    "headline": "Best AI Betting App: Features to Compare in 2026",
+    "description": "Compare AI betting apps by probability analysis, sport coverage, pricing, transparency and responsible-use features.",
     "author": {
       "@type": "Organization",
       "name": "ThinkBetAI"
@@ -71,11 +70,12 @@ const BestAIBettingApp = () => {
       }
     ]
   };
+  const combinedSchema = { "@context": "https://schema.org", "@graph": [structuredData, faqData] };
 
   const features = [
-    { icon: Brain, title: 'AI-Powered Analysis', description: 'Machine learning models trained on millions of games' },
+    { icon: Brain, title: 'AI-Powered Analysis', description: 'Sport and market inputs organized into probability estimates' },
     { icon: Target, title: 'Published Methodology', description: 'Clear criteria for qualified picks and grading' },
-    { icon: Zap, title: 'Real-Time Updates', description: 'Odds and predictions updated every 5 minutes' },
+    { icon: Zap, title: 'Timely Updates', description: 'Analysis can refresh as odds and event information change' },
     { icon: Shield, title: 'Risk Assessment', description: 'Clear confidence ratings and risk levels' },
     { icon: Users, title: 'Clear Explanations', description: 'Understand the factors behind each estimate' },
     { icon: Trophy, title: '15+ Sports', description: 'NFL, NBA, MLB, NHL, UFC, Soccer & more' },
@@ -89,15 +89,8 @@ const BestAIBettingApp = () => {
         keywords="best AI betting app, AI betting app 2026, top AI sports betting, AI betting platform, best betting AI, AI picks app"
         url="/best-ai-betting-app"
         type="article"
+        structuredData={combinedSchema}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqData)}
-        </script>
-      </Helmet>
       
       <Header />
       
@@ -212,15 +205,12 @@ const BestAIBettingApp = () => {
             <h2>Frequently Asked Questions</h2>
             <h3>Is AI betting legal?</h3>
             <p>
-              Yes, using AI tools for betting analysis is completely legal. These platforms provide 
-              information and predictions to help you make informed decisions—they don't place bets for you.
+              Analytical software is generally distinct from a sportsbook, but gambling and data-use laws vary by location. Check the rules that apply where you live.
             </p>
 
             <h3>Can AI really predict sports outcomes?</h3>
             <p>
-              AI can analyze vast amounts of data to identify patterns and probabilities. While no system 
-              can guarantee wins, top AI platforms significantly outperform random chance by processing 
-              historical data, player stats, injuries, and betting trends.
+              AI can organize historical and current information into probability estimates. Whether a model performs better than a simple baseline depends on the sport, market, sample and testing method.
             </p>
 
             <h3>How much does an AI betting app cost?</h3>
@@ -236,7 +226,7 @@ const BestAIBettingApp = () => {
               Ready to Try the Best AI Betting App?
             </h2>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Start using AI bets</Link> — join thousands of smart bettors using ThinkBetAI for AI-powered predictions.
+              <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Explore the analysis tools</Link> and review model probabilities, matchup factors and uncertainty before making your own decision.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>

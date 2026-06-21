@@ -7,8 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
-import { useWinRate } from '@/hooks/useWinRate';
+import { Check, Zap, Crown, Trophy, Star, BarChart3, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
 
@@ -85,7 +84,6 @@ const pricingPlans = [
 const Pricing = () => {
   const navigate = useNavigate();
   const { user, isSubscribed, profile } = useAuth();
-  const { winRate } = useWinRate();
   const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
 
   // Determine user's current plan tier
@@ -124,8 +122,8 @@ const Pricing = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-background to-primary/5">
       <SEO 
-        title="Pricing - AI Betting Plans"
-        description="Choose the perfect ThinkBetAI plan for your betting strategy. Get AI-powered predictions, real-time analysis, and expert insights starting at $4.99/month."
+        title="ThinkBetAI Plans & Pricing | Compare Features"
+        description="Compare ThinkBetAI plans, included sports-analysis features, billing terms and free access before choosing the option that fits your research needs."
         keywords="AI betting subscription, sports betting plans, betting software pricing, AI predictions cost"
         url="/pricing"
       />
@@ -140,29 +138,28 @@ const Pricing = () => {
           <div className="text-center mb-8 md:mb-16">
             <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
               <Star className="h-3 w-3 mr-1 fill-primary" />
-              Trusted by 1,000+ Bettors
+              Clear Features and Billing
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Pick Your <span className="text-gradient">Winning</span> Plan
+              Compare <span className="text-gradient">Plans and Features</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-              Join thousands making smarter decisions with AI-powered insights.
-              Cancel anytime.
+              Choose the level of probability analysis and research tools that fits your workflow. Cancel anytime.
             </p>
             
             {/* Social Proof Stats */}
             <div className="inline-flex items-center gap-4 sm:gap-8 py-4 px-6 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50">
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-bold text-success flex items-center justify-center gap-1">
-                  <TrendingUp className="h-5 w-5" />
-                  80.35%
+                  <BarChart3 className="h-5 w-5" />
+                  Model
                 </div>
-                <div className="text-xs text-muted-foreground">Win Rate</div>
+                <div className="text-xs text-muted-foreground">Probabilities</div>
               </div>
               <div className="h-10 w-px bg-border" />
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-primary">1,000+</div>
-                <div className="text-xs text-muted-foreground">Verified Picks</div>
+                <div className="text-2xl sm:text-3xl font-bold text-primary">Risk</div>
+                <div className="text-xs text-muted-foreground">Context</div>
               </div>
               <div className="h-10 w-px bg-border hidden sm:block" />
               <div className="text-center hidden sm:block">
@@ -314,7 +311,7 @@ const Pricing = () => {
                 },
                 {
                   q: 'Is there an AI betting platform?',
-                  a: 'Yes! ThinkBetAI is a leading AI betting platform.'
+                  a: 'ThinkBetAI is an AI-assisted sports-analysis platform that presents probabilities, matchup context and research tools.'
                 }
               ].map((faq, i) => (
                 <div key={i} className="glass-card p-5 rounded-xl hover:border-primary/30 transition-colors">

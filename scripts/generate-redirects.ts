@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { SEO_LANDING_CONFIGS } from "../src/lib/seoLandingConfigs";
+import { blogPosts } from "../src/lib/blogData";
 import { CORE_SEO_PATHS } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS, isSeoAlias } from "../src/seoAliases";
 
@@ -25,6 +26,8 @@ const lines = [
   ...SEO_LANDING_CONFIGS.filter((config) => !isSeoAlias(config.slug)).map(
     (config) => `/${config.slug} /${config.slug}.html 200`,
   ),
+  "/blog /blog.html 200",
+  ...blogPosts.map((post) => `/blog/${post.slug} /blog/${post.slug}.html 200`),
   "",
   "# Client-rendered application fallback.",
   "/* /index.html 200",

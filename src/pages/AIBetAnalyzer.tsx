@@ -203,7 +203,7 @@ const AIBetAnalyzer = () => {
         {/* CTA */}
         <section className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
           <h2 className="text-2xl font-bold mb-4">Ready to Analyze Your Next Bet?</h2>
-          <p className="text-muted-foreground mb-6">Join thousands of bettors using our <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> to find value before every wager.</p>
+          <p className="text-muted-foreground mb-6">Use the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> to compare model probability, implied odds and risk factors before a wager.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild><Link to="/login">Start AI Analysis <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
             <Button size="lg" variant="outline" asChild><Link to="/pricing">View Plans</Link></Button>

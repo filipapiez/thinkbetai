@@ -28,6 +28,38 @@ for (const page of CORE_SEO_PAGES) {
 
 const dist = resolve("dist");
 if (existsSync(dist)) {
+  const titles = new Map<string, string>();
+  for (const sitemapUrl of sitemapUrls) {
+    const parsed = new URL(sitemapUrl);
+    const path = parsed.pathname;
+    const file = path === "/" ? join(dist, "index.html") : join(dist, `${path.slice(1)}.html`);
+    if (!existsSync(file)) {
+      issues.push(`sitemap URL missing crawler HTML: ${path}`);
+      continue;
+    }
+
+    const html = readFileSync(file, "utf8");
+    const title = html.match(/<title>([^<]+)<\/title>/)?.[1]?.trim();
+    const description = html.match(/<meta\s+name="description"\s+content="([^"]+)"/)?.[1]?.trim();
+    const canonical = html.match(/<link\s+rel="canonical"\s+href="([^"]+)"/)?.[1]?.trim();
+
+    if (!title) issues.push(`missing title: ${path}`);
+    else {
+      if (title.length > 65) issues.push(`title too long (${title.length}): ${path}`);
+      const duplicate = titles.get(title);
+      if (duplicate) issues.push(`duplicate title: ${duplicate} and ${path}`);
+      titles.set(title, path);
+    }
+    if (!description) issues.push(`missing description: ${path}`);
+    else if (description.length < 100 || description.length > 170) {
+      issues.push(`description length ${description.length}: ${path}`);
+    }
+    if (canonical !== sitemapUrl) issues.push(`canonical mismatch: ${path} -> ${canonical ?? "missing"}`);
+    if (!/<h1(?:\s|>)/.test(html)) issues.push(`missing H1: ${path}`);
+    if (!html.includes('<noscript id="seo-content">')) issues.push(`missing stable SEO fallback: ${path}`);
+    if (/name="robots"\s+content="noindex/.test(html)) issues.push(`sitemap URL is noindex: ${path}`);
+  }
+
   for (const page of CORE_SEO_PAGES) {
     const file =
       page.path === "/" ? join(dist, "index.html") : join(dist, `${page.path.slice(1)}.html`);

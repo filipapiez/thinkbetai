@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 
 export interface BreadcrumbItem {
@@ -33,14 +33,22 @@ export const Breadcrumb = ({ items, className = '' }: BreadcrumbProps) => {
     ]
   };
 
+  const structuredDataJson = JSON.stringify(structuredData);
+
+  useEffect(() => {
+    const id = 'thinkbetai-breadcrumb-schema';
+    const existing = document.head.querySelector<HTMLScriptElement>(`#${id}`);
+    const script = existing ?? document.createElement('script');
+    script.id = id;
+    script.type = 'application/ld+json';
+    script.textContent = structuredDataJson;
+    if (!existing) document.head.appendChild(script);
+
+    return () => script.remove();
+  }, [structuredDataJson]);
+
   return (
     <>
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
-      
       <nav 
         aria-label="Breadcrumb" 
         className={`flex items-center gap-1 text-sm ${className}`}

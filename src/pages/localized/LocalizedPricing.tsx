@@ -7,12 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Check, Zap, Crown, Trophy, Star, TrendingUp, Shield } from 'lucide-react';
 import { useWinRate } from '@/hooks/useWinRate';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
-import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
+import { Locale, getTranslations, getLocalePath } from '@/lib/i18n';
 
 const pricingPlans = [
   { id: 'basic', priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne', price: 4.99, originalPrice: 16.99, icon: Zap, popular: false },
@@ -29,7 +28,6 @@ const LocalizedPricing = ({ locale }: Props) => {
   const [selectedPlan, setSelectedPlan] = useState<typeof pricingPlans[0] | null>(null);
   const t = getTranslations(locale).pricing;
   const lp = (path: string) => getLocalePath(locale, path);
-  const hreflangEntries = getHreflangEntries('/pricing');
 
   const planNames = { basic: t.basicName, pro: t.proName, insider: t.insiderName };
   const planDescs = { basic: t.basicDesc, pro: t.proDesc, insider: t.insiderDesc };
@@ -43,11 +41,7 @@ const LocalizedPricing = ({ locale }: Props) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-background via-background to-primary/5">
-      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('/pricing')} />
-      <Helmet>
-        {hreflangEntries.map(e => <link key={e.hreflang} rel="alternate" hrefLang={e.hreflang} href={e.href} />)}
-        <link rel="alternate" hrefLang="x-default" href="https://thinkbetai.com/pricing" />
-      </Helmet>
+      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('/pricing')} noIndex />
       <LocalizedHeader locale={locale} />
 
       <main className="flex-1 py-12 md:py-20">

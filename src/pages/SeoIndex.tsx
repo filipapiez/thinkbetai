@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { Loader2 } from "lucide-react";
 
 interface SeoPageRow {
@@ -60,7 +60,7 @@ const SeoIndex = ({ variant }: Props) => {
         setPages((data ?? []) as SeoPageRow[]);
         setLoading(false);
       });
-  }, [variant]);
+  }, [cfg.pageTypes, variant]);
 
   // Group by sport
   const grouped = pages.reduce<Record<string, SeoPageRow[]>>((acc, p) => {
@@ -92,17 +92,13 @@ const SeoIndex = ({ variant }: Props) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Helmet>
-        <title>{cfg.title}</title>
-        <meta name="description" content={cfg.description} />
-        <meta name="robots" content="noindex, follow" />
-        <link rel="canonical" href={url} />
-        <meta property="og:title" content={cfg.title} />
-        <meta property="og:description" content={cfg.description} />
-        <meta property="og:url" content={url} />
-        <meta property="og:type" content="website" />
-        <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
-      </Helmet>
+      <SEO
+        title={cfg.title}
+        description={cfg.description}
+        url={cfg.path}
+        noIndex
+        structuredData={itemListSchema}
+      />
 
       <Header />
 

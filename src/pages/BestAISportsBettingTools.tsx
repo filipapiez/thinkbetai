@@ -223,7 +223,7 @@ const BestAISportsBettingTools = () => {
 
         {/* CTA */}
         <section className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
-          <h2 className="text-2xl font-bold mb-4">Join the #1 AI Sports Betting Platform</h2>
+          <h2 className="text-2xl font-bold mb-4">Explore AI Sports Analysis Tools</h2>
           <p className="text-muted-foreground mb-6">Probability analysis, parlay tools and market context. <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Start free</Link> — no credit card required.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" asChild><Link to="/login?tab=signup">Sign Up Free <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>

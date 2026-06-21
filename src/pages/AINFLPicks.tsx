@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,10 +20,9 @@ import {
 
 const AINFLPicks = () => {
   const structuredData = {
-    "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "AI NFL Picks Today - Free NFL Predictions & Analysis",
-    "description": "Get AI NFL picks for today's games. Machine learning analysis of spreads, totals, and player props with 82%+ accuracy on qualified picks.",
+    "headline": "AI NFL Picks and Football Predictions",
+    "description": "Review AI NFL picks with matchup data, probability estimates and risk context for moneylines, spreads, totals and player props.",
     "author": {
       "@type": "Organization",
       "name": "ThinkBetAI"
@@ -42,7 +40,6 @@ const AINFLPicks = () => {
   };
 
   const faqData = {
-    "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
       {
@@ -50,7 +47,7 @@ const AINFLPicks = () => {
         "name": "How accurate are AI NFL picks?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "ThinkBetAI's NFL picks achieve 82%+ accuracy on qualified spreads and totals. Our AI analyzes team stats, injuries, weather, and betting trends to identify high-value opportunities."
+          "text": "Accuracy varies by market, price, sample and time period. NFL analysis should be reviewed with the current injury report, weather, market price and stated uncertainty."
         }
       },
       {
@@ -72,32 +69,30 @@ const AINFLPicks = () => {
     ]
   };
 
+  const combinedSchema = {
+    "@context": "https://schema.org",
+    "@graph": [structuredData, faqData],
+  };
+
   const nflFeatures = [
     { icon: Target, title: 'Spread Analysis', description: 'AI-powered point spread predictions' },
     { icon: BarChart3, title: 'Totals Picks', description: 'Over/under predictions with confidence scores' },
     { icon: Trophy, title: 'Player Props', description: 'Yards, TDs, and performance props' },
     { icon: Clock, title: 'Weekly Updates', description: 'Picks updated as news breaks' },
     { icon: Shield, title: 'Weather Impact', description: 'Wind, rain, and temperature analysis' },
-    { icon: TrendingUp, title: '82%+ Accuracy', description: 'Verified win rate on qualified picks' },
+    { icon: TrendingUp, title: 'Probability Context', description: 'Compare model estimates with market prices' },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="AI NFL Picks Today - Free NFL Predictions & Expert Analysis"
-        description="Get AI NFL picks for today's games. Machine learning analysis of spreads, totals, and player props with 82%+ accuracy. Free NFL predictions updated weekly."
+        title="AI NFL Picks & Football Predictions"
+        description="Review AI NFL picks with matchup data, probability estimates and risk context for moneylines, spreads, totals and player props."
         keywords="AI NFL picks, NFL AI predictions, AI football picks, NFL betting AI, AI NFL spreads, NFL picks today, AI NFL props"
         url="/ai-nfl-picks"
         type="article"
+        structuredData={combinedSchema}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqData)}
-        </script>
-      </Helmet>
       
       <Header />
       
@@ -118,7 +113,7 @@ const AINFLPicks = () => {
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Test AI predictions</Link> for every NFL game. Our machine learning models analyze 
-              team performance, injuries, weather, and betting trends for winning picks.
+              team performance, injuries, weather, and market context to estimate possible outcomes.
             </p>
             <Button size="lg" asChild>
               <Link to="/games?sport=americanfootball_nfl">
@@ -171,7 +166,7 @@ const AINFLPicks = () => {
             <h3>Totals (Over/Under)</h3>
             <p>
               Game pace, defensive matchups, and weather conditions are weighted to predict 
-              total points with high accuracy.
+              total points with an explicit probability and uncertainty range.
             </p>
 
             <h3>Player Props</h3>
@@ -207,7 +202,7 @@ const AINFLPicks = () => {
               Get AI NFL Picks for This Week
             </h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Join thousands of smart bettors using AI to gain an edge on NFL betting.
+              Review the current NFL slate with model probabilities, matchup context and risk notes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>

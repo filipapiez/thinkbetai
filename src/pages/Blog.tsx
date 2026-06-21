@@ -16,8 +16,8 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title="AI Betting Blog - Expert Insights & Strategies"
-        description="Expert AI betting guides, sports predictions strategies, and machine learning insights. Learn how to use artificial intelligence for smarter sports betting."
+        title="AI Sports Betting Blog & Guides"
+        description="Read practical guides about AI sports betting models, probability, odds, parlays, player props, bankroll risk and responsible analysis."
         keywords="AI betting blog, sports betting strategies, betting tips, AI predictions guide, machine learning betting"
         url="/blog"
       />
@@ -53,6 +53,10 @@ const Blog = () => {
               <img 
                 src={featuredPost.image} 
                 alt={featuredPost.title}
+                width={800}
+                height={450}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -101,6 +105,10 @@ const Blog = () => {
                 <img 
                   src={post.image} 
                   alt={post.title}
+                  width={480}
+                  height={270}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>

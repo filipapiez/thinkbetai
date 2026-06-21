@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { LocalizedHeader } from '@/components/LocalizedHeader';
 import { LocalizedFooter } from '@/components/LocalizedFooter';
@@ -10,7 +9,7 @@ import { SEO } from '@/components/SEO';
 import WorkflowDemo from '@/components/WorkflowDemo';
 import { platformStats } from '@/lib/platformStats';
 import { useWinRate } from '@/hooks/useWinRate';
-import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
+import { Locale, getTranslations, getLocalePath } from '@/lib/i18n';
 import {
   Search, TrendingUp, UserX, Gauge, Shield, ArrowRight, BarChart3, Trophy,
   Target, Zap, CheckCircle2, Star, Layers, Dumbbell, Sparkles, Clock,
@@ -64,17 +63,9 @@ const LocalizedIndex = ({ locale }: Props) => {
     { quote: "my bankroll went from 😬 to 😎 real quick", author: "Alex K.", role: "Sports Junkie", rating: 5 },
   ];
 
-  const hreflangEntries = getHreflangEntries('');
-
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('')} />
-      <Helmet>
-        {hreflangEntries.map(e => (
-          <link key={e.hreflang} rel="alternate" hrefLang={e.hreflang} href={e.href} />
-        ))}
-        <link rel="alternate" hrefLang="x-default" href="https://thinkbetai.com/" />
-      </Helmet>
+      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('')} noIndex />
       <LocalizedHeader locale={locale} />
 
       <main className="flex-1">

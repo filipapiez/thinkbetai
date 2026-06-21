@@ -259,6 +259,156 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "View Games", href: "/games" },
     ],
   },
+  {
+    path: "/what-is-ai-sports-betting",
+    title: "What Is AI Sports Betting? Complete Guide | ThinkBetAI",
+    description:
+      "Learn how AI sports betting models analyze statistics, estimate probabilities and compare market odds, including their limitations and risks.",
+    h1: "What Is AI Sports Betting?",
+    intro:
+      "AI sports betting applies statistical and machine-learning methods to sports data in order to estimate probabilities and organize matchup research.",
+    sections: [
+      {
+        heading: "How AI sports analysis works",
+        body: "Models transform available team, player, schedule, injury and market information into probability estimates that can be compared with current sportsbook prices.",
+      },
+      {
+        heading: "What AI cannot do",
+        body: "Models work with incomplete historical information and cannot predict random events, late news or future outcomes with certainty.",
+      },
+    ],
+    links: [
+      { label: "AI Sports Betting Analysis", href: "/ai-sports-betting" },
+      { label: "How ThinkBetAI Works", href: "/how-it-works" },
+      { label: "AI Sports Picks", href: "/ai-sports-picks" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/how-it-works",
+    title: "How ThinkBetAI Works: Models, Odds & Risk",
+    description:
+      "See how ThinkBetAI organizes sports data, creates probability estimates, compares implied odds and explains matchup factors and uncertainty.",
+    h1: "How ThinkBetAI Works",
+    intro:
+      "ThinkBetAI converts available sports and market information into structured probability analysis with plain-language context and risk notes.",
+    sections: [
+      {
+        heading: "From data to probability",
+        body: "Relevant inputs are prepared for sport-specific models, which estimate possible outcomes and compare those estimates with market-implied probability.",
+      },
+      {
+        heading: "Explanation and result tracking",
+        body: "Each analysis should explain important factors, expose uncertainty and be graded consistently after the event rather than highlighting only successful examples.",
+      },
+    ],
+    links: [
+      { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
+      { label: "AI Parlay Builder", href: "/ai-parlay-builder" },
+      { label: "Track Record & Methodology", href: "/track-record" },
+      { label: "Frequently Asked Questions", href: "/faq" },
+    ],
+  },
+  {
+    path: "/pricing",
+    title: "ThinkBetAI Plans & Pricing | Compare Features",
+    description:
+      "Compare ThinkBetAI plans, included sports-analysis features, billing terms and free access before choosing the option that fits your research needs.",
+    h1: "ThinkBetAI Plans and Pricing",
+    intro:
+      "Compare available plans by analysis access, supported tools and billing period. Current prices and terms are shown before checkout.",
+    sections: [
+      {
+        heading: "Compare analysis features",
+        body: "Review access to model probabilities, matchup explanations, bet analysis, parlay tools and supported sports before selecting a plan.",
+      },
+      {
+        heading: "Understand the limits",
+        body: "A paid plan provides additional analysis features, not guaranteed results. Sports outcomes remain uncertain regardless of subscription level.",
+      },
+    ],
+    links: [
+      { label: "Free AI Predictions", href: "/free-ai-predictions" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "AI Sports Betting Tools", href: "/best-ai-sports-betting-tools" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/about",
+    title: "About ThinkBetAI | Sports Analysis Methodology",
+    description:
+      "Learn about ThinkBetAI's purpose, probability-based sports analysis approach, transparency principles and commitment to responsible product design.",
+    h1: "About ThinkBetAI",
+    intro:
+      "ThinkBetAI is a sports-analysis product designed to make model probabilities, market context and uncertainty easier to review.",
+    sections: [
+      {
+        heading: "Our product principles",
+        body: "Useful analysis should be understandable, timestamped and honest about uncertainty. Performance claims should include their sample and qualification rules.",
+      },
+      {
+        heading: "Responsible analysis",
+        body: "ThinkBetAI is an informational tool. It does not guarantee outcomes and should never replace personal judgment or responsible gambling limits.",
+      },
+    ],
+    links: [
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Track Record & Methodology", href: "/track-record" },
+      { label: "Frequently Asked Questions", href: "/faq" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/faq",
+    title: "AI Sports Betting FAQ | ThinkBetAI",
+    description:
+      "Find answers about AI sports betting models, probability estimates, data inputs, parlays, pricing, account access and responsible use.",
+    h1: "AI Sports Betting Frequently Asked Questions",
+    intro:
+      "These answers explain how ThinkBetAI presents sports-analysis estimates, what the tools include and where their limitations apply.",
+    sections: [
+      {
+        heading: "Understanding model output",
+        body: "A probability estimate expresses uncertainty based on available inputs. It is not a guarantee and can change as injuries, lineups or market prices change.",
+      },
+      {
+        heading: "Using the platform responsibly",
+        body: "Review the explanation and risk notes, set firm limits and never wager money you cannot afford to lose.",
+      },
+    ],
+    links: [
+      { label: "What Is AI Sports Betting?", href: "/what-is-ai-sports-betting" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Plans & Pricing", href: "/pricing" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/responsible-gambling",
+    title: "Responsible Gambling Resources | ThinkBetAI",
+    description:
+      "Review responsible gambling guidance, warning signs, age requirements, self-exclusion options and support resources for safer participation.",
+    h1: "Responsible Gambling",
+    intro:
+      "Sports betting involves financial risk. Set limits before participating, recognize warning signs and seek support when gambling stops feeling controlled.",
+    sections: [
+      {
+        heading: "Set practical limits",
+        body: "Decide time and spending limits in advance, avoid chasing losses and never use money needed for essential expenses.",
+      },
+      {
+        heading: "Get help early",
+        body: "Use self-exclusion and support resources if gambling causes stress, secrecy, debt or difficulty stopping.",
+      },
+    ],
+    links: [
+      { label: "How ThinkBetAI Works", href: "/how-it-works" },
+      { label: "Frequently Asked Questions", href: "/faq" },
+      { label: "About ThinkBetAI", href: "/about" },
+      { label: "Track Record & Methodology", href: "/track-record" },
+    ],
+  },
 ];
 
 export const CORE_SEO_PATHS = CORE_SEO_PAGES.map((page) => page.path);

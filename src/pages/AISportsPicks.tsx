@@ -442,7 +442,7 @@ const AISportsPicks = () => {
                 Start Winning with AI Sports Picks Today
               </h2>
               <p className="text-muted-foreground mb-8">
-                Join thousands of sports bettors who trust our AI to find the best betting opportunities. 
+                Review AI-assisted picks with probability estimates, matchup context and explicit uncertainty.
                 No credit card required to start.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

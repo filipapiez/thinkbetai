@@ -289,7 +289,7 @@ const AISportsBetting = () => {
           <section className="rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center">
             <h2 className="text-2xl font-bold mb-3">Ready to Try AI Bets?</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Join thousands of bettors using ThinkBetAI to find smarter picks, build data-backed parlays, and bet with confidence.
+              Review model probabilities, build data-informed parlays and compare each estimate with the current market and your own risk limits.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>

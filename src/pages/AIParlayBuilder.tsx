@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -80,6 +79,7 @@ const AIParlayBuilder = () => {
       acceptedAnswer: { '@type': 'Answer', text: f.a },
     })),
   };
+  const combinedSchema = { '@context': 'https://schema.org', '@graph': [softwareSchema, faqSchema] };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -89,11 +89,8 @@ const AIParlayBuilder = () => {
         keywords="ai parlay builder, free ai parlay generator, ai parlay picks, same game parlay AI, smart parlay builder, parlay ai predictions, correlated parlay"
         url="/ai-parlay-builder"
         type="article"
+        structuredData={combinedSchema}
       />
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
-        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-      </Helmet>
 
       <Header />
 

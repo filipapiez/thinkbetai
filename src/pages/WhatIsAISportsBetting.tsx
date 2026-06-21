@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Brain, BarChart3, Database, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -32,17 +31,13 @@ const WhatIsAISportsBetting = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="What Is AI Sports Betting? A Complete Guide"
-        description="Learn what AI sports betting is, how machine learning analyzes sports data, and what to consider before using AI-powered betting tools."
+        title="What Is AI Sports Betting? Complete Guide"
+        description="Learn how AI sports betting models analyze statistics, estimate probabilities and compare market odds, including their limitations and risks."
         keywords="AI sports betting, artificial intelligence betting, machine learning sports, AI predictions, sports analytics"
         url="https://thinkbetai.com/what-is-ai-sports-betting"
         type="article"
+        structuredData={structuredData}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      </Helmet>
       
       <Header />
       
@@ -50,7 +45,6 @@ const WhatIsAISportsBetting = () => {
         {/* Breadcrumb with Schema */}
         <Breadcrumb 
           items={[
-            { label: 'Blog', href: '/blog' },
             { label: 'What Is AI Sports Betting' }
           ]} 
           className="mb-8"

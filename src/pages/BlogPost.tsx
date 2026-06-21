@@ -1,5 +1,4 @@
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -19,7 +18,7 @@ const blogFAQs: Record<string, { question: string; answer: string }[]> = {
     },
     {
       question: 'How accurate are AI betting predictions?',
-      answer: 'Top AI betting platforms achieve 60-75% accuracy on certain bet types. While no system can guarantee wins, AI significantly outperforms random chance by analyzing millions of data points including team statistics, player performance, injuries, weather conditions, and historical betting patterns.'
+      answer: 'Accuracy varies by sport, market, price, sample and time period. No platform can guarantee a future result, so historical claims should be evaluated with their methodology and complete graded sample.'
     },
     {
       question: 'Is using AI for betting legal?',
@@ -67,8 +66,8 @@ const BlogPost = () => {
     "image": post.image,
     "author": {
       "@type": "Organization",
-      "name": post.author,
-      "url": "https://thinkbetai.com"
+      "name": "ThinkBetAI Editorial Team",
+      "url": "https://thinkbetai.com/about"
     },
     "publisher": {
       "@type": "Organization",
@@ -103,6 +102,14 @@ const BlogPost = () => {
     }))
   } : null;
 
+  const articleNode = { ...articleStructuredData };
+  const faqNode = faqStructuredData ? { ...faqStructuredData } : null;
+  delete articleNode['@context'];
+  if (faqNode) delete faqNode['@context'];
+  const combinedStructuredData = faqNode
+    ? { "@context": "https://schema.org", "@graph": [articleNode, faqNode] }
+    : articleStructuredData;
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
@@ -114,17 +121,8 @@ const BlogPost = () => {
         author={post.author}
         publishedTime={post.publishedAt}
         image={post.image}
+        structuredData={combinedStructuredData}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(articleStructuredData)}
-        </script>
-        {faqStructuredData && (
-          <script type="application/ld+json">
-            {JSON.stringify(faqStructuredData)}
-          </script>
-        )}
-      </Helmet>
       <Header />
       
       <main className="container py-8 md:py-12">
@@ -183,12 +181,19 @@ const BlogPost = () => {
               <img 
                 src={post.image} 
                 alt={post.title}
+                width={1200}
+                height={675}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>
 
             {/* Content */}
             <div className="prose prose-lg dark:prose-invert max-w-none">
+              <aside className="not-prose mb-8 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-muted-foreground">
+                <strong className="text-foreground">Editorial note:</strong> This article is educational, not a promise of results. Verify dated performance references, current odds, and local laws independently. Never wager more than you can afford to lose.
+              </aside>
               {post.content.split('\n').map((paragraph, index) => {
                 if (paragraph.startsWith('## ')) {
                   return <h2 key={index} className="text-2xl font-bold mt-8 mb-4">{paragraph.replace('## ', '')}</h2>;
@@ -275,6 +280,10 @@ const BlogPost = () => {
                         <img 
                           src={relatedPost.image} 
                           alt={relatedPost.title}
+                          width={400}
+                          height={225}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                       </div>

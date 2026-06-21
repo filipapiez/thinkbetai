@@ -42,6 +42,12 @@
 /best-ai-betting-app /best-ai-betting-app.html 200
 /ai-nfl-picks /ai-nfl-picks.html 200
 /track-record /track-record.html 200
+/what-is-ai-sports-betting /what-is-ai-sports-betting.html 200
+/how-it-works /how-it-works.html 200
+/pricing /pricing.html 200
+/about /about.html 200
+/faq /faq.html 200
+/responsible-gambling /responsible-gambling.html 200
 /nfl-ai-predictions /nfl-ai-predictions.html 200
 /nba-ai-predictions /nba-ai-predictions.html 200
 /mlb-ai-predictions /mlb-ai-predictions.html 200
@@ -51,6 +57,32 @@
 /ai-player-prop-predictions /ai-player-prop-predictions.html 200
 /ai-underdog-picks /ai-underdog-picks.html 200
 /ai-against-the-spread-picks /ai-against-the-spread-picks.html 200
+/blog /blog.html 200
+/blog/how-ai-is-revolutionizing-sports-betting /blog/how-ai-is-revolutionizing-sports-betting.html 200
+/blog/ai-betting-predictions-explained /blog/ai-betting-predictions-explained.html 200
+/blog/best-ai-betting-strategies-2026 /blog/best-ai-betting-strategies-2026.html 200
+/blog/nba-ai-betting-guide /blog/nba-ai-betting-guide.html 200
+/blog/nfl-ai-betting-predictions /blog/nfl-ai-betting-predictions.html 200
+/blog/mlb-ai-betting-predictions-2026 /blog/mlb-ai-betting-predictions-2026.html 200
+/blog/ufc-mma-ai-betting-guide /blog/ufc-mma-ai-betting-guide.html 200
+/blog/parlay-betting-ai-strategies /blog/parlay-betting-ai-strategies.html 200
+/blog/live-betting-ai-guide /blog/live-betting-ai-guide.html 200
+/blog/bankroll-management-ai-betting /blog/bankroll-management-ai-betting.html 200
+/blog/is-there-an-ai-betting-platform /blog/is-there-an-ai-betting-platform.html 200
+/blog/is-ai-betting-legal /blog/is-ai-betting-legal.html 200
+/blog/how-ai-is-used-in-sports-betting /blog/how-ai-is-used-in-sports-betting.html 200
+/blog/can-ai-predict-sports-outcomes /blog/can-ai-predict-sports-outcomes.html 200
+/blog/ai-betting-myths-vs-reality /blog/ai-betting-myths-vs-reality.html 200
+/blog/best-ai-platform-sports-betting-2026 /blog/best-ai-platform-sports-betting-2026.html 200
+/blog/best-ai-platforms-sports-betting-what-matters /blog/best-ai-platforms-sports-betting-what-matters.html 200
+/blog/best-ai-betting-tools-compared /blog/best-ai-betting-tools-compared.html 200
+/blog/which-ai-platform-best-sports-betting /blog/which-ai-platform-best-sports-betting.html 200
+/blog/best-ai-software-sports-betting-analysis /blog/best-ai-software-sports-betting-analysis.html 200
+/blog/how-do-american-odds-work /blog/how-do-american-odds-work.html 200
+/blog/what-are-player-props-betting /blog/what-are-player-props-betting.html 200
+/blog/what-is-a-sports-handicapper /blog/what-is-a-sports-handicapper.html 200
+/blog/mlb-ai-predictions-how-they-work /blog/mlb-ai-predictions-how-they-work.html 200
+/blog/how-ai-parlay-builders-work /blog/how-ai-parlay-builders-work.html 200
 
 # Client-rendered application fallback.
 /* /index.html 200

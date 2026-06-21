@@ -23,8 +23,8 @@ const AboutPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
-        title="About Us - Our AI Betting Story"
-        description="Learn how ThinkBetAI is revolutionizing sports betting with artificial intelligence. Discover our mission, values, and the technology behind our 67% accuracy rate."
+        title="About ThinkBetAI | Sports Analysis Methodology"
+        description="Learn about ThinkBetAI's purpose, probability-based sports analysis approach, transparency principles and commitment to responsible product design."
         keywords="about ThinkBetAI, AI betting company, sports betting technology, betting predictions team"
         url="/about"
       />
@@ -45,11 +45,10 @@ const AboutPage = () => {
                 Our Story
               </Badge>
               <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent">
-                3 Years in the Making
+                About ThinkBetAI
               </h1>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Hey there! We're so glad you found us. After three years of testing, tweaking, 
-                and perfecting our system, we're finally ready to share it with you.
+                We make probability-based sports analysis easier to understand by combining model estimates, market context and plain-language risk notes.
               </p>
             </div>
           </div>
@@ -64,32 +63,24 @@ const AboutPage = () => {
                   <div className="p-3 rounded-xl bg-primary/20">
                     <Rocket className="h-6 w-6 text-primary" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold">How It All Started</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold">Why We Built It</h2>
                 </div>
                 
                 <div className="space-y-6 text-muted-foreground leading-relaxed">
                   <p className="text-lg">
-                    Look, we get it. Sports betting can feel like a guessing game. You've probably 
-                    been there — staring at odds, second-guessing yourself, wondering if there's 
-                    a smarter way to do this. That's exactly where we were three years ago.
+                    Sports analysis can feel fragmented: statistics in one place, injury news in another and market prices somewhere else. ThinkBetAI is designed to organize those inputs into one reviewable workflow.
                   </p>
                   
                   <p>
-                    We started as a small group of sports fans and data nerds who were tired of 
-                    making bets based on gut feelings alone. So we asked ourselves: what if we 
-                    could use real data, smart algorithms, and years of historical patterns to 
-                    find the bets that actually make sense?
+                    The product focuses on probability rather than certainty. It compares available data with market-implied odds and explains the factors that can make an estimate more or less reliable.
                   </p>
                   
                   <p>
-                    For three years, we ran our models quietly in the background. We tested 
-                    thousands of predictions across every major sport. We tracked what worked, 
-                    threw out what didn't, and kept refining until we had something we were 
-                    genuinely proud of.
+                    Results should be graded consistently, and any performance figure should be accompanied by its sample, date range and qualification rules. No model removes uncertainty from sports.
                   </p>
                   
                   <p className="text-foreground font-medium">
-                    And now? We're finally ready to share it with you.
+                    Our goal is simple: help people review sports data more clearly and make their own informed decisions.
                   </p>
                 </div>
               </CardContent>
@@ -139,10 +130,9 @@ const AboutPage = () => {
                   <div className="p-3 rounded-xl bg-amber-500/20 w-fit mb-4 group-hover:scale-110 transition-transform">
                     <Clock className="h-6 w-6 text-amber-400" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Patience Pays Off</h3>
+                  <h3 className="text-xl font-semibold mb-2">Continuous Improvement</h3>
                   <p className="text-muted-foreground">
-                    We spent three years testing before launching. That same patience is 
-                    what helps find bets that others miss because they're in too much of a rush.
+                    Models and interfaces should be reviewed as data quality, sports markets and user needs change.
                   </p>
                 </CardContent>
               </Card>
@@ -167,28 +157,28 @@ const AboutPage = () => {
         <section className="py-12 md:py-16">
           <div className="container max-w-4xl">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">The Results Speak</h2>
+              <h2 className="text-3xl font-bold mb-4">What the Product Emphasizes</h2>
               <p className="text-muted-foreground">
-                After three years of testing, here's where we stand.
+                Clear analysis is more useful than unsupported promises.
               </p>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20">
-                <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">80.3%</div>
-                <div className="text-sm text-muted-foreground">Avg. Win Rate</div>
+                <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">Model</div>
+                <div className="text-sm text-muted-foreground">Probabilities</div>
               </div>
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/20">
-                <div className="text-3xl md:text-4xl font-bold text-blue-400 mb-2">3</div>
-                <div className="text-sm text-muted-foreground">Years Testing</div>
+                <div className="text-3xl md:text-4xl font-bold text-blue-400 mb-2">Market</div>
+                <div className="text-sm text-muted-foreground">Odds Context</div>
               </div>
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/20">
-                <div className="text-3xl md:text-4xl font-bold text-amber-400 mb-2">6</div>
-                <div className="text-sm text-muted-foreground">Sports Covered</div>
+                <div className="text-3xl md:text-4xl font-bold text-amber-400 mb-2">Risk</div>
+                <div className="text-sm text-muted-foreground">Uncertainty Notes</div>
               </div>
               <div className="text-center p-6 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/20">
-                <div className="text-3xl md:text-4xl font-bold text-purple-400 mb-2">24/7</div>
-                <div className="text-sm text-muted-foreground">Live Odds</div>
+                <div className="text-3xl md:text-4xl font-bold text-purple-400 mb-2">Clear</div>
+                <div className="text-sm text-muted-foreground">Explanations</div>
               </div>
             </div>
           </div>
@@ -234,8 +224,7 @@ const AboutPage = () => {
               Ready to Make Smarter Bets?
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              We've done the hard work. Now it's your turn to see what three years 
-              of preparation looks like in action.
+              Explore the analysis tools, review the methodology and decide whether the workflow fits your research needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="gap-2">

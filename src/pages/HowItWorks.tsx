@@ -152,8 +152,8 @@ const HowItWorks = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="How ThinkBetAI Works – AI Sports Betting Explained"
-        description="Learn how ThinkBetAI uses AI and machine learning to analyze games, generate picks, and help you build smarter parlays across every major sport."
+        title="How ThinkBetAI Works: Models, Odds & Risk"
+        description="See how ThinkBetAI organizes sports data, creates probability estimates, compares implied odds and explains matchup factors and uncertainty."
         keywords="how ThinkBetAI works, AI sports betting explained, AI picks process, sports betting AI tool"
         url="https://thinkbetai.com/how-it-works"
       />
@@ -194,7 +194,7 @@ const HowItWorks = () => {
         <section className="mb-20">
           <h2 className="text-2xl font-semibold mb-2 text-center">Your Journey</h2>
           <p className="text-muted-foreground text-center max-w-xl mx-auto mb-8">
-            Six simple steps from creating your account to tracking winning picks.
+            Six steps from creating an account to reviewing analysis and tracking results.
           </p>
           <div className="relative">
             <div className="absolute left-6 top-0 bottom-0 w-px bg-border hidden md:block" />

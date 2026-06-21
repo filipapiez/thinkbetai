@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
+import { NoIndexBoundary } from "@/components/NoIndexBoundary";
 
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
@@ -106,7 +107,7 @@ const App = () => (
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
-                <Route path="/pricing" element={<QueryBoundary><AuthBoundary><Pricing /></AuthBoundary></QueryBoundary>} />
+                <Route path="/pricing" element={<AuthBoundary><Pricing /></AuthBoundary>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/track-record" element={<TrackRecord />} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
@@ -123,20 +124,20 @@ const App = () => (
                 <Route path="/ai-bet-analyzer" element={<AIBetAnalyzer />} />
                 <Route path="/best-ai-sports-betting-tools" element={<BestAISportsBettingTools />} />
                 <Route path="/faq" element={<FAQ />} />
-                <Route path="/login" element={<AuthBoundary><Login /></AuthBoundary>} />
-                <Route path="/ref/:code" element={<Referral />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/payment-success" element={<PaymentSuccess />} />
-                <Route path="/bet-history" element={<QueryBoundary><BetHistory /></QueryBoundary>} />
-                <Route path="/game-totals" element={<QueryBoundary><GameTotals /></QueryBoundary>} />
+                <Route path="/login" element={<NoIndexBoundary><AuthBoundary><Login /></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/ref/:code" element={<NoIndexBoundary><Referral /></NoIndexBoundary>} />
+                <Route path="/reset-password" element={<NoIndexBoundary><ResetPassword /></NoIndexBoundary>} />
+                <Route path="/payment-success" element={<NoIndexBoundary><PaymentSuccess /></NoIndexBoundary>} />
+                <Route path="/bet-history" element={<NoIndexBoundary><QueryBoundary><BetHistory /></QueryBoundary></NoIndexBoundary>} />
+                <Route path="/game-totals" element={<NoIndexBoundary><QueryBoundary><GameTotals /></QueryBoundary></NoIndexBoundary>} />
 
                 {/* Auto-generated SEO pages (live but noindex — see SeoPageView/SeoIndex).
                     Removed for SEO hygiene (Dec 2026): /predictions, /predictions/:slug,
                     /teams, /teams/:slug, /players/:slug, /props/:slug, /matchups/:slug.
                     These now fall through to the 404 route and are noindex-by-default. */}
-                <Route path="/best" element={<SeoIndex variant="best" />} />
-                <Route path="/best/:slug" element={<SeoPageView pageType="best" />} />
-                <Route path="/leagues/:slug" element={<SeoPageView pageType="league" />} />
+                <Route path="/best" element={<NoIndexBoundary><SeoIndex variant="best" /></NoIndexBoundary>} />
+                <Route path="/best/:slug" element={<NoIndexBoundary><SeoPageView pageType="best" /></NoIndexBoundary>} />
+                <Route path="/leagues/:slug" element={<NoIndexBoundary><SeoPageView pageType="league" /></NoIndexBoundary>} />
 
                 {/* Permanent SEO landing pages (high-intent keyword clusters) */}
                 <Route path="/nfl-ai-predictions" element={<SeoLanding slug="nfl-ai-predictions" />} />
@@ -194,18 +195,18 @@ const App = () => (
                 <Route path="/de/ai-parlay-builder" element={<LocalizedLanding locale="de" page="aiParlayBuilder" />} />
 
                 {/* Protected routes - require auth + subscription */}
-                <Route path="/games" element={<AuthBoundary><Games /></AuthBoundary>} />
-                <Route path="/games/:gameId" element={<GameDetail />} />
-                <Route path="/picks" element={<QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary>} />
-                <Route path="/player-props" element={<AuthBoundary><PlayerProps /></AuthBoundary>} />
-                <Route path="/parlays" element={<AuthBoundary><ProtectedRoute requireSubscription><Parlays /></ProtectedRoute></AuthBoundary>} />
-                <Route path="/chat" element={<AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/games" element={<NoIndexBoundary><AuthBoundary><Games /></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/games/:gameId" element={<NoIndexBoundary><GameDetail /></NoIndexBoundary>} />
+                <Route path="/picks" element={<NoIndexBoundary><QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary></NoIndexBoundary>} />
+                <Route path="/player-props" element={<NoIndexBoundary><AuthBoundary><PlayerProps /></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/parlays" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Parlays /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/chat" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
                 {/* Protected routes - require auth only */}
-                <Route path="/account" element={<AuthBoundary><ProtectedRoute><Account /></ProtectedRoute></AuthBoundary>} />
-                <Route path="/subscription" element={<AuthBoundary><ProtectedRoute><Subscription /></ProtectedRoute></AuthBoundary>} />
-                <Route path="/admin" element={<AuthBoundary><ProtectedRoute><Admin /></ProtectedRoute></AuthBoundary>} />
-                <Route path="/settings" element={<AuthBoundary><ProtectedRoute><Settings /></ProtectedRoute></AuthBoundary>} />
+                <Route path="/account" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Account /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/subscription" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Subscription /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/admin" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Admin /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/settings" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Settings /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -22,27 +22,16 @@ import {
   Target,
   Zap,
   CheckCircle2,
-  Star,
   Layers,
   Dumbbell,
   Sparkles,
   Clock,
   Users,
-  TrendingDown,
-  Play,
-  ChevronLeft,
-  ChevronRight,
-  Brain,
   LogIn
 } from 'lucide-react';
 
 const Index = () => {
-  // Testimonial carousel
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const scrollFrameRef = useRef<number | null>(null);
   const workflowRef = useRef<HTMLElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
   const [workflowReady, setWorkflowReady] = useState(false);
 
   useEffect(() => {
@@ -64,27 +53,6 @@ const Index = () => {
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
-
-  const updateScrollButtons = () => {
-    if (!scrollRef.current || scrollFrameRef.current !== null) return;
-    scrollFrameRef.current = requestAnimationFrame(() => {
-      scrollFrameRef.current = null;
-      if (!scrollRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    });
-  };
-
-  const scrollTestimonials = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 320;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
 
   const features = [
     {
@@ -126,57 +94,6 @@ const Index = () => {
     { name: 'Boxing', emoji: '🥊' },
     { name: 'Tennis', emoji: '🎾' },
     { name: 'Golf', emoji: '⛳' },
-  ];
-
-  const testimonials = [
-    {
-      quote: "lowkey this app is fire. hit 3 parlays last weekend 🔥",
-      author: "Marcus D.",
-      role: "NBA Fan",
-      rating: 5
-    },
-    {
-      quote: "been using it for a month now, my friends think i'm psychic lol",
-      author: "Taylor S.",
-      role: "Weekend Bettor",
-      rating: 5
-    },
-    {
-      quote: "finally something that actually makes sense. no more random guesses",
-      author: "Chris M.",
-      role: "Football Guy",
-      rating: 5
-    },
-    {
-      quote: "the injury updates alone are worth it. caught me slipping on a bad bet twice",
-      author: "Jordan P.",
-      role: "Fantasy League Champ",
-      rating: 5
-    },
-    {
-      quote: "my bankroll went from 😬 to 😎 real quick",
-      author: "Alex K.",
-      role: "Sports Junkie",
-      rating: 5
-    },
-    {
-      quote: "bruh the parlay builder is addicting. in a good way tho",
-      author: "Devon R.",
-      role: "Parlay King",
-      rating: 5
-    },
-    {
-      quote: "started following the GOOD signals only and i'm up 40% this month",
-      author: "Sam W.",
-      role: "Smart Bettor",
-      rating: 5
-    },
-    {
-      quote: "wish i found this sooner honestly. simple and it just works",
-      author: "Riley T.",
-      role: "Casual Fan",
-      rating: 4
-    },
   ];
 
   return (
@@ -264,20 +181,12 @@ const Index = () => {
               {/* Trust Indicators */}
               <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <div className="flex -space-x-2">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border-2 border-background flex items-center justify-center text-xs font-bold">
-                        {['M', 'S', 'J', 'A'][i]}
-                      </div>
-                    ))}
-                  </div>
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
                   <span><span className="font-semibold text-foreground">Transparent</span> methodology</span>
                 </div>
                 <div className="hidden sm:block w-px h-5 bg-border" />
                 <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
-                  ))}
+                  <Shield className="h-4 w-4 text-primary" />
                   <span className="ml-1"><span className="font-semibold text-foreground">Results</span> are not guaranteed</span>
                 </div>
               </div>
@@ -483,9 +392,9 @@ const Index = () => {
                 },
                 {
                   step: '03',
-                  icon: Trophy,
-                  title: 'Win More Bets',
-                  description: 'Follow GOOD signals and watch your win rate climb.',
+                  icon: Shield,
+                  title: 'Review the Risk',
+                  description: 'Compare probability, market price and uncertainty before making your own decision.',
                 },
               ].map((item, index) => (
                 <div key={item.step} className="relative text-center animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
@@ -502,7 +411,7 @@ const Index = () => {
             <div className="text-center mt-12">
               <Button variant="hero" size="lg" asChild>
                 <Link to="/games">
-                  Start Finding Winners
+                  Review Today's Games
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
@@ -510,61 +419,25 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Analysis standards */}
         <section className="py-16 md:py-24 bg-card/30 border-t border-border/40">
           <div className="container">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">
-                  What People Are Saying
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Real users, real results
-                </p>
-              </div>
-              <div className="flex gap-2 self-end sm:self-auto">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => scrollTestimonials('left')}
-                  disabled={!canScrollLeft}
-                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
-                >
-                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => scrollTestimonials('right')}
-                  disabled={!canScrollRight}
-                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full"
-                >
-                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-              </div>
+            <div className="text-center mb-10">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">What Good Analysis Should Show</h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+                Evaluate the reasoning and uncertainty behind a prediction instead of relying on anonymous success stories.
+              </p>
             </div>
-
-            <div 
-              ref={scrollRef}
-              onScroll={updateScrollButtons}
-              className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {testimonials.map((testimonial, index) => (
-                <div 
-                  key={testimonial.author} 
-                  className="flex-shrink-0 w-[300px] bg-background/50 border border-border/40 rounded-xl p-5 snap-start"
-                >
-                  <div className="flex gap-1 mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-foreground mb-4 leading-relaxed">"{testimonial.quote}"</p>
-                  <div>
-                    <div className="font-medium text-sm">{testimonial.author}</div>
-                    <div className="text-xs text-muted-foreground">{testimonial.role}</div>
-                  </div>
+            <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+              {[
+                { title: 'A probability estimate', text: 'See the model estimate alongside the sportsbook-implied probability.' },
+                { title: 'The important context', text: 'Review injuries, matchup factors, market movement and data limitations.' },
+                { title: 'A clear risk note', text: 'Understand uncertainty and why no individual outcome is guaranteed.' },
+              ].map((item) => (
+                <div key={item.title} className="bg-background/50 border border-border/40 rounded-xl p-5">
+                  <CheckCircle2 className="h-5 w-5 text-primary mb-3" />
+                  <h3 className="font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
                 </div>
               ))}
             </div>
@@ -581,11 +454,10 @@ const Index = () => {
                 Limited Time: 70% Off All Plans
               </div>
               <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
-                Stop Guessing. <span className="text-gradient">Start Winning.</span>
+                Stop Guessing. <span className="text-gradient">Review the Data.</span>
               </h2>
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Every minute you wait is another parlay you could be cashing. 
-                Join <span className="text-foreground font-semibold">5,000+ winners</span> and get your edge today.
+                Compare probabilities, matchup information and market context in one place. Results remain uncertain, so always set responsible limits.
               </p>
               
               {/* What You Get */}

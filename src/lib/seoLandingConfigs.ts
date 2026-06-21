@@ -35,10 +35,10 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     description: "AI sports predictions powered by 1,000+ simulations per game. Get win probabilities, spreads, totals, and player prop predictions across NFL, NBA, MLB, NHL, UFC, soccer & tennis. Updated every hour.",
     keywords: "AI sports predictions, AI sports forecasts, sports prediction AI, AI game predictions, machine learning sports predictions",
     h1: "AI Sports Predictions That Adapt to Live Data",
-    tagline: "1,000 Monte Carlo simulations per matchup, refreshed as lines move",
+    tagline: "Probability estimates refreshed as matchup inputs and market prices change",
     intro: [
       "ThinkBetAI generates AI sports predictions for every major league on the planet — and unlike static \"picks of the day\" sheets you'll find on most tout sites, our model re-runs as injuries land, lineups confirm, weather shifts, and sharp money moves the line. The result is a prediction that reflects the market and the matchup as they actually are when you place the bet, not how they looked at 8 a.m.",
-      "Our engine ingests team efficiency stats, pace, player tracking data, defensive matchups, situational splits (back-to-backs, travel, rest), referee tendencies, weather, and live betting market data from every major sportsbook. It runs 1,000 Monte Carlo simulations per game and surfaces a true win probability, a recommended side, and a confidence score on a 0–100 scale — so you can tell the difference between a coin-flip lean and a high-conviction edge.",
+      "The analysis combines available efficiency stats, pace, player and matchup data, situational context, weather, and current market prices. It presents a modeled win probability, a possible side, and a confidence indicator so readers can distinguish a weak lean from a stronger data signal.",
       "Below you'll find how the AI prediction engine works, which sports we cover, how to read confidence scores, and where to find tonight's free predictions. If you just want to see the picks, jump straight to today's free AI predictions — otherwise keep reading for the methodology, FAQs, and a walkthrough of how to actually win with model-driven sports forecasting.",
     ],
     sections: [
@@ -87,8 +87,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are ThinkBetAI's AI sports predictions?", a: "Our flagged AI picks have hit at an 80.3% win rate across our tracked sample. That said, no model wins every day — variance is real and you should never chase losses on the assumption that the next pick is a lock." },
-      { q: "Do AI predictions actually beat sportsbooks long-term?", a: "Models with a true 53%+ win rate against the spread beat the standard -110 vig, which is roughly the threshold for profitability. Our top-graded picks have historically cleared this bar, but past performance does not guarantee future results." },
+      { q: "How accurate are ThinkBetAI's AI sports predictions?", a: "Accuracy varies by sport, market, time period, and confidence tier. Review dated results over a meaningful sample and never treat a model output as a guaranteed result." },
+      { q: "Do AI predictions actually beat sportsbooks long-term?", a: "A model can only add value when its probability estimates are better calibrated than the market price after vig. That must be evaluated with a transparent, dated sample; past results never guarantee future performance." },
       { q: "Are AI sports predictions free?", a: "Yes — we publish free AI predictions every day, including a daily best bet and underdog of the day. Premium adds full Monte Carlo reports, prop edges, and unlimited chat with the AI." },
       { q: "What sports does the AI cover?", a: "NFL, NBA, MLB, NHL, UFC/MMA, soccer (top European leagues + MLS + Champions League), tennis, college football, college basketball, golf majors, and table tennis." },
       { q: "How often are predictions updated?", a: "Predictions re-run on every odds movement and at least every 60 minutes leading up to tip-off. Injury news, weather updates, and lineup confirmations trigger immediate re-simulation." },
@@ -103,11 +103,11 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     title: "AI Betting Predictions - Spreads, Totals & Moneyline Picks",
     description: "Daily AI betting predictions for spreads, totals, moneylines and player props. See win probability, recommended side, and confidence score for every NFL, NBA, MLB, NHL & UFC matchup.",
     keywords: "AI betting predictions, AI betting picks, AI betting tips, betting predictions AI, machine learning betting predictions",
-    h1: "AI Betting Predictions With a Verified Edge",
+    h1: "AI Betting Predictions With Clear Probability Analysis",
     tagline: "Win probability, recommended side, and confidence — for every market",
     intro: [
       "ThinkBetAI delivers AI betting predictions for every U.S. sportsbook market: moneyline, spread, total (over/under), team totals, alternate lines, first-half, and a full board of player props. We don't just tell you which team to pick — we show the true win probability the model assigns versus the implied probability of the line you're seeing, so you can spot edges and skip coin flips.",
-      "Every betting prediction on the site is generated the same way: aggregate the latest market data, pull in injuries and lineups, run 1,000 Monte Carlo simulations, and compare the model's distribution to current sportsbook prices. When the AI sees a price gap large enough to clear the vig and remain profitable over hundreds of bets, it's flagged as a value play.",
+      "Every betting prediction follows the same documented workflow: compare current market data, injuries, lineups, and matchup inputs with a model-based probability estimate. When the estimated probability differs from the market price, the page explains the possible value and the uncertainty behind it.",
       "Below: a complete walkthrough of the prediction stack, the markets we cover, and how to use predictions to actually build winning betting habits — not just win one Sunday.",
     ],
     sections: [
@@ -158,7 +158,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What's the difference between AI betting predictions and human handicappers?", a: "AI processes more data points consistently and doesn't suffer from recency bias, team loyalty, or fatigue. Human handicappers can be excellent but are limited by the data they can review in a day. Combining both is the gold standard." },
       { q: "How do I know which predictions to bet?", a: "Filter by confidence score (65+ is high-conviction), check that the AI's implied probability gap beats the vig, and confirm the line hasn't moved through your number. Skip anything below 55 confidence." },
       { q: "Can the AI predict live in-game betting?", a: "Live betting models update during games using real-time win probability from in-play stats. Live AI predictions are available on the chat and game detail pages once a game starts." },
-      { q: "What's the win rate on AI betting predictions?", a: "Our highest-confidence flagged picks have hit 80.3% over our tracked sample. Variance is real — judge results over hundreds of plays, not a single week." },
+      { q: "What's the win rate on AI betting predictions?", a: "There is no responsible single win-rate number for every sport and market. Evaluate the dated track record by confidence tier and judge a sufficiently large sample rather than a short streak." },
       { q: "Are AI betting predictions worth paying for?", a: "Only if you actually act on the high-confidence plays with disciplined bankroll management. Most people who lose money with paid picks lose it by chasing losses, not by following the system." },
     ],
     primaryCta: { label: "View Today's AI Picks", href: "/games" },
@@ -170,7 +170,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     description: "The best AI betting picks today, ranked by confidence score and expected value. Updated hourly across NFL, NBA, MLB, NHL, UFC and soccer. Free daily best bet included.",
     keywords: "best AI betting picks, best AI picks, top AI betting picks, best AI sports picks, highest confidence AI picks",
     h1: "The Best AI Betting Picks, Ranked by Confidence",
-    tagline: "Only picks with a verified +EV edge make the daily best list",
+    tagline: "Daily picks ranked by modeled probability, market price, and data quality",
     intro: [
       "The \"best AI betting picks\" on ThinkBetAI aren't whatever pick is most popular or whatever team a model output happens to like — they're the top-ranked plays by confidence score across every game on the board. A pick only earns a spot on the daily best list when the AI's win probability beats the market-implied probability by enough margin to clear the vig, the data quality is high, and the line hasn't moved through the value yet.",
       "We refresh the best-picks board every hour. As soon as a line moves through our number, that pick falls off the list — there's no \"sticky\" recommendation that stays up after the edge is gone. That's the difference between a real model and a marketing site.",
@@ -180,7 +180,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "How We Rank the Best AI Picks",
         body: [
-          "Every pick is scored on a composite confidence index that combines four inputs: edge size (the gap between model probability and implied probability), data quality (how complete the injury/lineup picture is), simulation stability (variance across the 1,000 Monte Carlo runs), and line-shopping potential (whether the value still exists across major books).",
+          "Every pick is scored on a composite confidence index that combines edge size, data quality, estimate stability, and whether the quoted value still exists in the current market.",
           "The daily best list takes the top 10 plays by composite score across all leagues. We cap by sport so you don't get a list of 10 NBA props on a slow day — and we explicitly surface diverse bet types (spread, total, prop, moneyline) so you can build a balanced day.",
         ],
         bullets: [
@@ -222,7 +222,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     faqs: [
       { q: "How often are the best AI picks updated?", a: "Every hour, plus immediate refresh on line moves, lineup changes, or major injury news." },
       { q: "Are the best picks free?", a: "The daily best bet and best underdog are free every day. The full ranked board is premium." },
-      { q: "What's the historical win rate on best AI picks?", a: "80.3% across our tracked, high-confidence sample. Lower-confidence picks have lower win rates by design — that's what the score is telling you." },
+      { q: "What's the historical win rate on best AI picks?", a: "Results should be reviewed in the dated track record by sport, market, and confidence tier. Short samples and selected winning streaks are not reliable measures of future performance." },
       { q: "Should I bet every best pick of the day?", a: "Only if your bankroll supports it. We recommend 1% flat staking and never more than 4–5 plays per day to avoid variance compression." },
       { q: "What happens if I see a best pick but the line has moved?", a: "If the line has moved through our recommended number, skip it — the edge is gone. The page will mark stale picks." },
       { q: "Can I get notifications when a new best pick is posted?", a: "Premium users can subscribe to push and email alerts when new high-confidence picks hit the board." },
@@ -286,7 +286,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     faqs: [
       { q: "Are these AI predictions really free?", a: "Yes — daily best bet, daily underdog, and primetime previews are free with no signup required. No email collection, no \"trial period\" trick." },
       { q: "What's the catch?", a: "No catch. We publish free picks because the people who become customers are the ones who first verified the model works." },
-      { q: "How accurate are the free AI predictions?", a: "Same engine as our paid picks — 80.3% on flagged high-confidence plays across our tracked sample." },
+      { q: "How accurate are the free AI predictions?", a: "They use the same analysis workflow as paid picks. Review the dated results by sport and confidence tier; no single percentage describes every prediction." },
       { q: "Do I have to download an app?", a: "No. Everything runs in the browser. We do have an iOS app for convenience but it's optional." },
       { q: "How often are free predictions updated?", a: "Hourly, plus immediate refresh on line moves and breaking injury news." },
       { q: "What if I want more than the daily free picks?", a: "Premium unlocks the full board, player props, AI parlay builder, and live model chat — cancel anytime." },
@@ -353,26 +353,26 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "sports-betting-ai",
-    title: "Sports Betting AI - The #1 AI for Sports Bettors in 2026",
-    description: "The leading sports betting AI: 1,000 Monte Carlo simulations per game, live odds analysis, prop edges, and an AI chat trained on betting. Trusted by 10,000+ bettors.",
+    title: "Sports Betting AI for Odds and Probability Analysis",
+    description: "Explore sports betting AI for odds comparison, probability estimates, player-prop analysis and clear explanations across major leagues.",
     keywords: "sports betting AI, AI for sports betting, sports betting artificial intelligence, AI bettor, AI sportsbook tool",
     h1: "The Sports Betting AI Built for Real Bettors",
-    tagline: "1,000 simulations per game, live odds intelligence, and an AI chat that actually understands betting",
+    tagline: "Odds intelligence, probability estimates, and an AI chat built for betting analysis",
     intro: [
       "ThinkBetAI is a purpose-built sports betting AI — not a chatbot wrapper, not a recycled handicap sheet, not a generic prediction tool. The engine, the data pipeline, the prop models, the parlay grader, and the live chat are all built for one thing: helping disciplined bettors find and capitalize on +EV opportunities across every major league.",
-      "It's used by over 10,000 bettors and has hit at an 80.3% win rate on flagged high-confidence picks across our tracked sample. Below is a complete tour of how the AI works and why it earns trust from people who care about closing line value, bankroll discipline, and long-term ROI.",
+      "Below is a complete tour of the analysis workflow, its limitations, and the tools available to people who care about market price, bankroll discipline, and long-term record keeping.",
     ],
     sections: [
       {
         heading: "What a Real Sports Betting AI Looks Like",
         body: [
           "A real sports betting AI does three things well: it ingests live market and game data continuously, it simulates outcomes with statistically valid methods, and it communicates results transparently. Most products fail on at least one of those. We've built around all three from day one.",
-          "Continuous ingestion: odds from every major U.S. and offshore book, live injury feeds, weather, lineups, referee data, and historical betting market behavior. Statistically valid simulation: 1,000 Monte Carlo runs per game using updated probability distributions. Transparent communication: every recommendation comes with the win probability, the implied probability, and a written explanation of the top factors driving the model's view.",
+          "The workflow combines available odds and matchup inputs with probability estimates, then presents the model view alongside market-implied probability. Each recommendation includes an explanation of the factors driving the estimate and should be treated as analysis, not certainty.",
         ],
         bullets: [
-          "Continuous odds ingestion from every major book",
+          "Current market odds comparison",
           "Live injury, lineup, and weather feeds",
-          "1,000 Monte Carlo simulations per game",
+          "Scenario-based probability estimates",
           "Transparent win-probability vs market-implied display",
           "Written explanation for every recommendation",
         ],
@@ -400,7 +400,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "What Makes Bettors Stay",
         body: [
-          "The reason most subscribers renew month after month is closing line value. They watch their CLV climb because the AI flags edges before the market reacts. That's the real product. The win rate is the highlight reel — CLV is the long-term proof.",
+          "Closing line value is a useful diagnostic because it compares the price recorded at selection time with the eventual closing price. It should be reviewed alongside calibration, sample size, and complete win/loss reporting.",
         ],
       },
     ],
@@ -487,11 +487,11 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
         heading: "How the Predictor Works in Practice",
         body: [
           "Open /games, click any matchup, and the AI's prediction loads with the latest data baked in. You'll see the win probability split, projected score, recommended bet for spread and total, top prop edges, and a written breakdown of the three biggest factors driving the call.",
-          "The predictor is the user-facing layer on top of our Monte Carlo engine — 1,000 simulations per game, refreshed on every line move and every injury update.",
+          "The predictor is the user-facing layer for matchup probabilities, market comparisons, and updated analysis when underlying inputs change.",
         ],
         bullets: [
           "Win probability for each team",
-          "Projected final score (mean of 1,000 simulations)",
+          "Projected scoring range and central estimate",
           "Recommended side vs current spread and total",
           "Top 3 player prop edges for the matchup",
           "Written breakdown of key drivers",
@@ -526,8 +526,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "Can the AI predictor predict any sport?", a: "Any of the leagues we cover that are currently in season: NFL, NBA, MLB, NHL, UFC, soccer, tennis, college football/basketball, golf majors, and table tennis." },
-      { q: "Can it predict the exact score?", a: "It projects a final score (mean of 1,000 simulations) but exact-score prediction is mathematically near-impossible. The projected score is most useful for setting realistic team total expectations." },
-      { q: "Is the predictor accurate?", a: "High-confidence flagged predictions have hit at 80.3% historically. Lower-confidence calls have lower win rates by design — that's what the score is telling you." },
+      { q: "Can it predict the exact score?", a: "It can show a scoring estimate, but exact-score prediction is highly uncertain. The estimate is better used as context for ranges and totals than as a literal forecast." },
+      { q: "Is the predictor accurate?", a: "Accuracy varies by league, market, and time period. Use the dated track record and calibration data to evaluate performance instead of relying on a single headline percentage." },
       { q: "How long does it take to generate a prediction?", a: "Seconds. The model pre-runs and caches simulations, then refreshes on line moves and injury news." },
       { q: "Can I ask follow-up questions about a prediction?", a: "Yes — premium AI chat lets you dig into any pick with follow-up questions, alternate scenarios, and prop deep-dives." },
       { q: "Does the predictor work for futures or season-long bets?", a: "Currently it focuses on game-level and player-prop predictions. Futures coverage is on the roadmap." },
@@ -655,7 +655,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is the AI betting assistant just ChatGPT in a wrapper?", a: "No. It's a custom-trained interface to our Monte Carlo prediction engine with live odds and injury data wired in. It answers betting questions with model output, not generic LLM guesses." },
       { q: "Can the assistant build parlays for me?", a: "Yes — ask it to construct a parlay with any constraints (legs, payout range, sport, minimum confidence per leg) and it builds one using the AI parlay builder under the hood." },
       { q: "Does it work for live in-game bets?", a: "Yes, in Live Adaptive mode (premium). It incorporates real-time game state when answering live betting questions." },
-      { q: "How accurate are the assistant's recommendations?", a: "Same as the underlying model — 80.3% on flagged high-confidence picks across our tracked sample." },
+      { q: "How accurate are the assistant's recommendations?", a: "The assistant explains the underlying model output; it does not make certainty possible. Review dated results and independently check current lines and inputs." },
       { q: "Will it use betting slang?", a: "No. We specifically train it to use professional sports analyst language and avoid slang like \"smash spot.\"" },
       { q: "Is there a message limit?", a: "Free tier has a daily limit. Premium is unlimited." },
     ],
@@ -919,12 +919,12 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   {
     slug: "thinkbetai-reviews",
     title: "ThinkBetAI Reviews - Real User Reviews of the AI Betting Platform",
-    description: "Real ThinkBetAI reviews from 10,000+ subscribers. Read about win rate, AI prediction quality, parlay builder, customer support, and how the platform compares to other AI betting tools.",
+    description: "A transparent overview of ThinkBetAI features, limitations, pricing and evaluation criteria for comparing AI sports betting tools.",
     keywords: "ThinkBetAI reviews, thinkbetai review, AI betting platform reviews, ThinkBetAI ratings, is ThinkBetAI legit",
     h1: "ThinkBetAI Reviews — Honest Look at the Platform",
-    tagline: "What 10,000+ bettors actually say after using the AI",
+    tagline: "Features, limitations, pricing, and what to verify before subscribing",
     intro: [
-      "ThinkBetAI is an AI-driven sports betting platform used by over 10,000 subscribers across NFL, NBA, MLB, NHL, UFC, and soccer. This page is a structured overview of what users praise, what they critique, and how the platform stacks up against alternatives. The numbers — win rate, pricing, what's free vs paid — are not marketing claims but facts we publish openly and let users verify with our daily free picks.",
+      "ThinkBetAI is an AI-driven sports betting analysis platform covering major leagues. This page is a structured overview of the product's features, limitations, pricing, and the criteria readers should use when comparing alternatives.",
       "Below: what users like most, common critiques, how the platform compares to handicappers and other AI tools, and a frequently-asked-questions section drawn from real customer feedback.",
     ],
     sections: [
@@ -946,7 +946,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "Common Critiques",
         body: [
-          "The most common critique is variance. Even at an 80.3% high-confidence win rate, users hit losing weeks and frustration is real. We try to mitigate this by being explicit about confidence scoring and recommending flat staking, but no model removes downside variance.",
+          "The most important limitation is variance. Any model can have losing weeks, and a confidence score does not remove downside risk. Review complete results, use conservative stakes, and never chase losses.",
           "A second critique is feature density — power users want more (futures, betting exchanges, custom alert rules); some new users want less (more guided onboarding). Both are valid; we're rebuilding navigation in stages.",
         ],
       },
@@ -970,8 +970,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "Is ThinkBetAI a scam?", a: "No. We publish verifiable win rates, offer free daily picks, accept standard payments, and have a cancel-anytime policy. We never claim guaranteed wins and explicitly avoid \"money-back guarantee\" marketing." },
-      { q: "What's the real win rate?", a: "80.3% on flagged high-confidence picks across our tracked sample. Lower-confidence picks have lower win rates by design — the confidence score is meaningful." },
+      { q: "How should I evaluate ThinkBetAI?", a: "Review the free analysis, current pricing, cancellation terms, dated results, and methodology before paying. Never rely on a guaranteed-win claim from any betting product." },
+      { q: "What's the real win rate?", a: "There is no single responsible rate that describes every league, market, and confidence tier. Use the dated track record and evaluate complete samples rather than selected wins." },
       { q: "How much does ThinkBetAI cost?", a: "There are tiered plans (Basic, Pro, Insider) with clear monthly pricing. Cancel anytime. Full details on /pricing." },
       { q: "Can I cancel anytime?", a: "Yes — cancel from /account in two clicks, no questions asked, no cancellation fees." },
       { q: "Does ThinkBetAI work for live betting?", a: "Yes — Live Adaptive mode in the AI chat is built for in-game decisions and is included with premium plans." },
@@ -984,11 +984,11 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "nfl-ai-predictions",
-    title: "NFL AI Predictions - Weekly Picks, Spreads & Player Props",
-    description: "NFL AI predictions for every game on the slate. Spread, total, moneyline and player prop picks with win probability and confidence score. Updated as injuries and lines move.",
+    title: "NFL AI Predictions, Spreads & Player Props",
+    description: "Review NFL AI predictions for spreads, totals, moneylines and player props with probability estimates, matchup context and injury updates.",
     keywords: "NFL AI predictions, NFL AI picks, AI NFL predictions, NFL AI model, NFL AI spread picks, NFL AI player props",
     h1: "NFL AI Predictions for Every Game on the Board",
-    tagline: "1,000 simulations per matchup — re-run on every injury and line move",
+    tagline: "Matchup probabilities updated as injuries, lineups, and market prices change",
     intro: [
       "ThinkBetAI publishes NFL AI predictions for every regular-season, playoff, and Super Bowl matchup. Each prediction is the output of a Monte Carlo engine that runs the game forward 1,000 times using current injury reports, depth charts, opponent-adjusted EPA/play, pace, red-zone efficiency, weather, and live market data — then compares the simulated win probability against the implied probability of the line you're seeing.",
       "Unlike most NFL pick sites that post on Tuesday and forget about it, our predictions re-simulate whenever something material changes — a quarterback inactive, a snow forecast, a key offensive lineman ruled out. The pick you see at 11:55 a.m. Sunday reflects the world at 11:55 a.m. Sunday, not the world on Wednesday morning.",
@@ -1033,7 +1033,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are NFL AI predictions?", a: "Our high-confidence flagged NFL picks have hit at 80.3% across our tracked sample. Lower-confidence picks hit at lower rates by design — the confidence score is meaningful." },
+      { q: "How accurate are NFL AI predictions?", a: "Accuracy varies by market and season. Review dated NFL results separately and compare probability calibration as well as wins and losses." },
       { q: "Are NFL AI picks free?", a: "Yes — we publish a free best bet, underdog, and a free preview for the marquee game every week. Premium unlocks the full board, prop edges, and the AI chat." },
       { q: "When do NFL predictions go live?", a: "Initial predictions post Tuesday after Monday Night Football and update continuously as injury reports, weather forecasts, and lines move through the week." },
       { q: "Does the AI cover playoff and Super Bowl predictions?", a: "Yes — every playoff game gets a deep-dive page including adjusted models for rest, weather, and coaching. The Super Bowl includes prop edges and parlay grading for common ticket structures." },
@@ -1045,8 +1045,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "nba-ai-predictions",
-    title: "NBA AI Predictions - Nightly Picks, Spreads & Player Props",
-    description: "NBA AI predictions for every game tonight. Spread, total, moneyline and player prop picks with win probability and confidence. Re-runs on every starting lineup and injury update.",
+    title: "NBA AI Predictions, Spreads & Player Props",
+    description: "Review NBA AI predictions for spreads, totals, moneylines and player props with probability estimates, lineup context and injury updates.",
     keywords: "NBA AI predictions, NBA AI picks, AI NBA model, NBA AI spread picks, NBA AI player props, NBA AI parlay",
     h1: "NBA AI Predictions for Tonight's Slate",
     tagline: "Lineup-aware simulations that re-run when the starting five drops",
@@ -1099,14 +1099,14 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Does the model handle load management?", a: "Yes — it explicitly accounts for back-to-backs, 3-in-4 schedules, and travel. It does not predict surprise rest days, but re-runs immediately once a rest decision is announced." },
       { q: "Are NBA player props included?", a: "Yes — points, rebounds, assists, threes, PRA, and combined props for every starter and rotation player, with a 0–100 signal score." },
       { q: "What about NBA playoffs?", a: "Playoff games use a separate calibration that accounts for shorter rotations, slower pace, and increased defensive intensity. Series prices are simulated game-by-game." },
-      { q: "How accurate are NBA AI predictions?", a: "Our high-confidence NBA picks track at 80.3% across the broader sample. Prop edges are graded individually — only the strongest leans surface as flagged picks." },
+      { q: "How accurate are NBA AI predictions?", a: "Accuracy varies by market, lineup availability, and season. Review dated NBA results and treat every probability as an estimate rather than a promise." },
     ],
     primaryCta: { label: "See Tonight's NBA Picks", href: "/games?sport=nba" },
     secondaryCta: { label: "Best NBA Bets Today", href: "/best/best-nba-bets-today" },
   },
   {
     slug: "mlb-ai-predictions",
-    title: "MLB AI Predictions - Daily Picks, Run Lines & Player Props",
+    title: "MLB AI Predictions, Run Lines & Player Props",
     description: "MLB AI predictions for every game today. Moneyline, run line, total, F5, and player prop picks built on pitcher xFIP, ballpark factors, and live lineups.",
     keywords: "MLB AI predictions, MLB AI picks, baseball AI predictions, AI MLB picks today, MLB AI player props, MLB F5 picks",
     h1: "MLB AI Predictions for Every Game on the Card",
@@ -1155,7 +1155,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are MLB AI predictions?", a: "Our high-confidence MLB picks track at 80.3% across the tracked sample. Edges per game are small in baseball — judge over a long stretch, not a single series." },
+      { q: "How accurate are MLB AI predictions?", a: "Accuracy varies by market and sample period. Baseball outcomes are noisy, so evaluate a complete dated sample rather than one series." },
       { q: "Are MLB AI picks free?", a: "Yes — daily free best bet, free underdog, and a free preview every day during the season." },
       { q: "Does the model handle bullpen days and openers?", a: "Yes — when no traditional starter goes, the model treats the bullpen game as a series of relievers and adjusts projections accordingly." },
       { q: "What's the AI's edge in baseball?", a: "Pitcher xFIP over W-L, treating wind and park as first-class inputs, and being patient with bullpen-fade spots that public bettors avoid." },
@@ -1167,7 +1167,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "nhl-ai-predictions",
-    title: "NHL AI Predictions - Daily Picks, Puck Lines & Player Props",
+    title: "NHL AI Predictions, Puck Lines & Player Props",
     description: "NHL AI predictions for every game on the card. Moneyline, puck line, total, and player prop picks built on goalie projection, line matchups, and rest.",
     keywords: "NHL AI predictions, NHL AI picks, hockey AI predictions, AI NHL picks today, NHL AI puck line, NHL AI player props",
     h1: "NHL AI Predictions Built Around Goalies and Rest",
@@ -1214,7 +1214,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are NHL AI predictions?", a: "Our high-confidence NHL picks track at 80.3% across the broader sample. Edges are biggest on backup-fade spots and goalie-driven totals." },
+      { q: "How accurate are NHL AI predictions?", a: "Accuracy varies by market, goalie availability, and sample period. Review dated NHL performance rather than applying a site-wide percentage." },
       { q: "Are NHL AI picks free?", a: "Yes — daily free best bet, free underdog, and one free preview every day during the season." },
       { q: "Why hold predictions until goalies are confirmed?", a: "Because goalie is the single largest input in hockey. A predicted starter who scratches changes the math entirely; we don't issue high-confidence picks on a guess." },
       { q: "Does the model handle empty-net goals for puck lines?", a: "Yes — late-game goalie-pull dynamics are simulated, and the puck-line probability reflects the empty-net goal distribution." },
@@ -1226,7 +1226,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "ufc-ai-predictions",
-    title: "UFC AI Predictions - Fight Picks, Method, and Round Totals",
+    title: "UFC AI Predictions, Fight Picks & Round Totals",
     description: "UFC and MMA AI predictions for every fight on the card. Moneyline, method of victory, and round total picks built on striking/grappling data and fight IQ analysis.",
     keywords: "UFC AI predictions, UFC AI picks, MMA AI predictions, AI UFC picks, UFC method of victory, UFC round totals",
     h1: "UFC AI Predictions for Every Fight on the Card",
@@ -1273,7 +1273,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are UFC AI predictions?", a: "Our flagged high-confidence UFC picks track at 80.3% across the broader sample. MMA variance is high — judge across many cards, not a single fight night." },
+      { q: "How accurate are UFC AI predictions?", a: "MMA variance is high and accuracy varies by market. Judge the dated record across many cards, not a single fight night." },
       { q: "Does the AI cover prelim fights?", a: "Yes — every fight on every card, from early prelims to main event, gets a graded prediction with confidence score." },
       { q: "Are method-of-victory bets included?", a: "Yes — and they're often where the strongest edges are, especially on grappling-heavy favorites who win by submission at a high rate." },
       { q: "Are round totals graded?", a: "Yes — expected finish-round distributions are computed for every fight and totals are flagged when meaningfully off the line." },
@@ -1285,7 +1285,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "soccer-ai-predictions",
-    title: "Soccer AI Predictions - 1X2, BTTS, Asian Handicap & Corners",
+    title: "Soccer AI Predictions: 1X2, BTTS & Handicaps",
     description: "Soccer AI predictions across the Premier League, La Liga, Bundesliga, Serie A, Champions League and MLS. 1X2, BTTS, Asian handicap, corners, and player props.",
     keywords: "soccer AI predictions, football AI predictions, AI soccer picks, EPL AI predictions, Champions League AI, soccer BTTS predictions",
     h1: "Soccer AI Predictions for Every Major League",
@@ -1334,7 +1334,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "Which soccer leagues does the AI cover?", a: "Premier League, La Liga, Bundesliga, Serie A, Ligue 1, Champions League, Europa League, and MLS at minimum. We add additional competitions during major tournaments." },
-      { q: "How accurate are soccer AI predictions?", a: "Our high-confidence soccer picks track at 80.3% across the broader sample. Edges are best on Asian handicaps, BTTS, and alternative markets — not 1X2." },
+      { q: "How accurate are soccer AI predictions?", a: "Accuracy varies by competition, market, and sample period. Review dated soccer results separately instead of applying an overall platform percentage." },
       { q: "Are soccer AI picks free?", a: "Yes — daily free best bet and one featured fixture preview. Premium unlocks the full slate and corners/cards markets." },
       { q: "What's BTTS and why does the AI flag it?", a: "BTTS = both teams to score. The market often misprices the correlation between attacking style and defensive vulnerability. The AI catches these mispricings consistently." },
       { q: "Does the AI cover World Cup and Euros?", a: "Yes — international tournaments get expanded coverage including outright winner odds, group-stage simulations, and knockout-round predictions." },
@@ -1345,11 +1345,11 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "ai-player-prop-predictions",
-    title: "AI Player Prop Predictions - Picks for Every Major Market",
+    title: "AI Player Prop Predictions for Major Sports",
     description: "AI player prop predictions across NFL, NBA, MLB and NHL. Composite 0–100 signal score built on L20 game logs, defensive matchup, pace, and live confirmed lineups.",
     keywords: "AI player prop predictions, AI player props, AI prop picks, AI prop bets, NBA prop AI, NFL prop AI, MLB prop AI",
-    h1: "AI Player Prop Predictions With a Verified Signal",
-    tagline: "0–100 composite score per prop — L20 + matchup + lineup adjusted",
+    h1: "AI Player Prop Predictions With Clear Supporting Data",
+    tagline: "Recent form, matchup context, usage, pace, and lineup status in one view",
     intro: [
       "Player props are where sportsbooks invest the least manual labor and where mispricings persist the longest — which makes them the highest-edge market in sports betting if you have a good model. ThinkBetAI's prop engine grades every available player prop in NBA, NFL, MLB, and NHL with a 0–100 composite signal score combining last-20-game performance, defensive matchup, usage projection, pace, and confirmed lineup status.",
       "The composite score is meaningful: 75+ is a high-conviction lean, 60–75 is informational, below 60 we don't flag. We hold high-confidence prop predictions on lineup-dependent sports (NBA, MLB) until the starting lineup is confirmed, because a star resting or hitting in the cleanup vs. seventh changes the math for everyone.",
@@ -1393,7 +1393,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "How accurate are AI player prop predictions?", a: "Our 75+ composite-score prop picks track at the same 80.3% high-confidence rate as the broader picks sample. Lower-score props by design hit at lower rates." },
+      { q: "How accurate are AI player prop predictions?", a: "Prop accuracy varies by league, market, lineup status, and sample period. Review dated prop-specific results and do not assume a platform-wide percentage applies." },
       { q: "Which sports support player props?", a: "NBA, NFL, MLB, and NHL with full prop boards. Soccer and UFC have partial prop coverage for marquee fixtures." },
       { q: "Why do you hold prop picks until lineups confirm?", a: "Because lineup-dependent sports have huge projection swings when a star rests. A pre-confirmation prop is a guess; we don't issue high-confidence picks on guesses." },
       { q: "What markets are graded?", a: "NBA: points, rebounds, assists, threes, PRA, combined props. NFL: passing/rushing/receiving yards, receptions, anytime TD. MLB: pitcher Ks, hitter bases, HR. NHL: shots, points, assists, saves." },
@@ -1419,7 +1419,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "How the Pick of the Day Is Selected",
         body: [
-          "Every game on the board generates a composite confidence score combining edge size (model probability minus implied probability), data quality (lineup confirmation, injury freshness), and simulation stability (low variance across the 1,000 Monte Carlo runs). The pick of the day is the single highest composite score across every sport.",
+          "Every game on the board generates a composite confidence score combining the model-to-market probability gap, data quality, and estimate stability. The pick of the day is the highest qualifying score across the available slate.",
           "We then verify the line is still available at a major sportsbook at the price the edge was calculated against. If the line has moved through our number between simulation and posting, the pick is rejected and we move to the next-highest score. We will not publish a pick at a price you can't actually get.",
         ],
         bullets: [
@@ -1441,7 +1441,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "How to Use the Daily Pick",
         body: [
-          "Treat it as the day's highest-quality flag, not a guaranteed winner. Even an 80.3% high-confidence rate means roughly 1 in 5 picks lose — that's variance, not failure. Flat-stake at 1% of your bankroll, track results over 30+ picks before judging, and use the daily pick as the anchor for any larger play you build around it.",
+          "Treat it as the day's highest-quality flag, not a guaranteed winner. Any pick can lose. Use conservative stakes, track a meaningful sample, and never chase losses after a bad result.",
         ],
       },
       {
@@ -1453,7 +1453,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "Is the AI pick of the day free?", a: "Yes — published free every day with full reasoning and confidence score. No account required." },
-      { q: "What's the win rate on the pick of the day?", a: "It's drawn from our highest-confidence pool, which tracks at 80.3% across the broader sample. Variance is real — judge across 30+ picks, not five." },
+      { q: "What's the win rate on the pick of the day?", a: "Review the dated pick history and use a meaningful sample. A top-ranked pick can still lose, and a short winning streak does not establish future accuracy." },
       { q: "When does the pick of the day get posted?", a: "Typically by mid-morning Eastern, after overnight injury news and early lineup signals are absorbed by the model." },
       { q: "Can I bet more than one pick a day?", a: "Yes — the full premium board has 10–30 graded plays daily. The daily pick is just the top flagged play for users who want one disciplined bet." },
       { q: "What if the line moves before I bet?", a: "If the line has moved through our number, the edge is smaller or gone. We list the price the edge was calculated against — if you can't get it, pass." },
@@ -1464,10 +1464,10 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "ai-underdog-picks",
-    title: "AI Underdog Picks - Best Plus-Money Bets With Real Edge",
-    description: "AI underdog picks: best plus-money plays of the day across NFL, NBA, MLB, NHL and UFC. Filtered to underdogs priced +110 or longer with verified model edge.",
+    title: "AI Underdog Picks & Plus-Money Analysis",
+    description: "AI underdog picks and plus-money analysis across NFL, NBA, MLB, NHL and UFC, ranked by modeled probability, market price and data quality.",
     keywords: "AI underdog picks, AI plus money picks, AI longshot picks, AI value picks, best AI underdog bet, AI underdog of the day",
-    h1: "AI Underdog Picks With Real Edge, Not Random Longshots",
+    h1: "AI Underdog Picks and Plus-Money Analysis",
     tagline: "Plus-money plays where the model and the market disagree",
     intro: [
       "Most \"underdog picks\" online are just random longshots dressed up with a confident headline. ThinkBetAI's AI underdog picks are different — they're plays where the model gives the underdog a meaningfully higher win probability than the market-implied probability, filtered to prices of +110 or longer. The price isn't the point; the disagreement between model and market is.",
@@ -1513,7 +1513,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "Are AI underdog picks free?", a: "The daily underdog of the day is free with full reasoning. The full underdog board with all flagged plays is premium." },
-      { q: "What's the win rate on AI underdog picks?", a: "Lower than the overall flagged-pick rate by design — underdogs win less often at plus prices but pay more when they hit. Expect roughly 45–50% with strong long-term ROI." },
+      { q: "What's the win rate on AI underdog picks?", a: "Underdogs win less often at plus prices and results vary by odds range and sport. Evaluate return and calibration over a complete dated sample rather than expecting a fixed win rate." },
       { q: "How long do underdog prices have to be?", a: "+110 or longer. Below that we don't classify it as an underdog play." },
       { q: "Why don't sportsbooks just adjust the underdog prices?", a: "They do — partially. But the public bias toward favorites is persistent and books leave some edge on the underdog side because correcting it would mean accepting more sharp action on dogs." },
       { q: "Can underdog picks be parlayed?", a: "Yes — the parlay builder grades any combination including underdogs. Underdog parlays have higher variance and higher upside; the letter grade reflects both." },
@@ -1524,14 +1524,14 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "ai-against-the-spread-picks",
-    title: "AI Against the Spread Picks - ATS Picks for NFL, NBA, MLB & NHL",
-    description: "AI against-the-spread (ATS) picks across NFL, NBA, MLB run lines, and NHL puck lines. Verified model edge, full reasoning, and confidence score for every flagged play.",
+    title: "AI Against-the-Spread Picks for NFL & NBA",
+    description: "AI against-the-spread picks across NFL and NBA, plus MLB run lines and NHL puck lines, with market context, reasoning and confidence indicators.",
     keywords: "AI against the spread picks, AI ATS picks, AI spread predictions, AI NFL ATS, AI NBA ATS, AI cover the spread",
-    h1: "AI Against-the-Spread Picks With a Verified Edge",
+    h1: "AI Against-the-Spread Picks With Market Analysis",
     tagline: "Spread, run line, and puck line picks ranked by composite confidence",
     intro: [
       "Against-the-spread betting is the core market for NFL and NBA, the run line for MLB, and the puck line for NHL. ThinkBetAI's AI against-the-spread picks are the model's flagged plays on these spread markets — ranked by composite confidence, filtered for line availability, and published with full reasoning so you can evaluate the edge yourself before you bet.",
-      "The math on ATS is unforgiving: at standard -110 vig you need to hit 52.4% to break even and 55%+ to make real money. Hitting that rate consistently is the difference between a model with actual edge and a model that's just storytelling. Our highest-confidence ATS flags have cleared that bar across our tracked sample, but no streak lasts forever — variance is real and every week has bad beats.",
+      "The math on ATS is unforgiving: at standard -110 pricing, the break-even win rate is about 52.4% before other costs. Sustainable value must be demonstrated across a complete, dated sample; variance is real and every week can include bad beats.",
       "Below: how ATS picks are generated, why closing line value beats win/loss as a metric, and where to find tonight's free ATS picks.",
     ],
     sections: [
@@ -1542,7 +1542,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
           "We don't grade off the opening number or some 'consensus' spread — we grade off the current available price at major sportsbooks at the moment the prediction is generated. If the line moves through our number before posting, the pick is rejected.",
         ],
         bullets: [
-          "Full score distribution from 1,000 Monte Carlo runs",
+          "Modeled score distribution and cover probability",
           "Probability of cover computed against current line",
           "Edge must clear vig with meaningful margin to flag",
           "Line availability verified at major sportsbook at posting",
@@ -1572,7 +1572,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       },
     ],
     faqs: [
-      { q: "What win rate do I need to make money ATS?", a: "At standard -110 vig you need 52.4% to break even, 55%+ to make real money. Our high-confidence flagged ATS picks track above that bar." },
+      { q: "What win rate do I need to break even ATS?", a: "At standard -110 pricing, the mathematical break-even rate is about 52.4% before other costs. Actual profitability also depends on price, line movement, stake sizing, and the completeness of the sample." },
       { q: "Are AI ATS picks free?", a: "Daily free best bet covers the top ATS play of the day. Full ATS board is premium." },
       { q: "Does the AI grade run line and puck line?", a: "Yes — MLB run line and NHL puck line are graded the same way as football and basketball spreads, with empty-net and bullpen dynamics modeled explicitly for hockey and baseball." },
       { q: "What's closing line value and why does it matter?", a: "CLV = the difference between your bet price and the closing price. Consistently beating the closing line is the single best predictor of long-term profit, more reliable than short-term win/loss." },
@@ -1588,13 +1588,13 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   {
     slug: "bet-ai",
     title: "Bet AI — AI-Powered Sports Betting Tool & Daily Picks",
-    description: "Bet AI: an AI sports betting platform with 1,000 Monte Carlo simulations per game, live odds analysis, confidence-scored picks, and free daily best bets across NFL, NBA, MLB, NHL, UFC and soccer.",
+    description: "Bet AI: sports betting analysis with current odds comparison, confidence indicators and free daily picks across NFL, NBA, MLB, NHL, UFC and soccer.",
     keywords: "bet ai, bet with ai, ai bet, ai bet tool, ai sports betting",
     h1: "Bet AI — Use Artificial Intelligence to Bet Smarter",
-    tagline: "Confidence-scored picks, 1,000 simulations per game, transparent reasoning",
+    tagline: "Confidence-scored picks, market comparisons, and transparent reasoning",
     intro: [
       "Bet AI is the modern way to approach sports wagering: instead of guessing or following hot takes, you let a purpose-built model run thousands of simulated game outcomes against the current market price and surface only the spots where math says the sportsbook is wrong. ThinkBetAI was built around exactly that workflow — a Monte Carlo engine, live odds intake, and a transparent confidence score so you can tell the difference between a coin-flip lean and a real edge.",
-      "This page walks through what \"betting with AI\" actually means in practice, how our model produces picks, what the confidence numbers mean, and how to use the platform whether you want free daily picks or the full premium board. ThinkBetAI's flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample — see the live ledger on the track record page.",
+      "This page explains what \"betting with AI\" means in practice, how model-based picks are produced, what confidence indicators mean, and how to review the platform's free and premium analysis responsibly.",
     ],
     sections: [
       {
@@ -1605,7 +1605,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
         ],
         bullets: [
           "Live odds from every major U.S. and offshore sportsbook",
-          "1,000 Monte Carlo simulations re-run on every line move",
+          "Probability estimates updated when meaningful inputs change",
           "Player tracking, injuries, weather, refs, rest/travel splits",
           "Confidence-scored output (0–100) so you can filter aggressively",
           "Plain-English reasoning behind every pick",
@@ -1634,7 +1634,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "What is bet AI?", a: "Bet AI refers to using artificial intelligence — typically machine learning models combined with Monte Carlo simulation — to evaluate sportsbook odds and identify wagers where the modeled probability beats the market price." },
-      { q: "Does betting with AI actually work?", a: "Models that consistently beat the closing line (CLV) win long-term. Our flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample. No model wins every day — variance is real." },
+      { q: "Does betting with AI actually work?", a: "AI can organize data and estimate probabilities, but value must be demonstrated through calibration, complete dated results, and closing-line comparisons. No model wins every day." },
       { q: "Is bet AI legal?", a: "Yes — using AI tools to analyze odds is legal anywhere sports betting itself is legal. You still place the bet through a licensed sportsbook in your jurisdiction." },
       { q: "Can I bet AI for free?", a: "Yes — the daily best bet, daily underdog, and a curated slice of analysis are free every day. Premium unlocks the full board." },
       { q: "What sports does the AI bet engine cover?", a: "NFL, NBA, MLB, NHL, UFC/MMA, soccer (top European leagues + MLS + Champions League), tennis, college football, college basketball, golf majors, and table tennis." },
@@ -1646,13 +1646,13 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   {
     slug: "betting-ai",
     title: "Betting AI — Smart Sports Bets Powered by Live Models",
-    description: "Betting AI from ThinkBetAI: live odds analysis, 1,000 simulations per game, confidence-scored picks, and an AI chat trained for sports betting. Free daily picks plus premium full-board access.",
+    description: "Betting AI from ThinkBetAI with current odds analysis, confidence indicators, clear reasoning and an AI chat for sports betting questions.",
     keywords: "betting ai, betting with ai, ai sports betting, ai betting tool, ai betting platform",
     h1: "Betting AI That Actually Understands the Market",
     tagline: "Quantitative model + live odds intake + transparent confidence scoring",
     intro: [
       "Betting AI isn't a buzzword here — it's the whole product. ThinkBetAI runs a Monte Carlo engine over live sportsbook odds, lineup data, injury feeds, weather, and matchup splits to surface the spots where the market is mispriced. Every pick comes with a confidence score, a win probability, and a written explanation so you understand the why, not just the what.",
-      "If you've tried generic chatbots that print parlays or tipster services that show you the wins and hide the losses, this is the other direction: numbers-first, transparent ledger, honest about variance. Flagged high-confidence picks have hit at an 80.3% win rate across our tracked sample.",
+      "If you've tried generic chatbots or tipster services that highlight wins and hide losses, this is a numbers-first approach centered on transparent records, current market context, and clear discussion of variance.",
     ],
     sections: [
       {
@@ -1665,7 +1665,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "The Core Engine: 1,000 Simulations Per Game",
         body: [
-          "Every game we cover gets run through 1,000 Monte Carlo simulations using updated probability distributions for team scoring, possessions, and key player performance. We then compare the simulated win probability against the implied probability of the current market price. If the model says a team should win 58% of the time but the book is pricing them at -130 (~56.5% implied), that's a 1.5% edge — small, but real.",
+          "The workflow estimates a range of possible outcomes using available matchup inputs, then compares modeled win probability with the implied probability of the current market price. Any gap is an estimate and should be weighed against uncertainty and line movement.",
           "When the edge clears 5%+ and the underlying data is high quality (lineups confirmed, injury picture clear, no weather surprises), the pick is flagged as high confidence. When data is thin, confidence is capped automatically — the AI never rates its own ignorance as conviction.",
         ],
       },
@@ -1697,7 +1697,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   {
     slug: "ai-betting",
     title: "AI Betting — Sports Wagers Driven by Live Data & Simulation",
-    description: "AI betting platform: 1,000 Monte Carlo simulations per game, live odds, injury and lineup intake, confidence-scored picks, and an AI chat trained for sports betting. Free daily picks available.",
+    description: "AI betting platform with current odds, matchup and lineup context, confidence-scored picks and an AI chat for sports betting analysis.",
     keywords: "ai betting, artificial intelligence betting, ai sports betting, ai bet picks, ai betting platform",
     h1: "AI Betting Done Right: Model First, Hype Never",
     tagline: "A purpose-built AI engine for bettors who care about CLV and ROI",
@@ -1715,7 +1715,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
         bullets: [
           "Live odds intake from every major sportsbook",
           "Injury, lineup, weather, ref and travel data",
-          "1,000 Monte Carlo simulations per game",
+          "Scenario-based probability estimates",
           "Confidence-scored output with data-quality caps",
           "Written explanation behind every pick",
           "Public, ongoing track record at /track-record",
@@ -1744,7 +1744,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "What is AI betting?", a: "AI betting is the use of machine learning and simulation models to evaluate sportsbook odds and identify wagers where the modeled true probability is higher than the implied probability of the line." },
-      { q: "Is AI betting profitable long-term?", a: "Models that beat the closing line consistently are profitable. Our flagged high-confidence picks have hit 80.3% across our tracked sample, but past performance does not guarantee future results." },
+      { q: "Is AI betting profitable long-term?", a: "No tool can promise profitability. Evaluate calibration, complete dated results, closing-line value, pricing, and your own risk controls before deciding whether the analysis is useful." },
       { q: "How is AI betting different from a tipster?", a: "AI betting shows you the math behind every pick — win probability, implied probability, confidence score, and reasoning. Tipsters just show you the pick and ask you to trust them." },
       { q: "Is AI betting legal in the US?", a: "Yes — using analytical tools to evaluate odds is legal wherever sports betting itself is legal. Wagers are still placed through licensed sportsbooks in your state." },
       { q: "Do I need any technical background to use AI betting?", a: "No. The interface shows the model's recommendation, the confidence score, and a plain-English explanation. If you can read a betting line, you can use the platform." },
@@ -1756,7 +1756,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   {
     slug: "ai-bets",
     title: "AI Bets — Confidence-Scored Picks Across Every Major League",
-    description: "AI bets ranked by confidence: today's best bet, full board of picks, player prop edges, and parlay grades from a model running 1,000 simulations per game. Free daily picks available.",
+    description: "AI bets ranked by confidence with today's picks, player-prop analysis, parlay grades, current market context and free daily selections.",
     keywords: "ai bets, ai bet picks, ai sports bets, ai betting picks, today's ai bets",
     h1: "AI Bets, Ranked by Confidence, Updated Live",
     tagline: "Daily best bet free • Full board premium • All picks explained",
@@ -1796,7 +1796,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     faqs: [
       { q: "How many AI bets are posted per day?", a: "It varies by sport in season. NBA night during the season: typically 8–15 games covered. NFL Sunday: every game on the slate. UFC card: every fight." },
       { q: "Are AI bets free?", a: "The daily best bet and daily underdog are free. The full board across every game is premium." },
-      { q: "What's the historical win rate on AI bets?", a: "80.3% on flagged high-confidence picks across our tracked sample. See /track-record for the live ledger." },
+      { q: "What's the historical win rate on AI bets?", a: "Review the dated track record by sport, market, and confidence tier. A single site-wide percentage can hide important differences between samples." },
       { q: "Can I see why the AI made each bet?", a: "Yes — every pick has a written explanation showing the top factors driving the model's view." },
       { q: "Do AI bets update if the line moves?", a: "Yes — picks are re-simulated on every meaningful line move and either reaffirmed, downgraded, or killed if the edge disappears." },
       { q: "Which sports get the most AI bets?", a: "NFL, NBA, and MLB during the regular season drive the highest volume. UFC, NHL, soccer and tennis are also covered in season." },
@@ -1826,7 +1826,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "How the AI Builds Its Own Bets",
         body: [
-          "Every game in season runs through 1,000 Monte Carlo simulations using live odds, lineups, injuries, weather, pace, and matchup splits. When the modeled win probability exceeds the implied market probability by enough — and the underlying data is high quality — the AI flags the bet with a confidence score from 0 to 100.",
+          "Each in-season game is evaluated with available odds, lineup, injury, weather, pace, and matchup inputs. When modeled probability differs meaningfully from market-implied probability, the analysis can flag the bet with a confidence indicator.",
           "70+ is high conviction. 55–70 is a lean. Below 55 is informational only. Most disciplined bettors only act on 65+ scores. Some only bet 70+ and skip slow nights.",
         ],
       },
@@ -1846,7 +1846,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "What is an AI bet?", a: "An AI bet is a wager evaluated or generated by a machine learning model — either one the AI recommends, or one you build that the AI grades against the live market." },
-      { q: "How does the AI bet analyzer work?", a: "Paste your bet. The AI runs 1,000 simulations against the current line for each leg, calculates the modeled probability of cashing, compares it to the break-even price, and returns a letter grade plus reasoning." },
+      { q: "How does the AI bet analyzer work?", a: "Paste your bet to compare its modeled probability with the break-even price and receive a grade with supporting reasoning. The result is an estimate, not a guarantee." },
       { q: "Can the AI bet on anything?", a: "It evaluates sides, totals, player props, alt lines, and parlays up to 20 legs across NFL, NBA, MLB, NHL, UFC, soccer, tennis, college football, college basketball, golf majors, and table tennis." },
       { q: "Is the AI bet analyzer free?", a: "Yes — one analysis per day free. Premium unlocks unlimited grading plus the full pick board." },
       { q: "Will the AI ever say my bet is bad?", a: "Yes, frequently. If you paste a -300 favorite parlayed with a low-confidence under, the AI will tell you. It's not designed to flatter your picks." },
@@ -1899,13 +1899,13 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "Track Record",
         body: [
-          "Flagged high-confidence AI picks have hit at an 80.3% win rate across our tracked sample. The live ledger is public on the track record page — every flagged pick, every result, no cherry-picking.",
+          "Use the dated track record to evaluate flagged picks across complete samples. Check the date range, qualification rules, market, and confidence tier rather than relying on a headline rate.",
         ],
       },
     ],
     faqs: [
       { q: "Are AI picks free?", a: "Daily best bet and daily underdog are free every day. The full board across every game is premium." },
-      { q: "How accurate are AI picks?", a: "Flagged high-confidence picks have hit 80.3% across our tracked sample. No model wins every day — variance is real." },
+      { q: "How accurate are AI picks?", a: "Accuracy varies by market, league, and sample period. Review complete dated results, and remember that no model wins every day." },
       { q: "How many AI picks are posted per day?", a: "Varies by sport in season. NBA night: typically 8–15 games covered. NFL Sunday: every game on the slate." },
       { q: "When are today's AI picks finalized?", a: "Best bet typically locked in by 2–4 p.m. ET so late lineup news is included. The full board is live earlier and updates continuously." },
       { q: "Can I see why the AI made each pick?", a: "Yes — every pick has a written explanation with the top factors driving the model's view." },
@@ -1965,7 +1965,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is the AI sports betting app really free?", a: "Yes — daily best bet, daily underdog, analysis writeups, and one AI bet analyzer run per day are free forever with no card required." },
       { q: "What's the catch with the free tier?", a: "There isn't one. The free tier is meant to be genuinely useful. Premium exists for users who want the full board and unlimited features, not as a gate around basic value." },
       { q: "Do I need to install anything?", a: "No — it runs in the browser. You can add it to your home screen on iOS or Android for a native-app feel." },
-      { q: "How accurate are the free AI picks?", a: "Same model as the premium picks. Flagged high-confidence picks have hit 80.3% across our tracked sample." },
+      { q: "How accurate are the free AI picks?", a: "Free picks use the same analysis framework as premium picks. Review their complete dated history instead of relying on a selected performance number." },
       { q: "Is there a free trial of the premium tier?", a: "We don't run a forced trial — the free tier is the trial. Use it as long as you want and upgrade only if the math works for your volume." },
       { q: "Will the free tier disappear?", a: "No plans to remove it. It's a core part of the product." },
     ],
@@ -1987,7 +1987,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       {
         heading: "How AI Bet Predictions Are Made",
         body: [
-          "Each game runs through 1,000 Monte Carlo simulations using updated probability distributions for team scoring, possessions, and key player performance. The simulation incorporates live odds, confirmed lineups, injury status, weather, referees, pace, and rest/travel context.",
+          "Each game is evaluated with available scoring, possession, player, odds, lineup, injury, weather, pace, and rest context to estimate a range of possible outcomes.",
           "The simulated win probability is compared against the implied probability of the current line. When they diverge by enough — and the underlying data is good — the prediction is flagged as a recommended AI bet with a confidence score from 0 to 100.",
         ],
       },
@@ -2015,7 +2015,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
     ],
     faqs: [
       { q: "What is an AI bets prediction?", a: "An AI bets prediction is a wager recommendation generated by a machine-learning + simulation model, complete with modeled win probability, market-implied probability, a confidence score, and reasoning." },
-      { q: "How accurate are AI bet predictions?", a: "Flagged high-confidence AI predictions have hit at an 80.3% win rate across our tracked sample. The live ledger is public at /track-record." },
+      { q: "How accurate are AI bet predictions?", a: "Accuracy varies by league, market, and time period. Review the dated track record and its methodology before drawing conclusions from any sample." },
       { q: "Are AI predictions free?", a: "Daily best bet and daily underdog predictions are free. The full prediction board across every game is premium." },
       { q: "When are tonight's predictions ready?", a: "Predictions go live the moment lines open and re-simulate continuously. The locked-in best bet is typically posted by 2–4 p.m. ET so late lineup news is included." },
       { q: "Do the AI predictions update during the day?", a: "Yes — predictions re-run on every meaningful line move and on injury/lineup news. Stale picks are killed or replaced rather than left up." },

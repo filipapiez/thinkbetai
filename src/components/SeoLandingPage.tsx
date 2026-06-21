@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -64,6 +63,7 @@ export const SeoLandingPage = ({ config }: Props) => {
     mainEntityOfPage: fullUrl,
     image: "https://thinkbetai.com/og-image.png",
   };
+  const combinedSchema = { "@context": "https://schema.org", "@graph": [articleLd, faqLd] };
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,11 +72,8 @@ export const SeoLandingPage = ({ config }: Props) => {
         description={config.description}
         keywords={config.keywords}
         url={url}
-        structuredData={articleLd}
+        structuredData={combinedSchema}
       />
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqLd)}</script>
-      </Helmet>
       <Header />
 
       <main className="container py-8 md:py-12 max-w-5xl">

@@ -3,7 +3,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,6 +70,7 @@ const FreeAIPredictions = () => {
       }
     ]
   };
+  const combinedSchema = { "@context": "https://schema.org", "@graph": [structuredData, faqData] };
 
   const freeBenefits = [
     { icon: Gift, title: 'No Credit Card', description: 'Access free picks without payment info' },
@@ -87,15 +87,8 @@ const FreeAIPredictions = () => {
         keywords="free AI predictions, free AI sports picks, free AI betting, AI predictions free, free sports betting AI"
         url="/free-ai-predictions"
         type="article"
+        structuredData={combinedSchema}
       />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqData)}
-        </script>
-      </Helmet>
       
       <Header />
       

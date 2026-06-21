@@ -4,13 +4,8 @@
 User-agent: *
 Allow: /
 
-# Disallow private/admin areas only.
-# IMPORTANT: do NOT block /predictions, /teams, /players, /props,
-# /matchups, /best or /leagues — Google must be able to crawl those
-# URLs to see the noindex meta tag (or that the page is gone).
-Disallow: /admin
+# Application and account routes use noindex,follow. They remain crawlable so
+# search engines can observe that directive instead of retaining stale URLs.
 Disallow: /api/
-Disallow: /account
-Disallow: /settings
 
 Sitemap: https://thinkbetai.com/sitemap.xml

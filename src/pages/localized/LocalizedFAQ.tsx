@@ -3,12 +3,11 @@ import { LocalizedHeader } from '@/components/LocalizedHeader';
 import { LocalizedFooter } from '@/components/LocalizedFooter';
 import { SEO } from '@/components/SEO';
 import { Breadcrumb } from '@/components/Breadcrumb';
-import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { HelpCircle, Sparkles, Shield, DollarSign, TrendingUp, Users, Zap, ArrowRight } from 'lucide-react';
-import { Locale, getTranslations, getLocalePath, getHreflangEntries } from '@/lib/i18n';
+import { Locale, getTranslations, getLocalePath } from '@/lib/i18n';
 
 const categoryIcons: Record<string, React.ReactNode> = {
   'AI & Technology': <Sparkles className="h-5 w-5" />,
@@ -23,7 +22,6 @@ interface Props { locale: Exclude<Locale, 'en'>; }
 const LocalizedFAQ = ({ locale }: Props) => {
   const t = getTranslations(locale).faq;
   const lp = (path: string) => getLocalePath(locale, path);
-  const hreflangEntries = getHreflangEntries('/faq');
 
   const grouped = t.faqs.reduce((acc, faq) => {
     if (!acc[faq.category]) acc[faq.category] = [];
@@ -31,20 +29,9 @@ const LocalizedFAQ = ({ locale }: Props) => {
     return acc;
   }, {} as Record<string, typeof t.faqs>);
 
-  const faqStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: t.faqs.map(faq => ({ '@type': 'Question', name: faq.question, acceptedAnswer: { '@type': 'Answer', text: faq.answer } })),
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('/faq')} />
-      <Helmet>
-        <script type="application/ld+json">{JSON.stringify(faqStructuredData)}</script>
-        {hreflangEntries.map(e => <link key={e.hreflang} rel="alternate" hrefLang={e.hreflang} href={e.href} />)}
-        <link rel="alternate" hrefLang="x-default" href="https://thinkbetai.com/faq" />
-      </Helmet>
+      <SEO title={t.seoTitle} description={t.seoDescription} keywords={t.seoKeywords} url={lp('/faq')} noIndex />
       <LocalizedHeader locale={locale} />
 
       <main className="flex-1">

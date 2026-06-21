@@ -176,9 +176,15 @@ function renderHeadPatches(config: SeoLandingConfig, url: string): {
     mainEntityOfPage: fullUrl,
     image: `${BASE}/og-image.png`,
   };
+  const articleNode = { ...articleLd };
+  const faqNode = { ...faqLd };
+  delete articleNode["@context"];
+  delete faqNode["@context"];
   const jsonLd = `
-<script type="application/ld+json">${JSON.stringify(articleLd)}</script>
-<script type="application/ld+json">${JSON.stringify(faqLd)}</script>`;
+<script id="thinkbetai-page-schema" type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [articleNode, faqNode],
+  })}</script>`;
 
   return {
     title,
@@ -239,6 +245,10 @@ function buildHtmlForConfig(config: SeoLandingConfig): string {
     /<meta\s+name="twitter:description"[^>]*>/,
     `<meta name="twitter:description" content="${escapeAttr(patches.description)}" />`
   );
+
+  // Replace the generic application schemas inherited from index.html.
+  // Keeping them would create duplicate and stale entities after hydration.
+  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
 
   // Inject canonical + JSON-LD into <head>. Index.html has no static
   // canonical (it's documented as "set dynamically per page via React
