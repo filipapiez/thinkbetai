@@ -12,6 +12,7 @@
 import { writeFileSync, existsSync, unlinkSync } from "fs";
 import { resolve } from "path";
 import { blogPosts } from "../src/lib/blogData";
+import { isSeoAlias } from "../src/seoAliases";
 
 const BASE = "https://thinkbetai.com";
 const today = new Date().toISOString().slice(0, 10);
@@ -58,7 +59,9 @@ const sportLandings: Entry[] = [
   "/ai-pick-of-the-day",
   "/ai-underdog-picks",
   "/ai-against-the-spread-picks",
-].map((path) => ({ path, changefreq: "weekly" as const, priority: "0.85" }));
+]
+  .filter((path) => !isSeoAlias(path.slice(1)))
+  .map((path) => ({ path, changefreq: "weekly" as const, priority: "0.85" }));
 
 const keywordLandings: Entry[] = [
   "/ai-sports-predictions",
@@ -84,7 +87,9 @@ const keywordLandings: Entry[] = [
   "/ai-picks",
   "/free-ai-sports-betting-app",
   "/ai-bets-prediction",
-].map((path) => ({ path, changefreq: "weekly" as const, priority: "0.75" }));
+]
+  .filter((path) => !isSeoAlias(path.slice(1)))
+  .map((path) => ({ path, changefreq: "weekly" as const, priority: "0.75" }));
 
 // 4) Blog
 const blogIndex: Entry = { path: "/blog", changefreq: "weekly", priority: "0.8" };

@@ -111,19 +111,13 @@ const AISportsBetting = () => {
       priceCurrency: 'USD',
       description: 'Free tier available',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '2140',
-      bestRating: '5',
-    },
   };
 
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="AI Sports Betting 2026 — Free AI Picks & Predictions (80%+ Accuracy)"
-        description="The #1 AI sports betting platform. Free daily AI picks, parlays & predictions for NFL, NBA, MLB, NHL & UFC — powered by machine learning with 80%+ documented accuracy. Try it free."
+        title="AI Sports Betting: Free AI Picks & Analysis"
+        description="Explore AI sports betting analysis, free AI picks, probability estimates and matchup context for NFL, NBA, MLB, NHL, UFC and soccer."
         keywords="ai betting, ai bets, ai betting predictions, ai sports betting tool, ai sports betting, ai predictions sports"
         url="/ai-sports-betting"
         type="article"
@@ -147,7 +141,7 @@ const AISportsBetting = () => {
         {/* Hero — LCP element. Keep above the fold and free of layout-shifting siblings. */}
         <header className="mb-14">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            AI Sports Betting Platform
+            AI Sports Betting Analysis and Free AI Picks
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl">
             Our <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting platform</Link> combines machine learning with real-time sports data to deliver <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting predictions</Link> you can actually understand — and act on.
@@ -171,7 +165,7 @@ const AISportsBetting = () => {
               What Is AI Betting?
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              AI betting uses machine learning algorithms to analyze vast amounts of sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. As the <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">best AI betting tool</Link> available, ThinkBetAI processes thousands of variables simultaneously to surface edges that human analysis might miss.
+              AI betting uses machine learning algorithms to analyze sports data — player stats, team form, injuries, weather, travel schedules, and historical matchups — to generate probability estimates for game outcomes. ThinkBetAI is a purpose-built AI betting tool that organizes those signals into analysis a user can review.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               The result is a set of data-driven <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI betting picks</Link> and confidence scores that help bettors make more informed decisions. This <Link to="/ai-sports-betting" className="text-primary hover:underline font-medium">AI sports betting software</Link> isn't a crystal ball — it's a smarter starting point.

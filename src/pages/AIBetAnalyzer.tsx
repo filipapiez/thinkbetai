@@ -10,7 +10,7 @@ import { BarChart3, Shield, Target, TrendingUp, Brain, CheckCircle, ArrowRight, 
 const faqItems = [
   { q: "What is an AI bet analyzer?", a: "An AI bet analyzer uses machine learning to evaluate any sports bet by calculating true probabilities, identifying value, and scoring risk — giving you a data-driven edge before you place a wager." },
   { q: "How does AI odds analysis work?", a: "Our AI compares sportsbook odds against its own probability model built from thousands of data points including team form, injuries, weather, and historical matchups to find discrepancies." },
-  { q: "Is AI betting analysis more accurate than manual research?", a: "Yes. AI processes far more variables simultaneously and removes emotional bias, consistently outperforming manual handicapping over large sample sizes." },
+  { q: "Is AI betting analysis more accurate than manual research?", a: "AI can process more variables consistently and reduce some forms of emotional bias, but results depend on data quality, model design and market conditions. It should complement—not replace—independent research." },
   { q: "Can I analyze parlays with the AI bet analyzer?", a: "Absolutely. The analyzer breaks down each leg of your parlay, scores correlation risk, and provides an overall probability assessment." },
   { q: "What sports does the AI bet analyzer cover?", a: "ThinkBetAI covers NFL, NBA, MLB, NHL, UFC, soccer, and tennis — with more sports being added regularly." },
   { q: "Is the AI bet analyzer free?", a: "Basic analysis is available on our free tier. Premium subscribers get unlimited deep analysis with advanced risk scoring and real-time updates." },
@@ -35,7 +35,6 @@ const combinedSchema = {
       applicationCategory: "SportsApplication",
       operatingSystem: "Web",
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "312" },
     },
   ],
 };
@@ -44,8 +43,8 @@ const AIBetAnalyzer = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO
-        title="AI Bet Analyzer — Analyze Any Bet with AI"
-        description="Use ThinkBetAI's AI bet analyzer for instant probability breakdowns, risk scoring, and AI odds analysis on any sports bet. Evaluate spreads, moneylines, totals, and props with data-driven betting analysis AI."
+        title="AI Bet Analyzer: Probability, Value & Risk"
+        description="Analyze a sports bet with AI-assisted probability estimates, implied-odds comparison and risk context for moneylines, spreads, totals and props."
         keywords="ai bet analyzer, betting analysis ai, ai odds analysis, ai bet analysis, sports betting analyzer, bet probability calculator"
         url="/ai-bet-analyzer"
         structuredData={combinedSchema}
@@ -56,9 +55,9 @@ const AIBetAnalyzer = () => {
       <main className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Hero */}
         <section className="mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">AI Bet Analyzer</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">AI Bet Analyzer for Probability, Value and Risk</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mb-4">
-            The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> evaluates probability, value, and risk instantly — powered by the same betting analysis AI trusted by thousands of sports bettors worldwide.
+            The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> evaluates probability, value, and risk using the same betting-analysis framework available across ThinkBetAI.
           </p>
           <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">
             Stop guessing whether a bet has value. ThinkBetAI's analyzer takes any wager — moneyline, spread, total, or prop — and runs it through our multi-model AI engine to calculate true win probability, expected value, and a comprehensive risk score. Whether you're evaluating a single straight bet or a complex parlay, the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> gives you the data you need before you risk a dollar.
@@ -80,7 +79,7 @@ const AIBetAnalyzer = () => {
               The system then compares its calculated probability against the sportsbook's implied probability to determine expected value (EV). A positive EV means the bet offers more value than the odds suggest — the holy grail of profitable betting. Finally, a risk assessment layer evaluates variance factors like injury uncertainty, weather volatility, and historical line movement to assign a risk score from Low to High.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              The entire process takes under two seconds and returns a clean breakdown you can act on immediately. No jargon, no black boxes — just transparent, data-driven analysis that helps you make smarter betting decisions.
+              The process returns a structured breakdown of the model estimate, implied probability and risk factors. Treat it as one input in your research rather than a guaranteed outcome.
             </p>
           </div>
         </section>

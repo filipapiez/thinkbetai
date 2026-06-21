@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 
 interface SEOProps {
   title?: string;
@@ -34,50 +34,88 @@ export const SEO = ({
   noIndex,
 }: SEOProps) => {
   const fullTitle = title ? (title.includes('ThinkBetAI') ? title : `${title} | ThinkBetAI`) : defaultTitle;
-  const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
-  const canonicalUrl = canonical || fullUrl;
+  const toAbsoluteUrl = (value: string) =>
+    /^https?:\/\//i.test(value)
+      ? value
+      : `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
+  const fullUrl = url ? toAbsoluteUrl(url) : `${siteUrl}/`;
+  const canonicalUrl = canonical ? toAbsoluteUrl(canonical) : fullUrl;
+  const structuredDataJson = structuredData ? JSON.stringify(structuredData) : '';
 
-  return (
-    <Helmet>
-      {/* Primary Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="title" content={fullTitle} />
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
-      {noIndex && <meta name="robots" content="noindex, follow" />}
-      
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={fullUrl} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
-      <meta property="og:site_name" content="ThinkBetAI" />
-      
-      {/* Twitter */}
-      <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={fullUrl} />
-      <meta property="twitter:title" content={fullTitle} />
-      <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={image} />
-      
-      {/* Article specific */}
-      {type === 'article' && author && (
-        <meta property="article:author" content={author} />
-      )}
-      {type === 'article' && publishedTime && (
-        <meta property="article:published_time" content={publishedTime} />
-      )}
-      
-      {/* Canonical URL */}
-      <link rel="canonical" href={canonicalUrl} />
-      
-      {/* Structured Data */}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
-    </Helmet>
-  );
+  useEffect(() => {
+    const upsertMeta = (attribute: 'name' | 'property', key: string, content?: string) => {
+      const selector = `meta[${attribute}="${key}"]`;
+      const existing = document.head.querySelector<HTMLMetaElement>(selector);
+
+      if (!content) {
+        existing?.remove();
+        return;
+      }
+
+      const meta = existing ?? document.createElement('meta');
+      meta.setAttribute(attribute, key);
+      meta.content = content;
+      if (!existing) document.head.appendChild(meta);
+    };
+
+    document.title = fullTitle;
+    upsertMeta('name', 'title', fullTitle);
+    upsertMeta('name', 'description', description);
+    upsertMeta('name', 'keywords', keywords);
+    upsertMeta(
+      'name',
+      'robots',
+      noIndex
+        ? 'noindex, follow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+    );
+
+    upsertMeta('property', 'og:type', type);
+    upsertMeta('property', 'og:url', fullUrl);
+    upsertMeta('property', 'og:title', fullTitle);
+    upsertMeta('property', 'og:description', description);
+    upsertMeta('property', 'og:image', image);
+    upsertMeta('property', 'og:site_name', 'ThinkBetAI');
+
+    upsertMeta('property', 'twitter:card', 'summary_large_image');
+    upsertMeta('property', 'twitter:url', fullUrl);
+    upsertMeta('property', 'twitter:title', fullTitle);
+    upsertMeta('property', 'twitter:description', description);
+    upsertMeta('property', 'twitter:image', image);
+
+    upsertMeta('property', 'article:author', type === 'article' ? author : undefined);
+    upsertMeta('property', 'article:published_time', type === 'article' ? publishedTime : undefined);
+
+    const existingCanonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const canonicalLink = existingCanonical ?? document.createElement('link');
+    canonicalLink.rel = 'canonical';
+    canonicalLink.href = canonicalUrl;
+    if (!existingCanonical) document.head.appendChild(canonicalLink);
+
+    const schemaId = 'thinkbetai-page-schema';
+    const existingSchema = document.head.querySelector<HTMLScriptElement>(`#${schemaId}`);
+    if (structuredDataJson) {
+      const schema = existingSchema ?? document.createElement('script');
+      schema.id = schemaId;
+      schema.type = 'application/ld+json';
+      schema.textContent = structuredDataJson;
+      if (!existingSchema) document.head.appendChild(schema);
+    } else {
+      existingSchema?.remove();
+    }
+  }, [
+    author,
+    canonicalUrl,
+    description,
+    fullTitle,
+    fullUrl,
+    image,
+    keywords,
+    noIndex,
+    publishedTime,
+    structuredDataJson,
+    type,
+  ]);
+
+  return null;
 };

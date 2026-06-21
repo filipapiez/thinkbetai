@@ -17,20 +17,19 @@ import {
   Trophy,
   Sparkles,
   LineChart,
-  Users,
-  Star
+  Users
 } from "lucide-react";
 
 const AISportsPicks = () => {
   const sports = [
-    { name: "NFL", icon: "🏈", accuracy: "88.2%" },
-    { name: "NBA", icon: "🏀", accuracy: "85.7%" },
-    { name: "MLB", icon: "⚾", accuracy: "82.2%" },
-    { name: "NHL", icon: "🏒", accuracy: "80.6%" },
-    { name: "UFC/MMA", icon: "🥊", accuracy: "88.5%" },
-    { name: "Soccer", icon: "⚽", accuracy: "81.9%" },
-    { name: "Tennis", icon: "🎾", accuracy: "84.6%" },
-    { name: "Table Tennis", icon: "🏓", accuracy: "81.6%" },
+    { name: "NFL", icon: "🏈" },
+    { name: "NBA", icon: "🏀" },
+    { name: "MLB", icon: "⚾" },
+    { name: "NHL", icon: "🏒" },
+    { name: "UFC/MMA", icon: "🥊" },
+    { name: "Soccer", icon: "⚽" },
+    { name: "Tennis", icon: "🎾" },
+    { name: "Table Tennis", icon: "🏓" },
   ];
 
   const features = [
@@ -41,8 +40,8 @@ const AISportsPicks = () => {
     },
     {
       icon: Target,
-      title: "High-Confidence Picks Only",
-      description: "We only surface picks that meet our strict confidence threshold. Quality over quantity means better outcomes for you."
+      title: "Confidence Thresholds",
+      description: "Picks are filtered by model confidence and paired with context so you can assess the risk before acting."
     },
     {
       icon: BarChart3,
@@ -70,17 +69,17 @@ const AISportsPicks = () => {
     {
       step: "1",
       title: "Data Collection",
-      description: "Our AI continuously ingests data from hundreds of sources including live stats, injury reports, weather conditions, and betting markets."
+      description: "The model combines available stats, injury reports, weather conditions and betting-market information."
     },
     {
       step: "2",
       title: "Pattern Recognition",
-      description: "Advanced machine learning models identify profitable patterns and inefficiencies in betting lines that human analysts often miss."
+      description: "Machine-learning models compare matchup patterns and market prices to estimate possible outcomes."
     },
     {
       step: "3",
       title: "Confidence Scoring",
-      description: "Each potential pick is scored based on multiple factors. Only picks exceeding our 70% confidence threshold are surfaced."
+      description: "Each potential pick receives a probability estimate and confidence label based on the available inputs."
     },
     {
       step: "4",
@@ -89,24 +88,18 @@ const AISportsPicks = () => {
     }
   ];
 
-  const testimonials = [
+  const decisionChecks = [
     {
-      quote: "The AI picks have completely changed how I approach sports betting. The explanations help me understand why each pick makes sense.",
-      author: "Marcus T.",
-      role: "Member since 2024",
-      rating: 5
+      title: "Compare probability with price",
+      description: "A prediction is only useful when its estimated probability is compared with the sportsbook's implied probability."
     },
     {
-      quote: "Finally, an AI betting tool that actually delivers. The 80.3% win rate on qualified picks is incredible.",
-      author: "Jennifer K.",
-      role: "Premium Member",
-      rating: 5
+      title: "Review the model context",
+      description: "Check injuries, lineup news and matchup factors that can change after a prediction is generated."
     },
     {
-      quote: "I love how transparent they are with their tracking. Every pick is documented and you can see exactly how they perform.",
-      author: "David R.",
-      role: "Member since 2023",
-      rating: 5
+      title: "Set a risk limit",
+      description: "Treat every pick as uncertain, avoid chasing losses and use a stake size you can afford to lose."
     }
   ];
 
@@ -123,13 +116,6 @@ const AISportsPicks = () => {
       "price": "0",
       "priceCurrency": "USD",
       "description": "Free trial available"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "1247",
-      "bestRating": "5",
-      "worstRating": "1"
     },
     "featureList": [
       "AI-powered sports predictions",
@@ -157,7 +143,7 @@ const AISportsPicks = () => {
         "name": "How accurate are AI sports betting predictions?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our AI sports picks achieve an 83.8% win rate on qualified picks that meet our strict confidence threshold. Accuracy varies by sport, with NFL and UFC achieving the highest rates above 88%."
+          "text": "Accuracy varies by sport, market, price and time period. ThinkBetAI publishes its qualification criteria and methodology, but no model can guarantee a future result."
         }
       },
       {
@@ -182,8 +168,8 @@ const AISportsPicks = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SEO 
-        title="AI Sports Picks | #1 Free AI Betting Predictions 2026 - ThinkBetAI"
-        description="🏆 Get winning AI sports picks with 83.8% accuracy. Free daily NFL, NBA, MLB, NHL & UFC predictions powered by machine learning. Join 10,000+ bettors using AI-powered sports betting analysis."
+        title="Free AI Sports Picks Today"
+        description="Review free AI sports picks and probability-based predictions for today's NFL, NBA, MLB, NHL, UFC and soccer matchups, with risk context."
         keywords="AI sports picks, AI sports predictions, AI betting picks, machine learning sports betting, AI NFL picks, AI NBA picks, free sports predictions, AI betting algorithm, sports betting AI, best AI sports picks, AI betting predictions 2026"
         url="/ai-sports-picks"
         canonical="https://thinkbetai.com/ai-sports-picks"
@@ -208,19 +194,18 @@ const AISportsPicks = () => {
             <div className="max-w-4xl mx-auto text-center">
               <Badge variant="outline" className="mb-6 px-4 py-1.5 text-sm border-primary/30 bg-primary/5">
                 <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                83.8% Win Rate on Qualified Picks
+                Free Picks with Probability Context
               </Badge>
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-                AI Sports Picks That{" "}
+                Free AI Sports Picks for{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
-                  Actually Win
+                  Today's Games
                 </span>
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Get AI picks today</Link> — free daily AI-powered sports predictions backed by advanced machine learning. 
-                Our algorithms analyze millions of data points to surface only the highest-confidence picks.
+                <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Get AI picks today</Link> — review model probabilities, matchup factors and risk notes for the current slate. No prediction guarantees a result.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -245,11 +230,11 @@ const AISportsPicks = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" />
-                  <span>10,000+ active users</span>
+                  <span>Plain-language model explanations</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-accent" />
-                  <span>Verified track record</span>
+                  <span>Transparent result tracking</span>
                 </div>
               </div>
             </div>
@@ -264,8 +249,7 @@ const AISportsPicks = () => {
                 AI Picks for Every Major Sport
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Our AI models are trained on sport-specific data to maximize accuracy. 
-                Get predictions for all the sports you care about.
+                Sport-specific models account for the inputs that matter in each league. Review predictions across the sports you follow.
               </p>
             </div>
             
@@ -277,7 +261,7 @@ const AISportsPicks = () => {
                 >
                   <span className="text-4xl mb-3">{sport.icon}</span>
                   <h3 className="font-semibold mb-1">{sport.name}</h3>
-                  <span className="text-sm text-primary font-medium">{sport.accuracy} accuracy</span>
+                  <span className="text-sm text-primary font-medium">Model analysis available</span>
                 </div>
               ))}
             </div>
@@ -350,50 +334,45 @@ const AISportsPicks = () => {
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               <div className="text-center p-6 rounded-xl bg-card border border-border/50">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">83.8%</div>
-                <div className="text-sm text-muted-foreground">Win Rate</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">Public</div>
+                <div className="text-sm text-muted-foreground">Methodology</div>
               </div>
               <div className="text-center p-6 rounded-xl bg-card border border-border/50">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">487+</div>
-                <div className="text-sm text-muted-foreground">Qualified Picks</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">4</div>
+                <div className="text-sm text-muted-foreground">Market Types</div>
               </div>
               <div className="text-center p-6 rounded-xl bg-card border border-border/50">
                 <div className="text-3xl md:text-4xl font-bold text-primary mb-2">8</div>
                 <div className="text-sm text-muted-foreground">Sports Covered</div>
               </div>
               <div className="text-center p-6 rounded-xl bg-card border border-border/50">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">24/7</div>
-                <div className="text-sm text-muted-foreground">AI Monitoring</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">Daily</div>
+                <div className="text-sm text-muted-foreground">Slate Updates</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Testimonials Section */}
+        {/* Decision framework */}
         <section className="py-16 bg-card/30">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                What Our Members Say
+                How to Review an AI Pick
               </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Use the model as one input in a disciplined decision process, not as a promise of profit.
+              </p>
             </div>
             
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {testimonials.map((testimonial, index) => (
+              {decisionChecks.map((check) => (
                 <div 
-                  key={index}
+                  key={check.title}
                   className="p-6 rounded-xl bg-background border border-border/50"
                 >
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4 italic">"{testimonial.quote}"</p>
-                  <div>
-                    <div className="font-semibold">{testimonial.author}</div>
-                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                  </div>
+                  <h3 className="font-semibold text-lg mb-3">{check.title}</h3>
+                  <p className="text-muted-foreground">{check.description}</p>
                 </div>
               ))}
             </div>
@@ -421,9 +400,8 @@ const AISportsPicks = () => {
                 <div className="p-6 rounded-xl bg-card border border-border/50">
                   <h3 className="font-semibold mb-2">How accurate are AI sports betting predictions?</h3>
                   <p className="text-muted-foreground text-sm">
-                    Our AI sports picks achieve an 83.8% win rate on qualified picks that meet our strict 
-                    confidence threshold. Accuracy varies by sport, with NFL and UFC achieving the highest 
-                    rates above 88%.
+                    Accuracy varies by sport, market, price and time period. ThinkBetAI publishes its
+                    qualification criteria and methodology, but no model can guarantee a future result.
                   </p>
                 </div>
                 

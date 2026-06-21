@@ -69,7 +69,6 @@ const AIParlayBuilder = () => {
     description:
       'AI-powered parlay builder that analyzes correlations, calculates true odds, and optimizes multi-leg bets for maximum value.',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.8', ratingCount: '450', bestRating: '5' },
   };
 
   const faqSchema = {
@@ -85,8 +84,8 @@ const AIParlayBuilder = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="AI Parlay Builder 2026 — Free Smart Parlay Picks (80%+ Win Rate)"
-        description="Free AI parlay builder used by 10,000+ bettors. Get correlated same-game parlays, true-odds analysis & 2-3 leg AI picks for NFL, NBA, MLB & NHL. Build a winning parlay in seconds."
+        title="Free AI Parlay Builder & Parlay Generator"
+        description="Use an AI parlay builder to compare leg probabilities, identify correlation and review risk before combining NFL, NBA, MLB or NHL picks."
         keywords="ai parlay builder, free ai parlay generator, ai parlay picks, same game parlay AI, smart parlay builder, parlay ai predictions, correlated parlay"
         url="/ai-parlay-builder"
         type="article"
@@ -115,11 +114,11 @@ const AIParlayBuilder = () => {
               Advanced Tool
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-              AI Parlay Builder
+              Free AI Parlay Builder and Parlay Generator
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               Stop guessing on parlays. Our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> analyzes leg correlations, calculates true win probabilities,
-              and builds <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI optimized parlays</Link> with real mathematical edge.
+              and helps you review <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI-assisted parlays</Link> with explicit risk context.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>

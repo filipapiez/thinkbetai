@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -43,24 +42,8 @@ import {
 } from 'lucide-react';
 
 const Index = () => {
-  const { winRate, currentStreak } = useWinRate();
+  const { currentStreak } = useWinRate();
   const { user, isSubscribed } = useAuth();
-  // Animated live viewer count
-  const [viewerCount, setViewerCount] = useState(847);
-  
-  // Animated live viewer count — slow interval to reduce INP impact
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setViewerCount(prev => {
-        const change = Math.floor(Math.random() * 5) + 1;
-        const direction = Math.random() > 0.5 ? 1 : -1;
-        const newCount = prev + (change * direction);
-        return Math.max(500, Math.min(1200, newCount));
-      });
-    }, 5000); // 5s instead of 1.5s to reduce main-thread work
-    return () => clearInterval(interval);
-  }, []);
-
   // Testimonial carousel
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -112,7 +95,7 @@ const Index = () => {
   ];
 
   const stats = [
-    { value: '80.3%', label: 'Win Rate', sublabel: 'on qualified picks' },
+    { value: 'Public', label: 'Methodology', sublabel: 'qualification criteria' },
     { value: `${platformStats.totalQualified}+`, label: 'Picks Analyzed', sublabel: 'this season' },
     { value: `${currentStreak}`, label: 'Current Streak', sublabel: 'consecutive wins' },
     { value: '15+', label: 'Sports Covered', sublabel: 'major leagues' },
@@ -188,46 +171,9 @@ const Index = () => {
     },
   ];
 
-  // Review structured data for testimonials
-  const reviewStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "ThinkBetAI",
-    "description": "AI-powered sports betting predictions and analytics platform",
-    "brand": {
-      "@type": "Brand",
-      "name": "ThinkBetAI"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "2400",
-      "bestRating": "5",
-      "worstRating": "1"
-    },
-    "review": testimonials.slice(0, 5).map((t, i) => ({
-      "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": t.author
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": t.rating.toString(),
-        "bestRating": "5"
-      },
-      "reviewBody": t.quote
-    }))
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <SEO canonical="/" />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(reviewStructuredData)}
-        </script>
-      </Helmet>
       <Header />
       
       <main className="flex-1">
@@ -250,7 +196,7 @@ const Index = () => {
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">80.3%</span> Win Rate
+                  <span className="text-primary font-bold">Probability-based</span> Analysis
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
@@ -281,7 +227,7 @@ const Index = () => {
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
-                  {platformStats.totalQualified}+ Winning Picks
+                  {platformStats.totalQualified}+ Qualified Picks Analyzed
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
@@ -317,14 +263,14 @@ const Index = () => {
                       </div>
                     ))}
                   </div>
-                  <span><span className="font-semibold text-foreground">1,247</span> joined this week</span>
+                  <span><span className="font-semibold text-foreground">Transparent</span> methodology</span>
                 </div>
                 <div className="hidden sm:block w-px h-5 bg-border" />
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="ml-1"><span className="font-semibold text-foreground">4.9</span> from 2,400+ reviews</span>
+                  <span className="ml-1"><span className="font-semibold text-foreground">Results</span> are not guaranteed</span>
                 </div>
               </div>
             </div>
@@ -336,7 +282,7 @@ const Index = () => {
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: '80.3%', label: 'Win Rate', sublabel: 'on qualified picks', icon: Target, color: 'text-emerald-400' },
+                { value: 'Public', label: 'Methodology', sublabel: 'qualification criteria', icon: Target, color: 'text-emerald-400' },
                 { value: '$2.4M+', label: 'User Winnings', sublabel: 'tracked this year', icon: DollarSign, color: 'text-amber-400' },
                 { value: `${platformStats.streakCurrent}`, label: 'Win Streak', sublabel: 'and counting', icon: TrendingUp, color: 'text-primary' },
                 { value: '15+', label: 'Sports', sublabel: 'covered daily', icon: Trophy, color: 'text-purple-400' },
@@ -356,17 +302,17 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Live Viewers Banner */}
+        {/* Analysis status banner */}
         <section className="py-4 bg-gradient-to-r from-primary/10 via-primary/20 to-primary/10 border-y border-primary/20">
           <div className="container">
             <div className="flex items-center justify-center gap-3 text-sm">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
               </span>
-              <span className="text-sm font-semibold text-red-400 uppercase">Live</span>
+              <span className="text-sm font-semibold text-red-400 uppercase">Updated</span>
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground transition-all duration-300">{viewerCount.toLocaleString()}</span> users viewing picks right now
+                Matchup analysis refreshes as new data becomes available
               </span>
             </div>
           </div>
@@ -629,7 +575,7 @@ const Index = () => {
                 {[
                   { icon: Target, text: 'AI-Powered Picks' },
                   { icon: Layers, text: 'Smart Parlay Builder' },
-                  { icon: TrendingUp, text: '80.3% Win Rate' },
+                  { icon: TrendingUp, text: 'Published Methodology' },
                 ].map((item) => (
                   <div key={item.text} className="flex items-center justify-center gap-2 text-sm">
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
@@ -677,7 +623,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">Get AI Picks Today</p>
-              <p className="text-xs text-muted-foreground truncate">80.3% win rate • 70% off</p>
+              <p className="text-xs text-muted-foreground truncate">Probability analysis • Introductory offer</p>
             </div>
             <Button variant="hero" size="sm" asChild className="shrink-0">
               <Link to="/login?tab=signup">

@@ -86,7 +86,7 @@ export const SeoLandingPage = ({ config }: Props) => {
         <section className="text-center mb-10 md:mb-14">
           <Badge variant="outline" className="mb-4">
             <Sparkles className="h-3 w-3 mr-1" />
-            ThinkBetAI · 80.3% win rate on flagged picks
+            ThinkBetAI · Probability-based sports analysis
           </Badge>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">{config.h1}</h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-6">

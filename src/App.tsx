@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
+import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
 
 // Lazy-load non-critical UI components to reduce initial bundle
 // Load Toaster/Sonner eagerly — they're tiny and lazy-loading them adds overhead
@@ -123,21 +124,6 @@ const App = () => (
                 <Route path="/leagues/:slug" element={<SeoPageView pageType="league" />} />
 
                 {/* Permanent SEO landing pages (high-intent keyword clusters) */}
-                <Route path="/ai-sports-predictions" element={<SeoLanding slug="ai-sports-predictions" />} />
-                <Route path="/ai-betting-predictions" element={<SeoLanding slug="ai-betting-predictions" />} />
-                <Route path="/best-ai-betting-picks" element={<SeoLanding slug="best-ai-betting-picks" />} />
-                <Route path="/free-ai-sports-predictions" element={<SeoLanding slug="free-ai-sports-predictions" />} />
-                <Route path="/free-ai-sports-predictions-today" element={<SeoLanding slug="free-ai-sports-predictions-today" />} />
-                <Route path="/sports-betting-ai" element={<SeoLanding slug="sports-betting-ai" />} />
-                <Route path="/ai-sports-picks-today" element={<SeoLanding slug="ai-sports-picks-today" />} />
-                <Route path="/ai-sports-predictor" element={<SeoLanding slug="ai-sports-predictor" />} />
-                <Route path="/ai-betting-app" element={<SeoLanding slug="ai-betting-app" />} />
-                <Route path="/ai-betting-assistant" element={<SeoLanding slug="ai-betting-assistant" />} />
-                <Route path="/ai-parlay-generator" element={<SeoLanding slug="ai-parlay-generator" />} />
-                <Route path="/free-ai-parlay-generator" element={<SeoLanding slug="free-ai-parlay-generator" />} />
-                <Route path="/parlay-builder" element={<SeoLanding slug="parlay-builder" />} />
-                <Route path="/parlay-maker-ai" element={<SeoLanding slug="parlay-maker-ai" />} />
-                <Route path="/thinkbetai-reviews" element={<SeoLanding slug="thinkbetai-reviews" />} />
                 <Route path="/nfl-ai-predictions" element={<SeoLanding slug="nfl-ai-predictions" />} />
                 <Route path="/nba-ai-predictions" element={<SeoLanding slug="nba-ai-predictions" />} />
                 <Route path="/mlb-ai-predictions" element={<SeoLanding slug="mlb-ai-predictions" />} />
@@ -145,17 +131,17 @@ const App = () => (
                 <Route path="/ufc-ai-predictions" element={<SeoLanding slug="ufc-ai-predictions" />} />
                 <Route path="/soccer-ai-predictions" element={<SeoLanding slug="soccer-ai-predictions" />} />
                 <Route path="/ai-player-prop-predictions" element={<SeoLanding slug="ai-player-prop-predictions" />} />
-                <Route path="/ai-pick-of-the-day" element={<SeoLanding slug="ai-pick-of-the-day" />} />
                 <Route path="/ai-underdog-picks" element={<SeoLanding slug="ai-underdog-picks" />} />
                 <Route path="/ai-against-the-spread-picks" element={<SeoLanding slug="ai-against-the-spread-picks" />} />
-                <Route path="/bet-ai" element={<SeoLanding slug="bet-ai" />} />
-                <Route path="/betting-ai" element={<SeoLanding slug="betting-ai" />} />
-                <Route path="/ai-betting" element={<SeoLanding slug="ai-betting" />} />
-                <Route path="/ai-bets" element={<SeoLanding slug="ai-bets" />} />
-                <Route path="/ai-bet" element={<SeoLanding slug="ai-bet" />} />
-                <Route path="/ai-picks" element={<SeoLanding slug="ai-picks" />} />
-                <Route path="/free-ai-sports-betting-app" element={<SeoLanding slug="free-ai-sports-betting-app" />} />
-                <Route path="/ai-bets-prediction" element={<SeoLanding slug="ai-bets-prediction" />} />
+
+                {/* Exact-match aliases consolidate into the established GSC winners. */}
+                {Object.entries(SEO_ALIAS_REDIRECTS).map(([slug, destination]) => (
+                  <Route
+                    key={slug}
+                    path={`/${slug}`}
+                    element={<Navigate to={destination} replace />}
+                  />
+                ))}
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<LocalizedIndex locale="pl" />} />

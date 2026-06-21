@@ -58,7 +58,7 @@ const FreeAIPredictions = () => {
         "name": "How accurate are free AI predictions?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "ThinkBetAI's free predictions use the same AI models as premium picks, achieving 82%+ accuracy on qualified bets across NFL, NBA, and other major sports."
+          "text": "ThinkBetAI's free predictions use the same probability-based analysis as premium picks. Accuracy varies by sport, market and time period, and no outcome is guaranteed."
         }
       },
       {
@@ -74,7 +74,7 @@ const FreeAIPredictions = () => {
 
   const freeBenefits = [
     { icon: Gift, title: 'No Credit Card', description: 'Access free picks without payment info' },
-    { icon: Target, title: 'Same AI Accuracy', description: 'Free picks use our 82%+ accurate models' },
+    { icon: Target, title: 'Same Analysis Engine', description: 'Free picks use the same probability-based models' },
     { icon: Clock, title: 'Daily Updates', description: 'Fresh predictions every day' },
     { icon: BarChart3, title: 'Full Analysis', description: 'See why AI recommends each pick' },
   ];
@@ -82,8 +82,8 @@ const FreeAIPredictions = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
-        title="Free AI Sports Predictions - Get AI Betting Picks Today"
-        description="Get free AI sports predictions for NFL, NBA, MLB, NHL, and UFC. Try AI betting picks with 82%+ accuracy - no signup required."
+        title="Free AI Sports Betting Predictions Today"
+        description="See free AI sports betting predictions for today's games, including model probabilities, matchup context and risk notes. No outcome is guaranteed."
         keywords="free AI predictions, free AI sports picks, free AI betting, AI predictions free, free sports betting AI"
         url="/free-ai-predictions"
         type="article"
@@ -113,11 +113,11 @@ const FreeAIPredictions = () => {
               100% Free
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-              Free AI Sports <span className="text-gradient">Predictions</span>
+              Free AI Sports Betting <span className="text-gradient">Predictions</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
               <Link to="/login?tab=signup" className="text-primary hover:underline font-medium">Get AI picks today</Link> without paying a dime. Our machine learning models 
-              analyze thousands of data points to find winning picks.
+              organize matchup data and probability estimates to support your own research.
             </p>
             <Button size="lg" asChild>
               <Link to="/games">

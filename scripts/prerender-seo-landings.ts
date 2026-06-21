@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, join } from "path";
 import { SEO_LANDING_CONFIGS, type SeoLandingConfig } from "../src/lib/seoLandingConfigs";
+import { SEO_ALIAS_REDIRECTS } from "../src/seoAliases";
 
 const BASE = "https://thinkbetai.com";
 const DIST = resolve("dist");
@@ -54,31 +55,13 @@ const toolLinks = [
   { label: "Game Totals", href: "/game-totals" },
 ];
 
-const popularGameLinks = [
-  { label: "Today's NBA Best Bets", href: "/best/nba-best-bets-today" },
-  { label: "Today's NFL Best Bets", href: "/best/nfl-best-bets-today" },
-  { label: "Today's MLB Best Bets", href: "/best/mlb-best-bets-today" },
-  { label: "Today's UFC Best Bets", href: "/best/ufc-best-bets-today" },
-  { label: "Best Underdogs Today", href: "/best/best-underdogs-today" },
-  { label: "Sharp Money Picks", href: "/best/sharp-money-today" },
-];
-
-const teamLinks = [
-  { label: "Los Angeles Lakers", href: "/teams/nba-los-angeles-lakers" },
-  { label: "Boston Celtics", href: "/teams/nba-boston-celtics" },
-  { label: "Kansas City Chiefs", href: "/teams/nfl-kansas-city-chiefs" },
-  { label: "Dallas Cowboys", href: "/teams/nfl-dallas-cowboys" },
-  { label: "New York Yankees", href: "/teams/mlb-new-york-yankees" },
-  { label: "Manchester City", href: "/teams/soccer-manchester-city" },
-];
-
-const playerLinks = [
-  { label: "Jayson Tatum Props", href: "/players/nba-jayson-tatum" },
-  { label: "LeBron James Props", href: "/players/nba-lebron-james" },
-  { label: "Patrick Mahomes Props", href: "/players/nfl-patrick-mahomes" },
-  { label: "Aaron Judge Props", href: "/players/mlb-aaron-judge" },
-  { label: "Nikola Jokić Props", href: "/players/nba-nikola-jokic" },
-  { label: "Connor McDavid Props", href: "/players/nhl-connor-mcdavid" },
+const sportLandingLinks = [
+  { label: "AI NFL Picks", href: "/ai-nfl-picks" },
+  { label: "NBA AI Predictions", href: "/nba-ai-predictions" },
+  { label: "MLB AI Predictions", href: "/mlb-ai-predictions" },
+  { label: "NHL AI Predictions", href: "/nhl-ai-predictions" },
+  { label: "UFC AI Predictions", href: "/ufc-ai-predictions" },
+  { label: "Soccer AI Predictions", href: "/soccer-ai-predictions" },
 ];
 
 // ---------- render body ----------
@@ -124,7 +107,7 @@ function renderBody(config: SeoLandingConfig): string {
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(config.h1)}</span></nav>
     <header style="text-align:center;margin:2rem 0;">
-      <p><strong>ThinkBetAI · 80.3% win rate on flagged picks</strong></p>
+      <p><strong>ThinkBetAI · Probability-based sports analysis</strong></p>
       <h1>${escapeHtml(config.h1)}</h1>
       <p>${escapeHtml(config.tagline)}</p>
       <p>
@@ -143,12 +126,8 @@ function renderBody(config: SeoLandingConfig): string {
     <section>
       <h2>Tools You'll Want Next</h2>
       <ul>${linkList(toolLinks)}</ul>
-      <h2>Today's Top Game Predictions</h2>
-      <ul>${linkList(popularGameLinks)}</ul>
-      <h2>Popular Team Predictions</h2>
-      <ul>${linkList(teamLinks)}</ul>
-      <h2>Top Player Prop Pages</h2>
-      <ul>${linkList(playerLinks)}</ul>
+      <h2>Sport-Specific AI Predictions</h2>
+      <ul>${linkList(sportLandingLinks)}</ul>
     </section>
     <section>
       <h2>Frequently Asked Questions</h2>
@@ -275,6 +254,32 @@ function buildHtmlForConfig(config: SeoLandingConfig): string {
   return html;
 }
 
+function buildRedirectHtml(config: SeoLandingConfig, destination: string): string {
+  const target = `${BASE}${destination}`;
+  let html = baseHtml;
+  html = html.replace(
+    /<title>[^<]*<\/title>/,
+    `<title>Page Moved | ThinkBetAI</title>`,
+  );
+  html = html.replace(
+    /<meta\s+name="description"[^>]*>/,
+    `<meta name="description" content="This ThinkBetAI page has moved to its canonical destination." />`,
+  );
+  html = html.replace(
+    /<meta\s+name="robots"[^>]*>/,
+    `<meta name="robots" content="noindex, follow" />`,
+  );
+  html = html.replace(
+    "</head>",
+    `<link rel="canonical" href="${escapeAttr(target)}" />\n<meta http-equiv="refresh" content="0;url=${escapeAttr(destination)}" />\n<script>location.replace(${JSON.stringify(destination)});</script>\n</head>`,
+  );
+  html = html.replace(
+    /<div id="root"><\/div>/,
+    `<div id="root"><main><h1>Page moved</h1><p><a href="${escapeAttr(destination)}">Continue to ${escapeHtml(config.h1)}</a></p></main></div>`,
+  );
+  return html;
+}
+
 // ---------- write all snapshots ----------
 // We emit BOTH forms so the snapshot is reachable regardless of how
 // Lovable's edge resolves clean URLs:
@@ -286,7 +291,10 @@ function buildHtmlForConfig(config: SeoLandingConfig): string {
 let written = 0;
 for (const config of SEO_LANDING_CONFIGS) {
   try {
-    const html = buildHtmlForConfig(config);
+    const destination = SEO_ALIAS_REDIRECTS[config.slug];
+    const html = destination
+      ? buildRedirectHtml(config, destination)
+      : buildHtmlForConfig(config);
     // Flat .html (preferred for extensionless serving on Cloudflare-style edges)
     writeFileSync(join(DIST, `${config.slug}.html`), html);
     // Nested index.html (folder-index fallback)
