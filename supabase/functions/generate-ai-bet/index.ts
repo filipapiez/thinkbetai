@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const TARGET_WIN_RATE = 0.80; // 80% target win rate
+const TARGET_WIN_RATE = 0.833; // 80% target win rate
 
 interface GameData {
   sport: string;

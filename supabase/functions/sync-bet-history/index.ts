@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const TARGET_WIN_RATE = 0.80;
+const TARGET_WIN_RATE = 0.833;
 
 interface ESPNEvent {
   id: string;
