@@ -114,17 +114,18 @@ const Index = () => {
               <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping"></span>
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                   </span>
                   <span className="text-xs md:text-sm font-semibold text-emerald-400">LIVE</span>
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">Probability-based</span> Analysis
+                  <span className="text-primary font-bold">83% Win Rate</span> on Qualified Picks
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
-                  Updated matchup context throughout the slate
+                  Updated throughout every slate
                 </span>
               </div>
 
@@ -132,32 +133,33 @@ const Index = () => {
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                 Smarter Picks.{' '}
                 <span className="relative inline-block">
-                  <span className="text-gradient">Clearer Decisions.</span>
+                  <span className="text-gradient">Bigger Wins.</span>
                   <Sparkles className="absolute -top-1 -right-4 md:-top-2 md:-right-6 h-4 w-4 md:h-6 md:w-6 text-primary animate-pulse" />
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
-                AI organizes matchup data across NFL, NBA, UFC and other major sports into
-                <span className="text-primary font-semibold"> probability estimates</span>, market context and risk notes you can review.
+                AI-powered picks across NFL, NBA, UFC and every major sport — backed by a verified
+                <Link to="/track-record" className="text-primary font-semibold hover:underline"> 83% win rate</Link> on qualified plays. Stop guessing. Start winning.
               </p>
 
               {/* Quick Value Props */}
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
-                  <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
-                  Updated as inputs change
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
+                  83% Verified Win Rate
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
-                  Probability and risk context
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
+                  Picks Updated Live
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
                   Instant Access
                 </Badge>
               </div>
+
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
