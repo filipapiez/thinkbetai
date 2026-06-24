@@ -69,7 +69,7 @@ serve(async (req) => {
       faq: [
         { question: `Who is favored in ${away} vs ${home}?`, answer: `Our AI model analyzes the latest FIFA World Cup 2026 odds, lineups, and recent form. Current pick: ${pick} at ${conf}% confidence.` },
         { question: `What time does ${away} vs ${home} start?`, answer: `Kickoff is ${nice} at ${utcTime} UTC. Check local listings for broadcast times in your region.` },
-        { question: `How accurate are ThinkBetAI predictions?`, answer: `ThinkBetAI's models have produced an 80.3% win rate across qualified picks, updated daily with live odds.` },
+        { question: `How accurate are ThinkBetAI predictions?`, answer: `ThinkBetAI's models have produced an 83.3% win rate across qualified picks, updated daily with live odds.` },
       ],
       breadcrumbs: [
         { name: "Home", href: "/" },

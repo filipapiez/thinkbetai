@@ -154,7 +154,7 @@ function gameFaq(away: string, home: string, label: string) {
     },
     {
       question: `How accurate are ThinkBetAI predictions?`,
-      answer: `ThinkBetAI's models have produced an 80.3% win rate across qualified picks, updated daily with live odds and injury data.`,
+      answer: `ThinkBetAI's models have produced an 83.3% win rate across qualified picks, updated daily with live odds and injury data.`,
     },
   ];
 }
@@ -502,7 +502,7 @@ function buildLeaguePage(sportKey: string, upcoming: OddsEvent[]) {
       slug: `${meta.sport.toLowerCase()}-${slugify(g.away_team)}-vs-${slugify(g.home_team)}-${g.commence_time.slice(0, 10)}`,
     })),
     faq: [
-      { question: `How accurate are ThinkBetAI ${meta.label} picks?`, answer: `Our ${meta.label} model produces an 80.3% win rate across qualified picks.` },
+      { question: `How accurate are ThinkBetAI ${meta.label} picks?`, answer: `Our ${meta.label} model produces an 83.3% win rate across qualified picks.` },
       { question: `Where can I see today's ${meta.label} bets?`, answer: `Today's best ${meta.label} bets and odds are listed above and updated continuously.` },
     ],
     breadcrumbs: breadcrumbs([
