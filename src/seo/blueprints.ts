@@ -1,4 +1,4 @@
-import { platformStats } from "../lib/platformStats";
+import { liveMarketStats, platformStats } from "../lib/platformStats";
 
 export type SearchIntent = "informational" | "commercial" | "tool" | "sports" | "comparison";
 export type SchemaType = "WebPage" | "SoftwareApplication" | "FAQPage" | "BreadcrumbList";
@@ -244,7 +244,7 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
     { label: "Trusted by bettors", value: "15,000+" },
     { label: "Historical qualified win rate", value: platformStats.qualifiedWinRateLabel },
     { label: "Qualified picks tracked", value: "3,700+" },
-    { label: "Prediction refresh cadence", value: "Every few minutes" },
+    { label: liveMarketStats.label, value: liveMarketStats.rangeLabel },
   ],
   primaryCTA: { label: "View Today's Predictions", href: "#today-predictions" },
   secondaryCTA: { label: "Analyze My Bet", href: "#analyze-bet" },
@@ -441,7 +441,7 @@ const commonTrustMetrics: TrustMetric[] = [
   { label: "Trusted by bettors", value: "15,000+" },
   { label: "Historical qualified win rate", value: platformStats.qualifiedWinRateLabel },
   { label: "Qualified picks tracked", value: "3,700+" },
-  { label: "Prediction refresh cadence", value: "Every few minutes" },
+  { label: liveMarketStats.label, value: liveMarketStats.rangeLabel },
 ];
 
 const buildSeoSections = (definition: BlueprintDefinition): SeoSection[] => [

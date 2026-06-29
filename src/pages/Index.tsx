@@ -6,7 +6,8 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { platformStats } from '@/lib/platformStats';
+import { liveMarketStats, platformStats } from '@/lib/platformStats';
+import { useLiveRangeMetric } from '@/hooks/useLiveRangeMetric';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 // LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
@@ -27,13 +28,18 @@ import {
   Dumbbell,
   Sparkles,
   Clock,
-  Brain
+  Brain,
+  Users
 } from 'lucide-react';
 
 const Index = () => {
   const workflowRef = useRef<HTMLElement>(null);
   const [workflowReady, setWorkflowReady] = useState(false);
   const qualifiedWinRate = platformStats.qualifiedWinRateLabel;
+  const liveMarketCount = useLiveRangeMetric({
+    ...liveMarketStats,
+    storageKey: 'thinkbetai-live-market-count',
+  });
 
   useEffect(() => {
     const section = workflowRef.current;
@@ -127,7 +133,7 @@ const Index = () => {
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
-                  Updated throughout every slate
+                  {liveMarketCount.toLocaleString()} live markets monitored
                 </span>
               </div>
 
@@ -153,8 +159,16 @@ const Index = () => {
                   {qualifiedWinRate} Verified Win Rate
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
+                  <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
+                  {liveMarketCount.toLocaleString()} Markets Live
+                </Badge>
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
-                  Picks Updated Live
+                  2-7 Min Updates
+                </Badge>
+                <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
+                  <Users className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />
+                  15,000+ Bettors
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-amber-400" />

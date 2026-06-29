@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLiveRangeMetric } from "@/hooks/useLiveRangeMetric";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { platformStats } from "@/lib/platformStats";
+import { liveMarketStats, platformStats } from "@/lib/platformStats";
 import { cn } from "@/lib/utils";
 import type { SeoBlueprint, SeoSection } from "@/seo/blueprints";
 import { getRelatedLinks } from "@/seo/blueprints";
@@ -245,8 +246,14 @@ const MiniReport = () => (
   </div>
 );
 
-const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => (
-  <section className="border-b border-border/60 bg-card/20">
+const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => {
+  const liveMarketCount = useLiveRangeMetric({
+    ...liveMarketStats,
+    storageKey: "thinkbetai-seo-live-market-count",
+  });
+
+  return (
+    <section className="border-b border-border/60 bg-card/20">
     <div className="container max-w-6xl py-10 md:py-16">
       <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
         <div className="space-y-5">
@@ -277,17 +284,20 @@ const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => (
             )}
           </div>
           <div className="grid gap-3 pt-3 sm:grid-cols-2 xl:grid-cols-4">
-            {blueprint.heroTrust.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <div className="flex items-center gap-1 text-warning">
-                  {Array.from({ length: metric.value.includes("15,000") ? 5 : 1 }).map((_, index) => (
-                    <Star key={`${metric.label}-${index}`} className="h-3.5 w-3.5 fill-current" />
-                  ))}
+            {blueprint.heroTrust.map((metric) => {
+              const value = metric.label === liveMarketStats.label ? liveMarketCount.toLocaleString() : metric.value;
+              return (
+                <div key={metric.label} className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <div className="flex items-center gap-1 text-warning">
+                    {Array.from({ length: value.includes("15,000") ? 5 : 1 }).map((_, index) => (
+                      <Star key={`${metric.label}-${index}`} className="h-3.5 w-3.5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="mt-2 text-lg font-bold">{value}</p>
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
                 </div>
-                <p className="mt-2 text-lg font-bold">{metric.value}</p>
-                <p className="text-xs text-muted-foreground">{metric.label}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -310,8 +320,9 @@ const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => (
         </div>
       </div>
     </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const IntroExplainer = ({ section }: SectionRendererProps) => {
   if (section.type !== "intro_explainer") return null;

@@ -33,3 +33,13 @@ export const platformStats = {
     { sport: 'MMA', qualified: 3, wins: 3, winRate: 100.0 },
   ],
 };
+
+export const liveMarketStats = {
+  min: 850,
+  max: 1000,
+  stepMin: 2,
+  stepMax: 7,
+  intervalMs: 4500,
+  label: "Live markets monitored",
+  rangeLabel: "850-1,000",
+};
