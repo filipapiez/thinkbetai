@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { liveMarketStats, platformStats } from "@/lib/platformStats";
+import { liveUserStats, platformStats } from "@/lib/platformStats";
 import { cn } from "@/lib/utils";
 import type { SeoBlueprint, SeoSection } from "@/seo/blueprints";
 import { getRelatedLinks } from "@/seo/blueprints";
@@ -247,9 +247,9 @@ const MiniReport = () => (
 );
 
 const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => {
-  const liveMarketCount = useLiveRangeMetric({
-    ...liveMarketStats,
-    storageKey: "thinkbetai-seo-live-market-count",
+  const liveUserCount = useLiveRangeMetric({
+    ...liveUserStats,
+    storageKey: "thinkbetai-seo-live-user-count",
   });
 
   return (
@@ -285,7 +285,7 @@ const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => {
           </div>
           <div className="grid gap-3 pt-3 sm:grid-cols-2 xl:grid-cols-4">
             {blueprint.heroTrust.map((metric) => {
-              const value = metric.label === liveMarketStats.label ? liveMarketCount.toLocaleString() : metric.value;
+              const value = metric.label === liveUserStats.label ? liveUserCount.toLocaleString() : metric.value;
               return (
                 <div key={metric.label} className="rounded-lg border border-border/60 bg-background/70 p-3">
                   <div className="flex items-center gap-1 text-warning">

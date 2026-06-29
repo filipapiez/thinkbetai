@@ -34,12 +34,12 @@ export const platformStats = {
   ],
 };
 
-export const liveMarketStats = {
+export const liveUserStats = {
   min: 850,
   max: 1000,
   stepMin: 2,
   stepMax: 7,
   intervalMs: 4500,
-  label: "Live markets monitored",
+  label: "Estimated active bettors live",
   rangeLabel: "850-1,000",
 };
