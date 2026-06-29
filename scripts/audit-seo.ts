@@ -65,6 +65,32 @@ const folderHtmlPath = (dist: string, path: string) =>
   path === "/" ? join(dist, "index.html") : join(dist, path.slice(1), "index.html");
 
 const hasPrerenderShell = (html: string) => html.includes('id="seo-prerender"');
+const visibleTextWordCount = (html: string) =>
+  html
+    .replace(/<script[\s\S]*?<\/script>/g, " ")
+    .replace(/<style[\s\S]*?<\/style>/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[a-zA-Z0-9#]+;/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
+const internalLinkCount = (html: string) =>
+  new Set([...html.matchAll(/href="(\/(?!\/|#)[^"]*)"/g)].map((match) => match[1])).size;
+
+const enhancedCorePaths = new Set(
+  CORE_SEO_PAGES.filter((page) => page.path === "/" || !blueprintCanonicalPaths.has(page.path)).map(
+    (page) => page.path,
+  ),
+);
+const productCorePaths = new Set([
+  "/",
+  "/ai-sports-betting",
+  "/free-ai-predictions",
+  "/best-ai-sports-betting-tools",
+  "/ai-nfl-picks",
+  "/how-it-works",
+  "/pricing",
+]);
 
 const redirectRules = existsSync(resolve("public/_redirects"))
   ? readFileSync(resolve("public/_redirects"), "utf8")
@@ -190,6 +216,16 @@ if (existsSync(dist)) {
       issues.push(`prerender H1 mismatch: ${page.path}`);
     }
     if (!html.includes('rel="canonical"')) issues.push(`missing canonical: ${page.path}`);
+    if (enhancedCorePaths.has(page.path)) {
+      const words = visibleTextWordCount(html);
+      const links = internalLinkCount(html);
+      if (words < 700) issues.push(`enhanced core page too thin (${words} words): ${page.path}`);
+      if (links < 18) issues.push(`enhanced core page has too few internal links (${links}): ${page.path}`);
+      if (!html.includes(`"@type":"FAQPage"`)) issues.push(`enhanced core page missing FAQ schema: ${page.path}`);
+      if (productCorePaths.has(page.path) && !html.includes(`"@type":"SoftwareApplication"`)) {
+        issues.push(`product core page missing SoftwareApplication schema: ${page.path}`);
+      }
+    }
   }
 
   for (const blueprint of seoBlueprints) {
