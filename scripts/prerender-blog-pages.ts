@@ -1,7 +1,7 @@
 /**
- * Generates crawler-readable first responses for the blog index and every
- * article listed in the sitemap. JavaScript users still render into an empty
- * #root; the semantic article copy lives in <noscript> to avoid hydration CLS.
+ * Generates visible first-paint responses for the blog index and every
+ * article listed in the sitemap. React still owns #root after it loads, but
+ * the initial HTML now carries meaningful article copy for mobile LCP.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -116,7 +116,7 @@ function patchCommon(html: string, options: {
   );
   html = html.replace(
     /<div id="root"><\/div>/,
-    `<div id="root"></div>\n<noscript id="seo-content">${options.fallback}</noscript>`,
+    `<div id="root"><div id="seo-prerender">${options.fallback}</div></div>`,
   );
   return html;
 }

@@ -157,5 +157,24 @@
 /blog/mlb-ai-predictions-how-they-work /blog/mlb-ai-predictions-how-they-work.html 200
 /blog/how-ai-parlay-builders-work /blog/how-ai-parlay-builders-work.html 200
 
+# Private app routes get noindex shells instead of the homepage catch-all.
+/login /login.html 200
+/account /account.html 200
+/games /games.html 200
+/picks /picks.html 200
+/player-props /player-props.html 200
+/parlays /parlays.html 200
+/chat /chat.html 200
+/subscription /subscription.html 200
+/admin /admin.html 200
+/settings /settings.html 200
+/bet-history /bet-history.html 200
+/game-totals /game-totals.html 200
+/reset-password /reset-password.html 200
+/payment-success /payment-success.html 200
+/ref /ref.html 200
+/games/* /games.html 200
+/ref/* /ref.html 200
+
 # Client-rendered application fallback.
 /* /index.html 200

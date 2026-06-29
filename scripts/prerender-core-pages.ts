@@ -1,7 +1,8 @@
 /**
  * Writes crawler-readable HTML snapshots for the core URLs already earning
- * Search Console impressions. The browser still loads the normal React app;
- * these snapshots improve the first response for crawlers and link previews.
+ * Search Console impressions. The browser still loads the normal React app,
+ * but the first HTML response includes a lightweight visible shell so mobile
+ * users and crawlers do not wait on React before seeing meaningful content.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -77,8 +78,7 @@ function renderBody(page: CoreSeoPage) {
   const links = page.links
     .map((link) => `<li><a href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a></li>`)
     .join("");
-  return `<div id="root"></div>
-<noscript id="seo-content">
+  return `<div id="root"><div id="seo-prerender">
   <header style="max-width:64rem;margin:0 auto;padding:1.25rem 1rem;"><a href="/">ThinkBetAI</a></header>
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     ${page.path === "/" ? "" : `<nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(page.h1)}</span></nav>`}
@@ -88,7 +88,7 @@ function renderBody(page: CoreSeoPage) {
     <section><h2>Explore related analysis</h2><ul>${links}</ul></section>
     <aside><p><strong>Important:</strong> Sports betting involves risk. ThinkBetAI provides informational analysis, not guaranteed outcomes or financial advice. Only participate where legal and never wager more than you can afford to lose.</p></aside>
   </main>
-</noscript>`;
+</div></div>`;
 }
 
 function build(page: CoreSeoPage) {

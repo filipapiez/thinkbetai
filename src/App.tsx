@@ -14,13 +14,8 @@ const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute").then(m =
 const AuthBoundary = lazy(() => import("@/contexts/AuthBoundary"));
 const QueryBoundary = lazy(() => import("@/contexts/QueryBoundary"));
 
-// Eagerly load the landing page – it's always needed on first visit and
-// lazy-loading it delays FCP / Speed Index because the browser must fetch
-// an extra chunk before anything paints.
-import Index from "./pages/Index";
-
-
-// Lazy load all other pages
+// Lazy load route surfaces so SEO pages do not carry the homepage bundle.
+const Index = lazy(() => import("./pages/Index"));
 const Games = lazy(() => import("./pages/Games"));
 const GameDetail = lazy(() => import("./pages/GameDetail"));
 const Picks = lazy(() => import("./pages/Picks"));

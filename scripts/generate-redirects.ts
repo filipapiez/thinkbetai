@@ -5,6 +5,7 @@ import { blogPosts } from "../src/lib/blogData";
 import { CORE_SEO_PATHS } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS, isSeoAlias } from "../src/seoAliases";
 import { seoBlueprints } from "../src/seo/blueprints";
+import { APP_SHELL_REWRITES } from "../src/appShellPages";
 
 const blueprintPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
 
@@ -34,6 +35,9 @@ const lines = [
   ),
   "/blog /blog.html 200",
   ...blogPosts.map((post) => `/blog/${post.slug} /blog/${post.slug}.html 200`),
+  "",
+  "# Private app routes get noindex shells instead of the homepage catch-all.",
+  ...APP_SHELL_REWRITES.map(({ source, target }) => `${source} ${target} 200`),
   "",
   "# Client-rendered application fallback.",
   "/* /index.html 200",

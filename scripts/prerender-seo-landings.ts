@@ -1,4 +1,4 @@
-// Post-build crawler fallback for SEO landing pages.
+// Post-build visible prerender shell for SEO landing pages.
 //
 // Why: ThinkBetAI is a client-rendered SPA. Crawlers receive an empty
 // <div id="root"> on first byte and only see content after JS executes
@@ -7,8 +7,8 @@
 // each /<slug> in SEO_LANDING_CONFIGS so crawlers get the full content,
 // title, meta description, canonical, og:* and JSON-LD on first request.
 //
-// The semantic fallback lives in <noscript>, leaving #root empty so React
-// does not replace mismatched prerendered markup and trigger a large CLS.
+// The semantic shell lives inside #root so real mobile visitors get useful
+// above-the-fold content before the React route chunk finishes loading.
 //
 // Runs as `postbuild` so it reads the production dist/index.html
 // (which includes hashed asset URLs) and writes dist/<slug>/index.html.
@@ -105,11 +105,8 @@ function renderBody(config: SeoLandingConfig): string {
       )
       .join("");
 
-  // Semantic no-JS fallback. Crawlers can read the content in the initial
-  // response while JavaScript users render directly into an empty #root.
   return `
-<div id="root"></div>
-<noscript id="seo-content">
+<div id="root"><div id="seo-prerender">
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(config.h1)}</span></nav>
     <header style="text-align:center;margin:2rem 0;">
@@ -149,7 +146,7 @@ function renderBody(config: SeoLandingConfig): string {
       </p>
     </section>
   </main>
-</noscript>`;
+</div></div>`;
 }
 
 // ---------- render head ----------
@@ -308,8 +305,7 @@ function renderBlueprintBody(blueprint: SeoBlueprint): string {
     .join("");
 
   return `
-<div id="root"></div>
-<noscript id="seo-content">
+<div id="root"><div id="seo-prerender">
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     <nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(blueprint.h1)}</span></nav>
     <header style="margin:2rem 0;">
@@ -340,7 +336,7 @@ function renderBlueprintBody(blueprint: SeoBlueprint): string {
       <p><a href="${escapeAttr(primary.href)}">${escapeHtml(primary.label)}</a></p>
     </section>
   </main>
-</noscript>`;
+</div></div>`;
 }
 
 function buildHtmlForBlueprint(blueprint: SeoBlueprint): string {

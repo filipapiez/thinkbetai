@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { CORE_SEO_PAGES } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS } from "../src/seoAliases";
 import { getRelatedLinks, seoBlueprints, type SeoBlueprint } from "../src/seo/blueprints";
+import { APP_SHELL_PAGES, APP_SHELL_REWRITES } from "../src/appShellPages";
 
 const BASE = "https://thinkbetai.com";
 const issues: string[] = [];
@@ -63,9 +64,17 @@ const flatHtmlPath = (dist: string, path: string) =>
 const folderHtmlPath = (dist: string, path: string) =>
   path === "/" ? join(dist, "index.html") : join(dist, path.slice(1), "index.html");
 
+const hasPrerenderShell = (html: string) => html.includes('id="seo-prerender"');
+
 const redirectRules = existsSync(resolve("public/_redirects"))
   ? readFileSync(resolve("public/_redirects"), "utf8")
   : "";
+
+for (const { source, target } of APP_SHELL_REWRITES) {
+  if (!redirectRules.includes(`${source} ${target} 200`)) {
+    issues.push(`missing app-shell redirect rule: ${source}`);
+  }
+}
 
 const seenBlueprintSlugs = new Map<string, string>();
 const seenBlueprintCanonicals = new Map<string, string>();
@@ -161,7 +170,7 @@ if (existsSync(dist)) {
     }
     if (canonical !== sitemapUrl) issues.push(`canonical mismatch: ${path} -> ${canonical ?? "missing"}`);
     if (!/<h1(?:\s|>)/.test(html)) issues.push(`missing H1: ${path}`);
-    if (!html.includes('<noscript id="seo-content">')) issues.push(`missing stable SEO fallback: ${path}`);
+    if (!hasPrerenderShell(html)) issues.push(`missing visible prerender shell: ${path}`);
     if (/name="robots"\s+content="noindex/.test(html)) issues.push(`sitemap URL is noindex: ${path}`);
   }
 
@@ -174,8 +183,8 @@ if (existsSync(dist)) {
       continue;
     }
     const html = readFileSync(file, "utf8");
-    if (!html.includes('<noscript id="seo-content">')) {
-      issues.push(`missing no-JS SEO fallback: ${page.path}`);
+    if (!hasPrerenderShell(html)) {
+      issues.push(`missing visible prerender shell: ${page.path}`);
     }
     if (!html.includes(`<h1>${escapeHtml(page.h1)}</h1>`)) {
       issues.push(`prerender H1 mismatch: ${page.path}`);
@@ -205,6 +214,20 @@ if (existsSync(dist)) {
     }
     if (!html.includes('id="thinkbetai-page-schema"')) {
       issues.push(`blueprint missing page schema script: ${path}`);
+    }
+  }
+
+  for (const page of APP_SHELL_PAGES) {
+    const file = flatHtmlPath(dist, page.path);
+    if (!existsSync(file)) {
+      issues.push(`missing app-shell prerender: ${page.path}`);
+      continue;
+    }
+
+    const html = readFileSync(file, "utf8");
+    if (!hasPrerenderShell(html)) issues.push(`app-shell missing visible shell: ${page.path}`);
+    if (!/name="robots"\s+content="noindex/.test(html)) {
+      issues.push(`app-shell route must remain noindex: ${page.path}`);
     }
   }
 

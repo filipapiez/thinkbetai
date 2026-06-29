@@ -97,8 +97,7 @@ function renderBody(r: Row): string {
       : "";
   const sportBadge = r.sport ? `<p><strong>${escapeHtml(r.sport)}</strong></p>` : "";
   return `
-<div id="root"></div>
-<noscript id="seo-content">
+<div id="root"><div id="seo-prerender">
   <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
     ${sportBadge}
     <h1>${escapeHtml(r.h1 ?? r.title)}</h1>
@@ -106,7 +105,7 @@ function renderBody(r: Row): string {
     ${longForm}
     <p><a href="/ai-sports-picks">See AI sports picks</a> · <a href="/pricing">View pricing</a></p>
   </main>
-</noscript>`;
+</div></div>`;
 }
 
 function patchHtml(r: Row): string {
