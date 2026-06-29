@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
+import { platformStats } from '@/lib/platformStats';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 // LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
@@ -32,6 +33,7 @@ import {
 const Index = () => {
   const workflowRef = useRef<HTMLElement>(null);
   const [workflowReady, setWorkflowReady] = useState(false);
+  const qualifiedWinRate = platformStats.qualifiedWinRateLabel;
 
   useEffect(() => {
     const section = workflowRef.current;
@@ -121,7 +123,7 @@ const Index = () => {
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">83% Win Rate</span> on Qualified Picks
+                  <span className="text-primary font-bold">{qualifiedWinRate} Win Rate</span> on Qualified Picks
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
@@ -141,14 +143,14 @@ const Index = () => {
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
                 AI-powered picks across NFL, NBA, UFC and every major sport — backed by a verified
-                <Link to="/track-record" className="text-primary font-semibold hover:underline"> 83% win rate</Link> on qualified plays. Stop guessing. Start winning.
+                <Link to="/track-record" className="text-primary font-semibold hover:underline"> {qualifiedWinRate} win rate</Link> on qualified plays. Stop guessing. Start winning.
               </p>
 
               {/* Quick Value Props */}
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
-                  83% Verified Win Rate
+                  {qualifiedWinRate} Verified Win Rate
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />

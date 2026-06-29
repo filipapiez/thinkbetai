@@ -348,7 +348,7 @@ export const QualifiedBetAccuracyChart = ({ sport }: QualifiedBetAccuracyChartPr
         <div className="p-3 rounded-lg bg-muted/30 border border-border">
           <p className="text-xs text-muted-foreground">
             Based on <span className="font-medium text-foreground">{sportData.total} {sport.toLowerCase()} qualified bets</span> since Aug 2025. 
-            Only bets rated "GOOD" (qualified) are included in this record. Overall platform win rate: <span className="font-medium text-emerald-400">{platformStats.qualifiedWinRate}%</span>
+            Only bets rated "GOOD" (qualified) are included in this record. Overall platform win rate: <span className="font-medium text-emerald-400">{platformStats.qualifiedWinRateLabel}</span>
           </p>
         </div>
       </CardContent>

@@ -99,7 +99,7 @@ export const pl: LocaleTranslations = {
     finalCtaCTA: 'Zacznij Teraz',
     finalCtaCancel: 'Anuluj kiedy chcesz • Bezpieczny Dostęp',
     seoTitle: 'ThinkBetAI Polska - Platforma Zakładów AI | Prognozy Sportowe AI',
-    seoDescription: 'Typy sportowe oparte na AI z 82%+ skutecznością. ThinkBetAI analizuje dane sportowe by dostarczać trafne typy na NFL, NBA, MLB, NHL i więcej.',
+    seoDescription: 'Typy sportowe oparte na AI z 83.3% skutecznością. ThinkBetAI analizuje dane sportowe by dostarczać trafne typy na NFL, NBA, MLB, NHL i więcej.',
     seoKeywords: 'zakłady AI, typy sportowe AI, prognozy AI, zakłady bukmacherskie AI, sztuczna inteligencja zakłady',
   },
   pricing: {
@@ -243,14 +243,14 @@ export const pl: LocaleTranslations = {
   landing: {
     bestAIBettingApp: {
       seoTitle: 'Najlepsza Aplikacja Zakładów AI 2026 - Ranking Platform',
-      seoDescription: 'Porównaj najlepsze aplikacje zakładów AI w 2026. Znajdź platformy z trafnymi prognozami i 82%+ skutecznością.',
+      seoDescription: 'Porównaj najlepsze aplikacje zakładów AI w 2026. Znajdź platformy z trafnymi prognozami i 83.3% skutecznością.',
       seoKeywords: 'najlepsza aplikacja zakładów AI, ranking AI bukmacherski 2026, platforma zakładów AI',
       badge: 'Ranking 2026',
       headline: 'Najlepsza Aplikacja Zakładów AI',
       subtitle: 'Szukasz najlepszej aplikacji zakładów AI? Przeanalizowaliśmy topowe platformy by pomóc Ci znaleźć najtrafniejsze prognozy.',
       winnerBadge: '#1 Najlepsza Aplikacja AI',
       winnerTitle: 'ThinkBetAI',
-      winnerDesc: 'Wiodąca platforma zakładów AI z 82%+ skutecznością na kwalifikowanych typach, obejmująca NFL, NBA, MLB, NHL, UFC i 15+ dyscyplin.',
+      winnerDesc: 'Wiodąca platforma zakładów AI z 83.3% skutecznością na kwalifikowanych typach, obejmująca NFL, NBA, MLB, NHL, UFC i 15+ dyscyplin.',
       tryCTA: 'Wypróbuj Za Darmo',
       featuresTitle: 'Co Wyróżnia Najlepszą Aplikację AI?',
       contentTitle1: 'Jak Stworzyliśmy Ranking',
@@ -262,7 +262,7 @@ export const pl: LocaleTranslations = {
     },
     freeAIPredictions: {
       seoTitle: 'Darmowe Prognozy Sportowe AI - Typy AI Na Dziś',
-      seoDescription: 'Darmowe prognozy AI na NFL, NBA, MLB, NHL i UFC. Wypróbuj typy AI z 82%+ skutecznością bez rejestracji.',
+      seoDescription: 'Darmowe prognozy AI na NFL, NBA, MLB, NHL i UFC. Wypróbuj typy AI z 83.3% skutecznością bez rejestracji.',
       seoKeywords: 'darmowe prognozy AI, darmowe typy sportowe AI, darmowe zakłady AI, prognozy AI za darmo',
       badge: '100% Za Darmo',
       headline: 'Darmowe Prognozy Sportowe AI',
@@ -271,7 +271,7 @@ export const pl: LocaleTranslations = {
       benefitsTitle: 'Co Otrzymujesz Za Darmo',
       benefits: [
         { title: 'Bez Karty Kredytowej', description: 'Dostęp do typów bez danych płatniczych' },
-        { title: 'Ta Sama Dokładność AI', description: 'Darmowe typy z naszych modeli 82%+' },
+        { title: 'Ta Sama Dokładność AI', description: 'Darmowe typy z naszych modeli 83.3%' },
         { title: 'Codzienne Aktualizacje', description: 'Świeże prognozy każdego dnia' },
         { title: 'Pełna Analiza', description: 'Zobacz dlaczego AI rekomenduje każdy typ' },
       ],
@@ -282,7 +282,7 @@ export const pl: LocaleTranslations = {
     },
     aiNFLPicks: {
       seoTitle: 'Typy AI na NFL - Prognozy NFL i Analiza',
-      seoDescription: 'Typy AI na NFL na dzisiejsze mecze. Analiza ML spreadów, totali i propsów graczy z 82%+ skutecznością.',
+      seoDescription: 'Typy AI na NFL na dzisiejsze mecze. Analiza ML spreadów, totali i propsów graczy z 83.3% skutecznością.',
       seoKeywords: 'typy AI NFL, prognozy NFL AI, zakłady NFL AI, spready NFL AI, typy NFL na dziś',
       badge: '🏈 Sezon NFL',
       headline: 'Typy AI na NFL',

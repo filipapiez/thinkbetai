@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { platformStats } from '@/lib/platformStats';
 
 interface WinRateData {
   winRate: string;
@@ -91,12 +92,23 @@ export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
     staleTime: 5 * 60 * 1000,
   });
 
+  const fallbackData = !pickType
+    ? {
+        winRate: platformStats.qualifiedWinRate.toFixed(1),
+        totalBets: platformStats.totalQualified,
+        wins: platformStats.correctQualified,
+        losses: platformStats.totalQualified - platformStats.correctQualified,
+        currentStreak: platformStats.streakCurrent,
+      }
+    : undefined;
+  const resolvedData = data ?? fallbackData;
+
   return {
-    winRate: data?.winRate ?? '—',
-    totalBets: data?.totalBets ?? 0,
-    wins: data?.wins ?? 0,
-    losses: data?.losses ?? 0,
-    currentStreak: data?.currentStreak ?? 0,
+    winRate: resolvedData?.winRate ?? '—',
+    totalBets: resolvedData?.totalBets ?? 0,
+    wins: resolvedData?.wins ?? 0,
+    losses: resolvedData?.losses ?? 0,
+    currentStreak: resolvedData?.currentStreak ?? 0,
     isLoading: !ready || isLoading,
   };
 };

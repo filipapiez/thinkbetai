@@ -529,7 +529,7 @@ const RecentPerformance = ({ section }: SectionRendererProps) => {
   if (section.type !== "recent_performance") return null;
   const stats = [
     { label: "Qualified picks", value: platformStats.totalQualified.toLocaleString(), icon: ClipboardCheck },
-    { label: "Qualified win rate", value: `${platformStats.qualifiedWinRate}%`, icon: Gauge },
+    { label: "Qualified win rate", value: platformStats.qualifiedWinRateLabel, icon: Gauge },
     { label: "Average confidence", value: `${platformStats.averageConfidence}%`, icon: LineChart },
     { label: "Best streak", value: `${platformStats.streakBest}`, icon: Zap },
   ];

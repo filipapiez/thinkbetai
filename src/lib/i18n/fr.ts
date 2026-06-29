@@ -99,7 +99,7 @@ export const fr: LocaleTranslations = {
     finalCtaCTA: 'Commencer Maintenant',
     finalCtaCancel: 'Annulation libre • Accès Sécurisé',
     seoTitle: 'ThinkBetAI France - Plateforme de Paris IA | Prédictions Sportives',
-    seoDescription: 'Pronostics sportifs propulsés par l\'IA avec 82%+ de réussite. ThinkBetAI analyse les données sportives pour vos paris NFL, NBA, MLB, NHL et plus.',
+    seoDescription: 'Pronostics sportifs propulsés par l\'IA avec 83.3% de réussite. ThinkBetAI analyse les données sportives pour vos paris NFL, NBA, MLB, NHL et plus.',
     seoKeywords: 'paris IA, pronostics sportifs IA, prédictions IA, paris sportifs intelligence artificielle, plateforme paris IA',
   },
   pricing: {
@@ -243,14 +243,14 @@ export const fr: LocaleTranslations = {
   landing: {
     bestAIBettingApp: {
       seoTitle: 'Meilleure Appli de Paris IA 2026 - Comparatif Plateformes',
-      seoDescription: 'Comparez les meilleures applis de paris IA en 2026. Trouvez les plateformes avec 82%+ de précision.',
+      seoDescription: 'Comparez les meilleures applis de paris IA en 2026. Trouvez les plateformes avec 83.3% de précision.',
       seoKeywords: 'meilleure appli paris IA, appli paris IA 2026, top plateformes paris sportifs IA',
       badge: 'Classement 2026',
       headline: 'Meilleure Appli de Paris IA',
       subtitle: 'Vous cherchez la meilleure appli de paris IA ? Nous avons analysé les meilleures plateformes pour vous.',
       winnerBadge: '#1 Meilleure Appli IA',
       winnerTitle: 'ThinkBetAI',
-      winnerDesc: 'La plateforme leader avec 82%+ de précision couvrant NFL, NBA, MLB, NHL, UFC et 15+ sports.',
+      winnerDesc: 'La plateforme leader avec 83.3% de précision couvrant NFL, NBA, MLB, NHL, UFC et 15+ sports.',
       tryCTA: 'Essayer Gratuitement',
       featuresTitle: 'Qu\'est-ce qui fait la meilleure appli IA ?',
       contentTitle1: 'Notre Méthodologie de Classement',
@@ -262,7 +262,7 @@ export const fr: LocaleTranslations = {
     },
     freeAIPredictions: {
       seoTitle: 'Prédictions Sportives IA Gratuites - Pronostics IA Aujourd\'hui',
-      seoDescription: 'Prédictions IA gratuites pour NFL, NBA, MLB, NHL et UFC. Pronostics IA à 82%+ sans inscription.',
+      seoDescription: 'Prédictions IA gratuites pour NFL, NBA, MLB, NHL et UFC. Pronostics IA à 83.3% sans inscription.',
       seoKeywords: 'prédictions IA gratuites, pronostics sportifs IA gratuits, paris IA gratuits',
       badge: '100% Gratuit',
       headline: 'Prédictions Sportives IA Gratuites',
@@ -271,7 +271,7 @@ export const fr: LocaleTranslations = {
       benefitsTitle: 'Ce Qui Est Inclus Gratuitement',
       benefits: [
         { title: 'Sans Carte Bancaire', description: 'Accédez aux pronostics sans information de paiement' },
-        { title: 'Même Précision IA', description: 'Les pronostics gratuits utilisent nos modèles à 82%+' },
+        { title: 'Même Précision IA', description: 'Les pronostics gratuits utilisent nos modèles à 83.3%' },
         { title: 'Mises à Jour Quotidiennes', description: 'Nouvelles prédictions chaque jour' },
         { title: 'Analyse Complète', description: 'Comprenez pourquoi l\'IA recommande chaque pronostic' },
       ],
@@ -282,7 +282,7 @@ export const fr: LocaleTranslations = {
     },
     aiNFLPicks: {
       seoTitle: 'Pronostics IA NFL - Prédictions et Analyse NFL',
-      seoDescription: 'Pronostics IA NFL pour les matchs d\'aujourd\'hui. Analyse ML des spreads, totaux et props à 82%+.',
+      seoDescription: 'Pronostics IA NFL pour les matchs d\'aujourd\'hui. Analyse ML des spreads, totaux et props à 83.3%.',
       seoKeywords: 'pronostics IA NFL, prédictions NFL IA, paris NFL IA, spreads NFL IA',
       badge: '🏈 Saison NFL',
       headline: 'Pronostics IA NFL',

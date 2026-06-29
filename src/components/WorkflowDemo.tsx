@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import DataCollectionVisual from './workflow/DataCollectionVisual';
 import AIAnalysisVisual from './workflow/AIAnalysisVisual';
 import SmartPicksVisual from './workflow/SmartPicksVisual';
+import { platformStats } from '@/lib/platformStats';
 
 const steps = [
   {
@@ -38,7 +39,7 @@ const steps = [
     icon: Target,
     color: 'from-emerald-500 to-teal-500',
     details: [
-      { label: 'Win Rate', value: '81%' },
+      { label: 'Win Rate', value: platformStats.qualifiedWinRateLabel },
       { label: 'Avg Edge', value: '+4.2%' },
       { label: "Today's Picks", value: '23 live' },
     ],

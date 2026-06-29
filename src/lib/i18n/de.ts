@@ -99,7 +99,7 @@ export const de: LocaleTranslations = {
     finalCtaCTA: 'Jetzt Starten',
     finalCtaCancel: 'Jederzeit kündbar • Sicherer Zugang',
     seoTitle: 'ThinkBetAI Deutschland - KI Wett-Plattform | Sportwetten Vorhersagen',
-    seoDescription: 'KI-gestützte Sporttipps mit 82%+ Trefferquote. ThinkBetAI analysiert Sportdaten für Tipps auf NFL, NBA, Bundesliga und mehr.',
+    seoDescription: 'KI-gestützte Sporttipps mit 83.3% Trefferquote. ThinkBetAI analysiert Sportdaten für Tipps auf NFL, NBA, Bundesliga und mehr.',
     seoKeywords: 'KI Wetten, Sportwetten KI, KI Vorhersagen, Sportwetten Analyse, künstliche Intelligenz Wetten',
   },
   pricing: {
@@ -243,14 +243,14 @@ export const de: LocaleTranslations = {
   landing: {
     bestAIBettingApp: {
       seoTitle: 'Beste KI Wett-App 2026 - Plattform-Vergleich',
-      seoDescription: 'Vergleiche die besten KI Wett-Apps 2026. Finde Plattformen mit 82%+ Trefferquote.',
+      seoDescription: 'Vergleiche die besten KI Wett-Apps 2026. Finde Plattformen mit 83.3% Trefferquote.',
       seoKeywords: 'beste KI Wett-App, KI Wett-App 2026, top KI Sportwetten Plattform',
       badge: 'Ranking 2026',
       headline: 'Beste KI Wett-App',
       subtitle: 'Auf der Suche nach der besten KI Wett-App? Wir haben die Top-Plattformen analysiert.',
       winnerBadge: '#1 Beste KI Wett-App',
       winnerTitle: 'ThinkBetAI',
-      winnerDesc: 'Die führende KI-Plattform mit 82%+ Trefferquote für NFL, NBA, MLB, NHL, UFC und 15+ Sportarten.',
+      winnerDesc: 'Die führende KI-Plattform mit 83.3% Trefferquote für NFL, NBA, MLB, NHL, UFC und 15+ Sportarten.',
       tryCTA: 'Kostenlos Testen',
       featuresTitle: 'Was macht die beste KI Wett-App aus?',
       contentTitle1: 'Unsere Bewertungsmethodik',
@@ -262,7 +262,7 @@ export const de: LocaleTranslations = {
     },
     freeAIPredictions: {
       seoTitle: 'Kostenlose KI Sport-Vorhersagen - KI Tipps Heute',
-      seoDescription: 'Kostenlose KI-Vorhersagen für NFL, NBA, MLB, NHL und UFC. KI-Tipps mit 82%+ ohne Anmeldung.',
+      seoDescription: 'Kostenlose KI-Vorhersagen für NFL, NBA, MLB, NHL und UFC. KI-Tipps mit 83.3% ohne Anmeldung.',
       seoKeywords: 'kostenlose KI Vorhersagen, kostenlose KI Sport-Tipps, KI Wetten gratis',
       badge: '100% Kostenlos',
       headline: 'Kostenlose KI Sport-Vorhersagen',
@@ -271,7 +271,7 @@ export const de: LocaleTranslations = {
       benefitsTitle: 'Was du kostenlos bekommst',
       benefits: [
         { title: 'Keine Kreditkarte', description: 'Zugang zu Tipps ohne Zahlungsdaten' },
-        { title: 'Gleiche KI-Genauigkeit', description: 'Kostenlose Tipps nutzen unsere 82%+ Modelle' },
+        { title: 'Gleiche KI-Genauigkeit', description: 'Kostenlose Tipps nutzen unsere 83.3% Modelle' },
         { title: 'Tägliche Updates', description: 'Frische Vorhersagen jeden Tag' },
         { title: 'Volle Analyse', description: 'Erfahre warum die KI jeden Tipp empfiehlt' },
       ],
@@ -282,7 +282,7 @@ export const de: LocaleTranslations = {
     },
     aiNFLPicks: {
       seoTitle: 'KI NFL-Tipps - NFL Vorhersagen und Analyse',
-      seoDescription: 'KI NFL-Tipps für heutige Spiele. ML-Analyse von Spreads, Totals und Props mit 82%+.',
+      seoDescription: 'KI NFL-Tipps für heutige Spiele. ML-Analyse von Spreads, Totals und Props mit 83.3%.',
       seoKeywords: 'KI NFL Tipps, NFL KI Vorhersagen, NFL Wetten KI, NFL Spreads KI',
       badge: '🏈 NFL Saison',
       headline: 'KI NFL-Tipps',

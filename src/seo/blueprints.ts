@@ -1,3 +1,5 @@
+import { platformStats } from "../lib/platformStats";
+
 export type SearchIntent = "informational" | "commercial" | "tool" | "sports" | "comparison";
 export type SchemaType = "WebPage" | "SoftwareApplication" | "FAQPage" | "BreadcrumbList";
 export type ConversionGoal = "view_predictions" | "analyze_bet" | "signup" | "pricing";
@@ -240,8 +242,8 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
     "Find AI-powered betting predictions built from odds movement, player injuries, recent form, lineup news, historical performance and market trends. Review today's games in seconds with ThinkBetAI.",
   heroTrust: [
     { label: "Trusted by bettors", value: "15,000+" },
-    { label: "Historical qualified win rate", value: "89.5%" },
-    { label: "Qualified picks tracked", value: "1,800+" },
+    { label: "Historical qualified win rate", value: platformStats.qualifiedWinRateLabel },
+    { label: "Qualified picks tracked", value: "3,700+" },
     { label: "Prediction refresh cadence", value: "Every few minutes" },
   ],
   primaryCTA: { label: "View Today's Predictions", href: "#today-predictions" },
@@ -437,8 +439,8 @@ interface BlueprintDefinition {
 
 const commonTrustMetrics: TrustMetric[] = [
   { label: "Trusted by bettors", value: "15,000+" },
-  { label: "Historical qualified win rate", value: "89.5%" },
-  { label: "Qualified picks tracked", value: "1,800+" },
+  { label: "Historical qualified win rate", value: platformStats.qualifiedWinRateLabel },
+  { label: "Qualified picks tracked", value: "3,700+" },
   { label: "Prediction refresh cadence", value: "Every few minutes" },
 ];
 
