@@ -194,18 +194,6 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 mt-10 text-xs sm:text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <span><span className="font-semibold text-foreground">Transparent</span> methodology</span>
-                </div>
-                <div className="hidden sm:block w-px h-5 bg-border" />
-                <div className="flex items-center gap-1">
-                  <Shield className="h-4 w-4 text-primary" />
-                  <span className="ml-1"><span className="font-semibold text-foreground">Results</span> are not guaranteed</span>
-                </div>
-              </div>
             </div>
           </div>
         </section>
