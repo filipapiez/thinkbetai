@@ -14,9 +14,15 @@
 // (which includes hashed asset URLs) and writes dist/<slug>/index.html.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { resolve, join } from "path";
+import { dirname, resolve, join } from "path";
 import { SEO_LANDING_CONFIGS, type SeoLandingConfig } from "../src/lib/seoLandingConfigs";
 import { SEO_ALIAS_REDIRECTS } from "../src/seoAliases";
+import {
+  getRelatedLinks,
+  seoBlueprints,
+  type SeoBlueprint,
+  type SeoSection,
+} from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
 const DIST = resolve("dist");
@@ -63,6 +69,8 @@ const sportLandingLinks = [
   { label: "UFC AI Predictions", href: "/ufc-ai-predictions" },
   { label: "Soccer AI Predictions", href: "/soccer-ai-predictions" },
 ];
+
+const blueprintSlugs = new Set(seoBlueprints.map((blueprint) => blueprint.slug));
 
 // ---------- render body ----------
 function renderBody(config: SeoLandingConfig): string {
@@ -262,6 +270,174 @@ function buildHtmlForConfig(config: SeoLandingConfig): string {
   return html;
 }
 
+function renderBlueprintSection(section: SeoSection): string {
+  if (section.type === "faq" || section.type === "final_cta") return "";
+
+  if (section.type === "intro_explainer") {
+    const body = section.body.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n");
+    const bullets = section.bullets?.length
+      ? `<ul>${section.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join("")}</ul>`
+      : "";
+    return `<article><p><strong>${escapeHtml(section.eyebrow ?? "Overview")}</strong></p><h2>${escapeHtml(section.heading)}</h2>${body}${bullets}</article>`;
+  }
+
+  if (section.type === "predictions_widget") {
+    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><ul><li>Lakers moneyline — 83% confidence, +4.8% edge</li><li>Yankees -1.5 — 79% confidence, +3.9% edge</li><li>Chiefs -3 — 81% confidence, +4.3% edge</li></ul></article>`;
+  }
+
+  if (section.type === "bet_analyzer_preview") {
+    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><p>Example: ${escapeHtml(section.placeholder)}</p></article>`;
+  }
+
+  return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p></article>`;
+}
+
+function renderBlueprintBody(blueprint: SeoBlueprint): string {
+  const primary = blueprint.primaryCTA;
+  const secondary = blueprint.secondaryCTA;
+  const finalSection = blueprint.sections.find(
+    (section): section is Extract<SeoSection, { type: "final_cta" }> => section.type === "final_cta",
+  );
+  const introHtml = blueprint.intro.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n");
+  const sectionsHtml = blueprint.sections.map(renderBlueprintSection).join("\n");
+  const faqsHtml = blueprint.faq
+    .map((f) => `<div><h3>${escapeHtml(f.question)}</h3><p>${escapeHtml(f.answer)}</p></div>`)
+    .join("\n");
+  const relatedLinks = getRelatedLinks(blueprint, 12)
+    .map((link) => `<li><a href="${escapeAttr(link.href)}">${escapeHtml(link.label)}</a></li>`)
+    .join("");
+
+  return `
+<div id="root"></div>
+<noscript id="seo-content">
+  <main style="max-width:64rem;margin:0 auto;padding:2rem 1rem;">
+    <nav aria-label="Breadcrumb"><a href="/">Home</a> &rsaquo; <span>${escapeHtml(blueprint.h1)}</span></nav>
+    <header style="margin:2rem 0;">
+      <p><strong>${escapeHtml(blueprint.primaryKeyword)}</strong></p>
+      <h1>${escapeHtml(blueprint.h1)}</h1>
+      <p>${escapeHtml(blueprint.heroSubheadline)}</p>
+      <ul>
+        ${blueprint.heroTrust.map((metric) => `<li><strong>${escapeHtml(metric.value)}</strong> ${escapeHtml(metric.label)}</li>`).join("")}
+      </ul>
+      <p>
+        <a href="${escapeAttr(primary.href)}">${escapeHtml(primary.label)}</a>
+        ${secondary ? `&nbsp;·&nbsp;<a href="${escapeAttr(secondary.href)}">${escapeHtml(secondary.label)}</a>` : ""}
+      </p>
+    </header>
+    <section>${introHtml}</section>
+    <section>${sectionsHtml}</section>
+    <section>
+      <h2>Related AI Betting Tools and Pages</h2>
+      <ul>${relatedLinks}</ul>
+    </section>
+    <section>
+      <h2>Frequently Asked Questions</h2>
+      ${faqsHtml}
+    </section>
+    <section style="text-align:center;margin-top:3rem;">
+      <h2>${escapeHtml(finalSection?.heading ?? "Ready to use ThinkBetAI?")}</h2>
+      <p>${escapeHtml(finalSection?.subheading ?? blueprint.description)}</p>
+      <p><a href="${escapeAttr(primary.href)}">${escapeHtml(primary.label)}</a></p>
+    </section>
+  </main>
+</noscript>`;
+}
+
+function buildHtmlForBlueprint(blueprint: SeoBlueprint): string {
+  const url = blueprint.canonical;
+  const fullUrl = `${BASE}${url}`;
+  const title = blueprint.title.includes("ThinkBetAI")
+    ? blueprint.title
+    : `${blueprint.title} | ThinkBetAI`;
+  const jsonLd = `
+<script id="thinkbetai-page-schema" type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        name: blueprint.h1,
+        headline: blueprint.heroHeadline,
+        description: blueprint.description,
+        url: fullUrl,
+        mainEntityOfPage: fullUrl,
+        keywords: [blueprint.primaryKeyword, ...blueprint.secondaryKeywords].join(", "),
+        isPartOf: { "@id": `${BASE}/#website` },
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "ThinkBetAI",
+        applicationCategory: "SportsApplication",
+        operatingSystem: "Web",
+        url: BASE,
+        description:
+          "AI sports betting analysis platform for predictions, picks, bet analysis and parlay research.",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+        },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: blueprint.faq.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${BASE}/` },
+          { "@type": "ListItem", position: 2, name: blueprint.h1, item: fullUrl },
+        ],
+      },
+    ],
+  })}</script>`;
+
+  let html = baseHtml;
+  html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`);
+  html = html.replace(
+    /<meta\s+name="title"[^>]*>/,
+    `<meta name="title" content="${escapeAttr(title)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+name="description"[^>]*>/,
+    `<meta name="description" content="${escapeAttr(blueprint.description)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+property="og:url"[^>]*>/,
+    `<meta property="og:url" content="${escapeAttr(fullUrl)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+property="og:title"[^>]*>/,
+    `<meta property="og:title" content="${escapeAttr(title)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+property="og:description"[^>]*>/,
+    `<meta property="og:description" content="${escapeAttr(blueprint.description)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+name="twitter:url"[^>]*>/,
+    `<meta name="twitter:url" content="${escapeAttr(fullUrl)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+name="twitter:title"[^>]*>/,
+    `<meta name="twitter:title" content="${escapeAttr(title)}" />`,
+  );
+  html = html.replace(
+    /<meta\s+name="twitter:description"[^>]*>/,
+    `<meta name="twitter:description" content="${escapeAttr(blueprint.description)}" />`,
+  );
+  html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
+  html = html.replace(
+    "</head>",
+    `<link rel="canonical" href="${escapeAttr(fullUrl)}" />${jsonLd}\n</head>`,
+  );
+  html = html.replace(/<div id="root"><\/div>/, renderBlueprintBody(blueprint));
+  return html;
+}
+
 function buildRedirectHtml(config: SeoLandingConfig, destination: string): string {
   const target = `${BASE}${destination}`;
   let html = baseHtml;
@@ -298,13 +474,16 @@ function buildRedirectHtml(config: SeoLandingConfig, destination: string): strin
 // matchable static file before the catch-all runs.
 let written = 0;
 for (const config of SEO_LANDING_CONFIGS) {
+  if (blueprintSlugs.has(config.slug)) continue;
   try {
     const destination = SEO_ALIAS_REDIRECTS[config.slug];
     const html = destination
       ? buildRedirectHtml(config, destination)
       : buildHtmlForConfig(config);
     // Flat .html (preferred for extensionless serving on Cloudflare-style edges)
-    writeFileSync(join(DIST, `${config.slug}.html`), html);
+    const flatFile = join(DIST, `${config.slug}.html`);
+    mkdirSync(dirname(flatFile), { recursive: true });
+    writeFileSync(flatFile, html);
     // Nested index.html (folder-index fallback)
     const outDir = join(DIST, config.slug);
     mkdirSync(outDir, { recursive: true });
@@ -315,4 +494,20 @@ for (const config of SEO_LANDING_CONFIGS) {
   }
 }
 
-console.log(`[prerender] wrote ${written}/${SEO_LANDING_CONFIGS.length} SEO landing snapshots into dist/ (both .html and /index.html forms)`);
+let blueprintWritten = 0;
+for (const blueprint of seoBlueprints) {
+  try {
+    const html = buildHtmlForBlueprint(blueprint);
+    const flatFile = join(DIST, `${blueprint.slug}.html`);
+    mkdirSync(dirname(flatFile), { recursive: true });
+    writeFileSync(flatFile, html);
+    const outDir = join(DIST, blueprint.slug);
+    mkdirSync(outDir, { recursive: true });
+    writeFileSync(join(outDir, "index.html"), html);
+    blueprintWritten++;
+  } catch (err) {
+    console.warn(`[prerender] failed for /${blueprint.slug}:`, (err as Error).message);
+  }
+}
+
+console.log(`[prerender] wrote ${written} legacy SEO landing snapshots and ${blueprintWritten}/${seoBlueprints.length} blueprint snapshots into dist/ (both .html and /index.html forms)`);

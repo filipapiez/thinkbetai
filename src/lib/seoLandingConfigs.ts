@@ -100,11 +100,11 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
   },
   {
     slug: "ai-betting-predictions",
-    title: "AI Betting Predictions - Spreads, Totals & Moneyline Picks",
-    description: "Daily AI betting predictions for spreads, totals, moneylines and player props. See win probability, recommended side, and confidence score for every NFL, NBA, MLB, NHL & UFC matchup.",
+    title: "AI Betting Predictions & Free Picks",
+    description: "Get free AI betting predictions powered by live odds, injuries, player trends, line movement and machine learning for today's games.",
     keywords: "AI betting predictions, AI betting picks, AI betting tips, betting predictions AI, machine learning betting predictions",
-    h1: "AI Betting Predictions With Clear Probability Analysis",
-    tagline: "Win probability, recommended side, and confidence — for every market",
+    h1: "AI Betting Predictions Powered by Live Sports Data",
+    tagline: "Free prediction previews with confidence, edge, context and market notes",
     intro: [
       "ThinkBetAI delivers AI betting predictions for every U.S. sportsbook market: moneyline, spread, total (over/under), team totals, alternate lines, first-half, and a full board of player props. We don't just tell you which team to pick — we show the true win probability the model assigns versus the implied probability of the line you're seeing, so you can spot edges and skip coin flips.",
       "Every betting prediction follows the same documented workflow: compare current market data, injuries, lineups, and matchup inputs with a model-based probability estimate. When the estimated probability differs from the market price, the page explains the possible value and the uncertainty behind it.",

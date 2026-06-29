@@ -54,7 +54,7 @@ export const Header = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden lg:flex items-center gap-6">
           <NavLink to="/games" className={navLinkClass}>Games</NavLink>
           <NavLink to="/player-props" className={navLinkClass}>
             <Layers className="h-4 w-4" /> Props
@@ -119,7 +119,7 @@ export const Header = () => {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <ThemeToggle />
           <Button variant="ghost" size="icon" asChild>
             <Link to="/games">
@@ -138,7 +138,7 @@ export const Header = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="lg:hidden"
           aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
           aria-expanded={mobileMenuOpen}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -149,7 +149,7 @@ export const Header = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl animate-fade-in">
+        <div className="lg:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl animate-fade-in">
           <nav className="container py-4 flex flex-col gap-3">
             {[
               { to: '/games', label: 'Search Games', icon: Search },

@@ -6,10 +6,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { CORE_SEO_PAGES, type CoreSeoPage } from "../src/seoCorePages";
+import { seoBlueprints } from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
 const DIST = resolve("dist");
 const indexPath = join(DIST, "index.html");
+const blueprintPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
 
 if (!existsSync(indexPath)) {
   console.warn("[prerender-core] dist/index.html missing — skipping.");
@@ -140,10 +142,19 @@ function build(page: CoreSeoPage) {
   return html;
 }
 
+let written = 0;
+let skippedBlueprintOwned = 0;
+
 for (const page of CORE_SEO_PAGES) {
+  if (page.path !== "/" && blueprintPaths.has(page.path)) {
+    skippedBlueprintOwned++;
+    continue;
+  }
+
   const html = build(page);
   if (page.path === "/") {
     writeFileSync(indexPath, html);
+    written++;
     continue;
   }
   const slug = page.path.slice(1);
@@ -151,6 +162,9 @@ for (const page of CORE_SEO_PAGES) {
   const nested = join(DIST, slug, "index.html");
   mkdirSync(dirname(nested), { recursive: true });
   writeFileSync(nested, html);
+  written++;
 }
 
-console.log(`✓ prerendered ${CORE_SEO_PAGES.length} core SEO pages`);
+console.log(
+  `✓ prerendered ${written} core SEO pages${skippedBlueprintOwned ? ` (${skippedBlueprintOwned} blueprint-owned core paths skipped)` : ""}`,
+);

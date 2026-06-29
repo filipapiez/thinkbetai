@@ -11,7 +11,6 @@ export const SEO_ALIAS_REDIRECTS: Record<string, string> = {
   "ai-betting": "/ai-sports-betting",
   "bet-ai": "/ai-sports-betting",
   "betting-ai": "/ai-sports-betting",
-  "sports-betting-ai": "/ai-sports-betting",
 
   "ai-picks": "/ai-sports-picks",
   "ai-pick-of-the-day": "/ai-sports-picks",
@@ -19,19 +18,10 @@ export const SEO_ALIAS_REDIRECTS: Record<string, string> = {
   "best-ai-betting-picks": "/ai-sports-picks",
 
   "ai-bets-prediction": "/free-ai-predictions",
-  "ai-betting-predictions": "/free-ai-predictions",
-  "ai-sports-predictions": "/free-ai-predictions",
   "ai-sports-predictor": "/free-ai-predictions",
-  "free-ai-sports-predictions": "/free-ai-predictions",
-  "free-ai-sports-predictions-today": "/free-ai-predictions",
 
-  "ai-parlay-generator": "/ai-parlay-builder",
-  "free-ai-parlay-generator": "/ai-parlay-builder",
-  "parlay-builder": "/ai-parlay-builder",
   "parlay-maker-ai": "/ai-parlay-builder",
 
-  "ai-betting-assistant": "/ai-bet-analyzer",
-  "ai-betting-app": "/best-ai-betting-app",
   "free-ai-sports-betting-app": "/best-ai-betting-app",
   "thinkbetai-reviews": "/track-record",
 };

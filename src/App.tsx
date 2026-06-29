@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
+import { seoBlueprints } from "@/seo/blueprints";
 import { NoIndexBoundary } from "@/components/NoIndexBoundary";
 
 // Toast renderers are non-critical and load only after the first paint window.
@@ -35,13 +36,9 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const WhatIsAISportsBetting = lazy(() => import("./pages/WhatIsAISportsBetting"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks"));
-const AISportsPicks = lazy(() => import("./pages/AISportsPicks"));
-const BestAIBettingApp = lazy(() => import("./pages/BestAIBettingApp"));
 const FreeAIPredictions = lazy(() => import("./pages/FreeAIPredictions"));
 const AINFLPicks = lazy(() => import("./pages/AINFLPicks"));
-const AIParlayBuilder = lazy(() => import("./pages/AIParlayBuilder"));
 const AISportsBetting = lazy(() => import("./pages/AISportsBetting"));
-const AIBetAnalyzer = lazy(() => import("./pages/AIBetAnalyzer"));
 const BestAISportsBettingTools = lazy(() => import("./pages/BestAISportsBettingTools"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Login = lazy(() => import("./pages/Login"));
@@ -59,6 +56,7 @@ const GameTotals = lazy(() => import("./pages/GameTotals"));
 const SeoPageView = lazy(() => import("./pages/SeoPageView"));
 const SeoLanding = lazy(() => import("./pages/SeoLanding"));
 const SeoIndex = lazy(() => import("./pages/SeoIndex"));
+const SeoBlueprintPage = lazy(() => import("./pages/SeoBlueprintPage"));
 
 // Localized pages
 const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
@@ -117,13 +115,16 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/ai-sports-picks" element={<AISportsPicks />} />
-                <Route path="/best-ai-betting-app" element={<BestAIBettingApp />} />
+                {seoBlueprints.map((blueprint) => (
+                  <Route
+                    key={blueprint.slug}
+                    path={`/${blueprint.slug}`}
+                    element={<SeoBlueprintPage slug={blueprint.slug} />}
+                  />
+                ))}
                 <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
                 <Route path="/ai-nfl-picks" element={<AINFLPicks />} />
-                <Route path="/ai-parlay-builder" element={<AIParlayBuilder />} />
                 <Route path="/ai-sports-betting" element={<AISportsBetting />} />
-                <Route path="/ai-bet-analyzer" element={<AIBetAnalyzer />} />
                 <Route path="/best-ai-sports-betting-tools" element={<BestAISportsBettingTools />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/login" element={<NoIndexBoundary><AuthBoundary><Login /></AuthBoundary></NoIndexBoundary>} />

@@ -13,6 +13,7 @@ import { writeFileSync, existsSync, unlinkSync } from "fs";
 import { resolve } from "path";
 import { blogPosts } from "../src/lib/blogData";
 import { isSeoAlias } from "../src/seoAliases";
+import { seoBlueprints } from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
 const today = new Date().toISOString().slice(0, 10);
@@ -64,33 +65,10 @@ const sportLandings: Entry[] = [
   .filter((path) => !isSeoAlias(path.slice(1)))
   .map((path) => ({ path, changefreq: "weekly" as const, priority: "0.85" }));
 
-const keywordLandings: Entry[] = [
-  "/ai-sports-predictions",
-  "/ai-betting-predictions",
-  "/best-ai-betting-picks",
-  "/free-ai-sports-predictions",
-  "/free-ai-sports-predictions-today",
-  "/sports-betting-ai",
-  "/ai-sports-picks-today",
-  "/ai-sports-predictor",
-  "/ai-betting-app",
-  "/ai-betting-assistant",
-  "/ai-parlay-generator",
-  "/free-ai-parlay-generator",
-  "/parlay-builder",
-  "/parlay-maker-ai",
-  "/thinkbetai-reviews",
-  "/bet-ai",
-  "/betting-ai",
-  "/ai-betting",
-  "/ai-bets",
-  "/ai-bet",
-  "/ai-picks",
-  "/free-ai-sports-betting-app",
-  "/ai-bets-prediction",
-]
+const keywordLandings: Entry[] = seoBlueprints
+  .map((blueprint) => blueprint.canonical)
   .filter((path) => !isSeoAlias(path.slice(1)))
-  .map((path) => ({ path, changefreq: "weekly" as const, priority: "0.75" }));
+  .map((path) => ({ path, changefreq: "weekly" as const, priority: "0.9" }));
 
 // 4) Blog
 const blogIndex: Entry = { path: "/blog", changefreq: "weekly", priority: "0.8" };
@@ -101,7 +79,7 @@ const blogEntries: Entry[] = blogPosts.map((p) => ({
   priority: "0.7",
 }));
 
-const all: Entry[] = [
+const rawEntries: Entry[] = [
   homepage,
   ...marketing,
   ...sportLandings,
@@ -109,6 +87,10 @@ const all: Entry[] = [
   blogIndex,
   ...blogEntries,
 ];
+
+const all: Entry[] = rawEntries.filter(
+  (entry, index, entries) => entries.findIndex((candidate) => candidate.path === entry.path) === index,
+);
 
 function renderUrl(e: Entry): string {
   const parts = [
