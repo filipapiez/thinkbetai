@@ -7,20 +7,6 @@
 /props/* /player-props 301
 
 # Consolidated aliases first so they resolve as permanent redirects.
-/ai-bet /ai-sports-betting 301
-/ai-bets /ai-sports-betting 301
-/ai-betting /ai-sports-betting 301
-/bet-ai /ai-sports-betting 301
-/betting-ai /ai-sports-betting 301
-/ai-picks /ai-sports-picks 301
-/ai-pick-of-the-day /ai-sports-picks 301
-/ai-sports-picks-today /ai-sports-picks 301
-/best-ai-betting-picks /ai-sports-picks 301
-/ai-bets-prediction /free-ai-predictions 301
-/ai-sports-predictor /free-ai-predictions 301
-/parlay-maker-ai /ai-parlay-builder 301
-/free-ai-sports-betting-app /best-ai-betting-app 301
-/thinkbetai-reviews /track-record 301
 
 # Serve crawler-readable prerendered HTML while React takes over in-browser.
 /ai-sports-betting /ai-sports-betting.html 200
@@ -36,6 +22,12 @@
 /editorial-policy /editorial-policy.html 200
 /responsible-gambling /responsible-gambling.html 200
 /ai-betting-predictions /ai-betting-predictions.html 200
+/nfl-ai-predictions /nfl-ai-predictions.html 200
+/nba-ai-predictions /nba-ai-predictions.html 200
+/mlb-ai-predictions /mlb-ai-predictions.html 200
+/nhl-ai-predictions /nhl-ai-predictions.html 200
+/ufc-ai-predictions /ufc-ai-predictions.html 200
+/soccer-ai-predictions /soccer-ai-predictions.html 200
 /wnba-ai-predictions /wnba-ai-predictions.html 200
 /ncaaf-ai-predictions /ncaaf-ai-predictions.html 200
 /ncaab-ai-predictions /ncaab-ai-predictions.html 200
@@ -56,6 +48,23 @@
 /ai-same-game-parlays /ai-same-game-parlays.html 200
 /ai-alt-spread-picks /ai-alt-spread-picks.html 200
 /ai-alt-total-picks /ai-alt-total-picks.html 200
+/ai-betting /ai-betting.html 200
+/ai-bet /ai-bet.html 200
+/ai-bets /ai-bets.html 200
+/bet-ai /bet-ai.html 200
+/betting-ai /betting-ai.html 200
+/ai-picks /ai-picks.html 200
+/ai-pick-of-the-day /ai-pick-of-the-day.html 200
+/ai-sports-picks-today /ai-sports-picks-today.html 200
+/best-ai-betting-picks /best-ai-betting-picks.html 200
+/ai-bets-prediction /ai-bets-prediction.html 200
+/ai-sports-predictor /ai-sports-predictor.html 200
+/parlay-maker-ai /parlay-maker-ai.html 200
+/free-ai-sports-betting-app /free-ai-sports-betting-app.html 200
+/thinkbetai-reviews /thinkbetai-reviews.html 200
+/ai-player-prop-predictions /ai-player-prop-predictions.html 200
+/ai-underdog-picks /ai-underdog-picks.html 200
+/ai-against-the-spread-picks /ai-against-the-spread-picks.html 200
 /tools/expected-value-calculator /tools/expected-value-calculator.html 200
 /tools/implied-odds-calculator /tools/implied-odds-calculator.html 200
 /tools/kelly-criterion-calculator /tools/kelly-criterion-calculator.html 200
@@ -121,15 +130,6 @@
 /ai-sports-predictions /ai-sports-predictions.html 200
 /ai-nfl-parlay-builder /ai-nfl-parlay-builder.html 200
 /ai-parlay-generator-free /ai-parlay-generator-free.html 200
-/nfl-ai-predictions /nfl-ai-predictions.html 200
-/nba-ai-predictions /nba-ai-predictions.html 200
-/mlb-ai-predictions /mlb-ai-predictions.html 200
-/nhl-ai-predictions /nhl-ai-predictions.html 200
-/ufc-ai-predictions /ufc-ai-predictions.html 200
-/soccer-ai-predictions /soccer-ai-predictions.html 200
-/ai-player-prop-predictions /ai-player-prop-predictions.html 200
-/ai-underdog-picks /ai-underdog-picks.html 200
-/ai-against-the-spread-picks /ai-against-the-spread-picks.html 200
 /blog /blog.html 200
 /blog/how-ai-is-revolutionizing-sports-betting /blog/how-ai-is-revolutionizing-sports-betting.html 200
 /blog/ai-betting-predictions-explained /blog/ai-betting-predictions-explained.html 200

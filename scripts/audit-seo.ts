@@ -4,6 +4,7 @@ import { CORE_SEO_PAGES } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS } from "../src/seoAliases";
 import { getRelatedLinks, seoBlueprints, type SeoBlueprint } from "../src/seo/blueprints";
 import { APP_SHELL_PAGES, APP_SHELL_REWRITES } from "../src/appShellPages";
+import { SEO_LANDING_CONFIGS } from "../src/lib/seoLandingConfigs";
 
 const BASE = "https://thinkbetai.com";
 const issues: string[] = [];
@@ -54,6 +55,14 @@ const expectedBlueprintSections = [
 
 const requiredBlueprintSchema = ["WebPage", "SoftwareApplication", "FAQPage", "BreadcrumbList"] as const;
 const blueprintCanonicalPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
+const coreCanonicalPaths = new Set(CORE_SEO_PAGES.map((page) => page.path));
+
+for (const config of SEO_LANDING_CONFIGS) {
+  const path = `/${config.slug}`;
+  if (!blueprintCanonicalPaths.has(path) && !coreCanonicalPaths.has(path) && !SEO_ALIAS_REDIRECTS[config.slug]) {
+    issues.push(`legacy SEO landing not migrated to golden blueprint/core page: ${path}`);
+  }
+}
 
 const finalTitle = (blueprint: SeoBlueprint) =>
   blueprint.title.includes("ThinkBetAI") ? blueprint.title : `${blueprint.title} | ThinkBetAI`;
