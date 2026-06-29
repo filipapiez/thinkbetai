@@ -33,13 +33,3 @@ export const platformStats = {
     { sport: 'MMA', qualified: 3, wins: 3, winRate: 100.0 },
   ],
 };
-
-export const liveUserStats = {
-  min: 850,
-  max: 1000,
-  stepMin: 2,
-  stepMax: 7,
-  intervalMs: 4500,
-  label: "Estimated active bettors live",
-  rangeLabel: "850-1,000",
-};

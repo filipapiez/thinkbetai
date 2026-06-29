@@ -6,8 +6,7 @@ import { Footer } from '@/components/Footer';
 import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
-import { liveUserStats, platformStats } from '@/lib/platformStats';
-import { useLiveRangeMetric } from '@/hooks/useLiveRangeMetric';
+import { platformStats } from '@/lib/platformStats';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 // LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
@@ -36,10 +35,7 @@ const Index = () => {
   const workflowRef = useRef<HTMLElement>(null);
   const [workflowReady, setWorkflowReady] = useState(false);
   const qualifiedWinRate = platformStats.qualifiedWinRateLabel;
-  const liveUserCount = useLiveRangeMetric({
-    ...liveUserStats,
-    storageKey: 'thinkbetai-live-user-count',
-  });
+  const winStreak = `${platformStats.streakCurrent} Win Streak`;
 
   useEffect(() => {
     const section = workflowRef.current;
@@ -122,18 +118,18 @@ const Index = () => {
               <div className="inline-flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 border border-primary/30 mb-8">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                   </span>
-                  <span className="text-xs md:text-sm font-semibold text-emerald-400">LIVE</span>
+                  <span className="text-xs md:text-sm font-semibold text-red-400">LIVE</span>
                 </div>
                 <div className="hidden sm:block w-px h-4 bg-border" />
                 <span className="text-xs md:text-sm font-medium text-foreground">
-                  <span className="text-primary font-bold">{qualifiedWinRate} Win Rate</span> on Qualified Picks
+                  <span className="text-primary font-bold">{qualifiedWinRate} Win Rate</span>
                 </span>
                 <div className="hidden md:block w-px h-4 bg-border" />
                 <span className="hidden md:inline text-sm text-muted-foreground">
-                  {liveUserCount.toLocaleString()} estimated active bettors live
+                  {winStreak}
                 </span>
               </div>
 
@@ -156,11 +152,14 @@ const Index = () => {
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <TrendingUp className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-emerald-400" />
-                  {qualifiedWinRate} Verified Win Rate
+                  {qualifiedWinRate} Win Rate
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
-                  <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
-                  {liveUserCount.toLocaleString()} Active Bettors Live
+                  <span className="relative mr-1.5 flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                  {winStreak}
                 </Badge>
                 <Badge variant="secondary" className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-card/80 border-border/50">
                   <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2 text-primary" />
