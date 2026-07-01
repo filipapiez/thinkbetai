@@ -18,6 +18,7 @@ const pricingPlans = [
     priceId: 'price_1SpOpRQrqKHReEDtP3WD1zne',
     name: 'Basic',
     price: 4.99,
+    originalPrice: 16.99,
     description: 'Perfect for casual fans looking to understand odds better',
     icon: Zap,
     features: [
@@ -38,6 +39,7 @@ const pricingPlans = [
     priceId: 'price_1SpOqPQrqKHReEDtqHZcLsbY',
     name: 'Pro',
     price: 13.99,
+    originalPrice: 46.99,
     description: 'For serious enthusiasts who want deeper insights',
     icon: Crown,
     features: [
@@ -60,6 +62,7 @@ const pricingPlans = [
     priceId: 'price_1Sn2CkQrqKHReEDtvJ6iR1gz',
     name: 'Insider',
     price: 49,
+    originalPrice: 163,
     description: 'The ultimate package for dedicated analysts',
     icon: Trophy,
     features: [
@@ -209,6 +212,10 @@ const Pricing = () => {
                   <CardContent className="flex-1 flex flex-col">
                     {/* Price */}
                     <div className="text-center mb-6 py-4 rounded-xl bg-muted/50">
+                      <div className="inline-flex items-center gap-2 mb-2">
+                        <span className="text-sm text-muted-foreground line-through">${plan.originalPrice}/mo</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wide bg-primary/15 text-primary px-2 py-0.5 rounded-full">70% Off</span>
+                      </div>
                       <div className="flex items-baseline justify-center">
                         <div className="flex items-baseline">
                           <span className="text-lg text-muted-foreground">$</span>
