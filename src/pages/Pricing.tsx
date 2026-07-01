@@ -135,13 +135,13 @@ const Pricing = () => {
           <div className="text-center mb-8 md:mb-16">
             <Badge variant="outline" className="mb-4 border-primary/50 text-primary">
               <Star className="h-3 w-3 mr-1 fill-primary" />
-              Clear Features and Billing
+              Limited Time — 70% Off
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Compare <span className="text-gradient">Plans and Features</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-              Paid plans start at $4.99 per month. Choose the analysis depth that fits your workflow and cancel anytime.
+              Save <span className="text-primary font-semibold">70% off</span> — paid plans start at $4.99/month. Choose the analysis depth that fits your workflow and cancel anytime.
             </p>
             
             {/* Social Proof Stats */}
@@ -267,13 +267,6 @@ const Pricing = () => {
             })}
           </div>
 
-          <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
-            <p className="text-sm text-muted-foreground">
-              Comparing the market? Several reviewed competitors currently list entry paid plans from $19.99 to $49.95 per month. Prices and included features differ, so use our{' '}
-              <Link to="/best-ai-sports-betting-tools" className="font-medium text-primary hover:underline">evidence-based comparison</Link>{' '}
-              before deciding.
-            </p>
-          </div>
 
           {/* Trust Badges */}
           <div className="flex flex-wrap justify-center gap-6 mt-12 text-sm text-muted-foreground">
