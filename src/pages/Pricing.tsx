@@ -267,13 +267,6 @@ const Pricing = () => {
             })}
           </div>
 
-          <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-primary/20 bg-primary/5 p-5 text-center">
-            <p className="text-sm text-muted-foreground">
-              Comparing the market? Several reviewed competitors currently list entry paid plans from $19.99 to $49.95 per month. Prices and included features differ, so use our{' '}
-              <Link to="/best-ai-sports-betting-tools" className="font-medium text-primary hover:underline">evidence-based comparison</Link>{' '}
-              before deciding.
-            </p>
-          </div>
 
           {/* Trust Badges */}
           <div className="flex flex-wrap justify-center gap-6 mt-12 text-sm text-muted-foreground">
