@@ -21,6 +21,10 @@
 /faq /faq.html 200
 /editorial-policy /editorial-policy.html 200
 /responsible-gambling /responsible-gambling.html 200
+/privacy /privacy.html 200
+/terms /terms.html 200
+/contact /contact.html 200
+/disclaimer /disclaimer.html 200
 /ai-betting-predictions /ai-betting-predictions.html 200
 /nfl-ai-predictions /nfl-ai-predictions.html 200
 /nba-ai-predictions /nba-ai-predictions.html 200
@@ -175,8 +179,33 @@
 /reset-password /reset-password.html 200
 /payment-success /payment-success.html 200
 /ref /ref.html 200
+/best /best.html 200
+/leagues /leagues.html 200
+/pl /pl.html 200
+/pl/pricing /pl/pricing.html 200
+/pl/faq /pl/faq.html 200
+/pl/best-ai-betting-app /pl/best-ai-betting-app.html 200
+/pl/free-ai-predictions /pl/free-ai-predictions.html 200
+/pl/ai-nfl-picks /pl/ai-nfl-picks.html 200
+/pl/ai-parlay-builder /pl/ai-parlay-builder.html 200
+/fr /fr.html 200
+/fr/pricing /fr/pricing.html 200
+/fr/faq /fr/faq.html 200
+/fr/best-ai-betting-app /fr/best-ai-betting-app.html 200
+/fr/free-ai-predictions /fr/free-ai-predictions.html 200
+/fr/ai-nfl-picks /fr/ai-nfl-picks.html 200
+/fr/ai-parlay-builder /fr/ai-parlay-builder.html 200
+/de /de.html 200
+/de/pricing /de/pricing.html 200
+/de/faq /de/faq.html 200
+/de/best-ai-betting-app /de/best-ai-betting-app.html 200
+/de/free-ai-predictions /de/free-ai-predictions.html 200
+/de/ai-nfl-picks /de/ai-nfl-picks.html 200
+/de/ai-parlay-builder /de/ai-parlay-builder.html 200
 /games/* /games.html 200
 /ref/* /ref.html 200
+/best/* /best.html 200
+/leagues/* /leagues.html 200
 
-# Client-rendered application fallback.
-/* /index.html 200
+# Hard fallback for unknown URLs. Real SPA routes must be listed above.
+/* /404.html 404

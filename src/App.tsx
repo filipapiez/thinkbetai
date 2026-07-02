@@ -44,6 +44,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const TrackRecord = lazy(() => import("./pages/TrackRecord"));
 const ResponsibleGambling = lazy(() => import("./pages/ResponsibleGambling"));
 const EditorialPolicy = lazy(() => import("./pages/EditorialPolicy"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 const Referral = lazy(() => import("./pages/Referral"));
 const OverUnder = lazy(() => import("./pages/OverUnder"));
 const PlayerProps = lazy(() => import("./pages/PlayerProps"));
@@ -106,6 +107,10 @@ const App = () => (
                 <Route path="/track-record" element={<QueryBoundary><TrackRecord /></QueryBoundary>} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
                 <Route path="/editorial-policy" element={<EditorialPolicy />} />
+                <Route path="/privacy" element={<LegalPage page="privacy" />} />
+                <Route path="/terms" element={<LegalPage page="terms" />} />
+                <Route path="/contact" element={<LegalPage page="contact" />} />
+                <Route path="/disclaimer" element={<LegalPage page="disclaimer" />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />

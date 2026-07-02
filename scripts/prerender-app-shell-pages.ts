@@ -101,4 +101,16 @@ for (const page of APP_SHELL_PAGES) {
   written++;
 }
 
-console.log(`✓ prerendered ${written} noindex app-shell pages`);
+const notFoundHtml = build({
+  path: "/404",
+  title: "Page Not Found | ThinkBetAI",
+  description: "The requested ThinkBetAI page does not exist or has moved.",
+  h1: "Page Not Found",
+  intro: "The page you requested does not exist. Use the navigation or return to the homepage.",
+});
+writeFileSync(join(DIST, "404.html"), notFoundHtml);
+const nestedNotFound = join(DIST, "404", "index.html");
+mkdirSync(dirname(nestedNotFound), { recursive: true });
+writeFileSync(nestedNotFound, notFoundHtml);
+
+console.log(`✓ prerendered ${written} noindex app-shell pages and 404.html`);

@@ -110,6 +110,12 @@ for (const { source, target } of APP_SHELL_REWRITES) {
     issues.push(`missing app-shell redirect rule: ${source}`);
   }
 }
+if (redirectRules.includes("/* /index.html 200")) {
+  issues.push("soft-404 wildcard present: /* /index.html 200");
+}
+if (!redirectRules.includes("/* /404.html 404")) {
+  issues.push("missing hard 404 fallback: /* /404.html 404");
+}
 
 const seenBlueprintSlugs = new Map<string, string>();
 const seenBlueprintCanonicals = new Map<string, string>();
@@ -177,6 +183,18 @@ for (const blueprint of seoBlueprints) {
 
 const dist = resolve("dist");
 if (existsSync(dist)) {
+  const notFoundFile = join(dist, "404.html");
+  if (!existsSync(notFoundFile)) {
+    issues.push("missing static 404.html");
+  } else {
+    const html = readFileSync(notFoundFile, "utf8");
+    if (!/name="robots"\s+content="noindex/.test(html)) {
+      issues.push("404.html must be noindex");
+    }
+    if (!/<h1(?:\s|>)/.test(html)) issues.push("404.html missing H1");
+    if (!hasPrerenderShell(html)) issues.push("404.html missing visible prerender shell");
+  }
+
   const titles = new Map<string, string>();
   for (const sitemapUrl of sitemapUrls) {
     const parsed = new URL(sitemapUrl);

@@ -39,8 +39,8 @@ const lines = [
   "# Private app routes get noindex shells instead of the homepage catch-all.",
   ...APP_SHELL_REWRITES.map(({ source, target }) => `${source} ${target} 200`),
   "",
-  "# Client-rendered application fallback.",
-  "/* /index.html 200",
+  "# Hard fallback for unknown URLs. Real SPA routes must be listed above.",
+  "/* /404.html 404",
   "",
 ];
 

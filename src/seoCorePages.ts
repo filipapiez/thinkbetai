@@ -434,6 +434,106 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "Track Record & Methodology", href: "/track-record" },
     ],
   },
+  {
+    path: "/privacy",
+    title: "Privacy Policy | ThinkBetAI",
+    description:
+      "Read how ThinkBetAI handles account data, payments, analytics, cookies, security, user rights and privacy questions for sports analysis tools.",
+    h1: "Privacy Policy",
+    intro:
+      "This page explains what ThinkBetAI may collect, why it is used and how to contact us about privacy questions. The product is a sports analysis platform, not a sportsbook.",
+    sections: [
+      {
+        heading: "What information may be processed",
+        body: "Account email, authentication details, subscription status, saved analysis, usage events, analytics data and support messages may be processed to operate and improve the product.",
+      },
+      {
+        heading: "Payments, cookies and security",
+        body: "Payments should be handled by a payment provider such as Stripe. Cookies and local storage may support login, preferences, analytics and security. No internet service can promise perfect security.",
+      },
+    ],
+    links: [
+      { label: "Contact Support", href: "/contact" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      { label: "Disclaimer", href: "/disclaimer" },
+    ],
+  },
+  {
+    path: "/terms",
+    title: "Terms of Service | ThinkBetAI",
+    description:
+      "Review ThinkBetAI terms covering eligibility, subscriptions, acceptable use, AI sports analysis limits, account access and legal responsibilities.",
+    h1: "Terms of Service",
+    intro:
+      "These terms describe the rules for using ThinkBetAI. By using the site or app, you agree to use the product responsibly and understand that sports outcomes are uncertain.",
+    sections: [
+      {
+        heading: "Informational analysis only",
+        body: "ThinkBetAI provides model-assisted sports analysis, explanations and research tools. It does not guarantee wins, profits, odds movement, sportsbook acceptance or any specific outcome.",
+      },
+      {
+        heading: "Accounts, subscriptions and acceptable use",
+        body: "Users are responsible for account security, subscription review and lawful use. Do not scrape, resell, attack, overload, reverse engineer or misuse the platform.",
+      },
+    ],
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Contact Support", href: "/contact" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      { label: "Pricing", href: "/pricing" },
+    ],
+  },
+  {
+    path: "/contact",
+    title: "Contact ThinkBetAI Support",
+    description:
+      "Contact ThinkBetAI for support, billing questions, corrections, privacy requests, responsible gambling concerns and product feedback.",
+    h1: "Contact ThinkBetAI",
+    intro:
+      "Use this page to reach the right support path. Include the page URL, account email and enough detail for us to understand the issue without guessing.",
+    sections: [
+      {
+        heading: "Support and billing",
+        body: "Email support@thinkbetai.com for account access, billing questions, subscription issues, bug reports and product feedback. Do not send full card numbers by email.",
+      },
+      {
+        heading: "Corrections and privacy requests",
+        body: "For factual corrections, include the URL, exact claim and a supporting source when available. For privacy requests, email from the account address when possible.",
+      },
+    ],
+    links: [
+      { label: "Editorial Policy", href: "/editorial-policy" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+    ],
+  },
+  {
+    path: "/disclaimer",
+    title: "Sports Betting Disclaimer | ThinkBetAI",
+    description:
+      "Read the ThinkBetAI disclaimer on sports betting risk, AI prediction limits, data accuracy, legal restrictions and no guaranteed outcomes.",
+    h1: "Sports Betting Disclaimer",
+    intro:
+      "ThinkBetAI provides sports analysis and educational information. It does not place bets, hold funds or guarantee betting outcomes.",
+    sections: [
+      {
+        heading: "Sports betting involves financial risk",
+        body: "AI picks, probabilities, confidence scores, odds comparisons and matchup notes can be wrong. You can lose money, and past performance does not predict future results.",
+      },
+      {
+        heading: "Data, legal and model limitations",
+        body: "Odds, injuries, lineups, weather and market information can change quickly. Betting laws vary by location and age. Users are responsible for following local rules.",
+      },
+    ],
+    links: [
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Track Record & Methodology", href: "/track-record" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  },
 ];
 
 export const CORE_SEO_PATHS = CORE_SEO_PAGES.map((page) => page.path);

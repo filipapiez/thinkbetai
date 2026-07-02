@@ -81,6 +81,10 @@ const defaultRelatedGuides: CoreLink[] = [
   { label: "Best AI Sports Betting Tools", href: "/best-ai-sports-betting-tools" },
   { label: "AI Sports Betting FAQ", href: "/faq" },
   { label: "Responsible Gambling", href: "/responsible-gambling" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Disclaimer", href: "/disclaimer" },
+  { label: "Contact Support", href: "/contact" },
 ];
 
 const defaultStatCards = [
@@ -738,6 +742,292 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
         answer:
           "Comparison pages should disclose commercial context, focus on verifiable criteria and avoid unsupported claims about competitors.",
       },
+    ],
+  },
+  "/privacy": {
+    eyebrow: "Privacy and Data Use",
+    primaryKeyword: "ThinkBetAI privacy policy",
+    heroHeadline: "Privacy policy for account, analytics and support data",
+    heroSubheadline:
+      "Understand what ThinkBetAI may collect, why it is used, how payment data is handled and how to contact support about privacy questions.",
+    primaryCTA: { label: "Contact Support", href: "/contact" },
+    secondaryCTA: { label: "Read Terms", href: "/terms" },
+    statCards: [
+      {
+        label: "Account Data",
+        value: "Email + settings",
+        detail: "Account, authentication, saved analysis and product preferences support the user experience.",
+      },
+      {
+        label: "Payments",
+        value: "Provider handled",
+        detail: "Payment flows should be handled by a payment provider rather than storing full card data locally.",
+      },
+      {
+        label: "Requests",
+        value: "Email support",
+        detail: "Privacy questions and account data requests can be sent to support@thinkbetai.com.",
+      },
+    ],
+    marketFocus: ["Privacy", "Account data", "Analytics", "Payments", "Security"],
+    modules: [
+      {
+        heading: "Why a real privacy page matters",
+        body:
+          "A betting-adjacent product needs visible trust infrastructure. A privacy page helps users understand how account data, payment flows, analytics events and support messages may be handled before they create an account or subscribe.",
+        bullets: [
+          "Explain what data is needed to operate the product.",
+          "Separate payment-provider handling from product account data.",
+          "Give users a direct privacy request channel.",
+        ],
+      },
+      {
+        heading: "How data supports product functionality",
+        body:
+          "ThinkBetAI may use account and usage information to authenticate users, maintain subscriptions, load saved analysis, improve app reliability, investigate abuse and answer support requests. The page should avoid vague claims and describe practical uses clearly.",
+      },
+      {
+        heading: "Security and retention language",
+        body:
+          "Privacy language should be honest about security limits. No internet product can promise perfect protection, so this page should explain that reasonable safeguards are used while also stating that information may be retained for product, legal, accounting, security or support needs.",
+      },
+      {
+        heading: "Where privacy fits in the trust cluster",
+        body:
+          "Privacy, terms, disclaimer, responsible gambling and editorial policy pages work together. They show users that the product understands data handling, legal limits, gambling risk and corrections instead of only publishing conversion pages.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Does ThinkBetAI place bets for users?",
+        answer:
+          "No. ThinkBetAI is a sports analysis platform. It does not place bets or hold user betting funds.",
+      },
+      {
+        question: "How can someone make a privacy request?",
+        answer:
+          "Email support@thinkbetai.com from the account email when possible and describe the access, deletion or correction request.",
+      },
+      {
+        question: "Does ThinkBetAI store full card numbers?",
+        answer:
+          "Payment flows should be handled by a payment provider such as Stripe. ThinkBetAI should not store full card numbers on its own servers.",
+      },
+      ...commonFaqs,
+    ],
+  },
+  "/terms": {
+    eyebrow: "Terms of Service",
+    primaryKeyword: "ThinkBetAI terms of service",
+    heroHeadline: "Terms for eligibility, subscriptions and acceptable use",
+    heroSubheadline:
+      "Review the core rules for using ThinkBetAI, including account responsibility, AI analysis limits, subscriptions and lawful use.",
+    primaryCTA: { label: "Read Privacy Policy", href: "/privacy" },
+    secondaryCTA: { label: "Read Disclaimer", href: "/disclaimer" },
+    statCards: [
+      {
+        label: "Eligibility",
+        value: "Legal use only",
+        detail: "Users are responsible for age, location and legal requirements where they live.",
+      },
+      {
+        label: "Analysis",
+        value: "No guarantees",
+        detail: "Picks, probabilities and confidence scores are informational, not promised outcomes.",
+      },
+      {
+        label: "Use",
+        value: "No abuse",
+        detail: "Scraping, resale, attacks, overload and reverse engineering are not acceptable.",
+      },
+    ],
+    marketFocus: ["Terms", "Eligibility", "Subscriptions", "Acceptable use", "No guarantees"],
+    modules: [
+      {
+        heading: "Clear terms reduce user confusion",
+        body:
+          "Terms should make the product boundary obvious. ThinkBetAI provides research and analysis, not a sportsbook account, financial advice, guaranteed profit system or replacement for user judgment.",
+        bullets: [
+          "Users remain responsible for decisions and local legal compliance.",
+          "Subscription access and pricing should be reviewed before checkout.",
+          "Product availability, sports coverage and data sources can change.",
+        ],
+      },
+      {
+        heading: "Why the no-guarantee language is important",
+        body:
+          "Sports betting claims are high risk. Terms should state plainly that model output can be wrong, that no prediction removes variance and that users should not rely on any page as a promise of profit.",
+      },
+      {
+        heading: "Account and subscription responsibilities",
+        body:
+          "Users should keep credentials secure, review plan details before paying and understand that access can change when a subscription is canceled, payment fails or the service changes its coverage.",
+      },
+      {
+        heading: "Acceptable platform use",
+        body:
+          "A clean terms page should prohibit scraping, resale, attacks, reverse engineering, abuse of account systems and misuse of content. This protects the product and sets expectations for automated or commercial use.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Are ThinkBetAI picks guaranteed?",
+        answer:
+          "No. ThinkBetAI provides informational sports analysis. No pick, confidence score or model output is guaranteed.",
+      },
+      {
+        question: "Can anyone use ThinkBetAI?",
+        answer:
+          "Users are responsible for being old enough and legally allowed to view betting-related analysis in their location.",
+      },
+      {
+        question: "Can subscription features change?",
+        answer:
+          "Yes. Features, sports coverage, data sources, prices and availability may change over time.",
+      },
+      ...commonFaqs,
+    ],
+  },
+  "/contact": {
+    eyebrow: "Contact and Support",
+    primaryKeyword: "contact ThinkBetAI support",
+    heroHeadline: "Contact ThinkBetAI for support, billing and corrections",
+    heroSubheadline:
+      "Reach support for account issues, billing questions, product feedback, privacy requests, corrections and responsible-gambling concerns.",
+    primaryCTA: { label: "Email Support", href: "mailto:support@thinkbetai.com" },
+    secondaryCTA: { label: "Read Editorial Policy", href: "/editorial-policy" },
+    statCards: [
+      {
+        label: "Support",
+        value: "Account + billing",
+        detail: "Account access, subscription questions and product bugs should include enough detail to reproduce the issue.",
+      },
+      {
+        label: "Corrections",
+        value: "URL + source",
+        detail: "Correction requests should include the page URL, exact claim and supporting source when available.",
+      },
+      {
+        label: "Privacy",
+        value: "Account email",
+        detail: "Privacy requests are easier to verify when sent from the account email address.",
+      },
+    ],
+    marketFocus: ["Support", "Billing", "Corrections", "Privacy requests", "Feedback"],
+    modules: [
+      {
+        heading: "What to include in a support request",
+        body:
+          "Support is faster when users include the account email, relevant page URL, browser or device, screenshots when useful and a short description of what they expected versus what happened.",
+        bullets: [
+          "For billing, include the account email and approximate payment date.",
+          "For bugs, include steps to reproduce the issue.",
+          "For corrections, include a supporting source when available.",
+        ],
+      },
+      {
+        heading: "Corrections and trust signals",
+        body:
+          "A contact page is not just a support utility. It gives users and search engines a visible way to challenge factual claims, request updates and report issues with pricing, legal, responsible gambling or product information.",
+      },
+      {
+        heading: "Privacy and safety requests",
+        body:
+          "Privacy requests should come from the account email when possible. Responsible-gambling or immediate safety concerns should be directed to qualified support organizations because ThinkBetAI support is not an emergency service.",
+      },
+      {
+        heading: "Commercial and editorial messages",
+        body:
+          "Media, SEO, partnership and editorial requests should explain the context clearly. That keeps support from guessing whether a message is about product support, correction handling, partnership outreach or commercial comparison content.",
+      },
+    ],
+    faqs: [
+      {
+        question: "What is the support email?",
+        answer: "The support email is support@thinkbetai.com.",
+      },
+      {
+        question: "What should a correction request include?",
+        answer:
+          "Include the page URL, exact statement, why it is wrong and a supporting source when available.",
+      },
+      {
+        question: "Should users send card numbers by email?",
+        answer: "No. Users should never send full card numbers or sensitive payment details by email.",
+      },
+      ...commonFaqs,
+    ],
+  },
+  "/disclaimer": {
+    eyebrow: "Risk and Limitations",
+    primaryKeyword: "sports betting disclaimer",
+    heroHeadline: "Sports betting disclaimer for AI predictions and analysis",
+    heroSubheadline:
+      "Understand the limits of AI picks, probability estimates, data freshness, legal restrictions and financial risk before using any sports analysis.",
+    primaryCTA: { label: "Responsible Gambling", href: "/responsible-gambling" },
+    secondaryCTA: { label: "How It Works", href: "/how-it-works" },
+    statCards: [
+      {
+        label: "Risk",
+        value: "You can lose",
+        detail: "Sports betting involves financial risk and should never use money needed for essentials.",
+      },
+      {
+        label: "Models",
+        value: "Can be wrong",
+        detail: "AI estimates depend on data, assumptions and timing. They cannot predict every event.",
+      },
+      {
+        label: "Legal",
+        value: "Rules vary",
+        detail: "Age, state, province and country rules differ. Users must follow local law.",
+      },
+    ],
+    marketFocus: ["Risk", "No guarantees", "AI limitations", "Data freshness", "Legal restrictions"],
+    modules: [
+      {
+        heading: "Why the disclaimer must be explicit",
+        body:
+          "Betting content should never blur analysis with certainty. A disclaimer page gives users direct language about financial risk, data limitations, legal restrictions and the fact that AI predictions can lose.",
+        bullets: [
+          "No pick or probability estimate guarantees a result.",
+          "Late injuries, weather, lineups and odds movement can change analysis.",
+          "Users are responsible for legal compliance and bankroll decisions.",
+        ],
+      },
+      {
+        heading: "Model and data limitations",
+        body:
+          "AI models depend on available inputs and assumptions. They cannot fully account for random events, officiating decisions, late scratches, coaching changes, bad data, market suspension or every sportsbook price movement.",
+      },
+      {
+        heading: "No financial, legal or betting advice",
+        body:
+          "ThinkBetAI pages should be read as informational sports analysis and education. They are not financial, investment, tax, legal or professional gambling advice.",
+      },
+      {
+        heading: "How users should act on analysis",
+        body:
+          "The responsible workflow is to set limits first, review analysis as one input, compare current prices, avoid chasing losses and stop when betting feels stressful, secretive or difficult to control.",
+      },
+    ],
+    faqs: [
+      {
+        question: "Can AI predictions guarantee wins?",
+        answer:
+          "No. AI predictions can be wrong and cannot guarantee profit, wins or future sportsbook prices.",
+      },
+      {
+        question: "Is ThinkBetAI financial advice?",
+        answer:
+          "No. ThinkBetAI provides informational sports analysis and educational content, not financial or legal advice.",
+      },
+      {
+        question: "Why can sports data become stale?",
+        answer:
+          "Odds, lineups, injuries, weather and market information can change quickly, especially close to game time.",
+      },
+      ...commonFaqs,
     ],
   },
 };
