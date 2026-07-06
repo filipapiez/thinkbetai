@@ -45,6 +45,18 @@ interface HistoricalBet {
   edge: number;
 }
 
+interface ActiveBet {
+  id: string;
+  game_time: string;
+  sport: string;
+  home_team: string;
+  away_team: string;
+  pick: string;
+  odds: number;
+  confidence: number;
+  edge: number;
+}
+
 const BetHistory = () => {
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [resultFilter, setResultFilter] = useState<string>("all");
@@ -78,6 +90,26 @@ const BetHistory = () => {
       
       return allBets;
     },
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
+  });
+
+  const { data: pendingBets = [], isLoading: isPendingLoading } = useQuery({
+    queryKey: ["active-bets", "pending-qualified"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("active_bets")
+        .select("id, game_time, sport, home_team, away_team, pick, odds, confidence, edge")
+        .eq("status", "pending")
+        .gte("confidence", 83)
+        .order("game_time", { ascending: true })
+        .limit(12);
+
+      if (error) throw error;
+      return data as ActiveBet[];
+    },
+    refetchInterval: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   const filteredBets = useMemo(() => {
@@ -162,7 +194,7 @@ const BetHistory = () => {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 sm:mb-2">Historical Qualified Bets</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Complete record of AI-qualified picks with verified results
+            Auto-updated qualified picks with verified results. Only pre-game picks are settled into this record.
           </p>
         </div>
 
@@ -207,6 +239,68 @@ const BetHistory = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Pending Qualified Games */}
+        <Card className="mb-4 sm:mb-6 bg-card border-border">
+          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+              Upcoming Qualified Games
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            {isPendingLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : pendingBets.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-3">
+                No upcoming games currently clear the 83% qualified threshold.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-border">
+                      <TableHead className="text-muted-foreground">Game Time</TableHead>
+                      <TableHead className="text-muted-foreground">Sport</TableHead>
+                      <TableHead className="text-muted-foreground">Matchup</TableHead>
+                      <TableHead className="text-muted-foreground">Pick</TableHead>
+                      <TableHead className="text-muted-foreground">Odds</TableHead>
+                      <TableHead className="text-muted-foreground">Conf</TableHead>
+                      <TableHead className="text-muted-foreground">Edge</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingBets.map((bet) => (
+                      <TableRow key={bet.id} className="border-border">
+                        <TableCell className="text-foreground text-sm">
+                          {format(parseISO(bet.game_time), "MMM d, h:mm a")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-secondary text-secondary-foreground text-xs">
+                            {bet.sport}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-foreground text-sm">
+                          {bet.away_team} @ {bet.home_team}
+                        </TableCell>
+                        <TableCell className="font-medium text-foreground text-sm">{bet.pick}</TableCell>
+                        <TableCell className="text-foreground text-sm">{formatOdds(bet.odds)}</TableCell>
+                        <TableCell>
+                          <span className="text-primary font-medium text-sm">{bet.confidence}%</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-success text-sm">+{bet.edge}%</span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Sport-by-Sport Breakdown */}
         <Card className="mb-4 sm:mb-6 bg-card border-border">

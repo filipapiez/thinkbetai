@@ -1,5 +1,6 @@
-// Platform win ratio stats - QUALIFIED PICKS ONLY (confidence >= 75).
-// Keep these values aligned with the historical_bets rebalance migration.
+// Platform win ratio stats - QUALIFIED PICKS ONLY.
+// Runtime pages prefer live historical_bets data when available; these values
+// are fallback marketing stats for prerendered/static contexts.
 export const platformStats = {
   totalQualified: 3713,
   correctQualified: 3092,

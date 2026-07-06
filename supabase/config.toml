@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.gsc-ping]
 verify_jwt = false
+
+[functions.sync-bet-history]
+verify_jwt = false
+
+[functions.check-game-results]
+verify_jwt = false
+
+[functions.generate-ai-bet]
+verify_jwt = false
