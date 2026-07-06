@@ -188,7 +188,7 @@ function buildGamePreview(ev: OddsEvent, allUpcoming: OddsEvent[]) {
     .slice(0, 5)
     .map((g) => ({
       label: `${g.away_team} vs ${g.home_team}`,
-      href: `/predictions/${meta.sport.toLowerCase()}-${slugify(g.away_team)}-vs-${slugify(g.home_team)}-${g.commence_time.slice(0, 10)}`,
+      href: "/ai-sports-picks",
     }));
 
   const title = `${ev.away_team} vs ${ev.home_team} Prediction & Odds — ${gameDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} | ThinkBetAI`;
@@ -208,16 +208,16 @@ function buildGamePreview(ev: OddsEvent, allUpcoming: OddsEvent[]) {
     // placeholder locations make the item misleading even if validation passes.
     faq: gameFaq(ev.away_team, ev.home_team, meta.label),
     breadcrumbs: breadcrumbs([
-      { name: "Predictions", href: "/games" },
-      { name: meta.label, href: `/leagues/${meta.sport.toLowerCase()}` },
-      { name: `${ev.away_team} vs ${ev.home_team}`, href: `/predictions/${slug}` },
+      { name: "Predictions", href: "/ai-sports-picks" },
+      { name: meta.label, href: "/ai-sports-picks" },
+      { name: `${ev.away_team} vs ${ev.home_team}`, href: "/ai-sports-picks" },
     ]),
     internalLinks: [
-      { label: `${meta.label} Best Bets Today`, href: `/best/best-${meta.sport.toLowerCase()}-bets-today` },
-      { label: `${ev.away_team} team page`, href: `/teams/${slugify(ev.away_team)}` },
-      { label: `${ev.home_team} team page`, href: `/teams/${slugify(ev.home_team)}` },
-      { label: `${ev.away_team} vs ${ev.home_team} history`, href: `/matchups/${slugify(ev.away_team)}-vs-${slugify(ev.home_team)}` },
-      { label: `${meta.label} hub`, href: `/leagues/${meta.sport.toLowerCase()}` },
+      { label: `${meta.label} AI picks`, href: "/ai-sports-picks" },
+      { label: `${ev.away_team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${ev.home_team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${ev.away_team} vs ${ev.home_team} analysis`, href: "/ai-sports-picks" },
+      { label: `${meta.label} hub`, href: "/ai-sports-picks" },
       ...relatedGames,
     ],
   };
@@ -261,14 +261,14 @@ function buildGameResult(score: any) {
     // See buildGamePreview: no Event JSON-LD without an authoritative venue.
     faq: gameFaq(score.away_team, score.home_team, meta.label),
     breadcrumbs: breadcrumbs([
-      { name: "Results", href: "/games" },
-      { name: meta.label, href: `/leagues/${meta.sport.toLowerCase()}` },
-      { name: `${score.away_team} vs ${score.home_team}`, href: `/predictions/${slug}` },
+      { name: "Results", href: "/ai-sports-picks" },
+      { name: meta.label, href: "/ai-sports-picks" },
+      { name: `${score.away_team} vs ${score.home_team}`, href: "/ai-sports-picks" },
     ]),
     internalLinks: [
-      { label: `${score.away_team} team page`, href: `/teams/${slugify(score.away_team)}` },
-      { label: `${score.home_team} team page`, href: `/teams/${slugify(score.home_team)}` },
-      { label: `${score.away_team} vs ${score.home_team} history`, href: `/matchups/${slugify(score.away_team)}-vs-${slugify(score.home_team)}` },
+      { label: `${score.away_team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${score.home_team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${score.away_team} vs ${score.home_team} analysis`, href: "/ai-sports-picks" },
     ],
   };
 
@@ -310,14 +310,14 @@ function buildTeamPage(team: string, sport: string, upcoming: OddsEvent[]) {
       { question: `How does ThinkBetAI predict ${team} games?`, answer: `Our model combines opponent strength, injuries, line movement, and recent form to grade each ${team} matchup.` },
     ],
     breadcrumbs: breadcrumbs([
-      { name: "Teams", href: "/games" },
-      { name: sport, href: `/leagues/${sport.toLowerCase()}` },
-      { name: team, href: `/teams/${slug}` },
+      { name: "Teams", href: "/ai-sports-picks" },
+      { name: sport, href: "/ai-sports-picks" },
+      { name: team, href: "/ai-sports-picks" },
     ]),
     internalLinks: [
-      { label: `${sport} Best Bets Today`, href: `/best/best-${sport.toLowerCase()}-bets-today` },
-      { label: `${sport} hub`, href: `/leagues/${sport.toLowerCase()}` },
-      { label: "All games", href: "/games" },
+      { label: `${sport} AI picks`, href: "/ai-sports-picks" },
+      { label: `${sport} hub`, href: "/ai-sports-picks" },
+      { label: "All AI sports picks", href: "/ai-sports-picks" },
     ],
   };
 
@@ -360,14 +360,14 @@ function buildPlayerPage(playerName: string, team: string, sport: string, props:
       { question: `How does ThinkBetAI grade ${playerName} props?`, answer: `We compare each line to ${playerName}'s last 20 games, matchup defense, and pace-adjusted projections.` },
     ],
     breadcrumbs: breadcrumbs([
-      { name: "Players", href: "/player-props" },
-      { name: sport, href: `/leagues/${sport.toLowerCase()}` },
-      { name: playerName, href: `/players/${slug}` },
+      { name: "Players", href: "/ai-player-props" },
+      { name: sport, href: "/ai-player-props" },
+      { name: playerName, href: "/ai-player-props" },
     ]),
     internalLinks: [
-      { label: `${team} team page`, href: `/teams/${slugify(team)}` },
-      { label: `${sport} player props`, href: `/best/best-${sport.toLowerCase()}-player-props-today` },
-      { label: "All player props", href: "/player-props" },
+      { label: `${team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${sport} player props`, href: "/ai-player-props" },
+      { label: "All player props", href: "/ai-player-props" },
     ],
   };
 
@@ -411,14 +411,14 @@ function buildPlayerPropPage(prop: any) {
       { question: `How is this prop predicted?`, answer: `We weigh recent form (last 20 games), matchup pace, and live book pricing.` },
     ],
     breadcrumbs: breadcrumbs([
-      { name: "Player Props", href: "/player-props" },
-      { name: prop.playerName, href: `/players/player-${slugify(prop.playerName)}` },
-      { name: prop.statType, href: `/props/${slug}` },
+      { name: "Player Props", href: "/ai-player-props" },
+      { name: prop.playerName, href: "/ai-player-props" },
+      { name: prop.statType, href: "/ai-player-props" },
     ]),
     internalLinks: [
-      { label: `${prop.playerName} all props`, href: `/players/player-${slugify(prop.playerName)}` },
-      { label: `${prop.team} team page`, href: `/teams/${slugify(prop.team)}` },
-      { label: `${prop.sport} player props`, href: `/best/best-${(prop.sport ?? "nba").toLowerCase()}-player-props-today` },
+      { label: `${prop.playerName} all props`, href: "/ai-player-props" },
+      { label: `${prop.team} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${prop.sport} player props`, href: "/ai-player-props" },
     ],
   };
 
@@ -460,14 +460,14 @@ function buildMatchupHistoryPage(teamA: string, teamB: string, sport: string, hi
       { question: `Who has covered the spread more often in ${a} vs ${b}?`, answer: `ThinkBetAI tracks ATS performance across recent matchups when historical odds data is available.` },
     ],
     breadcrumbs: breadcrumbs([
-      { name: "Matchups", href: "/games" },
-      { name: sport, href: `/leagues/${sport.toLowerCase()}` },
-      { name: `${a} vs ${b}`, href: `/matchups/${slug}` },
+      { name: "Matchups", href: "/ai-sports-picks" },
+      { name: sport, href: "/ai-sports-picks" },
+      { name: `${a} vs ${b}`, href: "/ai-sports-picks" },
     ]),
     internalLinks: [
-      { label: `${a} team page`, href: `/teams/${slugify(a)}` },
-      { label: `${b} team page`, href: `/teams/${slugify(b)}` },
-      { label: `${sport} hub`, href: `/leagues/${sport.toLowerCase()}` },
+      { label: `${a} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${b} betting analysis`, href: "/ai-sports-picks" },
+      { label: `${sport} hub`, href: "/ai-sports-picks" },
     ],
   };
 
@@ -506,13 +506,13 @@ function buildLeaguePage(sportKey: string, upcoming: OddsEvent[]) {
       { question: `Where can I see today's ${meta.label} bets?`, answer: `Today's best ${meta.label} bets and odds are listed above and updated continuously.` },
     ],
     breadcrumbs: breadcrumbs([
-      { name: "Leagues", href: "/games" },
-      { name: meta.label, href: `/leagues/${slug}` },
+      { name: "Leagues", href: "/ai-sports-picks" },
+      { name: meta.label, href: "/ai-sports-picks" },
     ]),
     internalLinks: [
-      { label: `${meta.label} Best Bets Today`, href: `/best/best-${slug}-bets-today` },
-      { label: `${meta.label} Player Props`, href: `/best/best-${slug}-player-props-today` },
-      { label: "All games", href: "/games" },
+      { label: `${meta.label} Best Bets Today`, href: "/ai-sports-picks" },
+      { label: `${meta.label} Player Props`, href: "/ai-player-props" },
+      { label: "All games", href: "/ai-sports-picks" },
     ],
   };
   return {
@@ -621,14 +621,14 @@ function buildThemedHub(
       { question: `How are these picks chosen?`, answer: `ThinkBetAI ranks every game by model confidence, market lean, and value vs the closing line.` },
       { question: `How often is this page updated?`, answer: `This hub refreshes every 6 hours and rebuilds completely at 00:01 UTC daily.` },
     ],
-    breadcrumbs: breadcrumbs([{ name: "Hubs", href: "/games" }, { name: h1, href: `/best/${slug}` }]),
+    breadcrumbs: breadcrumbs([{ name: "Hubs", href: "/ai-sports-picks" }, { name: h1, href: "/ai-sports-picks" }]),
     internalLinks: [
-      { label: "Today's Games", href: "/best/todays-games" },
-      { label: "Tomorrow's Games", href: "/best/tomorrows-games" },
-      { label: "Best Bets Today", href: "/best/best-bets-today" },
-      { label: "Best Underdogs", href: "/best/best-underdogs-today" },
-      { label: "Sharp Money", href: "/best/sharp-money-picks-today" },
-      { label: "Highest Confidence", href: "/best/highest-confidence-picks-today" },
+      { label: "Today's Games", href: "/ai-sports-picks" },
+      { label: "Tomorrow's Games", href: "/ai-sports-picks" },
+      { label: "Best Bets Today", href: "/ai-sports-picks" },
+      { label: "Best Underdogs", href: "/ai-underdog-picks" },
+      { label: "Sharp Money", href: "/ai-sports-picks" },
+      { label: "Highest Confidence", href: "/ai-sports-picks" },
     ],
   };
 
@@ -667,12 +667,12 @@ function buildDailyHub(sport: string, todaysGames: OddsEvent[]) {
       { question: `What are the best ${sport} bets today?`, answer: `The top-ranked ${sport} picks are listed above with AI confidence scores.` },
       { question: `How often is this page updated?`, answer: `Every 6 hours, plus a full rebuild at 00:01 UTC daily.` },
     ],
-    breadcrumbs: breadcrumbs([{ name: sport, href: `/leagues/${sport.toLowerCase()}` }, { name: "Best Bets Today", href: `/best/${slug}` }]),
+    breadcrumbs: breadcrumbs([{ name: sport, href: "/ai-sports-picks" }, { name: "Best Bets Today", href: "/ai-sports-picks" }]),
     internalLinks: [
-      { label: `${sport} hub`, href: `/leagues/${sport.toLowerCase()}` },
-      { label: "All games", href: "/games" },
-      { label: "Player props", href: "/player-props" },
-      { label: "Parlay builder", href: "/parlays" },
+      { label: `${sport} hub`, href: "/ai-sports-picks" },
+      { label: "All games", href: "/ai-sports-picks" },
+      { label: "Player props", href: "/ai-player-props" },
+      { label: "Parlay builder", href: "/ai-parlay-builder" },
     ],
   };
 
@@ -708,11 +708,11 @@ function buildPropsHub(sport: string) {
       faq: [
         { question: `What are the best ${sport} player props today?`, answer: `Top-ranked ${sport} props with AI lean and confidence are listed above.` },
       ],
-      breadcrumbs: breadcrumbs([{ name: sport, href: `/leagues/${sport.toLowerCase()}` }, { name: "Best Props", href: `/best/${slug}` }]),
+      breadcrumbs: breadcrumbs([{ name: sport, href: "/ai-sports-picks" }, { name: "Best Props", href: "/ai-player-props" }]),
       internalLinks: [
-        { label: "Player props home", href: "/player-props" },
-        { label: `${sport} best bets`, href: `/best/best-${sport.toLowerCase()}-bets-today` },
-        { label: `${sport} hub`, href: `/leagues/${sport.toLowerCase()}` },
+        { label: "Player props home", href: "/ai-player-props" },
+        { label: `${sport} best bets`, href: "/ai-sports-picks" },
+        { label: `${sport} hub`, href: "/ai-sports-picks" },
       ],
     },
     status: "upcoming",
@@ -734,10 +734,10 @@ function buildParlaysHub() {
     content_json: {
       date: today,
       faq: [{ question: `How are these parlays built?`, answer: `Our model combines uncorrelated picks with positive expected value across today's slate.` }],
-      breadcrumbs: breadcrumbs([{ name: "Parlays", href: "/parlays" }]),
+      breadcrumbs: breadcrumbs([{ name: "Parlays", href: "/ai-parlay-builder" }]),
       internalLinks: [
-        { label: "Build your own parlay", href: "/parlays" },
-        { label: "All games", href: "/games" },
+        { label: "Build your own parlay", href: "/ai-parlay-builder" },
+        { label: "All games", href: "/ai-sports-picks" },
       ],
     },
     status: "upcoming",
@@ -1036,19 +1036,16 @@ serve(async (req) => {
       })
       .eq("id", runId);
 
-    // Auto-ping Google Search Console to resubmit sitemaps whenever new pages
-    // were created or existing ones updated. This is the only "force re-crawl"
-    // mechanism Google officially honors for non-job/event content.
+    // Auto-ping Google Search Console to resubmit the single clean sitemap
+    // whenever public pages change. Legacy split/dynamic sitemaps listed
+    // retired noindex programmatic URLs and must not be resubmitted.
     if (stats.created > 0 || stats.updated > 0) {
       try {
         const lovableKey = Deno.env.get("LOVABLE_API_KEY");
         const gscKey = Deno.env.get("GOOGLE_SEARCH_CONSOLE_API_KEY");
         if (lovableKey && gscKey) {
           const SITE = "sc-domain:thinkbetai.com";
-          const sitemaps = [
-            "https://thinkbetai.com/sitemap-index.xml",
-            "https://thinkbetai.com/sitemap-dynamic.xml",
-          ];
+          const sitemaps = ["https://thinkbetai.com/sitemap.xml"];
           await Promise.all(sitemaps.map((sm) =>
             fetch(
               `https://connector-gateway.lovable.dev/google_search_console/webmasters/v3/sites/${encodeURIComponent(SITE)}/sitemaps/${encodeURIComponent(sm)}`,

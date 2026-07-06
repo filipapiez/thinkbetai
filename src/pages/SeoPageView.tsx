@@ -381,7 +381,7 @@ const SeoPageView = ({ pageType }: Props) => {
             <CardHeader><CardTitle>Active Props</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {c.props.map((p: any, i: number) => (
-                <Link key={i} to={`/props/${p.slug}`} className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
+                <Link key={i} to="/ai-player-props" className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
                   <span>{p.statType} {p.line}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -396,7 +396,7 @@ const SeoPageView = ({ pageType }: Props) => {
             <CardHeader><CardTitle>Recent Results</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {c.history.map((h: any, i: number) => (
-                <Link key={i} to={`/predictions/${h.slug}`} className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
+                <Link key={i} to="/ai-sports-picks" className="flex justify-between p-3 rounded border border-border hover:bg-accent/30">
                   <span>{h.away} {h.awayScore}–{h.homeScore} {h.home}</span>
                   <span className="text-sm text-muted-foreground">{h.date}</span>
                 </Link>

@@ -113,7 +113,7 @@ const FreeAIPredictions = () => {
               organize matchup data and probability estimates to support your own research.
             </p>
             <Button size="lg" asChild>
-              <Link to="/games">
+              <Link to="/ai-sports-picks">
                 <Sparkles className="h-5 w-5 mr-2" />
                 Get Free Picks Now
                 <ArrowRight className="h-5 w-5 ml-2" />
@@ -197,7 +197,7 @@ const FreeAIPredictions = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/games">
+                <Link to="/ai-sports-picks">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View Free Picks
                 </Link>

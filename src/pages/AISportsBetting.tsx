@@ -207,7 +207,7 @@ const AISportsBetting = () => {
                 <Link to="/picks">View Today's AI Picks</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/games">Browse Live Games</Link>
+                <Link to="/ai-sports-picks">Browse Live Games</Link>
               </Button>
             </div>
           </section>

@@ -31,16 +31,16 @@ const toolLinks = [
   { label: "Free AI Predictions", href: "/free-ai-predictions" },
   { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
   { label: "AI NFL Picks", href: "/ai-nfl-picks" },
-  { label: "AI Chat", href: "/chat" },
-  { label: "Live Games", href: "/games" },
-  { label: "Player Props", href: "/player-props" },
-  { label: "Game Totals", href: "/game-totals" },
+  { label: "AI Player Props", href: "/ai-player-props" },
+  { label: "Track Record", href: "/track-record" },
+  { label: "Responsible Gambling", href: "/responsible-gambling" },
+  { label: "Pricing", href: "/pricing" },
 ];
 
 export const SeoLandingPage = ({ config }: Props) => {
   const url = `/${config.slug}`;
   const fullUrl = `https://thinkbetai.com${url}`;
-  const primary = config.primaryCta ?? { label: "See Today's Free Picks", href: "/games" };
+  const primary = config.primaryCta ?? { label: "See Today's Free Picks", href: "/ai-sports-picks" };
   const secondary = config.secondaryCta ?? { label: "View Pricing", href: "/pricing" };
 
   const faqLd = {
@@ -119,7 +119,7 @@ export const SeoLandingPage = ({ config }: Props) => {
               <p className="text-muted-foreground">Free daily best bet + best underdog. No signup required.</p>
             </div>
             <Button asChild size="lg">
-              <Link to="/games">
+              <Link to="/ai-sports-picks">
                 View Free Picks <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>

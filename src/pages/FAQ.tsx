@@ -269,7 +269,7 @@ const FAQ = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link to="/games">
+                <Link to="/ai-sports-picks">
                   View Games
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>

@@ -95,8 +95,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I trust an AI to predict sports better than experts?", a: "AI doesn't get tired, biased, or emotionally attached to teams. It processes more data in seconds than a human handicapper can in a week. That said, the best results come from combining model output with situational context — which is exactly how our reports are structured." },
       { q: "What does the confidence score mean?", a: "Confidence is a 0–100 score that combines edge size, data quality, and simulation variance. 70+ is high conviction, 55–70 is a lean, below 55 is informational only." },
     ],
-    primaryCta: { label: "See Today's Free AI Predictions", href: "/games" },
-    secondaryCta: { label: "Try the AI Chat", href: "/chat" },
+    primaryCta: { label: "See Today's Free AI Predictions", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Try the AI Bet Analyzer", href: "/ai-bet-analyzer" },
   },
   {
     slug: "ai-betting-predictions",
@@ -161,7 +161,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What's the win rate on AI betting predictions?", a: "There is no responsible single win-rate number for every sport and market. Evaluate the dated track record by confidence tier and judge a sufficiently large sample rather than a short streak." },
       { q: "Are AI betting predictions worth paying for?", a: "Only if you actually act on the high-confidence plays with disciplined bankroll management. Most people who lose money with paid picks lose it by chasing losses, not by following the system." },
     ],
-    primaryCta: { label: "View Today's AI Picks", href: "/games" },
+    primaryCta: { label: "View Today's AI Picks", href: "/ai-sports-picks" },
     secondaryCta: { label: "Build an AI Parlay", href: "/ai-parlay-builder" },
   },
   {
@@ -227,8 +227,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What happens if I see a best pick but the line has moved?", a: "If the line has moved through our recommended number, skip it — the edge is gone. The page will mark stale picks." },
       { q: "Can I get notifications when a new best pick is posted?", a: "Premium users can subscribe to push and email alerts when new high-confidence picks hit the board." },
     ],
-    primaryCta: { label: "See Today's Best Picks", href: "/games" },
-    secondaryCta: { label: "View Best Bets Hub", href: "/best/nba-best-bets-today" },
+    primaryCta: { label: "See Today's Best Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "View Best Bets Hub", href: "/ai-sports-picks" },
   },
   {
     slug: "free-ai-sports-predictions",
@@ -291,7 +291,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "How often are free predictions updated?", a: "Hourly, plus immediate refresh on line moves and breaking injury news." },
       { q: "What if I want more than the daily free picks?", a: "Premium unlocks the full board, player props, AI parlay builder, and live model chat — cancel anytime." },
     ],
-    primaryCta: { label: "View Free AI Picks", href: "/games" },
+    primaryCta: { label: "View Free AI Picks", href: "/ai-sports-picks" },
     secondaryCta: { label: "See Pricing", href: "/pricing" },
   },
   {
@@ -348,8 +348,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I trust AI picks on a Monday/Tuesday slow night?", a: "Trust the confidence score. If tonight's best pick is rated 58 instead of the usual 70+, that's the model telling you the slate is weak." },
       { q: "Do I need to refresh the page to see updates?", a: "Picks auto-refresh in the background. A manual refresh ensures you have the absolute latest." },
     ],
-    primaryCta: { label: "View Tonight's Free Picks", href: "/games" },
-    secondaryCta: { label: "See Today's Best Bets", href: "/best/nba-best-bets-today" },
+    primaryCta: { label: "View Tonight's Free Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "See Today's Best Bets", href: "/ai-sports-picks" },
   },
   {
     slug: "sports-betting-ai",
@@ -412,8 +412,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I try it before I pay?", a: "Yes — the daily free picks let you see the AI's output before committing to a plan." },
       { q: "Is my data safe?", a: "We don't share bet history with anyone. Auth is standard email + password with optional Google sign-in. Cancel anytime and we delete your data on request." },
     ],
-    primaryCta: { label: "Start With Free Picks", href: "/games" },
-    secondaryCta: { label: "Chat With the AI", href: "/chat" },
+    primaryCta: { label: "Start With Free Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Analyze a Bet", href: "/ai-bet-analyzer" },
   },
   {
     slug: "ai-sports-picks-today",
@@ -468,8 +468,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I see live in-game predictions today?", a: "Yes — live AI predictions update during games on the chat and game detail pages." },
       { q: "Where can I see today's player props?", a: "Visit /player-props for the full board." },
     ],
-    primaryCta: { label: "View Today's Picks", href: "/games" },
-    secondaryCta: { label: "See Top Player Props", href: "/player-props" },
+    primaryCta: { label: "View Today's Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "See Top Player Props", href: "/ai-player-props" },
   },
   {
     slug: "ai-sports-predictor",
@@ -532,8 +532,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I ask follow-up questions about a prediction?", a: "Yes — premium AI chat lets you dig into any pick with follow-up questions, alternate scenarios, and prop deep-dives." },
       { q: "Does the predictor work for futures or season-long bets?", a: "Currently it focuses on game-level and player-prop predictions. Futures coverage is on the roadmap." },
     ],
-    primaryCta: { label: "Predict Any Game", href: "/games" },
-    secondaryCta: { label: "Ask the AI Predictor", href: "/chat" },
+    primaryCta: { label: "Predict Any Game", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Analyze a Pick", href: "/ai-bet-analyzer" },
   },
   {
     slug: "ai-betting-app",
@@ -596,7 +596,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What sports does the app cover?", a: "All major leagues in season: NFL, NBA, MLB, NHL, UFC, soccer, tennis, college football/basketball, golf, table tennis." },
       { q: "Can I cancel the premium subscription anytime?", a: "Yes — cancel anytime, no fees, no questions asked." },
     ],
-    primaryCta: { label: "Open the App", href: "/games" },
+    primaryCta: { label: "Open the App", href: "/ai-sports-picks" },
     secondaryCta: { label: "See Pricing", href: "/pricing" },
   },
   {
@@ -659,7 +659,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Will it use betting slang?", a: "No. We specifically train it to use professional sports analyst language and avoid slang like \"smash spot.\"" },
       { q: "Is there a message limit?", a: "Free tier has a daily limit. Premium is unlimited." },
     ],
-    primaryCta: { label: "Open the AI Chat", href: "/chat" },
+    primaryCta: { label: "Open Bet Analyzer", href: "/ai-bet-analyzer" },
     secondaryCta: { label: "View Pricing", href: "/pricing" },
   },
   {
@@ -724,7 +724,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is the parlay generator free?", a: "It's a premium feature. The daily best-bet single is free." },
     ],
     primaryCta: { label: "Build an AI Parlay", href: "/ai-parlay-builder" },
-    secondaryCta: { label: "See Today's Picks", href: "/games" },
+    secondaryCta: { label: "See Today's Picks", href: "/ai-sports-picks" },
   },
   {
     slug: "free-ai-parlay-generator",
@@ -787,7 +787,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is the free generator the same as the paid one?", a: "Same engine. The paid version removes the daily limit and adds cross-sport / SGP / 20-leg capability." },
     ],
     primaryCta: { label: "Try Free Parlay Generator", href: "/ai-parlay-builder" },
-    secondaryCta: { label: "See Today's Best Bet", href: "/games" },
+    secondaryCta: { label: "See Today's Best Bet", href: "/ai-sports-picks" },
   },
   {
     slug: "parlay-builder",
@@ -852,7 +852,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is the parlay builder free?", a: "One daily free AI parlay. Unlimited custom builds are premium." },
     ],
     primaryCta: { label: "Open Parlay Builder", href: "/ai-parlay-builder" },
-    secondaryCta: { label: "See Today's Picks", href: "/games" },
+    secondaryCta: { label: "See Today's Picks", href: "/ai-sports-picks" },
   },
   {
     slug: "parlay-maker-ai",
@@ -914,7 +914,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Should I bet every A-graded parlay?", a: "Only at small stake sizes (1% of bankroll max). Variance on parlays is still high even when the math is on your side." },
     ],
     primaryCta: { label: "Make a Parlay", href: "/ai-parlay-builder" },
-    secondaryCta: { label: "See Today's Best Bets", href: "/games" },
+    secondaryCta: { label: "See Today's Best Bets", href: "/ai-sports-picks" },
   },
   {
     slug: "thinkbetai-reviews",
@@ -979,7 +979,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What sports does ThinkBetAI cover?", a: "Every major league in season: NFL, NBA, MLB, NHL, UFC, soccer, tennis, college football/basketball, golf majors, and table tennis." },
       { q: "Is there a free trial?", a: "Free daily picks are always available — that's effectively a no-strings trial. Premium plans are explicit and cancel-anytime." },
     ],
-    primaryCta: { label: "Try It Free Today", href: "/games" },
+    primaryCta: { label: "Try It Free Today", href: "/ai-sports-picks" },
     secondaryCta: { label: "View Pricing", href: "/pricing" },
   },
   {
@@ -1040,8 +1040,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Are NFL player props included?", a: "Yes — passing yards, receiving yards, rushing yards, receptions, anytime TD scorer, and longest play, with a 0–100 signal score combining L20 game logs, defensive matchup, and game-script projection." },
       { q: "Why does the NFL model weight weather so heavily?", a: "Wind especially cuts deep-passing efficiency more than most lines reflect. Treating wind as a first-class input is one of the biggest edges in NFL totals." },
     ],
-    primaryCta: { label: "See This Week's NFL Picks", href: "/games?sport=nfl" },
-    secondaryCta: { label: "Best NFL Bets Today", href: "/best/best-nfl-bets-today" },
+    primaryCta: { label: "See This Week's NFL Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Best NFL Bets Today", href: "/ai-sports-picks" },
   },
   {
     slug: "nba-ai-predictions",
@@ -1101,8 +1101,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What about NBA playoffs?", a: "Playoff games use a separate calibration that accounts for shorter rotations, slower pace, and increased defensive intensity. Series prices are simulated game-by-game." },
       { q: "How accurate are NBA AI predictions?", a: "Accuracy varies by market, lineup availability, and season. Review dated NBA results and treat every probability as an estimate rather than a promise." },
     ],
-    primaryCta: { label: "See Tonight's NBA Picks", href: "/games?sport=nba" },
-    secondaryCta: { label: "Best NBA Bets Today", href: "/best/best-nba-bets-today" },
+    primaryCta: { label: "See Tonight's NBA Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Best NBA Bets Today", href: "/ai-sports-picks" },
   },
   {
     slug: "mlb-ai-predictions",
@@ -1162,8 +1162,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Are F5 (first-five-innings) picks included?", a: "Yes — separate F5 picks are graded and flagged when the F5 edge differs from the full-game edge." },
       { q: "Are MLB player props graded?", a: "Yes — pitcher Ks, hitter bases, HR props, and combined props are all individually scored with the same 0–100 signal system." },
     ],
-    primaryCta: { label: "Today's MLB Picks", href: "/games?sport=mlb" },
-    secondaryCta: { label: "Best MLB Bets Today", href: "/best/best-mlb-bets-today" },
+    primaryCta: { label: "Today's MLB Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Best MLB Bets Today", href: "/ai-sports-picks" },
   },
   {
     slug: "nhl-ai-predictions",
@@ -1221,8 +1221,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Are NHL player props included?", a: "Yes — shots on goal, points, assists, saves, and combined props are all scored with the 0–100 signal system." },
       { q: "Does the AI cover playoffs and Stanley Cup?", a: "Yes — series prices simulate game-by-game and adjust for the slower, more defensive playoff pace." },
     ],
-    primaryCta: { label: "Tonight's NHL Picks", href: "/games?sport=nhl" },
-    secondaryCta: { label: "Best NHL Bets Today", href: "/best/best-nhl-bets-today" },
+    primaryCta: { label: "Tonight's NHL Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Best NHL Bets Today", href: "/ai-sports-picks" },
   },
   {
     slug: "ufc-ai-predictions",
@@ -1280,8 +1280,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Are UFC AI picks free?", a: "We publish a free main-card top play every fight night. Full card predictions are premium." },
       { q: "Does the model handle short-notice fight changes?", a: "Yes — when a fighter is replaced, the model re-runs with the new matchup. Short-notice fighters get an explicit fitness penalty." },
     ],
-    primaryCta: { label: "See This Week's UFC Picks", href: "/games?sport=ufc" },
-    secondaryCta: { label: "Try the AI Chat", href: "/chat" },
+    primaryCta: { label: "See This Week's UFC Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Try the AI Bet Analyzer", href: "/ai-bet-analyzer" },
   },
   {
     slug: "soccer-ai-predictions",
@@ -1340,8 +1340,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Does the AI cover World Cup and Euros?", a: "Yes — international tournaments get expanded coverage including outright winner odds, group-stage simulations, and knockout-round predictions." },
       { q: "Are player props graded?", a: "Yes — shots, shots on target, anytime goalscorer, and assists for marquee players in major fixtures." },
     ],
-    primaryCta: { label: "Today's Soccer Picks", href: "/games?sport=soccer" },
-    secondaryCta: { label: "Try the AI Chat", href: "/chat" },
+    primaryCta: { label: "Today's Soccer Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Try the AI Bet Analyzer", href: "/ai-bet-analyzer" },
   },
   {
     slug: "ai-player-prop-predictions",
@@ -1400,8 +1400,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Are AI prop picks free?", a: "We publish a free daily top prop in each major sport. Full prop boards and edge filtering are premium." },
       { q: "What's the 0–100 composite signal score?", a: "A weighted combination of L20 fit, defensive matchup, usage/pace projection, and lineup confirmation. 75+ is high-conviction; we don't flag picks below 60." },
     ],
-    primaryCta: { label: "See Tonight's Prop Picks", href: "/player-props" },
-    secondaryCta: { label: "Browse All Games", href: "/games" },
+    primaryCta: { label: "See Tonight's Prop Picks", href: "/ai-player-props" },
+    secondaryCta: { label: "Browse All Games", href: "/ai-sports-picks" },
   },
   {
     slug: "ai-pick-of-the-day",
@@ -1459,7 +1459,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What if the line moves before I bet?", a: "If the line has moved through our number, the edge is smaller or gone. We list the price the edge was calculated against — if you can't get it, pass." },
       { q: "How is this different from the underdog of the day?", a: "Pick of the day = highest composite score regardless of price. Underdog of the day = highest composite score among +110-or-longer plays. Different risk profiles, both posted daily." },
     ],
-    primaryCta: { label: "See Today's Pick", href: "/games" },
+    primaryCta: { label: "See Today's Pick", href: "/ai-sports-picks" },
     secondaryCta: { label: "Build an AI Parlay", href: "/ai-parlay-builder" },
   },
   {
@@ -1519,7 +1519,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can underdog picks be parlayed?", a: "Yes — the parlay builder grades any combination including underdogs. Underdog parlays have higher variance and higher upside; the letter grade reflects both." },
       { q: "How do I avoid bad longshots?", a: "Stick to flagged picks with a 60+ composite score. The model explicitly rejects random longshots without an edge, no matter how juicy the price looks." },
     ],
-    primaryCta: { label: "Today's Underdog Pick", href: "/games" },
+    primaryCta: { label: "Today's Underdog Pick", href: "/ai-sports-picks" },
     secondaryCta: { label: "Underdog Parlay Builder", href: "/ai-parlay-builder" },
   },
   {
@@ -1579,8 +1579,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Does the model handle key numbers in NFL?", a: "Yes — the score distribution captures 3 and 7 margins explicitly, and alternate spread grading accounts for buying through those numbers." },
       { q: "Are ATS picks recalculated when lines move?", a: "Yes — when the line moves materially the model re-simulates and republishes if the edge still exists at the new price." },
     ],
-    primaryCta: { label: "Today's ATS Picks", href: "/games" },
-    secondaryCta: { label: "Best NFL Bets Today", href: "/best/best-nfl-bets-today" },
+    primaryCta: { label: "Today's ATS Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Best NFL Bets Today", href: "/ai-sports-picks" },
   },
   // -------------------------------------------------------------
   // GSC-driven exact-match landings (high-impression, near page 1)
@@ -1640,8 +1640,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What sports does the AI bet engine cover?", a: "NFL, NBA, MLB, NHL, UFC/MMA, soccer (top European leagues + MLS + Champions League), tennis, college football, college basketball, golf majors, and table tennis." },
       { q: "How is bet AI different from a tipster service?", a: "Tipsters give you a pick. Bet AI gives you the pick plus the win probability, the implied market probability, a confidence score, and a written explanation — so you can verify the reasoning instead of taking it on faith." },
     ],
-    primaryCta: { label: "See Today's AI Bets", href: "/games" },
-    secondaryCta: { label: "Chat With the AI", href: "/chat" },
+    primaryCta: { label: "See Today's AI Bets", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Analyze a Bet", href: "/ai-bet-analyzer" },
   },
   {
     slug: "betting-ai",
@@ -1691,7 +1691,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Do I need a sportsbook account to use the betting AI?", a: "No — you can use ThinkBetAI to analyze games without ever placing a bet. Most users do place bets through licensed sportsbooks in their jurisdiction, but it's not required." },
       { q: "Which sports does the betting AI cover best?", a: "All major North American leagues plus soccer, tennis, UFC, and golf majors. The model's strongest markets historically are player props and totals." },
     ],
-    primaryCta: { label: "Today's AI Picks", href: "/games" },
+    primaryCta: { label: "Today's AI Picks", href: "/ai-sports-picks" },
     secondaryCta: { label: "See the Track Record", href: "/track-record" },
   },
   {
@@ -1750,7 +1750,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Do I need any technical background to use AI betting?", a: "No. The interface shows the model's recommendation, the confidence score, and a plain-English explanation. If you can read a betting line, you can use the platform." },
       { q: "Can I trust AI betting picks blindly?", a: "No — and you shouldn't. Use confidence scores to filter, bet flat units, never chase, and treat any individual pick as one trade in a long series." },
     ],
-    primaryCta: { label: "View Today's AI Picks", href: "/games" },
+    primaryCta: { label: "View Today's AI Picks", href: "/ai-sports-picks" },
     secondaryCta: { label: "Verify the Track Record", href: "/track-record" },
   },
   {
@@ -1801,8 +1801,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Do AI bets update if the line moves?", a: "Yes — picks are re-simulated on every meaningful line move and either reaffirmed, downgraded, or killed if the edge disappears." },
       { q: "Which sports get the most AI bets?", a: "NFL, NBA, and MLB during the regular season drive the highest volume. UFC, NHL, soccer and tennis are also covered in season." },
     ],
-    primaryCta: { label: "See Today's AI Bets", href: "/games" },
-    secondaryCta: { label: "AI Player Prop Bets", href: "/player-props" },
+    primaryCta: { label: "See Today's AI Bets", href: "/ai-sports-picks" },
+    secondaryCta: { label: "AI Player Prop Bets", href: "/ai-player-props" },
   },
   {
     slug: "ai-bet",
@@ -1853,7 +1853,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "What if I disagree with the AI's grade?", a: "Use it as one input, not gospel. The AI surfaces the math; you bring the situational read. Sometimes you're right and the model misses context." },
     ],
     primaryCta: { label: "Analyze a Bet", href: "/ai-bet-analyzer" },
-    secondaryCta: { label: "See AI's Picks Tonight", href: "/games" },
+    secondaryCta: { label: "See AI's Picks Tonight", href: "/ai-sports-picks" },
   },
   {
     slug: "ai-picks",
@@ -1911,8 +1911,8 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Can I see why the AI made each pick?", a: "Yes — every pick has a written explanation with the top factors driving the model's view." },
       { q: "Do AI picks include player props?", a: "Yes — the full prop board is premium. The daily prop spotlight on each team/player page is free." },
     ],
-    primaryCta: { label: "Today's AI Picks", href: "/games" },
-    secondaryCta: { label: "Player Prop Picks", href: "/player-props" },
+    primaryCta: { label: "Today's AI Picks", href: "/ai-sports-picks" },
+    secondaryCta: { label: "Player Prop Picks", href: "/ai-player-props" },
   },
   {
     slug: "free-ai-sports-betting-app",
@@ -1969,7 +1969,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Is there a free trial of the premium tier?", a: "We don't run a forced trial — the free tier is the trial. Use it as long as you want and upgrade only if the math works for your volume." },
       { q: "Will the free tier disappear?", a: "No plans to remove it. It's a core part of the product." },
     ],
-    primaryCta: { label: "Get Today's Free Pick", href: "/games" },
+    primaryCta: { label: "Get Today's Free Pick", href: "/ai-sports-picks" },
     secondaryCta: { label: "Try the AI Bet Analyzer", href: "/ai-bet-analyzer" },
   },
   {
@@ -2021,7 +2021,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
       { q: "Do the AI predictions update during the day?", a: "Yes — predictions re-run on every meaningful line move and on injury/lineup news. Stale picks are killed or replaced rather than left up." },
       { q: "Can I trust an AI prediction over a sharp tipster?", a: "Neither is automatically right. Use predictions as one input alongside your own situational read. Bet flat, track CLV, and the math sorts itself out over time." },
     ],
-    primaryCta: { label: "Tonight's Predictions", href: "/games" },
+    primaryCta: { label: "Tonight's Predictions", href: "/ai-sports-picks" },
     secondaryCta: { label: "Track Record", href: "/track-record" },
   },
 ];

@@ -1,9 +1,9 @@
 // Prerender DB-backed SEO pages into static HTML snapshots.
 //
-// Scope reduced (Dec 2026): only daily_best + league remain. All other
+// Scope reduced (Jul 2026): only daily_best + league remain. All other
 // programmatic page types (game_preview, game_result, team, player,
 // player_prop, matchup) were retired for SEO hygiene — their routes are
-// removed from src/App.tsx and now fall through to the 404 route.
+// consolidated into public hubs in src/App.tsx.
 //
 // The remaining types are kept live but NOINDEX while their content is
 // improved, so prerendered snapshots still carry a noindex robots meta.

@@ -116,7 +116,7 @@ const AINFLPicks = () => {
               team performance, injuries, weather, and market context to estimate possible outcomes.
             </p>
             <Button size="lg" asChild>
-              <Link to="/games?sport=americanfootball_nfl">
+              <Link to="/ai-sports-picks">
                 <Zap className="h-5 w-5 mr-2" />
                 View NFL Picks
                 <ArrowRight className="h-5 w-5 ml-2" />
@@ -206,7 +206,7 @@ const AINFLPicks = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
-                <Link to="/games?sport=americanfootball_nfl">
+                <Link to="/ai-sports-picks">
                   <TrendingUp className="h-4 w-4 mr-2" />
                   View NFL Games
                 </Link>

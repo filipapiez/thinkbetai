@@ -1,10 +1,9 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
-import { seoBlueprints } from "@/seo/blueprints";
+import { seoBlueprintRoutes } from "@/seo/blueprintRoutes.generated";
 import { NoIndexBoundary } from "@/components/NoIndexBoundary";
 
 // Toast renderers are non-critical and load only after the first paint window.
@@ -93,7 +92,6 @@ const PageLoader = () => (
 );
 
 const App = () => (
-  <TooltipProvider>
       <BrowserRouter>
         <ThemeProvider>
           <DeferredToasts />
@@ -115,11 +113,11 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                {seoBlueprints.map((blueprint) => (
+                {seoBlueprintRoutes.map((path) => (
                   <Route
-                    key={blueprint.slug}
-                    path={`/${blueprint.slug}`}
-                    element={<SeoBlueprintPage slug={blueprint.slug} />}
+                    key={path}
+                    path={path}
+                    element={<SeoBlueprintPage slug={path.replace(/^\/+/, "")} />}
                   />
                 ))}
                 <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
@@ -135,9 +133,9 @@ const App = () => (
                 <Route path="/game-totals" element={<NoIndexBoundary><QueryBoundary><GameTotals /></QueryBoundary></NoIndexBoundary>} />
 
                 {/* Auto-generated SEO pages (live but noindex — see SeoPageView/SeoIndex).
-                    Removed for SEO hygiene (Dec 2026): /predictions, /predictions/:slug,
+                    Retired for SEO hygiene (Jul 2026): /predictions, /predictions/:slug,
                     /teams, /teams/:slug, /players/:slug, /props/:slug, /matchups/:slug.
-                    These now fall through to the 404 route and are noindex-by-default. */}
+                    These now consolidate into indexable public hubs below. */}
                 <Route path="/best" element={<NoIndexBoundary><SeoIndex variant="best" /></NoIndexBoundary>} />
                 <Route path="/best/:slug" element={<NoIndexBoundary><SeoPageView pageType="best" /></NoIndexBoundary>} />
                 <Route path="/leagues/:slug" element={<NoIndexBoundary><SeoPageView pageType="league" /></NoIndexBoundary>} />
@@ -162,13 +160,14 @@ const App = () => (
                   />
                 ))}
 
-                {/* Retired programmatic URLs redirect instead of returning soft-404
-                    pages or stale SportsEvent structured data. */}
-                <Route path="/predictions/*" element={<Navigate to="/games" replace />} />
-                <Route path="/teams/*" element={<Navigate to="/games" replace />} />
-                <Route path="/matchups/*" element={<Navigate to="/games" replace />} />
-                <Route path="/players/*" element={<Navigate to="/player-props" replace />} />
-                <Route path="/props/*" element={<Navigate to="/player-props" replace />} />
+                {/* Retired programmatic URLs consolidate into indexable public hubs.
+                    Keep these away from noindex app routes so rendered crawls do not
+                    classify old dynamic pages as noindex exclusions. */}
+                <Route path="/predictions/*" element={<Navigate to="/ai-sports-picks" replace />} />
+                <Route path="/teams/*" element={<Navigate to="/ai-sports-picks" replace />} />
+                <Route path="/matchups/*" element={<Navigate to="/ai-sports-picks" replace />} />
+                <Route path="/players/*" element={<Navigate to="/ai-player-props" replace />} />
+                <Route path="/props/*" element={<Navigate to="/ai-player-props" replace />} />
                 
                 {/* Polish locale */}
                 <Route path="/pl" element={<QueryBoundary><LocalizedIndex locale="pl" /></QueryBoundary>} />
@@ -197,12 +196,12 @@ const App = () => (
                 <Route path="/de/ai-nfl-picks" element={<LocalizedLanding locale="de" page="aiNFLPicks" />} />
                 <Route path="/de/ai-parlay-builder" element={<LocalizedLanding locale="de" page="aiParlayBuilder" />} />
 
-                {/* Protected routes - require auth + subscription */}
+                {/* App tool routes */}
                 <Route path="/games" element={<NoIndexBoundary><AuthBoundary><Games /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/games/:gameId" element={<NoIndexBoundary><GameDetail /></NoIndexBoundary>} />
                 <Route path="/picks" element={<NoIndexBoundary><QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary></NoIndexBoundary>} />
                 <Route path="/player-props" element={<NoIndexBoundary><AuthBoundary><PlayerProps /></AuthBoundary></NoIndexBoundary>} />
-                <Route path="/parlays" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Parlays /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/parlays" element={<NoIndexBoundary><AuthBoundary><Parlays /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/chat" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
                 {/* Protected routes - require auth only */}
@@ -217,7 +216,6 @@ const App = () => (
           </AnalyticsWrapper>
         </ThemeProvider>
       </BrowserRouter>
-  </TooltipProvider>
 );
 
 export default App;

@@ -324,9 +324,6 @@ const Games = () => {
             </TabsList>
           </Tabs>
 
-          {/* Live Scores Banner */}
-          <LiveScoresBanner sport={selectedSport || undefined} />
-
           {/* Bet Signal Summary Card */}
           <Card className="mb-6 bg-card border-border">
             <CardContent className="p-5">
@@ -394,6 +391,8 @@ const Games = () => {
             </CardContent>
           </Card>
 
+          {/* Live Scores Banner */}
+          <LiveScoresBanner sport={selectedSport || undefined} />
 
           {/* Search & Filters */}
           <div className="space-y-4 mb-8">
@@ -556,7 +555,7 @@ const Games = () => {
                       >
                         {/* Blurred card underneath */}
                         <div className="blur-[6px] opacity-50 pointer-events-none select-none">
-                          <PopularGameCard game={game} rank={index + 1} />
+                          <PopularGameCard game={game} rank={index + 1} disableLogos />
                         </div>
                         {/* Lock overlay */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm rounded-xl border border-border/50 group-hover:border-primary/40 transition-colors">

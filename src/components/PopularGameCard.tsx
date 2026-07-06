@@ -25,6 +25,7 @@ interface PopularGameCardProps {
   rank?: number;
   isSelected?: boolean;
   onToggleSelect?: (game: PopularGame) => void;
+  disableLogos?: boolean;
 }
 
 type BetSignal = 'GOOD' | 'BORDERLINE' | 'PASS';
@@ -138,7 +139,7 @@ const formatOdds = (odds: number | undefined): string => {
   return odds > 0 ? `+${odds}` : `${odds}`;
 };
 
-export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: PopularGameCardProps) => {
+export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect, disableLogos = false }: PopularGameCardProps) => {
   // Calculate betting signal
   const betSignal = useMemo(() => calculateBetSignal(game), [game]);
 
@@ -220,6 +221,7 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                   abbreviation={getAbbreviation(game.homeTeam)}
                   sport={game.league || game.sport}
                   className="mx-auto mb-2"
+                  disableImage={disableLogos}
                 />
                 <p className="text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-[120px] mx-auto" title={game.homeTeam}>
                   {game.homeTeam}
@@ -256,6 +258,7 @@ export const PopularGameCard = ({ game, rank, isSelected, onToggleSelect }: Popu
                   abbreviation={getAbbreviation(game.awayTeam)}
                   sport={game.league || game.sport}
                   className="mx-auto mb-2"
+                  disableImage={disableLogos}
                 />
                 <p className="text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-[120px] mx-auto" title={game.awayTeam}>
                   {game.awayTeam}

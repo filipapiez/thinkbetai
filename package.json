@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "predev": "tsx scripts/generate-sitemaps.ts && tsx scripts/generate-redirects.ts",
+    "predev": "tsx scripts/generate-seo-route-manifest.ts && tsx scripts/generate-sitemaps.ts && tsx scripts/generate-redirects.ts",
     "dev": "vite",
-    "prebuild": "tsx scripts/generate-sitemaps.ts && tsx scripts/generate-redirects.ts",
+    "prebuild": "tsx scripts/generate-seo-route-manifest.ts && tsx scripts/generate-sitemaps.ts && tsx scripts/generate-redirects.ts",
     "build": "vite build",
     "postbuild": "tsx scripts/prerender-seo-landings.ts && tsx scripts/prerender-seo-pages.ts && tsx scripts/prerender-blog-pages.ts && tsx scripts/prerender-app-shell-pages.ts && tsx scripts/prerender-core-pages.ts",
     "build:dev": "vite build --mode development",

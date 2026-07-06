@@ -387,7 +387,7 @@ const HowItWorks = () => {
         {/* CTA */}
         <div className="text-center">
           <Button size="lg" asChild>
-            <Link to="/games" className="flex items-center gap-2">
+            <Link to="/ai-sports-picks" className="flex items-center gap-2">
               Start Exploring Games
               <ArrowRight className="h-4 w-4" />
             </Link>

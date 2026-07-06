@@ -246,7 +246,7 @@ const BlogPost = () => {
                 </Link>
               </Button>
               <Button asChild>
-                <Link to="/games">
+                <Link to="/ai-sports-picks">
                   Try AI Predictions
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
@@ -264,7 +264,7 @@ const BlogPost = () => {
                   Get access to professional-grade AI predictions for all major sports.
                 </p>
                 <Button asChild className="w-full">
-                  <Link to="/games">Get Started</Link>
+                  <Link to="/ai-sports-picks">Get Started</Link>
                 </Button>
               </CardContent>
             </Card>

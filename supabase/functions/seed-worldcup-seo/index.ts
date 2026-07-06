@@ -1,4 +1,6 @@
-// One-shot seeder: creates a /predictions/{slug} SEO page for every FIFA World Cup 2026 game.
+// One-shot seeder for FIFA World Cup 2026 DB content.
+// Public links consolidate to indexable hubs because /predictions/* and
+// /leagues/* are retired/noindex surfaces.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -73,9 +75,9 @@ serve(async (req) => {
       ],
       breadcrumbs: [
         { name: "Home", href: "/" },
-        { name: "Predictions", href: "/predictions" },
-        { name: "FIFA World Cup 2026", href: "/leagues/fifa-world-cup-2026" },
-        { name: `${away} vs ${home}`, href: `/predictions/${slug}` },
+        { name: "Predictions", href: "/ai-sports-picks" },
+        { name: "FIFA World Cup 2026", href: "/ai-sports-picks" },
+        { name: `${away} vs ${home}`, href: "/ai-sports-picks" },
       ],
       relatedLinks: [],
     };
@@ -87,8 +89,8 @@ serve(async (req) => {
     });
   }
 
-  // Also build a /leagues/fifa-world-cup-2026 hub
-  const hubLinks = rows.slice(0, 30).map((r) => ({ label: `${r.content_json.awayTeam} vs ${r.content_json.homeTeam}`, href: `/predictions/${r.slug}`, date: r.game_date }));
+  // Also build a DB hub, but link users and crawlers to the public picks hub.
+  const hubLinks = rows.slice(0, 30).map((r) => ({ label: `${r.content_json.awayTeam} vs ${r.content_json.homeTeam}`, href: "/ai-sports-picks", date: r.game_date }));
   const hub = {
     slug: "fifa-world-cup-2026",
     page_type: "league",
@@ -106,8 +108,8 @@ serve(async (req) => {
       ],
       breadcrumbs: [
         { name: "Home", href: "/" },
-        { name: "Leagues", href: "/predictions" },
-        { name: "FIFA World Cup 2026", href: "/leagues/fifa-world-cup-2026" },
+        { name: "Leagues", href: "/ai-sports-picks" },
+        { name: "FIFA World Cup 2026", href: "/ai-sports-picks" },
       ],
     },
     game_date: null,

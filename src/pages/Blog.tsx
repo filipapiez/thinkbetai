@@ -160,7 +160,7 @@ const Blog = () => {
             Put these strategies into practice with ThinkBetAI's advanced prediction engine.
           </p>
           <Button asChild size="lg">
-            <Link to="/games">
+            <Link to="/ai-sports-picks">
               Explore AI Predictions
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

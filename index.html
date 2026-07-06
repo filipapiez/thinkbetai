@@ -13,29 +13,41 @@
         } catch (e) {}
       })();
     </script>
-    <!-- Google tag: queue immediately, download after the critical rendering window. -->
+    <!-- Third parties are queued immediately, but downloaded after the CWV window. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-6NT9QNTBSZ');
 
-      function runWhenIdle(callback) {
+      function runWhenIdle(callback, timeout) {
         if ('requestIdleCallback' in window) {
-          requestIdleCallback(callback, { timeout: 4000 });
+          requestIdleCallback(callback, { timeout: timeout || 3000 });
         } else {
-          setTimeout(callback, 2500);
+          setTimeout(callback, timeout || 3000);
         }
       }
 
-      window.addEventListener('load', function() {
-        runWhenIdle(function() {
-          var s = document.createElement('script');
-          s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6NT9QNTBSZ';
-          s.async = true;
-          document.head.appendChild(s);
-        });
-      }, { once: true });
+      function scheduleThirdParty(callback) {
+        var done = false;
+        function run() {
+          if (done) return;
+          done = true;
+          runWhenIdle(callback, 3000);
+        }
+        window.addEventListener('pointerdown', run, { once: true, passive: true });
+        window.addEventListener('keydown', run, { once: true });
+        window.addEventListener('load', function() {
+          setTimeout(run, 15000);
+        }, { once: true });
+      }
+
+      scheduleThirdParty(function() {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6NT9QNTBSZ';
+        s.async = true;
+        document.head.appendChild(s);
+      });
     </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,7 +59,7 @@
     <meta name="author" content="ThinkBetAI" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="p:domain_verify" content="975dbc13efad26184fb4a3d9f7789de5"/>
-    <!-- Canonical is set dynamically per page via React Helmet -->
+    <!-- Canonical is set dynamically per page by the SEO component -->
 
     
     <!-- Open Graph / Facebook -->
@@ -225,15 +237,13 @@
     }
     </script>
     
-    <!-- Reddit Pixel - delayed until the browser is idle. -->
+    <!-- Reddit Pixel - delayed until after the critical rendering window. -->
     <script>
-    window.addEventListener('load', function() {
-      runWhenIdle(function() {
+      scheduleThirdParty(function() {
         !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);
         rdt('init','a2_id0ix2n68vkj');
         rdt('track', 'PageVisit');
       });
-    }, { once: true });
     </script>
     <!-- End Reddit Pixel -->
   </head>

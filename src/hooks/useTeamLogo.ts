@@ -6,19 +6,25 @@ import { getTeamLogoUrl, isIndividualSportForLogos } from '@/lib/teamLogos';
 const logoCache = new Map<string, string>();
 const pendingRequests = new Map<string, Promise<string | null>>();
 
-export function useTeamLogo(teamName: string, sport: string): {
+export function useTeamLogo(teamName: string, sport: string, enabled = true): {
   logoUrl: string | null;
   loading: boolean;
 } {
   const isIndividual = isIndividualSportForLogos(sport);
 
   // First try static ESPN mapping (instant, no network)
-  const staticUrl = !isIndividual ? getTeamLogoUrl(teamName, sport) : null;
+  const staticUrl = enabled && !isIndividual ? getTeamLogoUrl(teamName, sport) : null;
 
   const [dynamicUrl, setDynamicUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!staticUrl && !isIndividual);
+  const [loading, setLoading] = useState(enabled && !staticUrl && !isIndividual);
 
   useEffect(() => {
+    if (!enabled) {
+      setDynamicUrl(null);
+      setLoading(false);
+      return;
+    }
+
     // If we have a static URL or it's an individual sport, skip dynamic lookup
     if (staticUrl || isIndividual) return;
 
@@ -43,7 +49,7 @@ export function useTeamLogo(teamName: string, sport: string): {
       setDynamicUrl(url);
       setLoading(false);
     });
-  }, [teamName, sport, staticUrl, isIndividual]);
+  }, [teamName, sport, staticUrl, isIndividual, enabled]);
 
   return {
     logoUrl: staticUrl || dynamicUrl,

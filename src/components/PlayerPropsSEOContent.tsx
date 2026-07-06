@@ -94,9 +94,9 @@ export const PlayerPropsSEOContent = () => {
 
         <h2 className="text-2xl font-bold mb-4">Related Pages</h2>
         <ul className="grid sm:grid-cols-2 gap-2 text-sm">
-          <li>→ <Link to="/games" className="text-primary hover:underline">All games & matchups</Link></li>
+          <li>→ <Link to="/ai-sports-picks" className="text-primary hover:underline">All games & matchups</Link></li>
           <li>→ <Link to="/picks" className="text-primary hover:underline">Today's AI picks</Link></li>
-          <li>→ <Link to="/parlays" className="text-primary hover:underline">AI Parlay Builder</Link></li>
+          <li>→ <Link to="/ai-parlay-builder" className="text-primary hover:underline">AI Parlay Builder</Link></li>
           <li>→ <Link to="/track-record" className="text-primary hover:underline">Public track record</Link></li>
           <li>→ <Link to="/free-ai-predictions" className="text-primary hover:underline">Free AI predictions</Link></li>
           <li>→ <Link to="/how-it-works" className="text-primary hover:underline">How the model works</Link></li>

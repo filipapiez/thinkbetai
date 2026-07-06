@@ -78,7 +78,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       },
     ],
     links: [
-      { label: "View Today's Games", href: "/games" },
+      { label: "View Today's Games", href: "/ai-sports-picks" },
       { label: "Free AI Predictions", href: "/free-ai-predictions" },
       { label: "AI NFL Picks", href: "/ai-nfl-picks" },
       { label: "AI Sports Betting Guide", href: "/ai-sports-betting" },
@@ -103,7 +103,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       },
     ],
     links: [
-      { label: "View Free Picks", href: "/games" },
+      { label: "View Free Picks", href: "/ai-sports-picks" },
       { label: "AI Sports Picks", href: "/ai-sports-picks" },
       { label: "How It Works", href: "/how-it-works" },
       { label: "Responsible Gambling", href: "/responsible-gambling" },
@@ -128,7 +128,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       },
     ],
     links: [
-      { label: "Open Parlay Tools", href: "/parlays" },
+      { label: "Open Parlay Tools", href: "/ai-parlay-builder" },
       { label: "AI Sports Picks", href: "/ai-sports-picks" },
       { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
       { label: "Responsible Gambling", href: "/responsible-gambling" },
@@ -256,7 +256,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "How It Works", href: "/how-it-works" },
       { label: "AI Sports Betting", href: "/ai-sports-betting" },
       { label: "Responsible Gambling", href: "/responsible-gambling" },
-      { label: "View Games", href: "/games" },
+      { label: "View Games", href: "/ai-sports-picks" },
     ],
   },
   {

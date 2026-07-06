@@ -228,7 +228,7 @@ const AboutPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild className="gap-2">
-                <Link to="/games">
+                <Link to="/ai-sports-picks">
                   <TrendingUp className="h-5 w-5" />
                   View Today's Games
                 </Link>

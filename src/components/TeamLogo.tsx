@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useTeamLogo } from '@/hooks/useTeamLogo';
-import { isCombatSportForLogos, isIndividualSportForLogos } from '@/lib/teamLogos';
+import { isIndividualSportForLogos } from '@/lib/teamLogos';
 
 interface TeamLogoProps {
   teamName: string;
@@ -10,6 +10,7 @@ interface TeamLogoProps {
   className?: string;
   showBorder?: boolean;
   borderColor?: string;
+  disableImage?: boolean;
 }
 
 // Generate a consistent color from team name for fallback styling
@@ -32,20 +33,21 @@ export const TeamLogo = ({
   className,
   showBorder = false,
   borderColor,
+  disableImage = false,
 }: TeamLogoProps) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  const { logoUrl, loading } = useTeamLogo(teamName, sport);
+  const { logoUrl } = useTeamLogo(teamName, sport, !disableImage);
   const isIndividual = isIndividualSportForLogos(sport);
-  const showImage = logoUrl && !imageError && !isIndividual;
+  const showImage = !disableImage && logoUrl && !imageError && !isIndividual;
   
   const teamColor = getTeamColor(teamName);
 
   return (
     <div
       className={cn(
-        "w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden shrink-0",
+        "relative w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden shrink-0",
         showBorder && borderColor,
         className
       )}
@@ -75,6 +77,7 @@ export const TeamLogo = ({
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
             loading="lazy"
+            fetchPriority="low"
           />
         </>
       ) : (

@@ -75,7 +75,7 @@ export const LatestPredictionsHub = () => {
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               Upcoming Game Predictions
               <Link
-                to="/picks"
+                to="/ai-sports-picks"
                 className="ml-auto text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1"
               >
                 View all <ArrowRight className="w-3.5 h-3.5" />
@@ -85,7 +85,7 @@ export const LatestPredictionsHub = () => {
               {previews.map((p) => (
                 <li key={p.slug}>
                   <Link
-                    to={`/predictions/${p.slug}`}
+                    to="/ai-sports-picks"
                     className="block px-3 py-2 rounded-md text-sm text-foreground/90 hover:text-primary hover:bg-muted/50 transition-colors border border-border/30"
                   >
                     {p.title || titleize(p.slug)}
@@ -103,7 +103,7 @@ export const LatestPredictionsHub = () => {
               {matchups.map((m) => (
                 <li key={m.slug}>
                   <Link
-                    to={`/matchups/${m.slug}`}
+                    to="/ai-sports-picks"
                     className="block px-3 py-2 rounded-md text-sm text-foreground/90 hover:text-primary hover:bg-muted/50 transition-colors border border-border/30"
                   >
                     {m.title || titleize(m.slug)}
