@@ -8,7 +8,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { CORE_SEO_PAGES, type CoreSeoPage } from "../src/seoCorePages";
 import { countryPageList, languagePageList } from "../src/countryPages";
-import { getLocalizedMoneyPageAlternates, localizedMoneyPageList } from "../src/localizedSeoPages";
+import {
+  getLocalizedMoneyPageAlternates,
+  localizedMoneyPageList,
+  localizedMoneyPageRedirects,
+} from "../src/localizedSeoPages";
 import { seoBlueprints } from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
@@ -1549,8 +1553,33 @@ function build(page: CoreSeoPage) {
   return html;
 }
 
+function redirectHtml(source: string, target: string) {
+  const sourceUrl = `${BASE}${source}`;
+  const targetUrl = `${BASE}${target}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="${escapeHtml(targetUrl)}" />
+  <meta http-equiv="refresh" content="0; url=${escapeHtml(target)}" />
+  <title>Redirecting to localized ThinkBetAI page</title>
+  <script>window.location.replace(${JSON.stringify(target)});</script>
+</head>
+<body>
+  <main>
+    <h1>Redirecting</h1>
+    <p>This legacy URL has moved to <a href="${escapeHtml(target)}">${escapeHtml(targetUrl)}</a>.</p>
+    <p>Source: ${escapeHtml(sourceUrl)}</p>
+  </main>
+</body>
+</html>`;
+}
+
 let written = 0;
 let skippedBlueprintOwned = 0;
+let writtenLegacyRedirects = 0;
 
 for (const page of CORE_SEO_PAGES) {
   if (page.path !== "/" && blueprintPaths.has(page.path)) {
@@ -1572,6 +1601,16 @@ for (const page of CORE_SEO_PAGES) {
   written++;
 }
 
+for (const { source, target } of localizedMoneyPageRedirects) {
+  const html = redirectHtml(source, target);
+  const slug = source.slice(1);
+  writeFileSync(join(DIST, `${slug}.html`), html);
+  const nested = join(DIST, slug, "index.html");
+  mkdirSync(dirname(nested), { recursive: true });
+  writeFileSync(nested, html);
+  writtenLegacyRedirects++;
+}
+
 console.log(
-  `✓ prerendered ${written} core SEO pages${skippedBlueprintOwned ? ` (${skippedBlueprintOwned} blueprint-owned core paths skipped)` : ""}`,
+  `✓ prerendered ${written} core SEO pages and ${writtenLegacyRedirects} legacy localized redirects${skippedBlueprintOwned ? ` (${skippedBlueprintOwned} blueprint-owned core paths skipped)` : ""}`,
 );
