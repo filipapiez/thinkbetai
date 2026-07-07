@@ -6,6 +6,7 @@ import { CORE_SEO_PATHS } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS, isSeoAlias } from "../src/seoAliases";
 import { seoBlueprints } from "../src/seo/blueprints";
 import { APP_SHELL_REWRITES } from "../src/appShellPages";
+import { localizedMoneyPageRedirects } from "../src/localizedSeoPages";
 
 const blueprintPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
 
@@ -22,6 +23,7 @@ const lines = [
   ...Object.entries(SEO_ALIAS_REDIRECTS).map(
     ([slug, destination]) => `/${slug} ${destination} 301`,
   ),
+  ...localizedMoneyPageRedirects.map(({ source, target }) => `${source} ${target} 301`),
   "",
   "# Serve crawler-readable prerendered HTML while React takes over in-browser.",
   ...CORE_SEO_PATHS.filter((path) => path !== "/" && !blueprintPaths.has(path)).map(

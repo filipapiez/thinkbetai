@@ -1,9 +1,13 @@
+import { countryPageList, languagePageList } from "./countryPages";
+import { localizedMoneyPageList } from "./localizedSeoPages";
+
 export interface CoreSeoPage {
   path: string;
   title: string;
   description: string;
   h1: string;
   intro: string;
+  lang?: string;
   sections: Array<{ heading: string; body: string }>;
   links: Array<{ label: string; href: string }>;
 }
@@ -34,6 +38,99 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "Responsible Gambling", href: "/responsible-gambling" },
     ],
   },
+  ...countryPageList.map((page): CoreSeoPage => ({
+    path: page.path,
+    title: page.seoTitle,
+    description: page.seoDescription,
+    h1: page.h1,
+    intro: page.intro,
+    sections: [
+      {
+        heading: `${page.adjective} sports betting search intent`,
+        body: page.marketNotes.join(" "),
+      },
+      {
+        heading: `Primary sports for ${page.countryName}`,
+        body: `This regional page focuses on ${page.primarySports.join(", ")} while still connecting users to the broader ThinkBetAI tools for picks, parlays, bet analysis and educational guides.`,
+      },
+      ...page.toolModules.map((module) => ({
+        heading: module.heading,
+        body: module.body,
+      })),
+    ],
+    links: [
+      { label: "US Main Site", href: "/" },
+      { label: "AI Sports Picks", href: "/ai-sports-picks" },
+      { label: "AI Sports Betting Guide", href: "/ai-sports-betting" },
+      { label: "Free AI Predictions", href: "/free-ai-predictions" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      ...countryPageList
+        .filter((candidate) => candidate.path !== page.path)
+        .map((candidate) => ({
+          label: `AI Betting ${candidate.countryName}`,
+          href: candidate.path,
+        })),
+    ],
+  })),
+  ...languagePageList.map((page): CoreSeoPage => ({
+    path: page.path,
+    title: page.seoTitle,
+    description: page.seoDescription,
+    h1: page.h1,
+    intro: page.intro,
+    lang: page.htmlLang,
+    sections: [
+      {
+        heading: page.labels.intentHeading,
+        body: page.marketNotes.join(" "),
+      },
+      {
+        heading: page.labels.sportsHeading,
+        body: `This page focuses on ${page.primarySports.join(", ")} while linking into ThinkBetAI picks, parlay analysis, bet analysis and responsible gambling content.`,
+      },
+      ...page.toolModules.map((module) => ({
+        heading: module.heading,
+        body: module.body,
+      })),
+    ],
+    links: [
+      { label: "US Main Site", href: "/" },
+      { label: "AI Sports Picks", href: "/ai-sports-picks" },
+      { label: "AI Sports Betting Guide", href: "/ai-sports-betting" },
+      { label: "Free AI Predictions", href: "/free-ai-predictions" },
+      { label: "Responsible Gambling", href: "/responsible-gambling" },
+      ...countryPageList.map((candidate) => ({
+        label: `AI Betting ${candidate.countryName}`,
+        href: candidate.path,
+      })),
+      ...languagePageList
+        .filter((candidate) => candidate.path !== page.path)
+        .slice(0, 8)
+        .map((candidate) => ({
+          label: candidate.languageName,
+          href: candidate.path,
+        })),
+    ],
+  })),
+  ...localizedMoneyPageList.map((page): CoreSeoPage => ({
+    path: page.path,
+    title: page.title,
+    description: page.description,
+    h1: page.h1,
+    intro: page.intro,
+    lang: page.htmlLang,
+    sections: [
+      {
+        heading: page.term,
+        body: page.modules.map((module) => `${module.heading}: ${module.body}`).join(" "),
+      },
+      {
+        heading: `${page.marketType} · ${page.marketName}`,
+        body: page.labels.relatedText,
+      },
+    ],
+    links: page.links,
+  })),
   {
     path: "/ai-sports-betting",
     title: "AI Sports Betting: Free AI Picks & Analysis | ThinkBetAI",

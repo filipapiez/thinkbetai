@@ -12,6 +12,8 @@
 import { writeFileSync, existsSync, unlinkSync } from "fs";
 import { resolve } from "path";
 import { blogPosts } from "../src/lib/blogData";
+import { countryPageList, languagePageList } from "../src/countryPages";
+import { localizedMoneyPageList } from "../src/localizedSeoPages";
 import { isSeoAlias } from "../src/seoAliases";
 import { seoBlueprints } from "../src/seo/blueprints";
 
@@ -31,6 +33,21 @@ const homepage: Entry = { path: "/", changefreq: "daily", priority: "1.0" };
 // 2) Core marketing / feature pages
 const marketing: Entry[] = [
   { path: "/ai-sports-betting", changefreq: "weekly", priority: "0.95" },
+  ...countryPageList.map((page) => ({
+    path: page.path,
+    changefreq: "weekly" as const,
+    priority: "0.88",
+  })),
+  ...languagePageList.map((page) => ({
+    path: page.path,
+    changefreq: "weekly" as const,
+    priority: "0.86",
+  })),
+  ...localizedMoneyPageList.map((page) => ({
+    path: page.path,
+    changefreq: "weekly" as const,
+    priority: "0.82",
+  })),
   { path: "/ai-parlay-builder", changefreq: "weekly", priority: "0.95" },
   { path: "/ai-bet-analyzer", changefreq: "weekly", priority: "0.95" },
   { path: "/ai-sports-picks", changefreq: "daily", priority: "0.95" },

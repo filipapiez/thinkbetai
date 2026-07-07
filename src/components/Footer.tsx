@@ -44,6 +44,20 @@ export const Footer = () => {
               <li><Link to="/ai-betting" className="hover:text-foreground transition-colors">AI Betting</Link></li>
               <li><Link to="/ai-bets" className="hover:text-foreground transition-colors">AI Bets</Link></li>
               <li><Link to="/ai-picks" className="hover:text-foreground transition-colors">AI Picks</Link></li>
+              <li><Link to="/uk" className="hover:text-foreground transition-colors">AI Betting UK</Link></li>
+              <li><Link to="/ca" className="hover:text-foreground transition-colors">AI Betting Canada</Link></li>
+              <li><Link to="/au" className="hover:text-foreground transition-colors">AI Betting Australia</Link></li>
+              <li><Link to="/de" className="hover:text-foreground transition-colors">Deutsch</Link></li>
+              <li><Link to="/fr" className="hover:text-foreground transition-colors">Français</Link></li>
+              <li><Link to="/it" className="hover:text-foreground transition-colors">Italiano</Link></li>
+              <li><Link to="/es" className="hover:text-foreground transition-colors">Español</Link></li>
+              <li><Link to="/pt-br" className="hover:text-foreground transition-colors">Português</Link></li>
+              <li><Link to="/hi" className="hover:text-foreground transition-colors">हिन्दी</Link></li>
+              <li><Link to="/nl" className="hover:text-foreground transition-colors">Nederlands</Link></li>
+              <li><Link to="/pl" className="hover:text-foreground transition-colors">Polski</Link></li>
+              <li><Link to="/sv" className="hover:text-foreground transition-colors">Svenska</Link></li>
+              <li><Link to="/tr" className="hover:text-foreground transition-colors">Türkçe</Link></li>
+              <li><Link to="/ja" className="hover:text-foreground transition-colors">日本語</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
             </ul>

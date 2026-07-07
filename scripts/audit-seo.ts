@@ -17,6 +17,11 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+const effectiveMetaDescriptionLength = (value: string) => {
+  if (value.length >= 100) return value.length;
+  const cjkChars = (value.match(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g) ?? []).length;
+  return value.length + cjkChars;
+};
 const sitemapUrls = new Set(
   [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]),
 );
@@ -32,7 +37,8 @@ for (const page of CORE_SEO_PAGES) {
   const url = `${BASE}${page.path}`;
   if (!sitemapUrls.has(url)) issues.push(`core page missing from sitemap: ${page.path}`);
   if (page.title.length > 60) issues.push(`title too long (${page.title.length}): ${page.path}`);
-  if (page.description.length < 110 || page.description.length > 160) {
+  const descriptionLength = effectiveMetaDescriptionLength(page.description);
+  if (descriptionLength < 110 || descriptionLength > 160) {
     issues.push(`description length ${page.description.length}: ${page.path}`);
   }
 }
@@ -74,15 +80,17 @@ const folderHtmlPath = (dist: string, path: string) =>
   path === "/" ? join(dist, "index.html") : join(dist, path.slice(1), "index.html");
 
 const hasPrerenderShell = (html: string) => html.includes('id="seo-prerender"');
-const visibleTextWordCount = (html: string) =>
-  html
+const visibleTextWordCount = (html: string) => {
+  const text = html
     .replace(/<script[\s\S]*?<\/script>/g, " ")
     .replace(/<style[\s\S]*?<\/style>/g, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&[a-zA-Z0-9#]+;/g, " ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+    .trim();
+  const spacedWords = text.split(/\s+/).filter(Boolean).length;
+  const cjkChars = (text.match(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g) ?? []).length;
+  return spacedWords + Math.floor(cjkChars / 2);
+};
 const internalLinkCount = (html: string) =>
   new Set([...html.matchAll(/href="(\/(?!\/|#)[^"]*)"/g)].map((match) => match[1])).size;
 
@@ -149,7 +157,8 @@ for (const blueprint of seoBlueprints) {
   seenBlueprintTitles.set(title, path);
 
   if (title.length > 65) issues.push(`blueprint title too long (${title.length}): ${path}`);
-  if (blueprint.description.length < 100 || blueprint.description.length > 170) {
+  const descriptionLength = effectiveMetaDescriptionLength(blueprint.description);
+  if (descriptionLength < 100 || descriptionLength > 170) {
     issues.push(`blueprint description length ${blueprint.description.length}: ${path}`);
   }
   if (!blueprint.h1 || blueprint.h1.length < 8) issues.push(`blueprint H1 too short: ${path}`);
@@ -218,7 +227,7 @@ if (existsSync(dist)) {
       titles.set(title, path);
     }
     if (!description) issues.push(`missing description: ${path}`);
-    else if (description.length < 100 || description.length > 170) {
+    else if (effectiveMetaDescriptionLength(description) < 100 || effectiveMetaDescriptionLength(description) > 170) {
       issues.push(`description length ${description.length}: ${path}`);
     }
     if (canonical !== sitemapUrl) issues.push(`canonical mismatch: ${path} -> ${canonical ?? "missing"}`);

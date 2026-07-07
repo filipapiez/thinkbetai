@@ -7,6 +7,7 @@ import { FeatureCard } from '@/components/FeatureCard';
 import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { platformStats } from '@/lib/platformStats';
+import { englishMarketAlternates } from '@/countryPages';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
 // LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
@@ -101,7 +102,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEO canonical="/" />
+      <SEO canonical="/" alternates={englishMarketAlternates} />
       <Header />
       
       <main className="flex-1">

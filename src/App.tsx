@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useGoogleAnalytics } from "@/hooks/useGoogleAnalytics";
 import { SEO_ALIAS_REDIRECTS } from "@/seoAliases";
 import { seoBlueprintRoutes } from "@/seo/blueprintRoutes.generated";
+import { localizedMoneyPageList } from "@/localizedSeoPages";
 import { NoIndexBoundary } from "@/components/NoIndexBoundary";
 
 // Toast renderers are non-critical and load only after the first paint window.
@@ -52,9 +53,11 @@ const SeoPageView = lazy(() => import("./pages/SeoPageView"));
 const SeoLanding = lazy(() => import("./pages/SeoLanding"));
 const SeoIndex = lazy(() => import("./pages/SeoIndex"));
 const SeoBlueprintPage = lazy(() => import("./pages/SeoBlueprintPage"));
+const CountryLanding = lazy(() => import("./pages/CountryLanding"));
+const LanguageLanding = lazy(() => import("./pages/LanguageLanding"));
+const LocalizedSeoLanding = lazy(() => import("./pages/LocalizedSeoLanding"));
 
 // Localized pages
-const LocalizedIndex = lazy(() => import("./pages/localized/LocalizedIndex"));
 const LocalizedPricing = lazy(() => import("./pages/localized/LocalizedPricing"));
 const LocalizedFAQ = lazy(() => import("./pages/localized/LocalizedFAQ"));
 const LocalizedLanding = lazy(() => import("./pages/localized/LocalizedLanding"));
@@ -123,6 +126,9 @@ const App = () => (
                 <Route path="/free-ai-predictions" element={<FreeAIPredictions />} />
                 <Route path="/ai-nfl-picks" element={<AINFLPicks />} />
                 <Route path="/ai-sports-betting" element={<AISportsBetting />} />
+                <Route path="/uk" element={<CountryLanding country="uk" />} />
+                <Route path="/ca" element={<CountryLanding country="ca" />} />
+                <Route path="/au" element={<CountryLanding country="au" />} />
                 <Route path="/best-ai-sports-betting-tools" element={<BestAISportsBettingTools />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/login" element={<NoIndexBoundary><AuthBoundary><Login /></AuthBoundary></NoIndexBoundary>} />
@@ -169,8 +175,27 @@ const App = () => (
                 <Route path="/players/*" element={<Navigate to="/ai-player-props" replace />} />
                 <Route path="/props/*" element={<Navigate to="/ai-player-props" replace />} />
                 
+                {/* Indexable language landing pages */}
+                <Route path="/de" element={<LanguageLanding language="de" />} />
+                <Route path="/fr" element={<LanguageLanding language="fr" />} />
+                <Route path="/it" element={<LanguageLanding language="it" />} />
+                <Route path="/es" element={<LanguageLanding language="es" />} />
+                <Route path="/pt-br" element={<LanguageLanding language="pt-br" />} />
+                <Route path="/hi" element={<LanguageLanding language="hi" />} />
+                <Route path="/nl" element={<LanguageLanding language="nl" />} />
+                <Route path="/pl" element={<LanguageLanding language="pl" />} />
+                <Route path="/sv" element={<LanguageLanding language="sv" />} />
+                <Route path="/tr" element={<LanguageLanding language="tr" />} />
+                <Route path="/ja" element={<LanguageLanding language="ja" />} />
+                {localizedMoneyPageList.map((page) => (
+                  <Route
+                    key={page.path}
+                    path={page.path}
+                    element={<LocalizedSeoLanding language={page.languageSlug} topic={page.topicSlug} />}
+                  />
+                ))}
+
                 {/* Polish locale */}
-                <Route path="/pl" element={<QueryBoundary><LocalizedIndex locale="pl" /></QueryBoundary>} />
                 <Route path="/pl/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="pl" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/pl/faq" element={<LocalizedFAQ locale="pl" />} />
                 <Route path="/pl/best-ai-betting-app" element={<LocalizedLanding locale="pl" page="bestAIBettingApp" />} />
@@ -179,7 +204,6 @@ const App = () => (
                 <Route path="/pl/ai-parlay-builder" element={<LocalizedLanding locale="pl" page="aiParlayBuilder" />} />
 
                 {/* French locale */}
-                <Route path="/fr" element={<QueryBoundary><LocalizedIndex locale="fr" /></QueryBoundary>} />
                 <Route path="/fr/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="fr" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/fr/faq" element={<LocalizedFAQ locale="fr" />} />
                 <Route path="/fr/best-ai-betting-app" element={<LocalizedLanding locale="fr" page="bestAIBettingApp" />} />
@@ -188,7 +212,6 @@ const App = () => (
                 <Route path="/fr/ai-parlay-builder" element={<LocalizedLanding locale="fr" page="aiParlayBuilder" />} />
 
                 {/* German locale */}
-                <Route path="/de" element={<QueryBoundary><LocalizedIndex locale="de" /></QueryBoundary>} />
                 <Route path="/de/pricing" element={<QueryBoundary><AuthBoundary><LocalizedPricing locale="de" /></AuthBoundary></QueryBoundary>} />
                 <Route path="/de/faq" element={<LocalizedFAQ locale="de" />} />
                 <Route path="/de/best-ai-betting-app" element={<LocalizedLanding locale="de" page="bestAIBettingApp" />} />

@@ -1,3 +1,5 @@
+import { localizedMoneyPagePaths, localizedMoneyPageRedirects } from "./localizedSeoPages";
+
 export interface AppShellPage {
   path: string;
   title: string;
@@ -6,7 +8,7 @@ export interface AppShellPage {
   intro: string;
 }
 
-export const APP_SHELL_PAGES: AppShellPage[] = [
+const RAW_APP_SHELL_PAGES: AppShellPage[] = [
   {
     path: "/login",
     title: "Sign In | ThinkBetAI",
@@ -127,13 +129,6 @@ export const APP_SHELL_PAGES: AppShellPage[] = [
     intro: "Loading league analysis.",
   },
   {
-    path: "/pl",
-    title: "ThinkBetAI Polska",
-    description: "Open the Polish ThinkBetAI localized landing page.",
-    h1: "ThinkBetAI Polska",
-    intro: "Loading the Polish localized experience.",
-  },
-  {
     path: "/pl/pricing",
     title: "Cennik | ThinkBetAI",
     description: "Open the Polish ThinkBetAI pricing page.",
@@ -174,13 +169,6 @@ export const APP_SHELL_PAGES: AppShellPage[] = [
     description: "Open the Polish localized AI parlay builder page.",
     h1: "AI Parlay Builder",
     intro: "Loading localized parlay content.",
-  },
-  {
-    path: "/fr",
-    title: "ThinkBetAI France",
-    description: "Open the French ThinkBetAI localized landing page.",
-    h1: "ThinkBetAI France",
-    intro: "Loading the French localized experience.",
   },
   {
     path: "/fr/pricing",
@@ -225,13 +213,6 @@ export const APP_SHELL_PAGES: AppShellPage[] = [
     intro: "Loading localized parlay content.",
   },
   {
-    path: "/de",
-    title: "ThinkBetAI Deutschland",
-    description: "Open the German ThinkBetAI localized landing page.",
-    h1: "ThinkBetAI Deutschland",
-    intro: "Loading the German localized experience.",
-  },
-  {
     path: "/de/pricing",
     title: "Preise | ThinkBetAI",
     description: "Open the German ThinkBetAI pricing page.",
@@ -274,6 +255,12 @@ export const APP_SHELL_PAGES: AppShellPage[] = [
     intro: "Loading localized parlay content.",
   },
 ];
+
+const localizedMoneyPageLegacyPaths = new Set(localizedMoneyPageRedirects.map((redirect) => redirect.source));
+
+export const APP_SHELL_PAGES = RAW_APP_SHELL_PAGES.filter(
+  (page) => !localizedMoneyPagePaths.has(page.path) && !localizedMoneyPageLegacyPaths.has(page.path),
+);
 
 export const APP_SHELL_REWRITES = [
   ...APP_SHELL_PAGES.map((page) => ({

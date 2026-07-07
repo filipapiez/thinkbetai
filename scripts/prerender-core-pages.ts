@@ -7,6 +7,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { CORE_SEO_PAGES, type CoreSeoPage } from "../src/seoCorePages";
+import { countryPageList, languagePageList } from "../src/countryPages";
+import { getLocalizedMoneyPageAlternates, localizedMoneyPageList } from "../src/localizedSeoPages";
 import { seoBlueprints } from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
@@ -128,6 +130,225 @@ const commonFaqs: CoreFaq[] = [
   },
 ];
 
+const countryPageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries(
+  countryPageList.map((page): [string, CorePageUpgrade] => [
+    page.path,
+    {
+      eyebrow: page.heroEyebrow,
+      primaryKeyword: page.keywords.split(",")[0],
+      heroHeadline: `${page.h1} with local sports context`,
+      heroSubheadline: page.intro,
+      primaryCTA: { label: "View AI Sports Picks", href: "/ai-sports-picks" },
+      secondaryCTA: { label: "Read the AI Betting Guide", href: "/ai-sports-betting" },
+      statCards: [
+        {
+          label: "Market",
+          value: page.countryName,
+          detail: `This page targets ${page.adjective} search intent instead of reusing the generic US homepage.`,
+        },
+        {
+          label: "Sports Focus",
+          value: page.primarySports.slice(0, 3).join(", "),
+          detail: `Primary coverage cues include ${page.primarySports.join(", ")}.`,
+        },
+        {
+          label: "Currency Context",
+          value: page.currency,
+          detail: "Pricing and product references can use local currency context where applicable.",
+        },
+      ],
+      marketFocus: [
+        `${page.adjective} AI betting analysis`,
+        ...page.primarySports.slice(0, 6),
+        "Probability estimates",
+        "Responsible analysis",
+      ],
+      softwareSchema: true,
+      modules: [
+        ...page.toolModules,
+        {
+          heading: "Why this regional page is indexable",
+          body:
+            "This page has its own title, description, canonical URL, hreflang alternate links, local sports focus, market-specific FAQs and internal links. That makes it a regional English variant rather than a copied homepage.",
+          bullets: [
+            "The United States remains the main site at thinkbetai.com.",
+            `${page.countryName} gets a dedicated country route at ${page.path}.`,
+            "The page links back into the core product and responsible gambling cluster.",
+          ],
+        },
+        {
+          heading: "How to use ThinkBetAI in this market",
+          body:
+            "Start with public analysis, compare model probability with available odds, review current injury and matchup context, and make independent decisions only where sports betting is legal for you.",
+        },
+      ],
+      faqs: page.faqs,
+      relatedGuides: [
+        { label: "US Main Site", href: "/" },
+        ...countryPageList.map((candidate) => ({
+          label:
+            candidate.path === page.path
+              ? `${candidate.countryName} AI Betting`
+              : `AI Betting ${candidate.countryName}`,
+          href: candidate.path,
+        })),
+        { label: "AI Sports Betting Guide", href: "/ai-sports-betting" },
+        { label: "Responsible Gambling", href: "/responsible-gambling" },
+      ],
+      relatedTools: [
+        { label: "AI Sports Picks", href: "/ai-sports-picks" },
+        { label: "Free AI Predictions", href: "/free-ai-predictions" },
+        { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
+        { label: "AI Parlay Builder", href: "/ai-parlay-builder" },
+      ],
+    },
+  ]),
+);
+
+const languagePageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries(
+  languagePageList.map((page): [string, CorePageUpgrade] => [
+    page.path,
+    {
+      eyebrow: page.heroEyebrow,
+      primaryKeyword: page.keywords.split(",")[0],
+      heroHeadline: `${page.h1} with localized sports intent`,
+      heroSubheadline: page.intro,
+      primaryCTA: { label: page.labels.primaryCta, href: "/ai-sports-picks" },
+      secondaryCTA: { label: page.labels.secondaryCta, href: "/ai-sports-betting" },
+      statCards: [
+        {
+          label: "Language",
+          value: page.languageName,
+          detail: `This page targets ${page.languageName} search intent with localized copy, FAQs and sports context.`,
+        },
+        {
+          label: "Market",
+          value: page.marketName,
+          detail: `Primary market signal: ${page.marketName}. Users still need to follow local rules.`,
+        },
+        {
+          label: "Sports Focus",
+          value: page.primarySports.slice(0, 3).join(", "),
+          detail: `Coverage cues include ${page.primarySports.join(", ")}.`,
+        },
+      ],
+      marketFocus: [
+        `${page.languageName} AI sports analysis`,
+        ...page.primarySports.slice(0, 6),
+        "Odds context",
+        "Responsible analysis",
+      ],
+      softwareSchema: true,
+      modules: [
+        ...page.toolModules,
+        {
+          heading: page.labels.templateHeading,
+          body:
+            "This page uses the same SEO golden template as the English market pages: localized title, description, H1, search-intent sections, FAQ schema, internal links, self-canonical URL and hreflang alternates.",
+          bullets: [
+            "The page is indexable and included in sitemap.xml.",
+            "The copy is localized for search intent instead of being a direct English duplicate.",
+            "The page links back into ThinkBetAI's core product and trust pages.",
+          ],
+        },
+        {
+          heading: "Responsible AI sports analysis",
+          body:
+            "ThinkBetAI provides informational analysis only. It is not a sportsbook, does not place wagers and does not guarantee outcomes. Users should verify local laws and treat model output as research.",
+        },
+      ],
+      faqs: [...page.faqs, ...commonFaqs],
+      relatedGuides: [
+        { label: "US Main Site", href: "/" },
+        ...countryPageList.map((candidate) => ({
+          label: `AI Betting ${candidate.countryName}`,
+          href: candidate.path,
+        })),
+        ...languagePageList.map((candidate) => ({
+          label: candidate.languageName,
+          href: candidate.path,
+        })),
+        { label: "AI Sports Betting Guide", href: "/ai-sports-betting" },
+        { label: "Responsible Gambling", href: "/responsible-gambling" },
+      ],
+      relatedTools: [
+        { label: "AI Sports Picks", href: "/ai-sports-picks" },
+        { label: "Free AI Predictions", href: "/free-ai-predictions" },
+        { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
+        { label: "AI Parlay Builder", href: "/ai-parlay-builder" },
+      ],
+    },
+  ]),
+);
+
+const localizedMoneyPageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries(
+  localizedMoneyPageList.map((page): [string, CorePageUpgrade] => [
+    page.path,
+    {
+      eyebrow: `${page.languageName} · ${page.marketType}`,
+      primaryKeyword: page.term,
+      heroHeadline: page.h1,
+      heroSubheadline: page.intro,
+      primaryCTA: { label: page.labels.primaryCta, href: "/ai-sports-picks" },
+      secondaryCTA: { label: page.labels.englishCanonical, href: page.englishPath },
+      statCards: [
+        {
+          label: page.labels.languageHub,
+          value: page.languageName,
+          detail: page.intro,
+        },
+        {
+          label: page.labels.marketSports,
+          value: page.marketName,
+          detail: page.modules[0]?.body ?? page.intro,
+        },
+        {
+          label: page.labels.relatedBadge,
+          value: page.marketType,
+          detail: page.labels.relatedText,
+        },
+      ],
+      marketFocus: [
+        page.term,
+        ...page.primarySports.slice(0, 6),
+        page.labels.responsibleGambling,
+      ],
+      softwareSchema: true,
+      modules: [
+        ...page.modules,
+        {
+          heading: page.labels.relatedHeading,
+          body: page.labels.relatedText,
+          bullets: [
+            `${page.term}: ${page.path}.`,
+            `${page.labels.englishCanonical}: ${page.englishPath}.`,
+            page.labels.responsibleGambling,
+          ],
+        },
+        {
+          heading: page.labels.responsibleBadge,
+          body: page.labels.responsibleText,
+        },
+        {
+          heading: page.labels.faqHeading,
+          body: `${page.labels.relatedText} ${page.labels.responsibleText} ${page.intro}`,
+        },
+      ],
+      faqs: page.faqs,
+      relatedTools: page.links.slice(0, 10),
+      relatedGuides: [
+        { label: page.labels.languageHub, href: `/${page.languageSlug}` },
+        { label: page.labels.englishCanonical, href: page.englishPath },
+        { label: page.labels.responsibleGambling, href: "/responsible-gambling" },
+        ...localizedMoneyPageList
+          .filter((candidate) => candidate.languageSlug === page.languageSlug && candidate.path !== page.path)
+          .slice(0, 8)
+          .map((candidate) => ({ label: candidate.term, href: candidate.path })),
+      ],
+    },
+  ]),
+);
+
 const corePageUpgrades: Record<string, CorePageUpgrade> = {
   "/": {
     eyebrow: "AI Sports Betting Platform",
@@ -159,6 +380,9 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
     ],
     faqs: commonFaqs,
   },
+  ...countryPageUpgrades,
+  ...languagePageUpgrades,
+  ...localizedMoneyPageUpgrades,
   "/ai-sports-betting": {
     eyebrow: "Core Guide",
     primaryKeyword: "AI sports betting",
@@ -1059,6 +1283,7 @@ function structuredData(page: CoreSeoPage, upgrade: CorePageUpgrade) {
     name: page.h1,
     description: page.description,
     url,
+    inLanguage: page.lang ?? "en",
     isPartOf: { "@id": `${BASE}/#website` },
     publisher: { "@id": `${BASE}/#organization` },
   };
@@ -1112,6 +1337,23 @@ function structuredData(page: CoreSeoPage, upgrade: CorePageUpgrade) {
     "@context": "https://schema.org",
     "@graph": nodes,
   })}</script>`;
+}
+
+const globalMarketPaths = new Set([
+  "/",
+  ...countryPageList.map((page) => page.path),
+  ...languagePageList.map((page) => page.path),
+  ...localizedMoneyPageList.map((page) => page.path),
+]);
+
+function renderAlternateLinks(path: string) {
+  if (!globalMarketPaths.has(path)) return "";
+  return getLocalizedMoneyPageAlternates(path)
+    .map(
+      (entry) =>
+        `<link rel="alternate" hreflang="${escapeHtml(entry.hrefLang)}" href="${escapeHtml(entry.href)}" />`,
+    )
+    .join("\n");
 }
 
 function renderLinkGrid(heading: string, links: CoreLink[]) {
@@ -1255,6 +1497,9 @@ function build(page: CoreSeoPage) {
   const url = `${BASE}${page.path === "/" ? "/" : page.path}`;
   const upgrade = corePageUpgrades[page.path] ?? corePageUpgrades["/"];
   let html = baseHtml;
+  if (page.lang) {
+    html = html.replace(/<html\s+lang="[^"]*">/, `<html lang="${escapeHtml(page.lang)}">`);
+  }
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(page.title)}</title>`);
   html = html.replace(
     /<meta\s+name="title"[^>]*>/,
@@ -1295,9 +1540,10 @@ function build(page: CoreSeoPage) {
 
   // Replace generic base schema with page-specific, claim-safe schema.
   html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, "");
+  const alternateLinks = renderAlternateLinks(page.path);
   html = html.replace(
     "</head>",
-    `<link rel="canonical" href="${escapeHtml(url)}" />\n${structuredData(page, upgrade)}\n</head>`,
+    `${alternateLinks ? `${alternateLinks}\n` : ""}<link rel="canonical" href="${escapeHtml(url)}" />\n${structuredData(page, upgrade)}\n</head>`,
   );
   html = html.replace(/<div id="root"><\/div>/, renderBody(page));
   return html;

@@ -8,6 +8,8 @@ interface SEOProps {
   image?: string;
   url?: string;
   canonical?: string;
+  alternates?: Array<{ hrefLang: string; href: string }>;
+  htmlLang?: string;
   type?: 'website' | 'article';
   author?: string;
   publishedTime?: string;
@@ -28,6 +30,8 @@ export const SEO = ({
   image = defaultImage,
   url,
   canonical,
+  alternates,
+  htmlLang,
   type = 'website',
   author,
   publishedTime,
@@ -43,6 +47,11 @@ export const SEO = ({
       : `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
   const fullUrl = url ? toAbsoluteUrl(url) : `${siteUrl}/`;
   const canonicalUrl = canonical ? toAbsoluteUrl(canonical) : fullUrl;
+  const alternateEntries = (alternates ?? []).map((entry) => ({
+    hrefLang: entry.hrefLang,
+    href: toAbsoluteUrl(entry.href),
+  }));
+  const alternateEntriesJson = JSON.stringify(alternateEntries);
   const fallbackStructuredData: Record<string, unknown> | undefined = effectiveNoIndex
     ? undefined
     : {
@@ -76,6 +85,7 @@ export const SEO = ({
     };
 
     document.title = fullTitle;
+    document.documentElement.lang = htmlLang || 'en';
     upsertMeta('name', 'title', fullTitle);
     upsertMeta('name', 'description', description);
     upsertMeta('name', 'keywords', keywords);
@@ -109,6 +119,21 @@ export const SEO = ({
     canonicalLink.href = canonicalUrl;
     if (!existingCanonical) document.head.appendChild(canonicalLink);
 
+    document.head
+      .querySelectorAll<HTMLLinkElement>('link[rel="alternate"][data-thinkbetai-alternate="true"]')
+      .forEach((link) => link.remove());
+
+    const parsedAlternateEntries = JSON.parse(alternateEntriesJson) as Array<{ hrefLang: string; href: string }>;
+
+    for (const entry of parsedAlternateEntries) {
+      const link = document.createElement('link');
+      link.rel = 'alternate';
+      link.hreflang = entry.hrefLang;
+      link.href = entry.href;
+      link.dataset.thinkbetaiAlternate = 'true';
+      document.head.appendChild(link);
+    }
+
     const schemaId = 'thinkbetai-page-schema';
     const existingSchema = document.head.querySelector<HTMLScriptElement>(`#${schemaId}`);
     if (structuredDataJson && structuredDataJson !== '""') {
@@ -122,10 +147,12 @@ export const SEO = ({
     }
   }, [
     author,
+    alternateEntriesJson,
     canonicalUrl,
     description,
     fullTitle,
     fullUrl,
+    htmlLang,
     image,
     keywords,
     effectiveNoIndex,
