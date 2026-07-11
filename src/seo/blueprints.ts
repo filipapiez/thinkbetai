@@ -274,6 +274,22 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
       ],
     },
     {
+      type: "intro_explainer",
+      eyebrow: "Search intent",
+      heading: "Why this AI betting predictions page should be its own URL",
+      body: [
+        "Someone searching for AI betting predictions is not only looking for a signup page. They are trying to understand whether a model can help them evaluate today's board, what data it uses, what the prediction actually means and whether the output is trustworthy enough to compare against sportsbook odds.",
+        "That deserves a dedicated URL because the query sits at the center of the ThinkBetAI topic cluster. Sport-specific pick pages, player prop pages, parlay tools, methodology content and track-record pages can all support this page, but they should not replace it. This page explains the core concept and then sends users deeper when they know what type of betting analysis they need.",
+        "The page also needs to be careful. Sports betting sits in a high-risk category, so ranking content cannot sound like a guaranteed-profit machine. The best version of this page explains probability, confidence, price, limitations and responsible use in plain language while still showing why ThinkBetAI is useful.",
+      ],
+      bullets: [
+        "Primary search job: explain AI betting predictions clearly.",
+        "Trust job: show model limits, uncertainty and responsible betting context.",
+        "Internal-link job: connect users to sport pages, prop pages, parlays, methodology and proof.",
+        "Conversion job: move serious users from preview content into deeper bet analysis.",
+      ],
+    },
+    {
       type: "product_report_preview",
       heading: "Inside a ThinkBetAI Prediction Report",
       subheading:
@@ -333,6 +349,22 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
       heading: "How to Use AI Betting Predictions",
       subheading:
         "Use the public prediction board as a starting point, then move into deeper analysis when a bet deserves a closer look.",
+    },
+    {
+      type: "intro_explainer",
+      eyebrow: "Quality control",
+      heading: "What keeps this page from being thin SEO content",
+      body: [
+        "A real AI betting predictions page needs more than a keyword, a hero section and a signup button. It should have crawlable explanations, self-canonical metadata, structured data, FAQ coverage, internal links and enough page-specific copy for search engines to understand what the URL adds to the site.",
+        "For ThinkBetAI, the indexable value comes from combining product context with education. The page explains how predictions are created, what market data matters, how confidence should be interpreted and why a bettor should still compare the model against odds movement, injury updates and their own risk limit.",
+        "This is also the hub that makes the surrounding pages stronger. When this URL links naturally to NFL picks, NBA picks, player prop predictions, the AI parlay picker and methodology pages, Google sees a connected topic cluster instead of a pile of disconnected keyword pages.",
+      ],
+      bullets: [
+        "Self-canonical URL: https://thinkbetai.com/ai-betting-predictions.",
+        "Indexable HTML snapshot generated at build time.",
+        "FAQ, webpage, app and breadcrumb schema included.",
+        "Clear next paths into related betting tools and supporting proof pages.",
+      ],
     },
     {
       type: "supported_sports",
@@ -466,6 +498,22 @@ const buildSeoSections = (definition: BlueprintDefinition): SeoSection[] => [
     ],
   },
   {
+    type: "intro_explainer",
+    eyebrow: "Search intent",
+    heading: `Why ${definition.h1} deserves a dedicated page`,
+    body: [
+      `Searchers looking for ${definition.primaryKeyword} are usually not asking for a generic sports betting page. They want a focused answer that explains the market, the workflow, the risk, and the reason ThinkBetAI is relevant to this exact query. A dedicated URL lets the page use a precise title, H1, canonical, internal links, FAQ set and structured data instead of forcing every keyword into one broad AI betting page.`,
+      `That matters because ${definition.pageNoun} can have a different decision path from a generic prediction page. Some visitors want sport-specific pick logic, some want player prop context, some want parlay correlation, and some want methodology or bankroll discipline. If those needs are collapsed into one page, the content becomes vague. If each URL answers its own intent, Google and users can both see why the page exists.`,
+      `The page should still avoid fake certainty. A good ThinkBetAI SEO page makes the model useful without turning it into a guaranteed-win claim. It explains inputs, confidence, fair odds, sportsbook price, matchup context, and responsible-use limits. That gives the page a better chance of ranking because it has a clear search job, not just a keyword variation.`,
+    ],
+    bullets: [
+      `Primary keyword: ${definition.primaryKeyword}.`,
+      `Page purpose: explain ${definition.pageNoun} without promising results.`,
+      `Conversion path: move from public preview to deeper analysis only when the user wants more context.`,
+      `Trust requirement: show uncertainty, risk notes, and responsible betting language.`,
+    ],
+  },
+  {
     type: "product_report_preview",
     heading: definition.reportHeading,
     subheading:
@@ -525,6 +573,22 @@ const buildSeoSections = (definition: BlueprintDefinition): SeoSection[] => [
     heading: definition.howToUseHeading,
     subheading:
       "Use the public prediction board as a starting point, then move into deeper analysis when a bet deserves a closer look.",
+  },
+  {
+    type: "intro_explainer",
+    eyebrow: "Quality control",
+    heading: "What makes this page indexable instead of thin",
+    body: [
+      `A page like this should earn its place in the sitemap. That means it needs a self-canonical URL, indexable metadata, a clear heading, enough crawlable copy, structured data, and internal links to related betting tools, proof pages, methodology pages and responsible gambling resources. It should not be a doorway page that only swaps a sport name or market name while repeating the same shallow copy.`,
+      `The quality bar is higher in sports betting because the topic carries financial risk. ThinkBetAI pages need to be careful with claims, avoid guaranteed-profit language, and connect recommendations to limitations. Good SEO here is not just ranking for a keyword. It is building enough trust that the visitor understands what the model can and cannot do.`,
+      `For ${definition.h1}, the strongest version of the page is specific enough to satisfy the query, but connected enough to the rest of the site that it supports the broader topic cluster. The user should be able to move from this page to related picks, tools, track record, methodology, pricing, and responsible-use content without hitting dead ends.`,
+    ],
+    bullets: [
+      "Self-canonical URL that matches the search intent.",
+      "No noindex tag and no redirect away from the page.",
+      "FAQ schema, webpage schema, and breadcrumb schema.",
+      "Internal links to related tools, proof, and responsible-use pages.",
+    ],
   },
   {
     type: "supported_sports",
