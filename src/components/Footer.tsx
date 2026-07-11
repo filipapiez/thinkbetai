@@ -24,6 +24,7 @@ export const Footer = () => {
             <h4 className="font-semibold mb-3 text-sm">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/ai-sports-picks" className="hover:text-foreground transition-colors">AI Sports Picks</Link></li>
+              <li><Link to="/ai-bet-analyzer" className="hover:text-foreground transition-colors">AI Bet Analyzer</Link></li>
               <li><Link to="/games" className="hover:text-foreground transition-colors">Search Games</Link></li>
               <li><Link to="/ai-parlay-builder" className="hover:text-foreground transition-colors">AI Parlay Builder</Link></li>
               <li><Link to="/ai-nfl-picks" className="hover:text-foreground transition-colors">AI NFL Picks</Link></li>
@@ -38,6 +39,7 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/free-ai-predictions" className="hover:text-foreground transition-colors">Free AI Predictions</Link></li>
               <li><Link to="/ai-sports-picks" className="hover:text-foreground transition-colors">AI Sports Picks</Link></li>
+              <li><Link to="/best-ai-sports-betting-tools" className="hover:text-foreground transition-colors">Best AI Sports Betting Tools</Link></li>
               <li><Link to="/best-ai-betting-app" className="hover:text-foreground transition-colors">Best AI Betting App 2026</Link></li>
               <li><Link to="/bet-ai" className="hover:text-foreground transition-colors">Bet AI</Link></li>
               <li><Link to="/betting-ai" className="hover:text-foreground transition-colors">Betting AI</Link></li>
@@ -68,6 +70,8 @@ export const Footer = () => {
             <h4 className="font-semibold mb-3 text-sm">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/track-record" className="hover:text-foreground transition-colors">Track Record & Methodology</Link></li>
+              <li><Link to="/tools/expected-value-calculator" className="hover:text-foreground transition-colors">Expected Value Calculator</Link></li>
+              <li><Link to="/tools/no-vig-fair-odds-calculator" className="hover:text-foreground transition-colors">No-Vig Fair Odds Calculator</Link></li>
               <li><Link to="/editorial-policy" className="hover:text-foreground transition-colors">Editorial Policy</Link></li>
               <li><Link to="/responsible-gambling" className="hover:text-foreground transition-colors">Responsible Gambling</Link></li>
               <li><Link to="/about" className="hover:text-foreground transition-colors">About</Link></li>

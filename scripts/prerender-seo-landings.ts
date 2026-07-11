@@ -71,6 +71,7 @@ const sportLandingLinks = [
 ];
 
 const blueprintSlugs = new Set(seoBlueprints.map((blueprint) => blueprint.slug));
+const promotedFeatureSlugs = new Set(["ai-bet-analyzer", "ai-parlay-builder"]);
 
 // ---------- render body ----------
 function renderBody(config: SeoLandingConfig): string {
@@ -279,11 +280,11 @@ function renderBlueprintSection(section: SeoSection): string {
   }
 
   if (section.type === "predictions_widget") {
-    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><ul><li>Lakers moneyline — 83% confidence, +4.8% edge</li><li>Yankees -1.5 — 79% confidence, +3.9% edge</li><li>Chiefs -3 — 81% confidence, +4.3% edge</li></ul></article>`;
+    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><ul><li>Model probability compared with sportsbook break-even probability</li><li>Fair-odds estimate, expected-value note and confidence range</li><li>Risk flags for injuries, market movement and limited data</li></ul></article>`;
   }
 
   if (section.type === "bet_analyzer_preview") {
-    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><p>Example: ${escapeHtml(section.placeholder)}</p></article>`;
+    return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p><p>Review the listed price, break-even probability, model estimate, fair odds, EV and risk notes before treating any wager as actionable.</p></article>`;
   }
 
   return `<article><h2>${escapeHtml(section.heading)}</h2><p>${escapeHtml(section.subheading)}</p></article>`;
@@ -490,8 +491,9 @@ for (const config of SEO_LANDING_CONFIGS) {
   }
 }
 
+const renderableBlueprints = seoBlueprints.filter((blueprint) => !promotedFeatureSlugs.has(blueprint.slug));
 let blueprintWritten = 0;
-for (const blueprint of seoBlueprints) {
+for (const blueprint of renderableBlueprints) {
   try {
     const html = buildHtmlForBlueprint(blueprint);
     const flatFile = join(DIST, `${blueprint.slug}.html`);
@@ -506,4 +508,4 @@ for (const blueprint of seoBlueprints) {
   }
 }
 
-console.log(`[prerender] wrote ${written} legacy SEO landing snapshots and ${blueprintWritten}/${seoBlueprints.length} blueprint snapshots into dist/ (both .html and /index.html forms)`);
+console.log(`[prerender] wrote ${written} legacy SEO landing snapshots and ${blueprintWritten}/${renderableBlueprints.length} blueprint snapshots into dist/ (both .html and /index.html forms)`);

@@ -84,6 +84,13 @@ export function useActiveBets() {
           confidence: bet.confidence,
           edge: bet.edge,
           game_time: bet.game_time,
+          published_at: new Date().toISOString(),
+          market_type: bet.pick_type,
+          line: bet.pick_value,
+          opening_odds: bet.odds,
+          pick_odds: bet.odds,
+          source_event_id: bet.game_id,
+          odds_source: 'manual',
         })
         .select()
         .single();

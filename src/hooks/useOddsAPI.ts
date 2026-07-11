@@ -21,6 +21,35 @@ export interface LiveOdds {
   };
 }
 
+export interface BookmakerOdds {
+  key: string;
+  title: string;
+  moneyline: { home: number; away: number };
+  spread: { home: number; homeOdds: number; away: number; awayOdds: number };
+  total: { line: number; overOdds: number; underOdds: number };
+}
+
+export interface BestLine {
+  bookmaker: string;
+  odds: number;
+  line?: number;
+}
+
+export interface BestLines {
+  moneyline: {
+    home: BestLine | null;
+    away: BestLine | null;
+  };
+  spread: {
+    home: BestLine | null;
+    away: BestLine | null;
+  };
+  total: {
+    over: BestLine | null;
+    under: BestLine | null;
+  };
+}
+
 export interface LiveGame {
   id: string;
   sportKey: string;
@@ -31,6 +60,8 @@ export interface LiveGame {
   bookmaker: string;
   odds: LiveOdds;
   hasOdds: boolean;
+  bookmakers?: BookmakerOdds[];
+  bestLines?: BestLines;
 }
 
 interface OddsAPIResponse {

@@ -21,6 +21,23 @@ interface ActiveBet {
   edge: number;
   game_time: string;
   status: string;
+  published_at?: string | null;
+  bookmaker?: string | null;
+  market_type?: string | null;
+  line?: number | null;
+  opening_odds?: number | null;
+  pick_odds?: number | null;
+  closing_odds?: number | null;
+  closing_line?: number | null;
+  closing_bookmaker?: string | null;
+  closing_captured_at?: string | null;
+  model_probability?: number | null;
+  implied_probability?: number | null;
+  expected_value?: number | null;
+  clv_percent?: number | null;
+  clv_cents?: number | null;
+  source_event_id?: string | null;
+  odds_source?: string | null;
 }
 
 interface GameResult {
@@ -28,6 +45,20 @@ interface GameResult {
   homeScore: number;
   awayScore: number;
   status: { ended: boolean };
+}
+
+function impliedProbability(price: number) {
+  return price < 0 ? Math.abs(price) / (Math.abs(price) + 100) : 100 / (price + 100);
+}
+
+function calculateClvPercent(pickOdds?: number | null, closingOdds?: number | null) {
+  if (typeof pickOdds !== 'number' || typeof closingOdds !== 'number') return null;
+  return Number(((impliedProbability(closingOdds) - impliedProbability(pickOdds)) * 100).toFixed(2));
+}
+
+function calculateClvCents(pickOdds?: number | null, closingOdds?: number | null) {
+  if (typeof pickOdds !== 'number' || typeof closingOdds !== 'number') return null;
+  return pickOdds - closingOdds;
 }
 
 serve(async (req) => {
@@ -177,6 +208,9 @@ serve(async (req) => {
             }
 
             const gameDate = new Date(bet.game_time).toISOString().split('T')[0];
+            const pickOdds = bet.pick_odds ?? bet.odds;
+            const clvPercent = bet.clv_percent ?? calculateClvPercent(pickOdds, bet.closing_odds);
+            const clvCents = bet.clv_cents ?? calculateClvCents(pickOdds, bet.closing_odds);
 
             if (result === 'win' || result === 'loss') {
               const { error: historyError } = await supabase
@@ -191,6 +225,23 @@ serve(async (req) => {
                   confidence: bet.confidence,
                   edge: bet.edge,
                   result,
+                  published_at: bet.published_at ?? bet.game_time,
+                  bookmaker: bet.bookmaker ?? null,
+                  market_type: bet.market_type ?? bet.pick_type,
+                  line: bet.line ?? bet.pick_value ?? null,
+                  opening_odds: bet.opening_odds ?? bet.odds,
+                  pick_odds: pickOdds,
+                  closing_odds: bet.closing_odds ?? null,
+                  closing_line: bet.closing_line ?? null,
+                  closing_bookmaker: bet.closing_bookmaker ?? null,
+                  closing_captured_at: bet.closing_captured_at ?? null,
+                  model_probability: bet.model_probability ?? null,
+                  implied_probability: bet.implied_probability ?? null,
+                  expected_value: bet.expected_value ?? null,
+                  clv_percent: clvPercent,
+                  clv_cents: clvCents,
+                  source_event_id: bet.source_event_id ?? bet.game_id,
+                  odds_source: bet.odds_source ?? null,
                 }, {
                   onConflict: 'sport,home_team,away_team,pick,date',
                 });

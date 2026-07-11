@@ -10,6 +10,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import { Check, Zap, Crown, Trophy, Star, BarChart3, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmbeddedCheckoutDialog } from '@/components/EmbeddedCheckoutDialog';
+import { PublicReviewsSection } from '@/components/PublicReviewsSection';
 
 // Stripe price IDs for each plan
 const pricingPlans = [
@@ -266,7 +267,7 @@ const Pricing = () => {
                     
                     {/* Trust text */}
                     <p className="text-xs text-center text-muted-foreground mt-3">
-                      Cancel anytime
+                      Cancel from your Account page anytime
                     </p>
                   </CardContent>
                 </Card>
@@ -286,10 +287,16 @@ const Pricing = () => {
               <span>Instant Access</span>
             </div>
             <div className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-success" />
+              <span>Self-Serve Cancellation</span>
+            </div>
+            <div className="flex items-center gap-2">
               <Star className="h-5 w-5 text-success" />
               <span>24/7 Support</span>
             </div>
           </div>
+
+          <PublicReviewsSection />
 
           {/* FAQ Section */}
           <div className="mt-20 max-w-3xl mx-auto">
@@ -300,7 +307,7 @@ const Pricing = () => {
               {[
                 {
                   q: 'Can I cancel anytime?',
-                  a: "Yes, you can cancel your subscription at any time. Contact our 24/7 support team for cancellation, and you'll continue to have access until the end of your billing cycle."
+                  a: "Yes. Open Account, choose Deactivate Plan, and your subscription will stop renewing. You'll keep access until the end of your current billing period."
                 },
                 {
                   q: 'Is this betting advice?',

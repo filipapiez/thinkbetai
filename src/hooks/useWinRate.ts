@@ -12,7 +12,14 @@ interface WinRateData {
   isLoading: boolean;
 }
 
-export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
+interface UseWinRateOptions {
+  pickType?: 'Over' | 'Under';
+  useFallback?: boolean;
+}
+
+export const useWinRate = (options?: 'Over' | 'Under' | UseWinRateOptions): WinRateData => {
+  const pickType = typeof options === 'string' ? options : options?.pickType;
+  const useFallback = typeof options === 'object' ? options.useFallback ?? true : true;
   // Defer query to avoid extending the critical network dependency chain
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -29,11 +36,7 @@ export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
     queryKey: ['global-win-rate', pickType],
     enabled: ready,
     queryFn: async () => {
-      // Fetch counts and recent bets for streak in parallel
-      const baseQuery = pickType 
-        ? { eq: { pick: pickType } } 
-        : undefined;
-
+      // Fetch counts and recent bets for streak in parallel.
       const [winsRes, lossesRes, recentRes] = await Promise.all([
         pickType
           ? supabase
@@ -71,6 +74,9 @@ export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
               .limit(200),
       ]);
 
+      const error = winsRes.error ?? lossesRes.error ?? recentRes.error;
+      if (error) throw error;
+
       const wins = winsRes.count ?? 0;
       const losses = lossesRes.count ?? 0;
       const total = wins + losses;
@@ -101,7 +107,7 @@ export const useWinRate = (pickType?: 'Over' | 'Under'): WinRateData => {
         currentStreak: platformStats.streakCurrent,
       }
     : undefined;
-  const resolvedData = data ?? fallbackData;
+  const resolvedData = data ?? (useFallback ? fallbackData : undefined);
 
   return {
     winRate: resolvedData?.winRate ?? '—',

@@ -18,7 +18,12 @@ import { seoBlueprints } from "../src/seo/blueprints";
 const BASE = "https://thinkbetai.com";
 const DIST = resolve("dist");
 const indexPath = join(DIST, "index.html");
-const blueprintPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
+const promotedFeaturePaths = new Set(["/ai-bet-analyzer", "/ai-parlay-builder"]);
+const blueprintPaths = new Set(
+  seoBlueprints
+    .map((blueprint) => blueprint.canonical)
+    .filter((path) => !promotedFeaturePaths.has(path)),
+);
 
 if (!existsSync(indexPath)) {
   console.warn("[prerender-core] dist/index.html missing — skipping.");

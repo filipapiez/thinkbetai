@@ -16,6 +16,16 @@ const LOOKAHEAD_HOURS = 48;
 type OddsOutcome = {
   name: string;
   price: number;
+  point?: number;
+};
+
+type OddsBookmaker = {
+  key?: string;
+  title?: string;
+  markets?: Array<{
+    key: string;
+    outcomes?: OddsOutcome[];
+  }>;
 };
 
 type OddsGame = {
@@ -25,12 +35,7 @@ type OddsGame = {
   commence_time: string;
   home_team: string;
   away_team: string;
-  bookmakers?: Array<{
-    markets?: Array<{
-      key: string;
-      outcomes?: OddsOutcome[];
-    }>;
-  }>;
+  bookmakers?: OddsBookmaker[];
 };
 
 type QualifiedPick = {
@@ -46,6 +51,17 @@ type QualifiedPick = {
   edge: number;
   game_time: string;
   status: "pending";
+  published_at: string;
+  bookmaker: string;
+  market_type: "moneyline";
+  line: null;
+  opening_odds: number;
+  pick_odds: number;
+  model_probability: number;
+  implied_probability: number;
+  expected_value: number;
+  source_event_id: string;
+  odds_source: "the-odds-api";
 };
 
 const sports = [
@@ -66,13 +82,34 @@ function impliedProbability(price: number) {
   return price < 0 ? Math.abs(price) / (Math.abs(price) + 100) : 100 / (price + 100);
 }
 
+function americanToDecimal(price: number) {
+  return price > 0 ? 1 + price / 100 : 1 + 100 / Math.abs(price);
+}
+
+function expectedValue(modelProbability: number, price: number) {
+  const decimalOdds = americanToDecimal(price);
+  return modelProbability * (decimalOdds - 1) - (1 - modelProbability);
+}
+
+function findBestMoneyline(game: OddsGame, teamName: string) {
+  const candidates = game.bookmakers
+    ?.flatMap((book) => {
+      const h2h = book.markets?.find((market) => market.key === "h2h");
+      const outcome = h2h?.outcomes?.find((item) => item.name === teamName);
+      if (!outcome || typeof outcome.price !== "number") return [];
+      return [{
+        name: outcome.name,
+        price: Math.round(outcome.price),
+        bookmaker: book.title || book.key || "Unknown sportsbook",
+      }];
+    }) || [];
+
+  return candidates.sort((a, b) => b.price - a.price)[0] || null;
+}
+
 function estimateQualifiedPick(game: OddsGame): QualifiedPick | null {
-  const h2h = game.bookmakers
-    ?.flatMap((book) => book.markets || [])
-    .find((market) => market.key === "h2h");
-  const outcomes = h2h?.outcomes || [];
-  const home = outcomes.find((outcome) => outcome.name === game.home_team);
-  const away = outcomes.find((outcome) => outcome.name === game.away_team);
+  const home = findBestMoneyline(game, game.home_team);
+  const away = findBestMoneyline(game, game.away_team);
 
   if (!home || !away || typeof home.price !== "number" || typeof away.price !== "number") {
     return null;
@@ -85,6 +122,7 @@ function estimateQualifiedPick(game: OddsGame): QualifiedPick | null {
   const modelProbability = Math.min(0.92, marketProbability + homeAdvantage + favoriteBoost);
   const confidence = Math.round(modelProbability * 100);
   const edge = Math.max(0, Math.round((modelProbability - marketProbability) * 1000) / 10);
+  const publishedAt = new Date().toISOString();
 
   if (confidence < MIN_QUALIFIED_CONFIDENCE) return null;
 
@@ -101,6 +139,17 @@ function estimateQualifiedPick(game: OddsGame): QualifiedPick | null {
     edge,
     game_time: game.commence_time,
     status: "pending",
+    published_at: publishedAt,
+    bookmaker: chosen.bookmaker,
+    market_type: "moneyline",
+    line: null,
+    opening_odds: Math.round(chosen.price),
+    pick_odds: Math.round(chosen.price),
+    model_probability: Number((modelProbability * 100).toFixed(2)),
+    implied_probability: Number((marketProbability * 100).toFixed(2)),
+    expected_value: Number((expectedValue(modelProbability, chosen.price) * 100).toFixed(2)),
+    source_event_id: game.id,
+    odds_source: "the-odds-api",
   };
 }
 

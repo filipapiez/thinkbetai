@@ -1,7 +1,7 @@
 {
   "name": "ThinkBetAI - AI Betting Platform",
   "short_name": "ThinkBetAI",
-  "description": "AI-powered sports betting predictions, odds analysis, and real-time insights.",
+  "description": "AI-assisted sports betting analytics with odds analysis, public ledger transparency, and real-time matchup context.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0a1e",

@@ -12,7 +12,12 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seo:audit": "tsx scripts/audit-seo.ts"
+    "seo:audit": "tsx scripts/audit-seo.ts",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:add:ios": "npx cap add ios",
+    "cap:add:android": "npx cap add android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.1.0",

@@ -239,6 +239,149 @@ function validateSport(sport: string | null): string | null {
 const oddsCache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes (was 30)
 
+type BookmakerOdds = {
+  key: string;
+  title: string;
+  moneyline: { home: number; away: number };
+  spread: { home: number; homeOdds: number; away: number; awayOdds: number };
+  total: { line: number; overOdds: number; underOdds: number };
+};
+
+const parseOddsValue = (oddsValue: unknown): number => {
+  if (typeof oddsValue === 'number') return oddsValue;
+  if (typeof oddsValue === 'string') {
+    const cleaned = oddsValue.replace(/[^0-9+-]/g, '');
+    return parseInt(cleaned) || 0;
+  }
+  return 0;
+};
+
+const createBookmakerOdds = (key: string, title: string): BookmakerOdds => {
+  const safeTitle = title || key || 'Consensus';
+  return {
+    key: key || safeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '_') || 'consensus',
+    title: safeTitle,
+    moneyline: { home: 0, away: 0 },
+    spread: { home: 0, homeOdds: -110, away: 0, awayOdds: -110 },
+    total: { line: 0, overOdds: -110, underOdds: -110 },
+  };
+};
+
+function applySportsGameOdd(bookmaker: BookmakerOdds, oddId: string, odd: any) {
+  const bookOdds = parseOddsValue(odd?.bookOdds ?? odd?.odds ?? odd?.price ?? odd?.americanOdds ?? odd?.fairOdds ?? 0);
+
+  if (oddId === 'points-home-game-ml-home' || oddId.includes('-ml-home')) {
+    bookmaker.moneyline.home = bookOdds;
+  }
+  if (oddId === 'points-away-game-ml-away' || oddId.includes('-ml-away')) {
+    bookmaker.moneyline.away = bookOdds;
+  }
+  if (oddId === 'points-home-game-sp-home' || oddId.includes('-sp-home')) {
+    bookmaker.spread.home = parseFloat(odd?.bookSpread ?? odd?.fairSpread ?? odd?.spread ?? odd?.line ?? odd?.point ?? 0);
+    bookmaker.spread.homeOdds = bookOdds || -110;
+  }
+  if (oddId === 'points-away-game-sp-away' || oddId.includes('-sp-away')) {
+    bookmaker.spread.away = parseFloat(odd?.bookSpread ?? odd?.fairSpread ?? odd?.spread ?? odd?.line ?? odd?.point ?? 0);
+    bookmaker.spread.awayOdds = bookOdds || -110;
+  }
+  if (oddId === 'points-all-game-ou-over' || oddId.includes('-ou-over')) {
+    bookmaker.total.line = parseFloat(odd?.bookOverUnder ?? odd?.fairOverUnder ?? odd?.overUnder ?? odd?.line ?? odd?.point ?? 0);
+    bookmaker.total.overOdds = bookOdds || -110;
+  }
+  if (oddId === 'points-all-game-ou-under' || oddId.includes('-ou-under')) {
+    bookmaker.total.line = bookmaker.total.line || parseFloat(odd?.bookOverUnder ?? odd?.fairOverUnder ?? odd?.overUnder ?? odd?.line ?? odd?.point ?? 0);
+    bookmaker.total.underOdds = bookOdds || -110;
+  }
+}
+
+function extractTheOddsApiBookmakers(event: any, homeTeamName: string, awayTeamName: string): BookmakerOdds[] {
+  if (!Array.isArray(event?.bookmakers)) return [];
+
+  return event.bookmakers.map((book: any) => {
+    const bookmaker = createBookmakerOdds(book?.key || book?.id || book?.title, book?.title || book?.name || book?.key);
+    const h2h = book?.markets?.find((market: any) => market?.key === 'h2h');
+    const spreads = book?.markets?.find((market: any) => market?.key === 'spreads');
+    const totals = book?.markets?.find((market: any) => market?.key === 'totals');
+
+    const homeH2h = h2h?.outcomes?.find((outcome: any) => outcome?.name === homeTeamName);
+    const awayH2h = h2h?.outcomes?.find((outcome: any) => outcome?.name === awayTeamName);
+    const homeSpread = spreads?.outcomes?.find((outcome: any) => outcome?.name === homeTeamName);
+    const awaySpread = spreads?.outcomes?.find((outcome: any) => outcome?.name === awayTeamName);
+    const over = totals?.outcomes?.find((outcome: any) => outcome?.name === 'Over');
+    const under = totals?.outcomes?.find((outcome: any) => outcome?.name === 'Under');
+
+    bookmaker.moneyline.home = parseOddsValue(homeH2h?.price ?? 0);
+    bookmaker.moneyline.away = parseOddsValue(awayH2h?.price ?? 0);
+    bookmaker.spread.home = Number(homeSpread?.point ?? 0);
+    bookmaker.spread.homeOdds = parseOddsValue(homeSpread?.price ?? -110) || -110;
+    bookmaker.spread.away = Number(awaySpread?.point ?? 0);
+    bookmaker.spread.awayOdds = parseOddsValue(awaySpread?.price ?? -110) || -110;
+    bookmaker.total.line = Number(over?.point ?? under?.point ?? 0);
+    bookmaker.total.overOdds = parseOddsValue(over?.price ?? -110) || -110;
+    bookmaker.total.underOdds = parseOddsValue(under?.price ?? -110) || -110;
+
+    return bookmaker;
+  }).filter((book: BookmakerOdds) => (
+    book.moneyline.home !== 0 ||
+    book.moneyline.away !== 0 ||
+    book.spread.home !== 0 ||
+    book.spread.away !== 0 ||
+    book.total.line !== 0
+  ));
+}
+
+function extractSportsGameOddsBookmakers(event: any): BookmakerOdds[] {
+  const odds = event?.odds || {};
+  const bookmakers = new Map<string, BookmakerOdds>();
+
+  for (const [oddId, oddData] of Object.entries(odds)) {
+    const odd = oddData as any;
+    const rawKey = odd?.sportsbookID ?? odd?.sportsbookId ?? odd?.sportsbook ?? odd?.bookmakerKey ?? odd?.bookmaker ?? odd?.book ?? odd?.source ?? 'consensus';
+    const rawTitle = odd?.sportsbookName ?? odd?.bookmakerName ?? odd?.bookName ?? odd?.sportsbook ?? odd?.bookmaker ?? rawKey;
+    const key = String(rawKey || 'consensus').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const title = String(rawTitle || rawKey || 'Consensus');
+    const current = bookmakers.get(key) || createBookmakerOdds(key, title);
+
+    applySportsGameOdd(current, oddId, odd);
+    bookmakers.set(key, current);
+  }
+
+  return Array.from(bookmakers.values()).filter((book) => (
+    book.moneyline.home !== 0 ||
+    book.moneyline.away !== 0 ||
+    book.spread.home !== 0 ||
+    book.spread.away !== 0 ||
+    book.total.line !== 0
+  ));
+}
+
+function extractBookmakers(event: any, homeTeamName: string, awayTeamName: string): BookmakerOdds[] {
+  const fromBookmakers = extractTheOddsApiBookmakers(event, homeTeamName, awayTeamName);
+  if (fromBookmakers.length > 0) return fromBookmakers;
+  return extractSportsGameOddsBookmakers(event);
+}
+
+function bestByPrice(items: Array<{ bookmaker: string; odds: number; line?: number }>) {
+  return items.filter((item) => item.odds !== 0).sort((a, b) => b.odds - a.odds)[0] || null;
+}
+
+function findBestLines(bookmakers: BookmakerOdds[]) {
+  return {
+    moneyline: {
+      home: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.moneyline.home }))),
+      away: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.moneyline.away }))),
+    },
+    spread: {
+      home: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.spread.homeOdds, line: book.spread.home }))),
+      away: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.spread.awayOdds, line: book.spread.away }))),
+    },
+    total: {
+      over: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.total.overOdds, line: book.total.line }))),
+      under: bestByPrice(bookmakers.map((book) => ({ bookmaker: book.title, odds: book.total.underOdds, line: book.total.line }))),
+    },
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -361,24 +504,17 @@ serve(async (req) => {
       const isEnded = event.status?.ended === true;
       
       const odds = event.odds || {};
+      const bookmakers = extractBookmakers(event, homeTeamName, awayTeamName);
+      const bestLines = findBestLines(bookmakers);
       let moneylineHome = 0, moneylineAway = 0;
       let spreadHome = 0, spreadHomeOdds = -110;
       let spreadAway = 0, spreadAwayOdds = -110;
       let totalOver = 0, totalOverOdds = -110;
       let totalUnder = 0, totalUnderOdds = -110;
 
-      const parseOdds = (oddsStr: any): number => {
-        if (typeof oddsStr === 'number') return oddsStr;
-        if (typeof oddsStr === 'string') {
-          const cleaned = oddsStr.replace(/[^0-9+-]/g, '');
-          return parseInt(cleaned) || 0;
-        }
-        return 0;
-      };
-
       for (const [oddId, oddData] of Object.entries(odds)) {
         const odd = oddData as any;
-        const fairOdds = parseOdds(odd?.fairOdds || odd?.bookOdds || odd?.odds || 0);
+        const fairOdds = parseOddsValue(odd?.fairOdds || odd?.bookOdds || odd?.odds || 0);
         
         if (oddId === 'points-home-game-ml-home' || oddId.includes('-ml-home')) {
           moneylineHome = fairOdds;
@@ -423,6 +559,8 @@ serve(async (req) => {
           total: { over: totalOver, overOdds: totalOverOdds, under: totalUnder, underOdds: totalUnderOdds },
         },
         hasOdds: hasValidOdds,
+        bookmakers,
+        bestLines,
       };
     });
 

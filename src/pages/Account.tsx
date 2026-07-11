@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ReviewCaptureCard } from '@/components/ReviewCaptureCard';
 import { User as UserIcon, CreditCard, Star, Loader2, Ticket, CheckCircle, Settings, MessageSquare, Trophy, XCircle, Trash2, AlertTriangle, CalendarClock } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -22,6 +23,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
+type FunctionErrorResponse = {
+  error?: string;
+};
+
 const DeleteAccountSection = ({ onDeleted }: { onDeleted: () => void }) => {
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
@@ -31,8 +36,9 @@ const DeleteAccountSection = ({ onDeleted }: { onDeleted: () => void }) => {
     setIsDeleting(true);
     try {
       const { data, error } = await supabase.functions.invoke('delete-account');
-      if (error || (data as any)?.error) {
-        toast.error((data as any)?.error || 'Failed to delete account. Please contact support.');
+      const response = data as FunctionErrorResponse | null;
+      if (error || response?.error) {
+        toast.error(response?.error || 'Failed to delete account. Please contact support.');
         setIsDeleting(false);
         return;
       }
@@ -120,8 +126,9 @@ const CancelSubscriptionSection = ({
     setIsCanceling(true);
     try {
       const { data, error } = await supabase.functions.invoke('cancel-subscription');
-      if (error || (data as any)?.error) {
-        toast.error((data as any)?.error || 'Failed to cancel. Please try again.');
+      const response = data as FunctionErrorResponse | null;
+      if (error || response?.error) {
+        toast.error(response?.error || 'Failed to cancel. Please try again.');
         setIsCanceling(false);
         return;
       }
@@ -260,6 +267,11 @@ const Account = () => {
     toast.success('Logged out successfully!');
     navigate('/');
   };
+
+  const defaultReviewName =
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
+    user?.email?.split('@')[0] ||
+    '';
 
   if (authLoading) {
     return (
@@ -405,6 +417,13 @@ const Account = () => {
                   </Button>
                 </CardContent>
               </Card>
+
+              {user?.id && (
+                <ReviewCaptureCard
+                  userId={user.id}
+                  defaultName={defaultReviewName}
+                />
+              )}
 
               {isSubscribed && !profile?.cancel_at_period_end && !profile?.promo_used && (
                 <CancelSubscriptionSection

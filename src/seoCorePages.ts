@@ -210,11 +210,15 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
     path: "/ai-parlay-builder",
     title: "Free AI Parlay Builder & Parlay Generator | ThinkBetAI",
     description:
-      "Use an AI parlay builder to compare leg probabilities, identify correlation and review risk before combining NFL, NBA, MLB or NHL picks.",
+      "Use an AI parlay builder to compare leg probabilities, correlation, sportsbook payout, expected value and risk before combining picks.",
     h1: "Free AI Parlay Builder and Parlay Generator",
     intro:
-      "The ThinkBetAI parlay builder helps compare multiple selections, estimate combined probability and flag correlation or concentration risk.",
+      "The ThinkBetAI parlay builder helps compare multiple selections, estimate combined probability and flag correlation, price and concentration risk.",
     sections: [
+      {
+        heading: "Public parlay audit demo",
+        body: "The live page includes a public calculator-style demo for American odds, model probabilities, stake and correlation setting so users can inspect parlay math before creating an account.",
+      },
       {
         heading: "Why correlation matters",
         body: "Parlay legs are not always independent. Shared game conditions, team outcomes and player usage can change the combined probability substantially.",
@@ -235,11 +239,15 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
     path: "/ai-bet-analyzer",
     title: "AI Bet Analyzer: Probability, Value & Risk | ThinkBetAI",
     description:
-      "Analyze a sports bet with AI-assisted probability estimates, implied-odds comparison and risk context for moneylines, spreads, totals and props.",
+      "Analyze a sports bet with implied probability, model probability, fair odds, expected value, Kelly context and risk notes.",
     h1: "AI Bet Analyzer for Probability, Value and Risk",
     intro:
-      "Enter a potential wager to compare the sportsbook's implied probability with model estimates and review the factors that can increase uncertainty.",
+      "Enter a potential wager to compare the sportsbook's implied probability with model estimates, fair odds, expected value and the factors that can increase uncertainty.",
     sections: [
+      {
+        heading: "Public EV and fair-odds demo",
+        body: "The live page includes a public calculator for American odds, model probability and stake, returning break-even probability, model edge, fair odds, expected value and a conservative Kelly guide.",
+      },
       {
         heading: "Probability and expected value",
         body: "The analyzer converts the market price into implied probability, compares it with model output and shows the size of the difference without guaranteeing that the bet will win.",
@@ -260,14 +268,14 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
     path: "/best-ai-sports-betting-tools",
     title: "Best AI Sports Betting Tools Compared (2026)",
     description:
-      "An evidence-based comparison of ThinkBetAI, Rithmm, IABET, ParlAI, Outlier, Moddy and BetEdge by workflow, pricing and public proof.",
-    h1: "Best AI Sports Betting Tools: An Evidence-Based Comparison",
+      "Compare ThinkBetAI, Rithmm, OddsJam, Outlier, Props.Cash, Dimers, Unabated, Moddy, ParlAI and Juice Reel by workflow and proof.",
+    h1: "Top 10 AI Sports Betting Tools: An Evidence-Based Comparison",
     intro:
-      "The best tool depends on the workflow you need. This commercially disclosed guide compares current provider information and links directly to every source.",
+      "The best tool depends on the workflow you need. This commercially disclosed guide compares provider information, research depth, proof style and where each product is strongest.",
     sections: [
       {
-        heading: "Compare workflow, evidence and price",
-        body: "Rithmm and Moddy emphasize custom models, Outlier emphasizes market research, ParlAI emphasizes screenshot parlays, and ThinkBetAI emphasizes a lower-cost combined web toolkit.",
+        heading: "Compare workflow, evidence and research depth",
+        body: "Rithmm and Moddy emphasize custom models, OddsJam and Unabated emphasize market screens, Outlier and Props.Cash emphasize player props, Dimers emphasizes public predictions, ParlAI emphasizes screenshot parlays, Juice Reel emphasizes tracking and ThinkBetAI emphasizes a lower-cost combined web toolkit.",
       },
       {
         heading: "Verify every provider claim",
@@ -278,6 +286,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
       { label: "Best AI Betting App", href: "/best-ai-betting-app" },
       { label: "Track Record & Methodology", href: "/track-record" },
       { label: "AI Bet Analyzer", href: "/ai-bet-analyzer" },
+      { label: "AI Parlay Builder", href: "/ai-parlay-builder" },
       { label: "Pricing", href: "/pricing" },
     ],
   },
@@ -335,14 +344,18 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
     path: "/track-record",
     title: "Settled Pick Record & Grading Methodology | ThinkBetAI",
     description:
-      "Review ThinkBetAI's live settled-record summary, grading rules, sample limitations and methodology. Past performance does not guarantee future outcomes.",
+      "Review ThinkBetAI's settled-record summary, public pick ledger, CSV export, closing-line fields, grading rules and methodology.",
     h1: "Settled Pick Record and Methodology",
     intro:
-      "The page calculates its summary from settled database records and explains why aggregate product-reported results still require careful interpretation.",
+      "The page calculates its summary from settled database records, exposes recent row-level records when available and explains why aggregate product-reported results still require careful interpretation.",
     sections: [
       {
         heading: "Live settled-record summary",
         body: "Only records marked as a settled win or loss are included. Pushes, pending events and unavailable outcomes are excluded from the displayed calculation.",
+      },
+      {
+        heading: "Public pick ledger",
+        body: "The live page loads settled rows from the public historical-bets table and offers a full CSV export. Closing-line fields are captured for qualified picks when the scheduled odds job can find the matching event.",
       },
       {
         heading: "Historical results have limits",

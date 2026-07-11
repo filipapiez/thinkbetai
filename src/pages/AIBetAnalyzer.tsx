@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
 import { BarChart3, Shield, Target, TrendingUp, Brain, CheckCircle, ArrowRight, Layers, MessageSquare } from "lucide-react";
+import { BetAnalyzerDemo } from "@/components/BetAnalyzerDemo";
 
 const faqItems = [
   { q: "What is an AI bet analyzer?", a: "An AI bet analyzer uses machine learning to evaluate any sports bet by calculating true probabilities, identifying value, and scoring risk — giving you a data-driven edge before you place a wager." },
@@ -60,12 +61,16 @@ const AIBetAnalyzer = () => {
             The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> evaluates probability, value, and risk using the same betting-analysis framework available across ThinkBetAI.
           </p>
           <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">
-            Stop guessing whether a bet has value. ThinkBetAI's analyzer takes any wager — moneyline, spread, total, or prop — and runs it through our multi-model AI engine to calculate true win probability, expected value, and a comprehensive risk score. Whether you're evaluating a single straight bet or a complex parlay, the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> gives you the data you need before you risk a dollar.
+            ThinkBetAI's analyzer is built around the math users should inspect before risking money: implied probability, model probability, expected value, fair odds and risk context. Whether you're evaluating a single straight bet or a complex parlay, the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> gives you a clearer research framework.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" asChild><Link to="/login">Analyze a Bet Now <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
             <Button size="lg" variant="outline" asChild><Link to="/ai-sports-betting">Learn About AI Betting</Link></Button>
           </div>
+        </section>
+
+        <section className="mb-16">
+          <BetAnalyzerDemo />
         </section>
 
         {/* How it works */}
@@ -76,7 +81,7 @@ const AIBetAnalyzer = () => {
               When you submit a bet for analysis, our AI engine kicks off a multi-step evaluation. First, it ingests real-time data for the matchup — current odds from multiple sportsbooks, team and player statistics, injury reports, weather conditions, and historical performance in similar situations. Next, an ensemble of machine learning models (gradient boosting, neural networks, and logistic regression) independently estimate the true probability of each outcome.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              The system then compares its calculated probability against the sportsbook's implied probability to determine expected value (EV). A positive EV means the bet offers more value than the odds suggest — the holy grail of profitable betting. Finally, a risk assessment layer evaluates variance factors like injury uncertainty, weather volatility, and historical line movement to assign a risk score from Low to High.
+              The system then compares its calculated probability against the sportsbook's implied probability to estimate expected value (EV). Positive EV means the modeled price is better than the listed price, but that edge can disappear if the line moves, limits apply or late information changes the matchup. Finally, a risk assessment layer evaluates variance factors like injury uncertainty, weather volatility, and historical line movement.
             </p>
             <p className="text-muted-foreground leading-relaxed">
               The process returns a structured breakdown of the model estimate, implied probability and risk factors. Treat it as one input in your research rather than a guaranteed outcome.

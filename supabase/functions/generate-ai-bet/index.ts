@@ -63,6 +63,14 @@ serve(async (req) => {
       edge: Math.round((game.edge ?? 3.0) * 10) / 10,
       game_time: gameTime.toISOString(),
       status: "pending",
+      published_at: new Date().toISOString(),
+      bookmaker: null,
+      market_type: "moneyline",
+      line: null,
+      opening_odds: Math.round(game.odds),
+      pick_odds: Math.round(game.odds),
+      source_event_id: game.gameId,
+      odds_source: "admin",
     };
 
     const { data, error } = await supabase

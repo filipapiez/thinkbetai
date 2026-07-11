@@ -72,19 +72,36 @@ export type Database = {
         Row: {
           away_score: number | null
           away_team: string
+          bookmaker: string | null
+          closing_bookmaker: string | null
+          closing_captured_at: string | null
+          closing_line: number | null
+          closing_odds: number | null
+          clv_cents: number | null
+          clv_percent: number | null
           confidence: number
           created_at: string
           edge: number
+          expected_value: number | null
           game_id: string
           game_time: string
           home_score: number | null
           home_team: string
           id: string
+          implied_probability: number | null
+          line: number | null
+          market_type: string | null
+          model_probability: number | null
           odds: number
+          odds_source: string | null
+          opening_odds: number | null
           pick: string
+          pick_odds: number | null
           pick_type: string
           pick_value: number | null
+          published_at: string | null
           result: string | null
+          source_event_id: string | null
           sport: string
           status: string
           updated_at: string
@@ -92,19 +109,36 @@ export type Database = {
         Insert: {
           away_score?: number | null
           away_team: string
+          bookmaker?: string | null
+          closing_bookmaker?: string | null
+          closing_captured_at?: string | null
+          closing_line?: number | null
+          closing_odds?: number | null
+          clv_cents?: number | null
+          clv_percent?: number | null
           confidence?: number
           created_at?: string
           edge?: number
+          expected_value?: number | null
           game_id: string
           game_time: string
           home_score?: number | null
           home_team: string
           id?: string
+          implied_probability?: number | null
+          line?: number | null
+          market_type?: string | null
+          model_probability?: number | null
           odds?: number
+          odds_source?: string | null
+          opening_odds?: number | null
           pick: string
+          pick_odds?: number | null
           pick_type?: string
           pick_value?: number | null
+          published_at?: string | null
           result?: string | null
+          source_event_id?: string | null
           sport: string
           status?: string
           updated_at?: string
@@ -112,19 +146,36 @@ export type Database = {
         Update: {
           away_score?: number | null
           away_team?: string
+          bookmaker?: string | null
+          closing_bookmaker?: string | null
+          closing_captured_at?: string | null
+          closing_line?: number | null
+          closing_odds?: number | null
+          clv_cents?: number | null
+          clv_percent?: number | null
           confidence?: number
           created_at?: string
           edge?: number
+          expected_value?: number | null
           game_id?: string
           game_time?: string
           home_score?: number | null
           home_team?: string
           id?: string
+          implied_probability?: number | null
+          line?: number | null
+          market_type?: string | null
+          model_probability?: number | null
           odds?: number
+          odds_source?: string | null
+          opening_odds?: number | null
           pick?: string
+          pick_odds?: number | null
           pick_type?: string
           pick_value?: number | null
+          published_at?: string | null
           result?: string | null
+          source_event_id?: string | null
           sport?: string
           status?: string
           updated_at?: string
@@ -218,41 +269,92 @@ export type Database = {
       historical_bets: {
         Row: {
           away_team: string
+          bookmaker: string | null
+          closing_bookmaker: string | null
+          closing_captured_at: string | null
+          closing_line: number | null
+          closing_odds: number | null
+          clv_cents: number | null
+          clv_percent: number | null
           confidence: number
           created_at: string
           date: string
           edge: number
+          expected_value: number | null
           home_team: string
           id: string
+          implied_probability: number | null
+          line: number | null
+          market_type: string | null
+          model_probability: number | null
           odds: number
+          odds_source: string | null
+          opening_odds: number | null
           pick: string
+          pick_odds: number | null
+          published_at: string | null
           result: string
+          source_event_id: string | null
           sport: string
         }
         Insert: {
           away_team: string
+          bookmaker?: string | null
+          closing_bookmaker?: string | null
+          closing_captured_at?: string | null
+          closing_line?: number | null
+          closing_odds?: number | null
+          clv_cents?: number | null
+          clv_percent?: number | null
           confidence: number
           created_at?: string
           date: string
           edge: number
+          expected_value?: number | null
           home_team: string
           id?: string
+          implied_probability?: number | null
+          line?: number | null
+          market_type?: string | null
+          model_probability?: number | null
           odds: number
+          odds_source?: string | null
+          opening_odds?: number | null
           pick: string
+          pick_odds?: number | null
+          published_at?: string | null
           result: string
+          source_event_id?: string | null
           sport: string
         }
         Update: {
           away_team?: string
+          bookmaker?: string | null
+          closing_bookmaker?: string | null
+          closing_captured_at?: string | null
+          closing_line?: number | null
+          closing_odds?: number | null
+          clv_cents?: number | null
+          clv_percent?: number | null
           confidence?: number
           created_at?: string
           date?: string
           edge?: number
+          expected_value?: number | null
           home_team?: string
           id?: string
+          implied_probability?: number | null
+          line?: number | null
+          market_type?: string | null
+          model_probability?: number | null
           odds?: number
+          odds_source?: string | null
+          opening_odds?: number | null
           pick?: string
+          pick_odds?: number | null
+          published_at?: string | null
           result?: string
+          source_event_id?: string | null
           sport?: string
         }
         Relationships: []
@@ -278,6 +380,48 @@ export type Database = {
           expires_at?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      odds_closing_snapshots: {
+        Row: {
+          active_bet_id: string | null
+          bookmaker: string
+          captured_at: string
+          created_at: string
+          game_id: string
+          id: string
+          line: number | null
+          market_type: string
+          odds: number
+          raw: Json
+          sport: string
+        }
+        Insert: {
+          active_bet_id?: string | null
+          bookmaker: string
+          captured_at?: string
+          created_at?: string
+          game_id: string
+          id?: string
+          line?: number | null
+          market_type: string
+          odds: number
+          raw?: Json
+          sport: string
+        }
+        Update: {
+          active_bet_id?: string | null
+          bookmaker?: string
+          captured_at?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          line?: number | null
+          market_type?: string
+          odds?: number
+          raw?: Json
+          sport?: string
         }
         Relationships: []
       }
@@ -341,6 +485,48 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      public_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean
+          is_verified: boolean
+          name: string
+          quote: string
+          rating: number
+          role: string | null
+          source: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          is_verified?: boolean
+          name: string
+          quote: string
+          rating: number
+          role?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          is_verified?: boolean
+          name?: string
+          quote?: string
+          rating?: number
+          role?: string | null
+          source?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

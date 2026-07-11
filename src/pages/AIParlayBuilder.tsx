@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ParlayAuditDemo } from '@/components/ParlayAuditDemo';
 import {
   Layers,
   CheckCircle,
@@ -130,6 +131,10 @@ const AIParlayBuilder = () => {
           </header>
 
           <article className="prose prose-lg dark:prose-invert max-w-none">
+            <section className="mb-14">
+              <ParlayAuditDemo />
+            </section>
+
             {/* Section 1 — How it works */}
             <section className="mb-14">
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3">
@@ -137,12 +142,12 @@ const AIParlayBuilder = () => {
                 How the AI Parlay Builder Works
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Building winning parlays requires understanding how outcomes relate to each other. You can <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">build parlays with AI</Link> automatically in four steps using our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">smart parlay generator</Link>:
+                Building better parlays requires understanding how outcomes relate to each other. You can <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">build parlays with AI</Link> in four steps using our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">smart parlay generator</Link>:
               </p>
               <div className="space-y-5">
                 {[
                   { step: '1', title: 'Select Your Legs', desc: 'Add picks from any sport or game on the platform.' },
-                  { step: '2', title: 'AI Analyzes Correlations', desc: 'The model calculates how each leg affects the probability of every other leg hitting.' },
+                  { step: '2', title: 'AI Reviews Correlations', desc: 'The model checks whether shared game context may increase or reduce combined probability.' },
                   { step: '3', title: 'Review True Odds', desc: 'Compare AI-calculated win probability against the sportsbook payout to see your real edge.' },
                   { step: '4', title: 'Optimize', desc: 'AI suggests additions, removals, or swaps to maximize expected value.' },
                 ].map((s) => (
@@ -155,10 +160,6 @@ const AIParlayBuilder = () => {
                 ))}
               </div>
 
-              {/* Screenshot placeholder */}
-              <div className="mt-8 rounded-xl border border-border bg-muted/30 flex items-center justify-center h-56 text-muted-foreground text-sm">
-                [ Screenshot: AI Parlay Builder interface with correlation indicators ]
-              </div>
             </section>
 
             {/* Section 2 — Example AI Parlay Picks */}
@@ -168,7 +169,7 @@ const AIParlayBuilder = () => {
                 Example AI Parlay Picks
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Here's the kind of correlated parlay our AI surfaces — not random combinations, but <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay picks</Link> whose outcomes reinforce each other.
+                Here's the kind of correlation pattern our AI looks for — not random combinations, but <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay picks</Link> whose outcomes may share the same game script.
               </p>
 
               <div className="glass-card p-6 mb-4">
@@ -183,10 +184,6 @@ const AIParlayBuilder = () => {
                 </p>
               </div>
 
-              {/* Screenshot placeholder */}
-              <div className="mt-6 rounded-xl border border-border bg-muted/30 flex items-center justify-center h-56 text-muted-foreground text-sm">
-                [ Screenshot: AI parlay suggestion card with confidence & payout ]
-              </div>
             </section>
 
             {/* Section 3 — Smart Odds Optimization */}
@@ -196,13 +193,13 @@ const AIParlayBuilder = () => {
                 Smart Odds Optimization
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Sportsbooks price parlay legs independently, but outcomes aren't independent. ThinkBetAI exploits this gap:
+                Parlay math can be misleading when legs are treated as independent even though real games are connected. ThinkBetAI highlights this gap:
               </p>
               <ul className="space-y-3 text-muted-foreground">
                 {[
                   'Identifies positively correlated legs the book prices as uncorrelated.',
                   'Calculates the true combined probability using historical co-occurrence data.',
-                  "Flags parlays where the implied odds are worse than your true probability — that\u0027s your edge.",
+                  "Flags parlays where the listed payout appears worse than the model probability after correlation review.",
                   'Suggests removing negatively correlated legs that drag down expected value.',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">

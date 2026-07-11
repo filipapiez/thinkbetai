@@ -138,7 +138,7 @@ const Index = () => {
               <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1]">
                 Smarter Picks.{' '}
                 <span className="relative inline-block">
-                  <span className="text-gradient">Bigger Wins.</span>
+                  <span className="text-gradient">Clearer Odds.</span>
                   <Sparkles className="absolute -top-1 -right-4 md:-top-2 md:-right-6 h-4 w-4 md:h-6 md:w-6 text-primary animate-pulse" />
                 </span>
               </h1>
@@ -146,7 +146,7 @@ const Index = () => {
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto leading-relaxed">
                 AI-powered picks across NFL, NBA, UFC and every major sport — backed by a verified
-                <Link to="/track-record" className="text-primary font-semibold hover:underline"> {qualifiedWinRate} win rate</Link> on qualified plays. Stop guessing. Start winning.
+                <Link to="/track-record" className="text-primary font-semibold hover:underline"> {qualifiedWinRate} win rate</Link> on qualified plays. Stop guessing. Start analyzing.
               </p>
 
               {/* Quick Value Props */}
@@ -522,9 +522,11 @@ const Index = () => {
                 Cancel anytime
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm px-4">
-                <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
                 <Link to="/ai-parlay-builder" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Parlay Builder →</Link>
+                <Link to="/ai-bet-analyzer" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Bet Analyzer →</Link>
+                <Link to="/track-record" className="text-primary hover:text-primary/80 font-medium transition-colors">Track Record →</Link>
                 <Link to="/free-ai-predictions" className="text-primary hover:text-primary/80 font-medium transition-colors">Free AI Predictions →</Link>
+                <Link to="/best-ai-sports-betting-tools" className="text-primary hover:text-primary/80 font-medium transition-colors">Best AI Tools →</Link>
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
                 <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
                 <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>

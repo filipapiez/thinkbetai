@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Settings, Layers, History, HelpCircle, Sparkles, ArrowUpDown, ChevronDown, Info, BookOpen } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Layers, History, HelpCircle, Sparkles, ArrowUpDown, ChevronDown, Info, BookOpen, Calculator, ShieldCheck, Trophy } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
@@ -18,10 +18,13 @@ const mobileLinkClass = (isActive: boolean) =>
   );
 
 const resourceLinks = [
+  { to: '/ai-bet-analyzer', label: 'Bet Analyzer', icon: Calculator },
+  { to: '/ai-parlay-builder', label: 'Parlay Builder', icon: Sparkles },
+  { to: '/track-record', label: 'Track Record', icon: ShieldCheck },
+  { to: '/best-ai-sports-betting-tools', label: 'Best Tools', icon: Trophy },
   { to: '/about', label: 'About', icon: Info },
   { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },
   { to: '/blog', label: 'Blog', icon: BookOpen },
-  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export const Header = () => {
@@ -92,7 +95,7 @@ export const Header = () => {
 
             <div
               className={cn(
-                "absolute top-full right-0 mt-2 w-44 rounded-lg border border-border/60 bg-popover/95 backdrop-blur-xl shadow-lg shadow-black/20 py-1.5 transition-all duration-200 origin-top-right",
+                "absolute top-full right-0 mt-2 w-64 rounded-lg border border-border/60 bg-popover/95 backdrop-blur-xl shadow-lg shadow-black/20 py-1.5 transition-all duration-200 origin-top-right",
                 resourcesOpen
                   ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                   : "opacity-0 scale-95 -translate-y-1 pointer-events-none"

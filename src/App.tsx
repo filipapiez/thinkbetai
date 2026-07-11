@@ -35,6 +35,8 @@ const FreeAIPredictions = lazy(() => import("./pages/FreeAIPredictions"));
 const AINFLPicks = lazy(() => import("./pages/AINFLPicks"));
 const AISportsBetting = lazy(() => import("./pages/AISportsBetting"));
 const BestAISportsBettingTools = lazy(() => import("./pages/BestAISportsBettingTools"));
+const AIBetAnalyzer = lazy(() => import("./pages/AIBetAnalyzer"));
+const AIParlayBuilder = lazy(() => import("./pages/AIParlayBuilder"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Login = lazy(() => import("./pages/Login"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -94,6 +96,8 @@ const PageLoader = () => (
   </div>
 );
 
+const promotedSeoFeatureRoutes = new Set(["/ai-bet-analyzer", "/ai-parlay-builder"]);
+
 const App = () => (
       <BrowserRouter>
         <ThemeProvider>
@@ -116,7 +120,9 @@ const App = () => (
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
-                {seoBlueprintRoutes.map((path) => (
+                <Route path="/ai-bet-analyzer" element={<AIBetAnalyzer />} />
+                <Route path="/ai-parlay-builder" element={<AIParlayBuilder />} />
+                {seoBlueprintRoutes.filter((path) => !promotedSeoFeatureRoutes.has(path)).map((path) => (
                   <Route
                     key={path}
                     path={path}
