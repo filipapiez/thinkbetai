@@ -132,60 +132,312 @@ const sports = [
   { label: "Esports", href: "/esports-ai-predictions", markets: "Moneylines, maps, totals" },
 ];
 
-const marketStats = [
-  { label: "Today's games", value: "46" },
-  { label: "Predictions generated", value: "214" },
-  { label: "Sports covered", value: "14" },
-  { label: "Markets tracked", value: "ML, spread, props, parlays, totals" },
-];
+type PredictionPreviewRow = (typeof predictionPreview)[number];
 
-const workflowSteps = [
-  { label: "Collect odds", description: "Capture current prices, implied probability and market movement." },
-  { label: "Analyze injuries", description: "Review lineup news, player availability and usage changes." },
-  { label: "Evaluate trends", description: "Compare recent form, pace, matchups and historical performance." },
-  { label: "Compare market prices", description: "Measure the sportsbook number against the model price." },
-  { label: "Estimate probability", description: "Turn matchup inputs into a projected win or cover chance." },
-  { label: "Score confidence", description: "Grade strength, volatility and data quality for each pick." },
-  { label: "Explain the pick", description: "Summarize the edge, risk and best next action in plain English." },
-];
-
-const comparisonRows = [
+const pageSportContexts = [
   {
-    label: "Board coverage",
-    traditional: "Manual research usually focuses on a handful of games.",
-    thinkbetai: "Scans the full board across sports, markets and bet types.",
+    keys: ["nfl", "football", "touchdown", "ncaaf"],
+    label: "football",
+    matchups: ["Kansas City vs Denver", "Philadelphia vs Dallas", "Michigan vs Ohio State"],
+    favorite: "Kansas City",
+    underdog: "Denver",
+    athlete: "Patrick Mahomes",
+    factors: "pass pressure, red-zone efficiency, weather and offensive line injuries",
   },
   {
-    label: "Odds context",
-    traditional: "Easy to miss stale lines or late price movement.",
-    thinkbetai: "Compares market price, implied probability and model fair odds.",
+    keys: ["nba", "basketball", "wnba", "ncaab"],
+    label: "basketball",
+    matchups: ["Los Angeles vs Phoenix", "Boston vs Miami", "Las Vegas vs New York"],
+    favorite: "Los Angeles",
+    underdog: "Phoenix",
+    athlete: "Jayson Tatum",
+    factors: "pace, usage rate, rest advantage, rotation injuries and late lineup news",
   },
   {
-    label: "Injury impact",
-    traditional: "Requires checking multiple sources before every bet.",
-    thinkbetai: "Bakes availability, lineup and usage changes into the report.",
+    keys: ["mlb", "baseball", "run line"],
+    label: "baseball",
+    matchups: ["New York vs Boston", "Los Angeles vs San Diego", "Atlanta vs Philadelphia"],
+    favorite: "New York",
+    underdog: "Boston",
+    athlete: "Juan Soto",
+    factors: "starting pitcher form, bullpen fatigue, park factor and platoon splits",
   },
   {
-    label: "Repeatability",
-    traditional: "Process changes depending on time, bias and attention.",
-    thinkbetai: "Applies the same evaluation framework to every matchup.",
+    keys: ["nhl", "hockey", "puck"],
+    label: "hockey",
+    matchups: ["Toronto vs Boston", "Colorado vs Vegas", "Edmonton vs Vancouver"],
+    favorite: "Toronto",
+    underdog: "Boston",
+    athlete: "Connor McDavid",
+    factors: "goalie rest, shot quality, power-play volume and back-to-back travel",
+  },
+  {
+    keys: ["soccer", "football clubs", "both teams"],
+    label: "soccer",
+    matchups: ["Inter Miami vs Atlanta", "Arsenal vs Chelsea", "Barcelona vs Sevilla"],
+    favorite: "Inter Miami",
+    underdog: "Atlanta",
+    athlete: "Lionel Messi",
+    factors: "expected goals, transition chances, lineup rotation and travel congestion",
+  },
+  {
+    keys: ["ufc", "mma", "fight"],
+    label: "fight",
+    matchups: ["UFC main event", "lightweight contender bout", "five-round title eliminator"],
+    favorite: "favorite by decision",
+    underdog: "underdog submission angle",
+    athlete: "main-event fighter",
+    factors: "pace, takedown defense, cardio, reach and finishing history",
+  },
+  {
+    keys: ["tennis"],
+    label: "tennis",
+    matchups: ["Alcaraz vs Sinner", "Swiatek vs Sabalenka", "Medvedev vs Zverev"],
+    favorite: "Alcaraz",
+    underdog: "Sinner",
+    athlete: "Carlos Alcaraz",
+    factors: "surface hold rate, return points won, fatigue and head-to-head style",
+  },
+  {
+    keys: ["golf"],
+    label: "golf",
+    matchups: ["outright board", "top-20 market", "head-to-head matchup"],
+    favorite: "top-20 placement",
+    underdog: "long-shot matchup",
+    athlete: "approach specialist",
+    factors: "course fit, strokes gained approach, putting variance and weather draw",
+  },
+  {
+    keys: ["nascar", "formula 1", "racing"],
+    label: "racing",
+    matchups: ["race winner market", "podium market", "driver matchup"],
+    favorite: "podium finish",
+    underdog: "driver matchup plus money",
+    athlete: "race favorite",
+    factors: "qualifying position, tire degradation, pit strategy and track history",
+  },
+  {
+    keys: ["esports", "maps"],
+    label: "esports",
+    matchups: ["map one market", "best-of-three series", "underdog map handicap"],
+    favorite: "series favorite",
+    underdog: "map handicap underdog",
+    athlete: "entry-frag leader",
+    factors: "map pool, side win rate, roster form and patch changes",
   },
 ];
 
-const howToUseSteps = [
-  "Choose today's game",
-  "Review AI confidence",
-  "Compare market odds",
-  "Check the reasoning",
-  "Analyze your bet",
-  "Decide for yourself",
+const pageMarketContexts = [
+  {
+    keys: ["spread", "ats", "against the spread", "alt spread", "run line", "puck line"],
+    label: "Spread",
+    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} -3`,
+    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} +3.5`,
+    focus: "cover probability, key numbers, margin distribution and backdoor risk",
+  },
+  {
+    keys: ["total", "over under", "over-under", "alt total"],
+    label: "Total",
+    primaryPick: () => "Over 47.5",
+    secondaryPick: () => "Under 48.5",
+    focus: "pace, scoring efficiency, weather, injuries and market movement around the number",
+  },
+  {
+    keys: ["prop", "touchdown", "anytime"],
+    label: "Player prop",
+    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.athlete} over prop line`,
+    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.athlete} alternate prop`,
+    focus: "usage, matchup, price, injury replacements and correlation with game script",
+  },
+  {
+    keys: ["parlay", "same-game", "same game"],
+    label: "Parlay",
+    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} leg + ${sport.athlete} prop`,
+    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} cover + game total`,
+    focus: "leg correlation, combined probability, payout concentration and safer single-bet alternatives",
+  },
+  {
+    keys: ["moneyline", "underdog", "pick of the day", "winner"],
+    label: "Moneyline",
+    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} moneyline`,
+    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} plus-money moneyline`,
+    focus: "win probability, implied odds, injury news and whether the price is still playable",
+  },
+  {
+    keys: ["expected value", "positive ev", "ev ", "fair odds", "no vig", "arbitrage", "hedge", "kelly", "bankroll", "calculator", "odds", "line movement", "closing line"],
+    label: "Pricing",
+    primaryPick: () => "positive EV price check",
+    secondaryPick: () => "fair-odds comparison",
+    focus: "breakeven probability, no-vig price, stake sizing, closing-line value and execution risk",
+  },
 ];
 
-const reportRows = [
-  { label: "AI confidence", value: "83%", detail: "Qualified pick threshold cleared" },
-  { label: "Model edge", value: "+4.8%", detail: "Sportsbook price is above fair value" },
-  { label: "Expected value", value: "+7.2%", detail: "Positive EV at the current market" },
-  { label: "Risk grade", value: "Medium", detail: "Lineup volatility still matters" },
+const routeSeed = (blueprint: SeoBlueprint) => {
+  const source = `${blueprint.slug}:${blueprint.primaryKeyword}:${blueprint.cluster}`;
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = (hash * 33 + source.charCodeAt(index)) % 9973;
+  }
+  return hash;
+};
+
+const blueprintHaystack = (blueprint: SeoBlueprint) =>
+  [blueprint.slug, blueprint.primaryKeyword, blueprint.h1, blueprint.cluster, ...blueprint.tags].join(" ").toLowerCase();
+
+const includesAny = (haystack: string, keys: string[]) => keys.some((key) => haystack.includes(key));
+
+const getPageSport = (blueprint: SeoBlueprint) => {
+  const haystack = blueprintHaystack(blueprint);
+  return pageSportContexts.find((sport) => includesAny(haystack, sport.keys)) ?? pageSportContexts[routeSeed(blueprint) % pageSportContexts.length];
+};
+
+const getPageMarket = (blueprint: SeoBlueprint) => {
+  const haystack = blueprintHaystack(blueprint);
+  return pageMarketContexts.find((market) => includesAny(haystack, market.keys)) ?? pageMarketContexts[routeSeed(blueprint) % pageMarketContexts.length];
+};
+
+const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[] => {
+  const seed = routeSeed(blueprint);
+  const sport = getPageSport(blueprint);
+  const market = getPageMarket(blueprint);
+  const matchup = sport.matchups[seed % sport.matchups.length];
+  const confidence = 71 + (seed % 16);
+  const edge = `+${(2.1 + (seed % 34) / 10).toFixed(1)}%`;
+  const fairOdds = seed % 2 === 0 ? `+${112 + (seed % 39)}` : `-${112 + (seed % 31)}`;
+  const sportsbookOdds = seed % 3 === 0 ? `+${126 + (seed % 45)}` : `-${104 + (seed % 26)}`;
+  const risk = seed % 5 === 0 ? "High" : seed % 2 === 0 ? "Medium" : "Low";
+  const pagePhrase = blueprint.primaryKeyword.toLowerCase();
+  const routeContext = `This ${blueprint.slug.replace(/[/-]+/g, " ")} route is checking ${pagePhrase}, not a generic board scan.`;
+
+  return [
+    {
+      matchup,
+      pick: market.primaryPick(sport),
+      market: market.label,
+      confidence,
+      edge,
+      risk,
+      sportsbookOdds,
+      fairOdds,
+      reason: `${routeContext} ThinkBetAI weighs ${sport.factors} against ${market.focus} before showing confidence or risk.`,
+    },
+    {
+      matchup: sport.matchups[(seed + 1) % sport.matchups.length],
+      pick: market.secondaryPick(sport),
+      market: `${market.label} alternate`,
+      confidence: Math.max(68, confidence - 4),
+      edge: `+${(1.7 + (seed % 22) / 10).toFixed(1)}%`,
+      risk: risk === "Low" ? "Medium" : "High",
+      sportsbookOdds: seed % 2 === 0 ? "+155" : "-108",
+      fairOdds: seed % 2 === 0 ? "+139" : "-119",
+      reason: `The alternate example exists because ${pagePhrase} can change when the line moves. The report compares payout, fair probability and whether passing is better than forcing action.`,
+    },
+    {
+      matchup: sport.matchups[(seed + 2) % sport.matchups.length],
+      pick: `${blueprint.h1} watchlist`,
+      market: blueprint.intent === "tool" ? "Tool check" : "Research",
+      confidence: Math.max(66, confidence - 7),
+      edge: `+${(1.2 + (seed % 18) / 10).toFixed(1)}%`,
+      risk: "Medium",
+      sportsbookOdds: "Market dependent",
+      fairOdds: "Model dependent",
+      reason: `For ${blueprint.h1}, the watchlist should explain the data needed before a wager earns a full report: current price, model probability, matchup context and risk flags.`,
+    },
+    {
+      matchup,
+      pick: `${market.label} no-bet flag`,
+      market: "Risk review",
+      confidence: 62 + (seed % 9),
+      edge: "+0.4%",
+      risk: "High",
+      sportsbookOdds: "Moved",
+      fairOdds: "Too close",
+      reason: `A good ${pagePhrase} page should show when ThinkBetAI would slow the user down because the edge disappeared, the injury news is stale or the market is too thin.`,
+    },
+    {
+      matchup: sport.matchups[(seed + 1) % sport.matchups.length],
+      pick: `${sport.label} context check`,
+      market: "Context",
+      confidence: 70 + (seed % 10),
+      edge: `+${(1.4 + (seed % 24) / 10).toFixed(1)}%`,
+      risk: "Medium",
+      sportsbookOdds: "Compare books",
+      fairOdds: "Fair line",
+      reason: `${blueprint.primaryKeyword} needs ${sport.label} context. The page should connect ${sport.factors} to the model output so the recommendation does not feel copied from another sport.`,
+    },
+    {
+      matchup: sport.matchups[(seed + 2) % sport.matchups.length],
+      pick: `${blueprint.cluster} next-step report`,
+      market: "Workflow",
+      confidence: 69 + (seed % 12),
+      edge: `+${(1.0 + (seed % 20) / 10).toFixed(1)}%`,
+      risk: seed % 2 === 0 ? "Low" : "Medium",
+      sportsbookOdds: "Input line",
+      fairOdds: "Report output",
+      reason: `The conversion path should move from ${pagePhrase} education into a report only after the user understands price, confidence, variance and responsible-use limits.`,
+    },
+  ];
+};
+
+const buildPageMarketStats = (blueprint: SeoBlueprint) => {
+  const sport = getPageSport(blueprint);
+  const market = getPageMarket(blueprint);
+  return [
+    { label: "Route focus", value: market.label },
+    { label: "Sport context", value: sport.label },
+    { label: "Indexable depth", value: `${blueprint.estimatedWordCount.toLocaleString()} words` },
+    { label: "Search intent", value: blueprint.intent },
+  ];
+};
+
+const buildWorkflowSteps = (blueprint: SeoBlueprint) => {
+  const sport = getPageSport(blueprint);
+  const market = getPageMarket(blueprint);
+  return [
+    { label: "Read the query", description: `Identify whether ${blueprint.primaryKeyword} needs a pick, tool, comparison, strategy or sportsbook-specific answer.` },
+    { label: "Collect price data", description: `Capture current odds, implied probability and movement for the ${market.label.toLowerCase()} market.` },
+    { label: "Layer sport context", description: `Review ${sport.factors} so the report reflects ${sport.label} conditions instead of generic betting copy.` },
+    { label: "Compare fair odds", description: `Measure sportsbook price against ThinkBetAI's fair number before calling anything value.` },
+    { label: "Score volatility", description: `Flag stale news, thin markets, payout temptation and other risks tied to ${blueprint.h1}.` },
+    { label: "Explain the action", description: `Show whether to analyze, pass, wait for news or compare an alternate market.` },
+    { label: "Link the cluster", description: `Send readers from this page into related tools, sport pages, methodology and track record proof.` },
+  ];
+};
+
+const buildComparisonRows = (blueprint: SeoBlueprint) => {
+  const sport = getPageSport(blueprint);
+  const market = getPageMarket(blueprint);
+  return [
+    {
+      label: "Search intent",
+      traditional: `Manual research often treats ${blueprint.primaryKeyword} like another pick request.`,
+      thinkbetai: `Frames ${blueprint.h1} around intent, market type, proof, risk and the next logical report.`,
+    },
+    {
+      label: "Market context",
+      traditional: `A bettor may check one ${market.label.toLowerCase()} line and miss fair-price context.`,
+      thinkbetai: `Compares posted price, fair odds, edge and movement before calling the angle playable.`,
+    },
+    {
+      label: "Sport context",
+      traditional: `Research can skip ${sport.label} variables when time is short.`,
+      thinkbetai: `Connects ${sport.factors} to the confidence score and page-specific example.`,
+    },
+    {
+      label: "Risk language",
+      traditional: "Most thin SEO pages push the bet and hide uncertainty.",
+      thinkbetai: `Keeps no-bet, pass, wait and alternate-market options visible for ${blueprint.primaryKeyword}.`,
+    },
+  ];
+};
+
+const buildHowToUseSteps = (blueprint: SeoBlueprint) => [
+  `Open the ${blueprint.primaryKeyword} route`,
+  "Check current odds",
+  "Read the page example",
+  "Compare fair price",
+  "Review risk flags",
+  blueprint.conversionGoal === "pricing" ? "Check pricing" : blueprint.conversionGoal === "signup" ? "Create account" : "Analyze the bet",
 ];
 
 const confidenceClass = (value: number) =>
@@ -216,102 +468,114 @@ const SectionHeader = ({
   </div>
 );
 
-const MiniReport = () => (
-  <div className="rounded-lg border border-border/70 bg-background shadow-xl shadow-primary/5">
-    <div className="border-b border-border/70 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="font-semibold">Lakers moneyline</p>
-          <p className="text-sm text-muted-foreground">AI report preview</p>
+const MiniReport = ({ blueprint }: { blueprint: SeoBlueprint }) => {
+  const preview = buildPredictionPreview(blueprint)[0];
+  const rows = [
+    { label: "AI confidence", value: `${preview.confidence}%`, detail: `${blueprint.primaryKeyword} confidence snapshot` },
+    { label: "Model edge", value: preview.edge, detail: `${preview.market} price gap vs fair odds` },
+    { label: "Fair odds", value: preview.fairOdds, detail: "Model-implied number before action" },
+    { label: "Risk grade", value: preview.risk, detail: `${blueprint.h1} volatility check` },
+  ];
+
+  return (
+    <div className="rounded-lg border border-border/70 bg-background shadow-xl shadow-primary/5">
+      <div className="border-b border-border/70 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold">{preview.pick}</p>
+            <p className="text-sm text-muted-foreground">{blueprint.primaryKeyword} report preview</p>
+          </div>
+          <Badge className="bg-success/15 text-success hover:bg-success/15">{preview.confidence}% confidence</Badge>
         </div>
-        <Badge className="bg-success/15 text-success hover:bg-success/15">83% confidence</Badge>
+      </div>
+      <div className="grid gap-3 p-4 sm:grid-cols-2">
+        {rows.map((row) => (
+          <div key={row.label} className="rounded-lg border border-border/60 bg-card/40 p-3">
+            <p className="text-xs text-muted-foreground">{row.label}</p>
+            <p className="mt-1 text-xl font-bold text-primary">{row.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-border/70 p-4">
+        <p className="text-sm font-medium">AI reasoning</p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{preview.reason}</p>
       </div>
     </div>
-    <div className="grid gap-3 p-4 sm:grid-cols-2">
-      {reportRows.map((row) => (
-        <div key={row.label} className="rounded-lg border border-border/60 bg-card/40 p-3">
-          <p className="text-xs text-muted-foreground">{row.label}</p>
-          <p className="mt-1 text-xl font-bold text-primary">{row.value}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
-        </div>
-      ))}
-    </div>
-    <div className="border-t border-border/70 p-4">
-      <p className="text-sm font-medium">AI reasoning</p>
-      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-        Phoenix is down two rotation starters, Los Angeles projects better in half-court efficiency and the current +145 price is above the model's fair number.
-      </p>
-    </div>
-  </div>
-);
+  );
+};
 
-const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => (
-  <section className="border-b border-border/60 bg-card/20">
-    <div className="container max-w-6xl py-10 md:py-16">
-      <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-        <div className="space-y-5">
-          <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-            {blueprint.primaryKeyword}
-          </Badge>
-          <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-6xl">
-            {blueprint.h1}
-          </h1>
-          <p className="max-w-3xl text-lg leading-8 text-muted-foreground md:text-xl">
-            {blueprint.heroSubheadline}
-          </p>
-          <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-            <Button size="lg" asChild>
-              <a href={blueprint.primaryCTA.href}>
-                {blueprint.primaryCTA.label}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-            {blueprint.secondaryCTA && (
-              <Button size="lg" variant="outline" asChild>
-                <a href={blueprint.secondaryCTA.href}>
-                  <Target className="mr-2 h-4 w-4" />
-                  {blueprint.secondaryCTA.label}
+const PageIntro = ({ blueprint }: { blueprint: SeoBlueprint }) => {
+  const previewRows = buildPredictionPreview(blueprint);
+
+  return (
+    <section className="border-b border-border/60 bg-card/20">
+      <div className="container max-w-6xl py-10 md:py-16">
+        <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+          <div className="space-y-5">
+            <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              {blueprint.primaryKeyword}
+            </Badge>
+            <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-6xl">
+              {blueprint.h1}
+            </h1>
+            <p className="max-w-3xl text-lg leading-8 text-muted-foreground md:text-xl">
+              {blueprint.heroSubheadline}
+            </p>
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row">
+              <Button size="lg" asChild>
+                <a href={blueprint.primaryCTA.href}>
+                  {blueprint.primaryCTA.label}
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-            )}
-          </div>
-          <div className="grid gap-3 pt-3 sm:grid-cols-2 xl:grid-cols-4">
-            {blueprint.heroTrust.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <div className="flex items-center gap-1 text-warning">
-                  {Array.from({ length: metric.value.includes("15,000") ? 5 : 1 }).map((_, index) => (
-                    <Star key={`${metric.label}-${index}`} className="h-3.5 w-3.5 fill-current" />
-                  ))}
+              {blueprint.secondaryCTA && (
+                <Button size="lg" variant="outline" asChild>
+                  <a href={blueprint.secondaryCTA.href}>
+                    <Target className="mr-2 h-4 w-4" />
+                    {blueprint.secondaryCTA.label}
+                  </a>
+                </Button>
+              )}
+            </div>
+            <div className="grid gap-3 pt-3 sm:grid-cols-2 xl:grid-cols-4">
+              {blueprint.heroTrust.map((metric) => (
+                <div key={metric.label} className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <div className="flex items-center gap-1 text-warning">
+                    {Array.from({ length: metric.value.includes("15,000") ? 5 : 1 }).map((_, index) => (
+                      <Star key={`${metric.label}-${index}`} className="h-3.5 w-3.5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="mt-2 text-lg font-bold">{metric.value}</p>
+                  <p className="text-xs text-muted-foreground">{metric.label}</p>
                 </div>
-                <p className="mt-2 text-lg font-bold">{metric.value}</p>
-                <p className="text-xs text-muted-foreground">{metric.label}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-4">
-          <MiniReport />
-          <div className="grid gap-3 sm:grid-cols-3">
-            {predictionPreview.slice(0, 3).map((item) => (
-              <div key={item.pick} className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold">{item.pick}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.market}</p>
-                <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">Edge {item.edge}</span>
-                  <span className={cn("text-sm font-bold", confidenceClass(item.confidence))}>
-                    {item.confidence}%
-                  </span>
+          <div className="space-y-4">
+            <MiniReport blueprint={blueprint} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {previewRows.slice(0, 3).map((item) => (
+                <div key={item.pick} className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <p className="text-sm font-semibold">{item.pick}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.market}</p>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Edge {item.edge}</span>
+                    <span className={cn("text-sm font-bold", confidenceClass(item.confidence))}>
+                      {item.confidence}%
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const IntroExplainer = ({ section }: SectionRendererProps) => {
   if (section.type !== "intro_explainer") return null;
@@ -343,9 +607,9 @@ const IntroExplainer = ({ section }: SectionRendererProps) => {
   );
 };
 
-const PredictionsWidget = ({ section }: SectionRendererProps) => {
+const PredictionsWidget = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "predictions_widget") return null;
-  const rows = predictionPreview.slice(0, section.limit);
+  const rows = buildPredictionPreview(blueprint).slice(0, section.limit);
 
   return (
     <section id="today-predictions" className="bg-card/30 py-12 md:py-16">
@@ -411,8 +675,9 @@ const PredictionsWidget = ({ section }: SectionRendererProps) => {
   );
 };
 
-const MarketStats = ({ section }: SectionRendererProps) => {
+const MarketStats = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "market_stats") return null;
+  const stats = buildPageMarketStats(blueprint);
 
   return (
     <section className="py-12 md:py-16">
@@ -425,7 +690,7 @@ const MarketStats = ({ section }: SectionRendererProps) => {
           centered
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {marketStats.map((stat) => (
+          {stats.map((stat) => (
             <Card key={stat.label} className="border-border/70 bg-card/40">
               <CardContent className="p-5">
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -439,8 +704,14 @@ const MarketStats = ({ section }: SectionRendererProps) => {
   );
 };
 
-const ProductReportPreview = ({ section }: SectionRendererProps) => {
+const ProductReportPreview = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "product_report_preview") return null;
+  const preview = buildPredictionPreview(blueprint)[0];
+  const reportCards = [
+    ["Explanation", preview.reason],
+    ["Risk", `${preview.risk} volatility because ${blueprint.primaryKeyword} depends on current price, market movement and fresh context.`],
+    ["Alternative bet", `If ${preview.pick} is no longer playable, compare ${buildPredictionPreview(blueprint)[1].pick} before forcing action.`],
+  ];
 
   return (
     <section className="bg-card/30 py-12 md:py-16">
@@ -455,12 +726,12 @@ const ProductReportPreview = ({ section }: SectionRendererProps) => {
           <div className="rounded-lg border border-border/70 bg-background p-4 shadow-xl shadow-primary/5">
             <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
               <div className="rounded-lg border border-border/60 bg-card/40 p-4">
-                <p className="text-sm font-semibold">Bet report</p>
-                <p className="mt-1 text-xs text-muted-foreground">Lakers moneyline +145</p>
+                <p className="text-sm font-semibold">{blueprint.primaryKeyword} report</p>
+                <p className="mt-1 text-xs text-muted-foreground">{preview.pick} {preview.sportsbookOdds}</p>
                 <div className="mt-5 flex items-center justify-center">
                   <div className="flex h-36 w-36 items-center justify-center rounded-full border-8 border-primary/25 bg-primary/10">
                     <div className="text-center">
-                      <p className="text-4xl font-bold text-primary">83%</p>
+                      <p className="text-4xl font-bold text-primary">{preview.confidence}%</p>
                       <p className="text-xs text-muted-foreground">confidence</p>
                     </div>
                   </div>
@@ -468,20 +739,16 @@ const ProductReportPreview = ({ section }: SectionRendererProps) => {
                 <div className="mt-5 grid grid-cols-2 gap-2 text-sm">
                   <div className="rounded-lg bg-background p-3">
                     <p className="text-muted-foreground">Edge</p>
-                    <p className="font-semibold text-primary">+4.8%</p>
+                    <p className="font-semibold text-primary">{preview.edge}</p>
                   </div>
                   <div className="rounded-lg bg-background p-3">
-                    <p className="text-muted-foreground">EV</p>
-                    <p className="font-semibold text-primary">+7.2%</p>
+                    <p className="text-muted-foreground">Fair odds</p>
+                    <p className="font-semibold text-primary">{preview.fairOdds}</p>
                   </div>
                 </div>
               </div>
               <div className="space-y-3">
-                {[
-                  ["Explanation", "Phoenix's availability downgrade increases Los Angeles usage and half-court efficiency projections."],
-                  ["Risk", "Medium volatility because the market can move quickly after confirmed lineups."],
-                  ["Alternative bet", "If the moneyline shortens below +130, compare Lakers +2.5 instead."],
-                ].map(([label, copy]) => (
+                {reportCards.map(([label, copy]) => (
                   <div key={label} className="rounded-lg border border-border/60 bg-card/40 p-4">
                     <p className="text-sm font-semibold">{label}</p>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">{copy}</p>
@@ -496,8 +763,9 @@ const ProductReportPreview = ({ section }: SectionRendererProps) => {
   );
 };
 
-const HowAIWorks = ({ section }: SectionRendererProps) => {
+const HowAIWorks = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "how_ai_works") return null;
+  const steps = buildWorkflowSteps(blueprint);
 
   return (
     <section className="py-12 md:py-16">
@@ -510,7 +778,7 @@ const HowAIWorks = ({ section }: SectionRendererProps) => {
           centered
         />
         <div className="grid gap-3 lg:grid-cols-7">
-          {workflowSteps.map((step, index) => (
+          {steps.map((step, index) => (
             <div key={step.label} className="rounded-lg border border-border/70 bg-card/40 p-4">
               <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                 {index + 1}
@@ -525,7 +793,7 @@ const HowAIWorks = ({ section }: SectionRendererProps) => {
   );
 };
 
-const RecentPerformance = ({ section }: SectionRendererProps) => {
+const RecentPerformance = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "recent_performance") return null;
   const stats = [
     { label: "Qualified picks", value: platformStats.totalQualified.toLocaleString(), icon: ClipboardCheck },
@@ -558,7 +826,7 @@ const RecentPerformance = ({ section }: SectionRendererProps) => {
           })}
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
-          Past performance does not guarantee future outcomes. Use performance data as context, not as a promise.
+          Past performance does not guarantee future outcomes. Use performance data as context for {blueprint.primaryKeyword}, not as a promise.
         </p>
       </div>
     </section>
@@ -645,8 +913,9 @@ const BetAnalyzerPreview = ({ section }: SectionRendererProps) => {
   );
 };
 
-const ComparisonTable = ({ section }: SectionRendererProps) => {
+const ComparisonTable = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "comparison_table") return null;
+  const rows = buildComparisonRows(blueprint);
 
   return (
     <section className="bg-card/30 py-12 md:py-16">
@@ -663,7 +932,7 @@ const ComparisonTable = ({ section }: SectionRendererProps) => {
             <span>Traditional research</span>
             <span>ThinkBetAI</span>
           </div>
-          {comparisonRows.map((row) => (
+          {rows.map((row) => (
             <div key={row.label} className="grid gap-4 border-b border-border/50 p-4 last:border-b-0 md:grid-cols-[0.8fr_1fr_1fr]">
               <p className="font-semibold">{row.label}</p>
               <p className="text-sm leading-6 text-muted-foreground">{row.traditional}</p>
@@ -676,8 +945,9 @@ const ComparisonTable = ({ section }: SectionRendererProps) => {
   );
 };
 
-const HowToUse = ({ section }: SectionRendererProps) => {
+const HowToUse = ({ blueprint, section }: SectionRendererProps) => {
   if (section.type !== "how_to_use") return null;
+  const steps = buildHowToUseSteps(blueprint);
 
   return (
     <section className="py-12 md:py-16">
@@ -690,7 +960,7 @@ const HowToUse = ({ section }: SectionRendererProps) => {
           centered
         />
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {howToUseSteps.map((step, index) => (
+          {steps.map((step, index) => (
             <div key={step} className="flex items-center gap-4 rounded-lg border border-border/70 bg-card/40 p-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
                 {index + 1}

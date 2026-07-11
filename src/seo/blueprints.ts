@@ -261,8 +261,8 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
     },
     {
       type: "market_stats",
-      heading: "Live Sports Betting Coverage",
-      subheading: "Track active games, model volume, supported sports and the markets ThinkBetAI is built to evaluate.",
+      heading: "AI Betting Prediction Coverage Signals",
+      subheading: "Track the sports, markets, model volume and report signals that matter most for AI betting predictions.",
     },
     {
       type: "intro_explainer",
@@ -646,6 +646,1570 @@ const buildFaq = (definition: BlueprintDefinition): FAQItem[] => [
   },
 ];
 
+interface DeepTopicProfile {
+  searcher: string;
+  uniqueAngle: string;
+  goodSignals: string[];
+  badSignals: string[];
+  dataSignals: string[];
+  proofSignals: string[];
+  safetyNotes: string[];
+  conversionPath: string[];
+}
+
+interface DeepSportProfile {
+  label: string;
+  context: string;
+  inputs: string[];
+  risks: string[];
+  examples: string[];
+}
+
+interface DeepMarketProfile {
+  label: string;
+  context: string;
+  checks: string[];
+  traps: string[];
+}
+
+interface DeepEntityProfile {
+  label: string;
+  angle: string;
+  checks: string[];
+  warnings: string[];
+  examples: string[];
+}
+
+const deepTopicProfiles: Record<string, DeepTopicProfile> = {
+  "sports-predictions": {
+    searcher:
+      "is usually comparing today's slate and wants to know whether the model can explain a likely outcome without pretending the outcome is certain",
+    uniqueAngle:
+      "The page should show how sport-specific inputs change the prediction instead of repeating the same AI-picks pitch on every league URL.",
+    goodSignals: [
+      "sport-specific injury or lineup context",
+      "market price shown beside model probability",
+      "recent form explained without overfitting",
+      "confidence connected to volatility",
+      "internal links to picks, props, parlays, and methodology",
+    ],
+    badSignals: [
+      "generic pick language that could fit any sport",
+      "no explanation of how confidence is calculated",
+      "no current-price context",
+      "no responsible-use language",
+      "no sport-specific risk notes",
+    ],
+    dataSignals: [
+      "closing price movement",
+      "injury and availability updates",
+      "recent efficiency trends",
+      "venue and schedule context",
+      "market-implied probability",
+    ],
+    proofSignals: [
+      "sample report rows",
+      "track-record links",
+      "methodology links",
+      "confidence and risk labels",
+      "sport-specific examples",
+    ],
+    safetyNotes: [
+      "predictions estimate probability, not certainty",
+      "late news can change the market",
+      "a high-confidence pick can still lose",
+      "bankroll limits should come before model excitement",
+    ],
+    conversionPath: [
+      "scan the preview board",
+      "open a full report",
+      "compare the line with the current sportsbook price",
+      "analyze a personal bet slip",
+    ],
+  },
+  "sports-picks": {
+    searcher:
+      "wants a short list of playable-looking ideas, but still needs enough reasoning to avoid blindly tailing a pick",
+    uniqueAngle:
+      "The page should explain what turns a prediction into a pick: price, risk, confidence, injury context, and whether the current number still makes sense.",
+    goodSignals: [
+      "pick-specific reasoning",
+      "fair odds beside sportsbook odds",
+      "risk grade near every recommendation",
+      "sport-specific market context",
+      "clear path into deeper analysis",
+    ],
+    badSignals: [
+      "best bet language with no price",
+      "pick lists with no uncertainty",
+      "same examples repeated across sports",
+      "no explanation of line movement",
+      "no link to responsible gambling resources",
+    ],
+    dataSignals: [
+      "fair odds",
+      "model edge",
+      "injury impact",
+      "line movement",
+      "matchup volatility",
+    ],
+    proofSignals: [
+      "qualified pick thresholds",
+      "edge and EV labels",
+      "risk explanations",
+      "performance context",
+      "current-market examples",
+    ],
+    safetyNotes: [
+      "picks are research outputs",
+      "odds can move after the model grades a market",
+      "unit sizing matters more than confidence alone",
+      "users should avoid chasing losses",
+    ],
+    conversionPath: [
+      "review public pick previews",
+      "sort by sport or market",
+      "open the report",
+      "paste a specific wager into the analyzer",
+    ],
+  },
+  "market-picks": {
+    searcher:
+      "already knows the bet type and wants the model to explain that market's specific risk rather than a broad sports forecast",
+    uniqueAngle:
+      "The page should be about the market mechanic: moneyline, spread, total, props, live betting, or same-game parlay correlation.",
+    goodSignals: [
+      "market-specific definitions",
+      "price sensitivity explained clearly",
+      "examples tied to the bet type",
+      "confidence separated from payout",
+      "warnings about volatility",
+    ],
+    badSignals: [
+      "same copy used for moneylines, spreads, totals, and props",
+      "no explanation of how the bet wins",
+      "no fair-price comparison",
+      "no volatility notes",
+      "no examples of when to pass",
+    ],
+    dataSignals: [
+      "market rules",
+      "implied probability",
+      "fair price",
+      "volatility",
+      "line sensitivity",
+    ],
+    proofSignals: [
+      "bet-type examples",
+      "risk grades",
+      "alternate market notes",
+      "edge calculations",
+      "report previews",
+    ],
+    safetyNotes: [
+      "higher payout often means higher variance",
+      "a positive edge can disappear after price movement",
+      "props and live markets can move fast",
+      "passing is a valid model output",
+    ],
+    conversionPath: [
+      "learn the market",
+      "review the preview",
+      "compare current odds",
+      "run the bet analyzer",
+    ],
+  },
+  calculators: {
+    searcher:
+      "wants a tool answer first, then context on how the math should affect a sports betting decision",
+    uniqueAngle:
+      "The page should explain the calculation, the inputs, what the result means, and what the result does not prove.",
+    goodSignals: [
+      "plain-English formulas",
+      "input examples",
+      "risk warnings",
+      "connection to bet analysis",
+      "clear next action after the calculation",
+    ],
+    badSignals: [
+      "calculator pages with no betting context",
+      "formulas shown without interpretation",
+      "no warning about model probability quality",
+      "no examples",
+      "no internal link to analyze a real bet",
+    ],
+    dataSignals: [
+      "stake size",
+      "odds format",
+      "model probability",
+      "payout",
+      "bankroll percentage",
+    ],
+    proofSignals: [
+      "sample calculation",
+      "input labels",
+      "result interpretation",
+      "risk note",
+      "analyzer link",
+    ],
+    safetyNotes: [
+      "a calculator is only as good as the probability estimate",
+      "do not increase stake size because a number looks precise",
+      "variance can overwhelm correct math in the short run",
+      "responsible betting limits still apply",
+    ],
+    conversionPath: [
+      "enter the numbers",
+      "read the interpretation",
+      "compare against model probability",
+      "open a full bet report",
+    ],
+  },
+  "edge-odds": {
+    searcher:
+      "is trying to understand value, odds movement, no-vig pricing, or closing-line quality before betting",
+    uniqueAngle:
+      "The page should teach process quality, not promise a profitable shortcut.",
+    goodSignals: [
+      "fair odds explained",
+      "sportsbook margin separated from probability",
+      "closing-line context",
+      "examples of price sensitivity",
+      "clear difference between edge and certainty",
+    ],
+    badSignals: [
+      "positive EV claims without probability assumptions",
+      "no discussion of market movement",
+      "no explanation of sportsbook hold",
+      "no long-term variance warning",
+      "generic edge copy repeated across pages",
+    ],
+    dataSignals: [
+      "market price",
+      "fair odds",
+      "no-vig probability",
+      "closing number",
+      "model edge",
+    ],
+    proofSignals: [
+      "before-and-after line examples",
+      "EV calculations",
+      "CLV context",
+      "risk labels",
+      "methodology links",
+    ],
+    safetyNotes: [
+      "edge does not guarantee a win",
+      "bad probability inputs create false value",
+      "line shopping matters",
+      "long-term tracking beats single-bet emotion",
+    ],
+    conversionPath: [
+      "learn the pricing concept",
+      "compare a current line",
+      "read the model report",
+      "track the bet outcome and closing price",
+    ],
+  },
+  comparisons: {
+    searcher:
+      "is evaluating tools and wants to know which workflow fits their betting research style, price expectations, and trust requirements",
+    uniqueAngle:
+      "The page should compare workflows and decision criteria instead of attacking a competitor or pretending one tool fits everyone.",
+    goodSignals: [
+      "fair comparison categories",
+      "pricing and workflow context",
+      "transparent limits",
+      "clear product fit",
+      "links to methodology and track record",
+    ],
+    badSignals: [
+      "thin competitor pages with no useful comparison",
+      "claims without examples",
+      "no explanation of who should choose each tool",
+      "no pricing or workflow discussion",
+      "generic alternative copy",
+    ],
+    dataSignals: [
+      "feature coverage",
+      "workflow depth",
+      "pricing path",
+      "transparency",
+      "report format",
+    ],
+    proofSignals: [
+      "comparison table",
+      "sample report",
+      "methodology link",
+      "pricing link",
+      "track-record context",
+    ],
+    safetyNotes: [
+      "tool choice does not remove betting risk",
+      "users should compare current odds themselves",
+      "marketing claims should be verified",
+      "no tool can guarantee outcomes",
+    ],
+    conversionPath: [
+      "compare workflows",
+      "review sample reports",
+      "check pricing",
+      "try the analyzer",
+    ],
+  },
+  sportsbooks: {
+    searcher:
+      "wants to understand how AI can review markets from a specific sportsbook while still comparing the price against fair odds",
+    uniqueAngle:
+      "The page should make sportsbook price context clear without implying partnership or guaranteed picks.",
+    goodSignals: [
+      "sportsbook-specific price language",
+      "fair odds comparison",
+      "market availability context",
+      "risk labels",
+      "no false affiliation claims",
+    ],
+    badSignals: [
+      "implying a sportsbook partnership",
+      "no price comparison",
+      "same copy reused for every book",
+      "ignoring market availability",
+      "no responsible-use language",
+    ],
+    dataSignals: [
+      "posted odds",
+      "fair odds",
+      "market availability",
+      "line movement",
+      "bet type",
+    ],
+    proofSignals: [
+      "report preview",
+      "price comparison row",
+      "risk grade",
+      "model edge label",
+      "responsible-use footer",
+    ],
+    safetyNotes: [
+      "odds can differ by sportsbook",
+      "availability changes by state and market",
+      "comparison is not endorsement",
+      "bet only where legal and appropriate",
+    ],
+    conversionPath: [
+      "review the sportsbook market",
+      "compare fair odds",
+      "open the report",
+      "analyze a specific wager",
+    ],
+  },
+  parlays: {
+    searcher:
+      "wants help combining legs but needs correlation, combined probability, payout, and variance explained before a parlay looks attractive",
+    uniqueAngle:
+      "The page should slow the user down and show why a parlay can look exciting while still carrying concentrated risk.",
+    goodSignals: [
+      "leg-level confidence",
+      "correlation checks",
+      "combined probability",
+      "risk concentration warnings",
+      "alternate single-bet paths",
+    ],
+    badSignals: [
+      "stacking high-confidence legs without correlation context",
+      "payout-first copy",
+      "no combined probability",
+      "no volatility warning",
+      "no explanation of why legs fit together",
+    ],
+    dataSignals: [
+      "leg probability",
+      "correlation",
+      "combined odds",
+      "payout",
+      "risk grade",
+    ],
+    proofSignals: [
+      "leg table",
+      "correlation warning",
+      "combined probability",
+      "risk note",
+      "parlay report preview",
+    ],
+    safetyNotes: [
+      "parlays increase variance",
+      "more legs usually lowers true hit probability",
+      "correlation can help or hurt",
+      "small stakes and clear limits matter",
+    ],
+    conversionPath: [
+      "choose candidate legs",
+      "check correlation",
+      "review combined probability",
+      "open a full parlay report",
+    ],
+  },
+  "ai-tools": {
+    searcher:
+      "wants a practical AI betting workflow, not a vague claim that artificial intelligence can beat sportsbooks",
+    uniqueAngle:
+      "The page should explain the tool, the inputs, the outputs, and the limitations in plain English.",
+    goodSignals: [
+      "clear tool use case",
+      "sample report",
+      "input and output explanation",
+      "methodology links",
+      "responsible-use notes",
+    ],
+    badSignals: [
+      "AI hype without workflow detail",
+      "no sample output",
+      "no discussion of bad inputs",
+      "no risk explanation",
+      "no account or pricing clarity",
+    ],
+    dataSignals: [
+      "odds",
+      "injuries",
+      "market movement",
+      "confidence",
+      "risk grade",
+    ],
+    proofSignals: [
+      "sample analyzer output",
+      "methodology explanation",
+      "track record link",
+      "FAQ schema",
+      "product screenshots",
+    ],
+    safetyNotes: [
+      "AI is a research tool",
+      "models can be wrong",
+      "late news matters",
+      "legal and responsible-use limits apply",
+    ],
+    conversionPath: [
+      "understand the workflow",
+      "preview output",
+      "paste a wager",
+      "unlock full analysis",
+    ],
+  },
+  "commercial-ai": {
+    searcher:
+      "is comparing apps, software, or platforms and needs proof that the product is useful before creating an account",
+    uniqueAngle:
+      "The page should sell the workflow while still explaining limitations, pricing path, and responsible use.",
+    goodSignals: [
+      "product feature clarity",
+      "free preview explained",
+      "pricing path visible",
+      "sample output",
+      "methodology and track-record links",
+    ],
+    badSignals: [
+      "best app claims with no criteria",
+      "no pricing context",
+      "no product screenshots or examples",
+      "no limitation language",
+      "no comparison against alternatives",
+    ],
+    dataSignals: [
+      "feature coverage",
+      "markets supported",
+      "report depth",
+      "pricing path",
+      "proof pages",
+    ],
+    proofSignals: [
+      "app workflow preview",
+      "report example",
+      "supported sports",
+      "pricing link",
+      "methodology link",
+    ],
+    safetyNotes: [
+      "software does not remove sports uncertainty",
+      "free previews are limited",
+      "users should compare prices",
+      "responsible gambling resources should stay visible",
+    ],
+    conversionPath: [
+      "review the workflow",
+      "try a public preview",
+      "compare pricing",
+      "create an account for full reports",
+    ],
+  },
+  "ai-predictions": {
+    searcher:
+      "wants model-driven predictions for today's games but needs confidence, price, and limitations explained before trusting a recommendation",
+    uniqueAngle:
+      "The page should connect prediction output to decision quality: probability, price, risk, and responsible action.",
+    goodSignals: [
+      "prediction board preview",
+      "confidence and edge shown together",
+      "market price included",
+      "injury and matchup context",
+      "links to sport pages and methodology",
+    ],
+    badSignals: [
+      "winner-only predictions",
+      "no fair odds context",
+      "no current-market warning",
+      "same prediction copy on every page",
+      "no explanation of model limits",
+    ],
+    dataSignals: [
+      "model probability",
+      "sportsbook price",
+      "injuries",
+      "recent form",
+      "market movement",
+    ],
+    proofSignals: [
+      "prediction preview",
+      "confidence score",
+      "risk grade",
+      "track record",
+      "FAQ coverage",
+    ],
+    safetyNotes: [
+      "a prediction is not a promise",
+      "odds can move quickly",
+      "confidence should not control stake size alone",
+      "responsible limits matter",
+    ],
+    conversionPath: [
+      "scan predictions",
+      "open interesting matchups",
+      "compare prices",
+      "run deeper analysis",
+    ],
+  },
+  methodology: {
+    searcher:
+      "wants to know how the model works, what it uses, what it ignores, and when the output should be treated cautiously",
+    uniqueAngle:
+      "The page should build trust by explaining process, uncertainty, and limits instead of hiding behind black-box language.",
+    goodSignals: [
+      "clear model inputs",
+      "confidence limits",
+      "risk grading explained",
+      "responsible-use language",
+      "links to performance context",
+    ],
+    badSignals: [
+      "black-box claims",
+      "no limitation section",
+      "no explanation of stale data",
+      "no responsible betting note",
+      "no examples of passing on markets",
+    ],
+    dataSignals: [
+      "model inputs",
+      "data freshness",
+      "confidence thresholds",
+      "risk grades",
+      "performance review",
+    ],
+    proofSignals: [
+      "workflow diagram",
+      "sample report",
+      "track-record link",
+      "FAQ",
+      "responsible-use resources",
+    ],
+    safetyNotes: [
+      "models can be wrong",
+      "data can be stale",
+      "confidence is not certainty",
+      "responsible bankroll rules come first",
+    ],
+    conversionPath: [
+      "read methodology",
+      "review sample report",
+      "compare with predictions",
+      "analyze a specific bet",
+    ],
+  },
+  strategy: {
+    searcher:
+      "is trying to build a repeatable betting process around bankroll, price discipline, edge, and responsible limits",
+    uniqueAngle:
+      "The page should teach process quality before product usage.",
+    goodSignals: [
+      "unit-sizing language",
+      "variance explained",
+      "price discipline",
+      "risk limits",
+      "links to calculators and analyzer",
+    ],
+    badSignals: [
+      "strategy described as guaranteed profit",
+      "no bankroll context",
+      "no variance explanation",
+      "no examples of passing",
+      "no responsible gambling resources",
+    ],
+    dataSignals: [
+      "unit size",
+      "edge estimate",
+      "confidence",
+      "variance",
+      "closing price",
+    ],
+    proofSignals: [
+      "calculator examples",
+      "risk notes",
+      "process checklist",
+      "performance context",
+      "responsible-use link",
+    ],
+    safetyNotes: [
+      "risk control matters more than one pick",
+      "variance is unavoidable",
+      "chasing losses breaks strategy",
+      "legal and responsible-use limits apply",
+    ],
+    conversionPath: [
+      "learn the process",
+      "use a calculator",
+      "analyze a bet",
+      "track results",
+    ],
+  },
+  trust: {
+    searcher:
+      "is evaluating whether ThinkBetAI is credible enough to try, compare, or pay for",
+    uniqueAngle:
+      "The page should show product workflow, methodology, limits, pricing path, and responsible-use standards without sounding like fake review content.",
+    goodSignals: [
+      "methodology visible",
+      "pricing path clear",
+      "product screenshots or report previews",
+      "track-record framing",
+      "responsible-use language",
+    ],
+    badSignals: [
+      "review copy with no criteria",
+      "no limitations",
+      "no pricing context",
+      "no methodology link",
+      "no support or contact path",
+    ],
+    dataSignals: [
+      "report quality",
+      "feature depth",
+      "pricing",
+      "support paths",
+      "track record",
+    ],
+    proofSignals: [
+      "sample workflow",
+      "methodology",
+      "pricing",
+      "responsible-use page",
+      "contact or support links",
+    ],
+    safetyNotes: [
+      "reviews should not imply guaranteed outcomes",
+      "betting risk remains",
+      "users should compare tools",
+      "responsible limits still apply",
+    ],
+    conversionPath: [
+      "read the review context",
+      "check methodology",
+      "preview a report",
+      "try the product",
+    ],
+  },
+};
+
+const defaultDeepTopicProfile = deepTopicProfiles["ai-tools"];
+
+const deepSportProfiles: DeepSportProfile[] = [
+  {
+    label: "NFL",
+    context: "NFL pages need injury reports, offensive line changes, quarterback pressure, weather, rest, and market timing.",
+    inputs: ["inactive reports", "weather", "QB pressure rate", "red-zone efficiency", "line movement"],
+    risks: ["late injury news", "weather swings", "public-team bias", "key-number movement"],
+    examples: ["spread moved through 3", "wind affects totals", "running back usage changes", "backup tackle changes pass protection"],
+  },
+  {
+    label: "NBA",
+    context: "NBA pages need minute projections, back-to-back fatigue, lineup usage, pace, injury news, and player prop volatility.",
+    inputs: ["injury report", "rest spot", "usage rate", "pace", "rotation changes"],
+    risks: ["late scratches", "minutes limits", "blowout risk", "rapid prop movement"],
+    examples: ["star ruled out changes usage", "third game in four nights", "pace-up matchup", "bench rotation shortens"],
+  },
+  {
+    label: "MLB",
+    context: "MLB pages need probable pitchers, bullpen workload, handedness splits, weather, park factors, and lineup confirmation.",
+    inputs: ["starting pitcher", "bullpen fatigue", "park factor", "weather", "handedness split"],
+    risks: ["lineup changes", "bullpen volatility", "weather delays", "umpire tendencies"],
+    examples: ["wind blowing out", "bullpen used heavily yesterday", "lefty-heavy lineup", "starter pitch count concern"],
+  },
+  {
+    label: "NHL",
+    context: "NHL pages need goalie confirmation, travel, rest, shot quality, special teams, and pace volatility.",
+    inputs: ["confirmed goalie", "back-to-back spot", "shot quality", "power-play matchup", "travel schedule"],
+    risks: ["late goalie switch", "empty-net total swings", "penalty variance", "overtime pricing"],
+    examples: ["backup goalie confirmed", "team on third road game", "power play mismatch", "high-danger chances rising"],
+  },
+  {
+    label: "UFC",
+    context: "UFC pages need fighter style, takedown defense, pace, durability, weigh-ins, camp changes, and method-of-victory markets.",
+    inputs: ["style matchup", "takedown defense", "striking pace", "durability", "weigh-in notes"],
+    risks: ["small sample records", "layoff uncertainty", "judge variance", "late weight-cut signals"],
+    examples: ["grappler vs striker dynamic", "short-notice replacement", "five-round cardio question", "method market overpriced"],
+  },
+  {
+    label: "Soccer",
+    context: "Soccer pages need lineups, rest, expected-goals profile, travel, finishing variance, and market movement across 1X2 and totals.",
+    inputs: ["starting lineup", "xG trend", "rest days", "travel", "finishing variance"],
+    risks: ["rotation", "red-card volatility", "draw pricing", "late lineup news"],
+    examples: ["striker rested", "low xG despite wins", "travel congestion", "both teams to score price moves"],
+  },
+  {
+    label: "Tennis",
+    context: "Tennis pages need surface, hold/break rates, fatigue, injury signals, travel, and matchup history.",
+    inputs: ["surface results", "serve hold rate", "return points won", "fatigue", "injury notes"],
+    risks: ["retirement risk", "surface transition", "tiebreak variance", "travel fatigue"],
+    examples: ["clay-to-grass shift", "second serve under pressure", "long previous match", "tiebreak-heavy matchup"],
+  },
+  {
+    label: "Golf",
+    context: "Golf pages need course fit, strokes gained, weather, tee time waves, recent form, and matchup-market context.",
+    inputs: ["course fit", "strokes gained", "wind", "tee wave", "putting volatility"],
+    risks: ["weather draw", "putting variance", "course history overreaction", "outright longshot variance"],
+    examples: ["windier afternoon wave", "approach play spike", "short course fit", "putting regression risk"],
+  },
+  {
+    label: "Racing",
+    context: "Racing pages need qualifying, track profile, pit strategy, weather, starting position, and team pace.",
+    inputs: ["qualifying", "track type", "pit strategy", "weather", "practice pace"],
+    risks: ["caution timing", "mechanical issues", "strategy variance", "track-position dependence"],
+    examples: ["short-track passing difficulty", "rain changes setup", "pit cycle risk", "practice pace stronger than qualifying"],
+  },
+  {
+    label: "Esports",
+    context: "Esports pages need patch context, map pool, roster changes, recent form, and tournament format.",
+    inputs: ["patch version", "map pool", "roster news", "recent form", "format"],
+    risks: ["meta shift", "small sample maps", "roster instability", "schedule fatigue"],
+    examples: ["new patch favors one team", "map veto edge", "substitute player", "best-of-one volatility"],
+  },
+];
+
+const deepMarketProfiles: DeepMarketProfile[] = [
+  {
+    label: "moneyline",
+    context: "Moneyline pages should explain win probability, fair odds, current price, and when a favorite or underdog is overpriced.",
+    checks: ["model win probability", "sportsbook implied probability", "fair odds", "injury impact", "line movement"],
+    traps: ["liking the winner but not the price", "ignoring late injury news", "overpaying for public favorites", "treating confidence as payout"],
+  },
+  {
+    label: "spread",
+    context: "Spread pages should explain margin, key numbers, matchup volatility, and how a fair line differs from the posted line.",
+    checks: ["fair spread", "key number movement", "injury-adjusted margin", "pace", "backdoor risk"],
+    traps: ["missing movement through key numbers", "ignoring blowout scripts", "forgetting push probability", "overvaluing recent final scores"],
+  },
+  {
+    label: "total",
+    context: "Total pages should explain pace, scoring environment, weather, efficiency, and whether the posted number has already moved.",
+    checks: ["projected pace", "scoring efficiency", "weather or venue", "injury impact", "market movement"],
+    traps: ["betting stale totals", "ignoring tempo", "missing weather changes", "overreacting to one high-scoring game"],
+  },
+  {
+    label: "props",
+    context: "Prop pages should explain player role, usage, minutes or snaps, matchup, and volatility before showing an over or under.",
+    checks: ["usage role", "minutes or snaps", "opponent matchup", "injury impact", "price movement"],
+    traps: ["using season averages blindly", "missing role changes", "ignoring blowout risk", "chasing popular player overs"],
+  },
+  {
+    label: "parlay",
+    context: "Parlay pages should explain leg confidence, correlation, combined probability, payout temptation, and risk concentration.",
+    checks: ["leg probability", "correlation", "combined odds", "risk grade", "alternate single bets"],
+    traps: ["stacking legs with hidden correlation", "focusing only on payout", "adding legs to chase a bigger number", "ignoring combined hit probability"],
+  },
+];
+
+const deepEntityProfiles: Record<string, DeepEntityProfile> = {
+  "ai bet analyzer": {
+    label: "AI Bet Analyzer",
+    angle:
+      "AI Bet Analyzer pages should focus on model-assisted interpretation after a user brings a specific wager, line, stake, or bet slip.",
+    checks: ["uploaded bet slip", "current price", "model fair odds", "confidence explanation", "recommended next action"],
+    warnings: ["uploaded line can be stale", "confidence is not stake size", "missing context can weaken analysis", "account-gated reports need preview value"],
+    examples: ["user pastes Lakers +145 and gets a fair-odds gap", "bet slip contains a parlay leg with hidden correlation", "model says pass because the price already moved"],
+  },
+  "bet analyzer": {
+    label: "Bet Analyzer",
+    angle:
+      "Bet Analyzer pages should be broader and more educational: explain how any wager is broken into probability, price, risk, and responsible decision rules.",
+    checks: ["bet type classification", "breakeven probability", "line shopping", "risk grade", "pass-or-play decision"],
+    warnings: ["raw odds are not analysis", "one calculator output is not enough", "thin pages skip the no-bet case", "manual entry can contain mistakes"],
+    examples: ["convert -110 into breakeven probability", "compare a moneyline and spread version of the same opinion", "flag a bet where edge is too small to matter"],
+  },
+  "ai parlay builder": {
+    label: "AI Parlay Builder",
+    angle:
+      "AI Parlay Builder pages should position the tool as a way to test candidate legs, correlation, combined probability, and payout risk before a ticket is built.",
+    checks: ["candidate leg list", "same-game correlation", "combined hit probability", "leg-level edge", "single-bet alternative"],
+    warnings: ["more legs usually lower true hit rate", "correlation can double-count one game script", "payout-first building creates bad tickets", "low limits and fast movement can change value"],
+    examples: ["two legs depend on the same quarterback volume", "three-leg ticket drops below acceptable hit probability", "one leg is better as a standalone bet"],
+  },
+  "parlay builder": {
+    label: "Parlay Builder",
+    angle:
+      "Parlay Builder pages should teach the mechanics of combining legs, reading payout, and knowing when a parlay is worse than separate straight bets.",
+    checks: ["leg count", "payout math", "correlation review", "stake size", "variance warning"],
+    warnings: ["builder UI can make weak parlays look easy", "small edges disappear when legs multiply", "same-game rules can limit combinations", "emotional add-ons reduce ticket quality"],
+    examples: ["two-leg parlay versus two straight bets", "alternate spread added only for payout", "correlated total and player prop needs a warning"],
+  },
+  "nfl ai predictions": {
+    label: "NFL AI Predictions",
+    angle:
+      "NFL prediction pages need football-specific detail: quarterback pressure, offensive line injuries, weather, travel, key numbers, and coaching tendencies.",
+    checks: ["quarterback availability", "pressure rate", "key spread number", "weather", "red-zone efficiency"],
+    warnings: ["injury reports move late", "public teams can be overpriced", "weather can change totals", "key numbers matter more in NFL spreads"],
+    examples: ["spread crosses from -2.5 to -3.5", "wind lowers passing efficiency", "backup tackle changes pressure projection"],
+  },
+  "ufc ai predictions": {
+    label: "UFC AI Predictions",
+    angle:
+      "UFC prediction pages should talk about fight-specific inputs: pace, takedown threat, defensive grappling, round length, cardio, and method markets.",
+    checks: ["takedown defense", "significant-strike pace", "cardio profile", "round total", "method-of-victory price"],
+    warnings: ["small sample striking stats mislead", "late replacement fighters change style", "five-round cardio matters", "method props are volatile"],
+    examples: ["favorite wins minutes but method price is too short", "underdog live grappling path exists", "fight goes distance projection beats winner market"],
+  },
+  "draftkings ai picks": {
+    label: "DraftKings AI Picks",
+    angle:
+      "DraftKings AI pick pages should center on posted DraftKings prices, boosts, same-game parlay menus, and whether the number still beats fair odds.",
+    checks: ["DraftKings line", "fair odds comparison", "boost terms", "SGP availability", "state-specific market access"],
+    warnings: ["boosted does not mean valuable", "popular teams can be shaded", "odds vary by state", "market menu changes quickly"],
+    examples: ["DraftKings boost still below fair value", "SGP leg shares one game-script assumption", "state market lacks a prop shown elsewhere"],
+  },
+  "betmgm ai picks": {
+    label: "BetMGM AI Picks",
+    angle:
+      "BetMGM AI pick pages should frame BetMGM as one price source and teach users to compare alternates, boosts, and fair numbers before action.",
+    checks: ["BetMGM posted line", "alternate market price", "boost conditions", "fair odds gap", "risk grade"],
+    warnings: ["boost terms can hide poor value", "alternate lines add variance", "price can move after promo attention", "one sportsbook price is not the market"],
+    examples: ["BetMGM alternate spread pays better but needs lower hit rate", "boosted prop still fails fair-odds test", "model likes the side only above a cutoff"],
+  },
+  "wnba ai predictions": {
+    label: "WNBA AI Predictions",
+    angle:
+      "WNBA prediction pages should discuss rotation depth, travel, usage concentration, injury reporting, and thinner market movement.",
+    checks: ["rotation minutes", "usage concentration", "travel spot", "injury status", "market depth"],
+    warnings: ["smaller markets move fast", "one star absence changes usage", "thin props can stale", "public data can be lighter"],
+    examples: ["star guard usage changes three props", "travel spot affects pace", "market moves before books fully adjust"],
+  },
+  "esports ai predictions": {
+    label: "Esports AI Predictions",
+    angle:
+      "Esports prediction pages need map-pool, patch, roster, side-selection, and best-of format context rather than generic team-strength language.",
+    checks: ["map pool", "patch change", "roster form", "side win rate", "series format"],
+    warnings: ["patch data ages quickly", "roster news can be sudden", "map veto changes matchup", "small sample streaks mislead"],
+    examples: ["map veto removes favorite's strongest map", "patch nerfs a core strategy", "underdog map handicap beats moneyline value"],
+  },
+  "against the spread": {
+    label: "Against the spread",
+    angle:
+      "Against-the-spread pages should focus on margin, key numbers, cover probability, and why a team can be the right side even if it may not win outright.",
+    checks: ["fair spread", "posted spread", "key number", "cover probability", "backdoor risk"],
+    warnings: ["moving through 3 or 7 matters", "a good team can be a bad spread price", "late injuries can change the fair line", "backdoor covers create variance"],
+    examples: ["favorite projects to win but not cover", "spread moves from -2.5 to -3.5", "underdog cover case depends on tempo"],
+  },
+  "alt spread": {
+    label: "Alternate spread",
+    angle:
+      "Alternate-spread pages should explain why changing the line changes payout, hit probability, variance, and whether the extra price is worth it.",
+    checks: ["alternate line", "alternate payout", "probability drop", "key-number jump", "risk grade"],
+    warnings: ["bigger payout usually means lower true probability", "alt lines can cross key numbers", "longer spreads concentrate variance", "do not chase payout without fair odds"],
+    examples: ["moving from -3 to -6.5 changes the game script needed", "plus-money alt spread needs a fair-probability check", "safer alternate line may reduce payout but improve hit rate"],
+  },
+  "fanduel ai parlay": {
+    label: "FanDuel AI Parlay Builder",
+    angle:
+      "FanDuel parlay-builder pages should be about leg fit, same-game correlation, combined probability, and payout discipline, not a generic FanDuel picks page.",
+    checks: ["FanDuel parlay leg price", "same-game correlation", "combined probability", "payout concentration", "alternate single-bet option"],
+    warnings: ["SGP payout can hide low probability", "correlated legs can double-count one assumption", "adding legs for payout weakens the ticket", "live odds can change the parlay math"],
+    examples: ["FanDuel SGP combines player prop and spread", "one injury assumption affects two legs", "single bet has better risk profile than the parlay"],
+  },
+  "bankroll": {
+    label: "Bankroll calculator",
+    angle:
+      "Bankroll calculator pages should teach stake planning, unit sizing, loss limits, and responsible betting before a user thinks about increasing bet size.",
+    checks: ["bankroll size", "unit percentage", "risk limit", "stake cap", "variance tolerance"],
+    warnings: ["confidence should not automatically increase stake", "chasing losses breaks bankroll rules", "short-term variance can wipe out overbetting", "unit size should be decided before the pick"],
+    examples: ["1% unit keeps a losing streak survivable", "high-confidence pick still stays inside stake cap", "bankroll plan rejects emotional chase bets"],
+  },
+  "closing line value": {
+    label: "Closing line value calculator",
+    angle:
+      "Closing-line-value pages should explain process quality after the bet by comparing the user's price with the final market number.",
+    checks: ["bet price", "closing price", "line direction", "market efficiency", "sample size"],
+    warnings: ["CLV is not the same as winning one bet", "small samples mislead", "bad markets can still move randomly", "late injury news can explain line movement"],
+    examples: ["took +145 and market closed +125", "beat the spread by half a point", "lost the bet but beat the closing number"],
+  },
+  "arbitrage": {
+    label: "Arbitrage calculator",
+    angle:
+      "Arbitrage calculator pages should explain stake splitting, book limits, execution timing, and why a theoretical arb can disappear quickly.",
+    checks: ["book A price", "book B price", "stake split", "guaranteed return", "execution speed"],
+    warnings: ["prices can move before both bets are placed", "limits can block stake size", "void rules can differ", "arbitrage math still needs execution discipline"],
+    examples: ["two books briefly disagree on implied probability", "stake split locks a small return", "one side moves before the second bet is placed"],
+  },
+  "expected value calculator": {
+    label: "Expected value calculator",
+    angle:
+      "Expected-value calculator pages should explain the relationship between model probability, sportsbook odds, stake size, and long-term expectation.",
+    checks: ["model probability", "sportsbook odds", "stake", "expected return", "breakeven probability"],
+    warnings: ["bad probability input creates fake EV", "positive EV can lose in the short run", "stake size still matters", "line movement can erase value"],
+    examples: ["model says 55% while breakeven is 52.4%", "positive EV result still carries variance", "same pick becomes neutral after odds move"],
+  },
+  "implied odds": {
+    label: "Implied odds calculator",
+    angle:
+      "Implied odds pages should teach how American, decimal, or fractional prices translate into breakeven probability before a user compares model edge.",
+    checks: ["odds format", "breakeven probability", "sportsbook hold", "fair odds", "model probability"],
+    warnings: ["implied probability is not true probability", "vig inflates both sides", "format conversion does not create edge", "line shopping still matters"],
+    examples: ["-110 implies 52.4% before no-vig adjustment", "+150 implies 40% breakeven", "decimal odds convert into the same probability check"],
+  },
+  "no vig": {
+    label: "No-vig fair odds calculator",
+    angle:
+      "No-vig pages should explain sportsbook margin, fair market probability, and why removing the hold is different from predicting the winner.",
+    checks: ["two-way market", "sportsbook hold", "no-vig probability", "fair odds", "model comparison"],
+    warnings: ["no-vig price is not a pick", "market probability can still be wrong", "wide markets reduce confidence", "fair odds need current prices"],
+    examples: ["remove hold from both sides of a moneyline", "compare no-vig probability with model estimate", "wide prop market makes the fair number less stable"],
+  },
+  "kelly criterion": {
+    label: "Kelly Criterion calculator",
+    angle:
+      "Kelly Criterion pages should explain mathematically suggested stake size while warning that full Kelly can be aggressive for real bettors.",
+    checks: ["bankroll", "edge estimate", "odds", "Kelly fraction", "fractional Kelly"],
+    warnings: ["full Kelly can be volatile", "edge estimate may be wrong", "stake should respect personal limits", "calculator precision can create false confidence"],
+    examples: ["half-Kelly lowers volatility", "wrong probability input recommends too much", "small edge produces small stake"],
+  },
+  draftkings: {
+    label: "DraftKings",
+    angle:
+      "DraftKings users often compare popular sides, props, live prices, and same-game parlays, so the page needs sportsbook-price context without implying any official partnership.",
+    checks: ["posted DraftKings price", "fair odds gap", "popular-market movement", "same-game parlay leg fit", "state and market availability"],
+    warnings: ["odds can differ by state", "popular teams can be overpriced", "boosts still need probability checks", "parlay legs can quietly correlate"],
+    examples: ["DraftKings moneyline shifts after injury news", "a boosted prop still prices below fair value", "same-game parlay legs share one game script"],
+  },
+  fanduel: {
+    label: "FanDuel",
+    angle:
+      "FanDuel pages should mention player props, same-game parlays, live markets, and fast-moving prices because those are common research paths for bettors.",
+    checks: ["FanDuel prop price", "same-game parlay correlation", "live line movement", "model fair odds", "player usage update"],
+    warnings: ["prop markets can move fast", "live prices may stale quickly", "popular overs get crowded", "SGP payout can distract from true probability"],
+    examples: ["FanDuel player prop moves after lineup news", "live spread changes after a rotation injury", "same-game parlay legs depend on one pace assumption"],
+  },
+  betmgm: {
+    label: "BetMGM",
+    angle:
+      "BetMGM pages should frame the book as a price source to compare against fair odds, not as a guaranteed edge or implied endorsement.",
+    checks: ["BetMGM market price", "fair odds comparison", "boost terms", "alternate line price", "market availability"],
+    warnings: ["boosted odds can still be bad value", "alternate lines change volatility", "market availability can vary", "loyalty framing should not replace risk review"],
+    examples: ["BetMGM alternate spread looks attractive but adds variance", "boosted price still falls below fair number", "injury news changes the model edge"],
+  },
+  caesars: {
+    label: "Caesars",
+    angle:
+      "Caesars pages should connect reward-heavy sportsbook behavior with sober price checks, fair odds, and responsible decision-making.",
+    checks: ["Caesars posted line", "fair odds gap", "rewards or promo terms", "market movement", "risk grade"],
+    warnings: ["promos are not automatically positive value", "rewards can distract from price", "line movement can erase edge", "risk grade should stay visible"],
+    examples: ["Caesars promo needs a fair-odds check", "line shortens after public movement", "alternate total changes payout and hit rate"],
+  },
+  fanatics: {
+    label: "Fanatics",
+    angle:
+      "Fanatics pages should explain newer-book market review, price comparison, and availability rather than assuming every bettor sees the same board.",
+    checks: ["Fanatics listed price", "market availability", "fair odds gap", "line movement", "sport and state coverage"],
+    warnings: ["newer books can vary by market", "availability may be limited", "prices still need comparison", "do not confuse app experience with edge"],
+    examples: ["Fanatics price differs from the model fair number", "market availability changes by state", "a newer market needs extra comparison"],
+  },
+  "espn bet": {
+    label: "ESPN BET",
+    angle:
+      "ESPN BET pages should separate media familiarity from actual betting value by checking posted prices, market movement, and report-level risk.",
+    checks: ["ESPN BET price", "fair odds", "media-driven public movement", "market availability", "risk grade"],
+    warnings: ["brand familiarity is not betting edge", "public narratives can move prices", "line shopping still matters", "availability varies"],
+    examples: ["ESPN BET public team price gets expensive", "media narrative moves a marquee game", "model likes a side only above a certain price"],
+  },
+  "hard rock": {
+    label: "Hard Rock Bet",
+    angle:
+      "Hard Rock Bet pages should be careful about regional availability, market access, and comparing the posted number with model fair odds.",
+    checks: ["Hard Rock Bet price", "regional availability", "fair odds gap", "market type", "risk grade"],
+    warnings: ["not every user has the same access", "regional books can differ in price", "market depth varies", "responsible limits still apply"],
+    examples: ["Hard Rock Bet line differs from another sportsbook", "regional availability limits the market", "a fair-odds gap only matters at the current price"],
+  },
+  bet365: {
+    label: "bet365",
+    angle:
+      "bet365 pages should mention in-play depth, market variety, and price movement while keeping the focus on fair odds and risk.",
+    checks: ["bet365 in-play price", "fair odds comparison", "market depth", "line movement", "live volatility"],
+    warnings: ["in-play markets move very quickly", "market depth does not equal edge", "cashout framing can distort risk", "late data can lag live price"],
+    examples: ["bet365 live total changes after early pace", "in-play price needs a fresh fair-odds check", "market depth gives options but not certainty"],
+  },
+  oddsjam: {
+    label: "OddsJam",
+    angle:
+      "OddsJam comparison pages should focus on odds-screening and arbitrage workflow versus ThinkBetAI's report-style betting analysis.",
+    checks: ["odds comparison depth", "arbitrage workflow", "AI report explanation", "pricing fit", "bettor experience level"],
+    warnings: ["odds screens can overwhelm casual users", "arbitrage is not the same as prediction analysis", "tool fit depends on workflow", "price matters"],
+    examples: ["OddsJam user wants line shopping first", "ThinkBetAI user wants report explanation first", "arbitrage workflow differs from pick analysis"],
+  },
+  outlier: {
+    label: "Outlier",
+    angle:
+      "Outlier comparison pages should address prop research, data exploration, and whether the user wants manual dashboards or AI report summaries.",
+    checks: ["prop research workflow", "manual filters", "AI report summary", "sport coverage", "pricing fit"],
+    warnings: ["dashboard power can require more time", "AI summaries still need price checks", "prop data moves quickly", "workflow preference matters"],
+    examples: ["Outlier-style prop filter versus ThinkBetAI report", "usage trend needs current price", "manual research and AI summary can complement each other"],
+  },
+  "action network": {
+    label: "Action Network",
+    angle:
+      "Action Network comparison pages should address news, tracking, public betting context, and how ThinkBetAI adds model report analysis.",
+    checks: ["news workflow", "bet tracking", "public betting context", "AI report depth", "pricing path"],
+    warnings: ["news context is not a model edge", "public betting data can be noisy", "tracking does not replace analysis", "price still decides value"],
+    examples: ["news update changes report confidence", "public betting split looks noisy", "tracked bet still needs fair-odds context"],
+  },
+  dimers: {
+    label: "Dimers",
+    angle:
+      "Dimers comparison pages should compare prediction-style content, free picks, model explanation, and the depth of a full bet report.",
+    checks: ["prediction format", "free pick depth", "report transparency", "market coverage", "conversion path"],
+    warnings: ["free picks can lack context", "model probability needs price", "confidence needs risk", "comparison should avoid fake certainty"],
+    examples: ["Dimers-style prediction versus ThinkBetAI report", "same pick with different price context", "free preview upgrades into full analysis"],
+  },
+  rithmm: {
+    label: "Rithmm",
+    angle:
+      "Rithmm comparison pages should focus on model-building workflow versus ThinkBetAI's done-for-you analysis and report explanations.",
+    checks: ["model customization", "time investment", "AI explanation", "sport coverage", "pricing fit"],
+    warnings: ["custom models require effort", "done-for-you reports still need review", "user skill changes value", "no model guarantees outcomes"],
+    examples: ["custom model builder versus report-first workflow", "experienced bettor wants control", "casual bettor wants explanation"],
+  },
+  "props cash": {
+    label: "Props.Cash",
+    angle:
+      "Props.Cash comparison pages should discuss player-prop research depth, filters, and how ThinkBetAI explains risk in report form.",
+    checks: ["prop filters", "usage trends", "AI report reasoning", "pricing context", "sport support"],
+    warnings: ["prop trends can be stale", "popular overs are risky", "filters still need interpretation", "price movement can erase value"],
+    examples: ["prop filter finds usage spike", "ThinkBetAI explains matchup risk", "price moves after injury news"],
+  },
+  pikkit: {
+    label: "Pikkit",
+    angle:
+      "Pikkit comparison pages should separate bet tracking and social proof from AI-assisted pre-bet analysis.",
+    checks: ["bet tracking", "social feed", "pre-bet report", "risk explanation", "pricing path"],
+    warnings: ["tracking history is not future edge", "social picks can create herd behavior", "pre-bet price matters", "risk limits still apply"],
+    examples: ["tracked bet history versus upcoming report", "social pick needs fair odds", "confidence and bankroll are separate"],
+  },
+  linemate: {
+    label: "Linemate",
+    angle:
+      "Linemate comparison pages should focus on sports data workflows, research tools, and ThinkBetAI's AI report layer.",
+    checks: ["research data", "report explanation", "sport coverage", "prop context", "pricing fit"],
+    warnings: ["raw data needs interpretation", "AI reports need current odds", "feature fit depends on sport", "no tool removes variance"],
+    examples: ["research table becomes report explanation", "line movement changes the recommendation", "sport-specific inputs matter"],
+  },
+  rotogrinders: {
+    label: "RotoGrinders",
+    angle:
+      "RotoGrinders comparison pages should distinguish DFS-style research, projections, community content, and ThinkBetAI betting reports.",
+    checks: ["DFS versus betting workflow", "projection context", "community content", "AI bet report", "market price"],
+    warnings: ["DFS projections do not equal bet edge", "community picks can be noisy", "bet price changes value", "tool fit depends on use case"],
+    examples: ["DFS projection informs prop research", "betting report adds price and risk", "community angle needs model context"],
+  },
+  chatgpt: {
+    label: "ChatGPT",
+    angle:
+      "ChatGPT comparison pages should explain why generic chat output is different from a betting tool connected to odds, markets, reports, and risk rules.",
+    checks: ["live odds access", "structured report output", "responsible-use guardrails", "data freshness", "market-specific context"],
+    warnings: ["generic chat can hallucinate", "stale data is dangerous", "prompts do not equal verified odds", "probability still needs pricing"],
+    examples: ["ChatGPT answer lacks current odds", "ThinkBetAI report includes fair price", "fresh injury news changes the analysis"],
+  },
+};
+
+const findEntityProfile = (definition: BlueprintDefinition) => {
+  const haystack = [definition.slug, definition.h1, definition.primaryKeyword, definition.title].join(" ").toLowerCase();
+  const match = Object.entries(deepEntityProfiles)
+    .sort(([a], [b]) => b.length - a.length)
+    .find(([key]) => haystack.includes(key));
+  if (match) return match[1];
+
+  return {
+    label: definition.h1,
+    angle: `This route should prove why ${definition.primaryKeyword} needs its own page instead of borrowing generic copy from the rest of the betting library.`,
+    checks: [
+      `${definition.primaryKeyword} search intent`,
+      `${definition.pageNoun} examples`,
+      "current odds context",
+      "risk explanation",
+      "next-step CTA fit",
+    ],
+    warnings: [
+      "generic AI betting copy",
+      "no page-specific example",
+      "confidence without price",
+      "risk language hidden below the fold",
+    ],
+    examples: [
+      `${definition.primaryKeyword} preview with fair odds`,
+      `${definition.pageNoun} report example`,
+      `${definition.cluster} internal link path`,
+    ],
+  } satisfies DeepEntityProfile;
+};
+
+const getDeepTopic = (definition: BlueprintDefinition) =>
+  deepTopicProfiles[definition.cluster] ?? defaultDeepTopicProfile;
+
+const getDeepSport = (definition: BlueprintDefinition) => {
+  const haystack = [definition.h1, definition.primaryKeyword, ...definition.tags].join(" ").toLowerCase();
+  return deepSportProfiles.find((sport) => haystack.includes(sport.label.toLowerCase()));
+};
+
+const getDeepMarkets = (definition: BlueprintDefinition) => {
+  const marketSet = new Set(definition.markets ?? []);
+  const haystack = [definition.h1, definition.primaryKeyword, ...definition.tags].join(" ").toLowerCase();
+  return deepMarketProfiles.filter((market) => marketSet.has(market.label as MarketKey) || haystack.includes(market.label));
+};
+
+const seedBlueprint = (definition: BlueprintDefinition, salt: number) => {
+  const source = `${definition.slug}:${definition.primaryKeyword}:${salt}`;
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = (hash * 31 + source.charCodeAt(index)) % 2147483647;
+  }
+  return hash;
+};
+
+const takeBlueprintItems = <T,>(definition: BlueprintDefinition, items: T[], count: number, salt: number) => {
+  const start = seedBlueprint(definition, salt) % items.length;
+  return Array.from({ length: count }, (_, offset) => items[(start + offset) % items.length]);
+};
+
+const joinItems = (items: string[]) => {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")}, and ${items[items.length - 1]}`;
+};
+
+const titleWord = (value: string) =>
+  value
+    .split(/[-\s/]+/)
+    .filter(Boolean)
+    .slice(0, 3)
+    .join(" ");
+
+const buildDeepIntro = (definition: BlueprintDefinition): string[] => {
+  const topic = getDeepTopic(definition);
+  const sport = getDeepSport(definition);
+  const markets = getDeepMarkets(definition);
+  const primaryMarket = markets[0];
+  const good = takeBlueprintItems(definition, topic.goodSignals, 2, 5);
+  const bad = takeBlueprintItems(definition, topic.badSignals, 2, 7);
+
+  return [
+    `${definition.h1} should not feel like another cloned AI betting page. The visitor ${topic.searcher}, so this URL needs to explain the exact search intent behind ${definition.primaryKeyword}, show where ThinkBetAI fits, and make risk visible before asking for a signup.`,
+    sport
+      ? `${sport.context} That sport-specific context is what separates this page from a generic sports betting AI landing page. The copy, examples, FAQs, and internal links should make ${sport.label} feel intentional.`
+      : `${topic.uniqueAngle} The page should make its own reason for existing obvious through examples, proof, and a conversion path that matches the keyword.`,
+    primaryMarket
+      ? `${primaryMarket.context} The strongest version of this page protects ${joinItems(good)} while fixing weak spots like ${joinItems(bad)}.`
+      : `The strongest version of this page protects ${joinItems(good)} while fixing weak spots like ${joinItems(bad)}.`,
+  ];
+};
+
+const deepExplainer = (
+  type: "intro_explainer",
+  eyebrow: string,
+  heading: string,
+  body: string[],
+  bullets?: string[],
+): SeoSection => ({ type, eyebrow, heading, body, bullets });
+
+const buildRouteSpecificSection = (
+  definition: BlueprintDefinition,
+  topic: DeepTopicProfile,
+  entity: DeepEntityProfile,
+): SeoSection => {
+  const slugPhrase = definition.slug.replace(/[/-]+/g, " ");
+  const keywordSet = [definition.primaryKeyword, ...definition.secondaryKeywords].slice(0, 5);
+  const marketList = (definition.markets ?? []).length
+    ? (definition.markets ?? []).join(", ")
+    : "the markets shown in the report preview";
+  const tagPhrase = definition.tags.slice(0, 5).join(", ");
+  const routeLabel = `/${definition.slug}`;
+  const action = definition.conversionGoal === "pricing"
+    ? "compare the pricing path"
+    : definition.conversionGoal === "signup"
+      ? "create an account only after the workflow makes sense"
+      : definition.conversionGoal === "view_predictions"
+        ? "review the prediction board"
+        : "open the bet analyzer";
+  const routeSignals = takeBlueprintItems(
+    definition,
+    [
+      "snippet promise",
+      "above-the-fold proof",
+      "market-specific example",
+      "no-bet explanation",
+      "internal-link anchor",
+      "FAQ answer wording",
+      "report preview detail",
+      "risk language placement",
+      "conversion timing",
+      "schema entity clarity",
+      "self-canonical consistency",
+      "responsible-use reminder",
+    ],
+    4,
+    131,
+  );
+  const routeContrasts = takeBlueprintItems(
+    definition,
+    [
+      "a generic AI betting explainer",
+      "a sportsbook promo page",
+      "a calculator without interpretation",
+      "a pick list with no proof",
+      "a comparison page with no criteria",
+      "a strategy article with no product path",
+      "a parlay page that sells payout first",
+      "a sport page with no sport inputs",
+      "a cloned keyword page",
+      "a signup page pretending to be education",
+    ],
+    3,
+    137,
+  );
+  const routeReview = takeBlueprintItems(
+    definition,
+    [
+      `Does the first screen make ${definition.primaryKeyword} obvious without relying only on the H1?`,
+      `Would a reader understand why ${routeLabel} exists separately from a sibling URL?`,
+      `Do the examples mention ${marketList} instead of hiding behind broad sports betting language?`,
+      `Are the internal links chosen because of ${tagPhrase}, not because every page uses the same footer list?`,
+      `Can the FAQ answers be quoted without sounding like every other ThinkBetAI page?`,
+      `Does the CTA match ${action} rather than pushing the same next step to every visitor?`,
+      `Is the no-bet case visible enough for a high-risk betting category?`,
+      `Would this page still make sense if the brand name were removed from the paragraph?`,
+    ],
+    4,
+    139,
+  );
+  return deepExplainer("intro_explainer", "Route brief", `Page-specific brief for ${routeLabel}`, [
+    `The ${routeLabel} URL should be judged against its own keyword set: ${joinItems(keywordSet)}. Those phrases are close enough that a lazy page could blur them together, so the copy has to keep returning to ${definition.pageNoun}, not a generic sports betting AI explanation.`,
+    `The search snippet promise should match the on-page proof. If the title says ${definition.title}, the first screen should quickly explain who the page helps, what market or workflow it covers, and why ${entity.label} context matters. The reader should not have to scroll halfway down to learn whether this is a prediction page, tool page, comparison page, sportsbook page, or strategy page.`,
+    `The route also needs a different internal-link job from its siblings. This page should use ${tagPhrase} context to point users toward the closest next step: related sport pages, market pages, calculators, methodology, track record, pricing, or responsible-use resources. Linking every page to the same few URLs with the same anchors would make the cluster look mechanical.`,
+    `For the product path, the page should invite users to ${action}. That call to action should appear after the user sees why ${definition.primaryKeyword} needs the data signals, proof signals, and safety notes already explained on the page. The CTA should feel like a logical next step, not a generic signup push.`,
+    `The route should avoid borrowed language from neighboring pages. A sibling may discuss ${topic.goodSignals[0]}, but this URL should tie the idea to ${definition.primaryKeyword}, ${marketList}, and the exact examples from the report preview. That is how the page becomes a real search asset instead of one more keyword swap.`,
+    `${definition.h1} should have its own editorial fingerprint. The strongest fingerprints for this page are ${joinItems(routeSignals)}. If those pieces are missing, the route may still be crawlable, but it will feel closer to ${joinItems(routeContrasts)} than to a useful search result.`,
+    `The practical review is simple: ${joinItems(routeReview.slice(0, 2))}. Those checks force the page to answer a real user need before it asks for a click, signup, or report unlock.`,
+    `The examples should also carry the route. For ${definition.primaryKeyword}, the page can use ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 143))} as concrete scenes, then connect those scenes to ${joinItems(takeBlueprintItems(definition, entity.checks, 3, 149))}. That makes the page hard to confuse with another URL in the same cluster.`,
+    `Finally, the route should have an update path. If Search Console shows impressions with low CTR, rewrite the title and meta around ${definition.primaryKeyword}. If users land but do not continue, move the ${entity.label} example higher. If ranking stalls, add a fresh comparison, a clearer no-bet case, or a deeper answer to one of the route review questions.`,
+  ], [
+    `Route: ${routeLabel}.`,
+    `Primary keyword: ${definition.primaryKeyword}.`,
+    `Secondary keyword set: ${keywordSet.slice(1).join(", ")}.`,
+    `Markets: ${marketList}.`,
+    `Tags: ${tagPhrase}.`,
+    `Main page noun: ${definition.pageNoun}.`,
+    `Editorial fingerprint: ${routeSignals.join(" / ")}.`,
+  ]);
+};
+
+const buildEntityPlaybookSection = (
+  definition: BlueprintDefinition,
+  entity: DeepEntityProfile,
+): SeoSection => {
+  const checks = takeBlueprintItems(definition, entity.checks, 5, 151);
+  const warnings = takeBlueprintItems(definition, entity.warnings, 4, 157);
+  const examples = takeBlueprintItems(definition, entity.examples, 3, 163);
+  const pageAction = definition.conversionGoal === "pricing"
+    ? "pricing decision"
+    : definition.conversionGoal === "signup"
+      ? "account decision"
+      : definition.conversionGoal === "view_predictions"
+        ? "prediction review"
+        : "bet analysis";
+
+  return deepExplainer("intro_explainer", "Scenario playbook", `${entity.label} playbook for ${definition.h1}`, [
+    `${entity.angle} The page should turn that angle into a visible scenario, not hide it inside a generic product paragraph. A visitor should see how ${definition.primaryKeyword} changes the report, the example, and the next step.`,
+    `For this route, the report should check ${joinItems(checks)}. Those checks are the practical difference between ${definition.h1} and a nearby page with a similar title. They also give writers and developers a concrete list to keep visible when the page is refreshed later.`,
+    `The warning layer should be just as specific: ${joinItems(warnings)}. If those warnings are removed, the page may still sound positive, but it becomes less trustworthy because it stops teaching the user when to pass, wait, compare another line, or reduce risk.`,
+    `The clearest examples are ${joinItems(examples)}. These examples should appear in the preview cards, FAQ answers, and report framing so the page has enough unique surface area for users, Google, and AI answer systems to understand the difference.`,
+    `The conversion should match a ${pageAction}. That means the CTA, internal links, and analyzer prompt should feel earned by the scenario above. When the user continues, they should know exactly what extra context ThinkBetAI will provide and what uncertainty remains.`,
+  ], [
+    `Checks to surface: ${checks.join(" / ")}.`,
+    `Warnings to surface: ${warnings.join(" / ")}.`,
+    `Examples to surface: ${examples.join(" / ")}.`,
+    `Conversion type: ${pageAction}.`,
+  ]);
+};
+
+const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => {
+  const topic = getDeepTopic(definition);
+  const sport = getDeepSport(definition);
+  const markets = getDeepMarkets(definition);
+  const primaryMarket = markets[0];
+  const entity = findEntityProfile(definition);
+  const good = takeBlueprintItems(definition, topic.goodSignals, 4, 11);
+  const bad = takeBlueprintItems(definition, topic.badSignals, 4, 13);
+  const dataSignals = takeBlueprintItems(definition, topic.dataSignals, 5, 17);
+  const proofSignals = takeBlueprintItems(definition, topic.proofSignals, 5, 19);
+  const safetyNotes = takeBlueprintItems(definition, topic.safetyNotes, 4, 23);
+  const conversionPath = takeBlueprintItems(definition, topic.conversionPath, 4, 29);
+  const sportInputs = sport ? takeBlueprintItems(definition, sport.inputs, 4, 31) : [];
+  const sportRisks = sport ? takeBlueprintItems(definition, sport.risks, 3, 37) : [];
+  const sportExamples = sport ? takeBlueprintItems(definition, sport.examples, 3, 41) : [];
+  const marketChecks = primaryMarket ? takeBlueprintItems(definition, primaryMarket.checks, 4, 43) : [];
+  const marketTraps = primaryMarket ? takeBlueprintItems(definition, primaryMarket.traps, 3, 47) : [];
+
+  const sections: SeoSection[] = [
+    {
+      type: "predictions_widget",
+      heading: definition.previewHeading,
+      subheading: definition.previewSubheading,
+      limit: 6,
+    },
+    {
+      type: "market_stats",
+      heading: "Live Sports Betting Coverage",
+      subheading: "Track active games, model volume, supported sports and the markets ThinkBetAI is built to evaluate.",
+    },
+    deepExplainer("intro_explainer", "Direct answer", `${definition.h1}: what this page is actually for`, [
+      `${definition.primaryKeyword} is not just a keyword variation. The page has to answer a distinct betting research question: what the user should review, what the model can help with, what risk remains, and when the user should move into a full report instead of trusting a headline pick.`,
+      `${topic.uniqueAngle} ThinkBetAI should use this page to explain the workflow behind ${definition.pageNoun}, show the inputs that matter, and keep the language careful enough for a high-risk betting category.`,
+      `The practical job is to protect ${joinItems(good)} and avoid ${joinItems(bad)}. If the page does that, it has a real reason to be indexed instead of looking like a doorway page.`,
+    ], [
+      `Primary keyword: ${definition.primaryKeyword}.`,
+      `Intent: ${definition.intent ?? "commercial"}.`,
+      `Cluster: ${definition.cluster}.`,
+      `Conversion goal: ${definition.conversionGoal ?? "analyze_bet"}.`,
+    ]),
+    deepExplainer("intro_explainer", "Search intent", `Why searchers want ${definition.primaryKeyword}`, [
+      `The searcher ${topic.searcher}. They are not served by a page that only says AI can make picks. They need a page that explains the market, the data inputs, the risk, and how to interpret a recommendation without treating it as a guarantee.`,
+      sport
+        ? `${sport.context} For ${definition.primaryKeyword}, that means the copy should mention ${joinItems(sportInputs)} and explain why those details can change a model score.`
+        : `For ${definition.primaryKeyword}, that means the copy should mention ${joinItems(dataSignals)} and explain why those details can change a model score.`,
+      primaryMarket
+        ? `${primaryMarket.context} That market context helps the page feel specific instead of being another broad sports betting AI page.`
+        : `The page should also explain how price, probability, confidence, and risk fit together before a user decides whether to keep researching.`,
+    ], [
+      `Searcher needs: ${joinItems(dataSignals.slice(0, 3))}.`,
+      `Trust needs: ${joinItems(proofSignals.slice(0, 3))}.`,
+      `Risk reminders: ${joinItems(safetyNotes.slice(0, 2))}.`,
+    ]),
+    {
+      type: "product_report_preview",
+      heading: definition.reportHeading,
+      subheading:
+        "Preview the deeper analysis behind each recommendation, including confidence, edge, EV, risk, reasoning and alternative betting options.",
+    },
+    deepExplainer("intro_explainer", "Good signals", `What makes this ${titleWord(definition.primaryKeyword)} page worth keeping`, [
+      `The good version of this page contains enough concrete signals to stand apart from the rest of the SEO library. It should show ${joinItems(good)}, then connect those ideas to visible modules on the page: the preview board, report example, comparison table, supported sports, FAQs, and related links.`,
+      `Good betting SEO is not only about word count. It is about making the page useful when the odds change. If a user reads this page after a line move, the explanation should still teach them how to think about probability, price, and risk.`,
+      `The page should also link naturally into the product. A user who understands ${definition.pageNoun} should know whether to view predictions, analyze a bet, build a parlay, check methodology, or compare pricing.`,
+    ], good.map((item) => `Good signal: ${item}.`)),
+    deepExplainer("intro_explainer", "Bad signs", `What would make ${definition.primaryKeyword} thin or risky`, [
+      `The weak version of this page has obvious problems: ${joinItems(bad)}. Those issues make search engines see repetition and make bettors see hype instead of useful analysis.`,
+      sport
+        ? `For ${sport.label}, extra risk comes from ${joinItems(sportRisks)}. If those details never appear on the page, the article does not feel like it was written for the sport.`
+        : `For this topic, extra risk comes from publishing calculator, tool, or prediction language without examples that match the query.`,
+      primaryMarket
+        ? `The market-specific traps are ${joinItems(marketTraps)}. These are the details that should appear in the copy, FAQ, and report explanation so the page is not interchangeable with another market page.`
+        : `The page should be rewritten if the examples can be moved to a different URL without changing meaning.`,
+    ], bad.map((item) => `Bad sign: ${item}.`)),
+    deepExplainer("intro_explainer", "Data", `Inputs ThinkBetAI should explain on this URL`, [
+      `The page needs to name the inputs a bettor actually cares about: ${joinItems(dataSignals)}. These should not be stuffed into a bullet list and forgotten. They should appear in the definition, methodology, report preview, and FAQs so the page has topical depth.`,
+      sport
+        ? `For ${sport.label}, useful examples include ${joinItems(sportExamples)}. These examples help users understand that the model is responding to sport-specific conditions, not simply producing a generic confidence number.`
+        : `For this topic, useful examples should show how a line, stake, market type, or report output changes the decision. The goal is to make the page concrete enough that a user can picture the workflow.`,
+      primaryMarket
+        ? `For ${primaryMarket.label} markets, the checklist should include ${joinItems(marketChecks)}. If those checks are missing, the page is too shallow for the query.`
+        : `The checklist should always include current odds, model probability, confidence, risk, and responsible-use context.`,
+    ], dataSignals.map((item) => `Data signal: ${item}.`)),
+    {
+      type: "how_ai_works",
+      heading: definition.workflowHeading,
+      subheading:
+        `See how ThinkBetAI turns ${definition.primaryKeyword} inputs into confidence, fair odds, risk notes and a plain-English report.`,
+    },
+    deepExplainer("intro_explainer", "Page example", `A specific ${entity.label} example this page should cover`, [
+      `${entity.angle} This section forces the URL to say something that belongs to this page specifically. A thin page would only swap the name in the headline; a useful page explains the actual checks a user should make.`,
+      `For ${definition.primaryKeyword}, the report should walk through ${joinItems(takeBlueprintItems(definition, entity.checks, 4, 107))}. That gives the user a practical reading path instead of another vague claim that AI can find better bets.`,
+      `Concrete examples help: ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 109))}. These examples should appear in body copy, FAQ answers, and report framing so the page cannot be confused with a neighboring URL.`,
+      `The page should also make the no-bet scenario visible. If the model likes an angle but the price moved, the right output may be to pass, wait, or analyze an alternate market rather than force a pick.`,
+    ], takeBlueprintItems(definition, entity.checks, 5, 111).map((item) => `Page-specific check: ${item}.`)),
+    buildEntityPlaybookSection(definition, entity),
+    deepExplainer("intro_explainer", "Methodology", definition.methodHeading, [
+      `ThinkBetAI should explain the workflow in a repeatable order: collect the market, review the relevant sport or bet-type inputs, estimate probability, compare the model number with the sportsbook price, assign risk, then explain what could make the report wrong.`,
+      `For ${definition.primaryKeyword}, the important part is interpretation. A confidence score without price is incomplete. A price without probability is incomplete. A recommendation without risk language is not serious enough for sports betting SEO.`,
+      `The methodology should also be careful with claims. The model can help prioritize research, surface price differences, and explain matchup context. It cannot remove variance, guarantee profit, or replace responsible bankroll rules.`,
+    ], [
+      `Inputs to mention: ${joinItems(dataSignals.slice(0, 3))}.`,
+      `Proof to show: ${joinItems(proofSignals.slice(0, 3))}.`,
+      `Limits to state: ${joinItems(safetyNotes.slice(0, 2))}.`,
+    ]),
+    {
+      type: "recent_performance",
+      heading: `${definition.h1} Performance Context`,
+      subheading: `Performance context helps users evaluate ${definition.pageNoun} without treating any single pick as guaranteed.`,
+    },
+    deepExplainer("intro_explainer", "Pass criteria", `When ${definition.h1} should tell a user to slow down`, [
+      `A strong betting page does not push every visitor straight into action. It should explain when the model output is not enough: when the line moved, when injury news is unresolved, when the market is thin, when the payout is distracting, or when the bettor is trying to chase a previous loss.`,
+      `For this URL, the main warnings are ${joinItems(takeBlueprintItems(definition, entity.warnings, 4, 113))}. Those warnings should live near the report preview and FAQ, not only in a footer. They make the product feel more trustworthy because the page is willing to say when a wager does not deserve attention.`,
+      primaryMarket
+        ? `For ${primaryMarket.label} markets, this also means watching ${joinItems(marketTraps)}. A recommendation that ignores those traps is not deep enough for this keyword.`
+        : `For broader AI betting pages, this means separating educational value from conversion pressure. The page can sell the product while still teaching users to compare prices and respect variance.`,
+    ], takeBlueprintItems(definition, entity.warnings, 4, 115).map((item) => `Slow down when: ${item}.`)),
+    {
+      type: "bet_analyzer_preview",
+      heading: `Analyze ${definition.primaryKeyword} Before You Act`,
+      subheading:
+        `Paste a ${definition.primaryKeyword} line or bet slip to preview the workflow before unlocking the full AI report.`,
+      placeholder: `Example: ${definition.primaryKeyword} at +145, $25 stake`,
+    },
+    deepExplainer("intro_explainer", "Trust", `Proof and safety standards for ${definition.h1}`, [
+      `Because this is sports betting content, trust is part of SEO. The page should include ${joinItems(proofSignals)} so users can see how the product thinks before they create an account.`,
+      `It should also say the quiet part clearly: ${joinItems(safetyNotes)}. That language does not weaken the page. It makes the page more credible because users know the product is not pretending uncertainty disappears.`,
+      `The strongest conversion path is ${joinItems(conversionPath)}. That path teaches first, previews second, and asks for deeper analysis only after the user understands what the report can add.`,
+    ], [
+      `Proof layer: ${joinItems(proofSignals.slice(0, 3))}.`,
+      `Safety layer: ${joinItems(safetyNotes.slice(0, 3))}.`,
+      `Next action: ${joinItems(conversionPath.slice(0, 2))}.`,
+    ]),
+    {
+      type: "comparison_table",
+      heading: definition.comparisonHeading,
+      subheading:
+        `Compare manual ${definition.primaryKeyword} research with an AI workflow that reviews odds, market movement and risk consistently.`,
+    },
+    deepExplainer("intro_explainer", "AI visibility", `How this page should answer AI search systems`, [
+      `AI answer engines need clear, quotable facts. This page should make it easy to summarize what ${definition.h1} is, who it helps, what inputs it uses, what it does not guarantee, and how it connects to the ThinkBetAI product.`,
+      `The answer-ready version should state that ThinkBetAI uses ${joinItems(dataSignals.slice(0, 4))} to produce report-style analysis. It should also state that ${joinItems(safetyNotes.slice(0, 3))}. Those statements help both users and AI systems avoid overclaiming the product.`,
+      `For entity clarity, the page should mention ThinkBetAI, the route /${definition.slug}, the primary keyword ${definition.primaryKeyword}, and the relevant cluster ${definition.cluster}. This is the difference between a page that can be cited and a page that only exists as keyword filler.`,
+    ], [
+      `Answer-ready definition: ${definition.h1} is a ThinkBetAI page for ${definition.pageNoun}.`,
+      `Inputs to cite: ${joinItems(dataSignals.slice(0, 3))}.`,
+      `Limits to cite: ${joinItems(safetyNotes.slice(0, 2))}.`,
+      `Next step to cite: ${joinItems(conversionPath.slice(0, 2))}.`,
+    ]),
+    {
+      type: "how_to_use",
+      heading: definition.howToUseHeading,
+      subheading:
+        `Use this ${definition.primaryKeyword} page as a starting point, then move into deeper analysis when the bet deserves a closer look.`,
+    },
+    buildRouteSpecificSection(definition, topic, entity),
+    deepExplainer("intro_explainer", "SEO quality", `Why this URL should stay indexable`, [
+      `This URL should remain indexable only if it keeps a unique title, unique H1, self-canonical URL, crawlable body copy, FAQ coverage, internal links, and page-specific examples. If it becomes a thin rewrite of another AI betting page, it should be merged or rewritten.`,
+      `The page's internal links should point to the closest next steps: product tools, sport pages, market pages, methodology, track record, pricing, and responsible gambling resources. That creates a useful topic cluster instead of a disconnected keyword pile.`,
+      `For ${definition.primaryKeyword}, the uniqueness standard is simple: a reader should be able to tell why this page exists even if the title is removed. The examples, warnings, proof, and call to action should reveal the target.`,
+    ], [
+      `Canonical route: /${definition.slug}.`,
+      `Primary keyword: ${definition.primaryKeyword}.`,
+      `Related cluster: ${definition.cluster}.`,
+      `Uniqueness check: examples must match this page, not the whole site.`,
+    ]),
+    deepExplainer("intro_explainer", "Content depth", `The content checklist for ${definition.primaryKeyword}`, [
+      `The final page should pass a manual quality check. The title and H1 should match the query, but the body needs more than that. It should include a definition, examples, methodology, report preview, market or sport-specific risk, proof, internal links, FAQs, and responsible-use language.`,
+      `For ${definition.h1}, the checklist is especially strict because betting keywords attract low-quality pages. The content should not sound like guaranteed picks, a copied sportsbook landing page, or a thin AI-wrapper pitch. It should teach the user how to interpret the output.`,
+      `The strongest version also creates a clear internal-link path: from this page to related predictions, tools, methodology, track record, pricing, and responsible gambling resources. That helps search engines understand the cluster and helps users continue without bouncing back to Google.`,
+      `If this route starts ranking but has weak CTR, update the title and meta description before writing new pages. If it gets impressions but no conversions, strengthen the first-screen proof and the report preview. If it gets indexed but does not rank, add more examples tied to ${definition.primaryKeyword}.`,
+    ], [
+      "Definition that answers the query directly.",
+      "Examples that cannot be pasted onto another page.",
+      "Risk language near the product CTA.",
+      "Internal links to proof, tools, and responsible-use pages.",
+      "FAQ answers that mention the actual keyword and market.",
+      "Self-canonical URL and sitemap inclusion only while the page stays useful.",
+    ]),
+    {
+      type: "supported_sports",
+      heading: "Supported Sports",
+      subheading: `Connect ${definition.primaryKeyword} research to sport-specific pages with deeper markets and matchup context.`,
+    },
+    {
+      type: "related_pages",
+      heading: "Related AI Betting Tools and Pages",
+      subheading: `Continue from ${definition.primaryKeyword} into the closest prediction tools, sport pages and proof pages in this cluster.`,
+    },
+    { type: "faq", heading: "Frequently Asked Questions" },
+    {
+      type: "final_cta",
+      heading: definition.finalHeading,
+      subheading: definition.finalSubheading,
+    },
+  ];
+
+  return sections;
+};
+
+const buildDeepFaq = (definition: BlueprintDefinition): FAQItem[] => {
+  const topic = getDeepTopic(definition);
+  const sport = getDeepSport(definition);
+  const markets = getDeepMarkets(definition);
+  const primaryMarket = markets[0];
+  const good = takeBlueprintItems(definition, topic.goodSignals, 2, 71);
+  const bad = takeBlueprintItems(definition, topic.badSignals, 2, 73);
+  const dataSignals = takeBlueprintItems(definition, topic.dataSignals, 3, 79);
+  const safetyNotes = takeBlueprintItems(definition, topic.safetyNotes, 2, 83);
+  const conversionPath = takeBlueprintItems(definition, topic.conversionPath, 2, 89);
+
+  return [
+    {
+      question: `What makes ${definition.primaryKeyword} different on this page?`,
+      answer: `This page is built around ${definition.pageNoun}, not a generic AI betting pitch. It should explain ${joinItems(dataSignals)}, show why ${joinItems(good)} matter, and connect the visitor to the right ThinkBetAI workflow.`,
+    },
+    {
+      question: `Can ${definition.primaryKeyword} guarantee winning bets?`,
+      answer: `No. ${joinItems(safetyNotes)}. ThinkBetAI should be used as a research workflow that explains probability, price and risk, not as a guarantee that a bet will win.`,
+    },
+    {
+      question: `What should I watch out for with ${definition.h1}?`,
+      answer: `The biggest warning signs are ${joinItems(bad)}. If the page or report does not explain those risks, the analysis is too thin to trust.`,
+    },
+    {
+      question: sport ? `What matters most for ${sport.label} analysis?` : `What data matters most here?`,
+      answer: sport
+        ? `${sport.label} analysis should account for ${joinItems(takeBlueprintItems(definition, sport.inputs, 3, 97))}. Those inputs can change confidence, fair odds and whether a market is still worth reviewing.`
+        : `The page should explain ${joinItems(dataSignals)} and show how those inputs change the recommendation, confidence and risk grade.`,
+    },
+    {
+      question: primaryMarket ? `How should I use ${primaryMarket.label} context?` : `How should I use the report preview?`,
+      answer: primaryMarket
+        ? `${primaryMarket.context} Before acting, check ${joinItems(takeBlueprintItems(definition, primaryMarket.checks, 3, 101))} and avoid traps like ${joinItems(takeBlueprintItems(definition, primaryMarket.traps, 2, 103))}.`
+        : `Use the preview to understand the report structure, then open deeper analysis only when you want confidence, fair odds, market edge and risk explained together.`,
+    },
+    {
+      question: `What is the next step after reading this page?`,
+      answer: `The best path is to ${joinItems(conversionPath)}. If the current odds or matchup context changed, re-check the market before relying on an older preview.`,
+    },
+  ];
+};
+
+const buildDeepEstimatedWordCount = (definition: BlueprintDefinition) => {
+  const base = 2850;
+  const clusterBoost = definition.cluster.length * 11;
+  const tagBoost = definition.tags.length * 27;
+  const keywordBoost = definition.primaryKeyword.length * 4;
+  return Math.min(3450, base + ((clusterBoost + tagBoost + keywordBoost) % 570));
+};
+
 const createSeoBlueprint = (definition: BlueprintDefinition): SeoBlueprint => ({
   slug: definition.slug,
   canonical: `/${definition.slug}`,
@@ -660,24 +2224,21 @@ const createSeoBlueprint = (definition: BlueprintDefinition): SeoBlueprint => ({
   heroTrust: commonTrustMetrics,
   primaryCTA: definition.primaryCTA ?? { label: "View Today's Predictions", href: "#today-predictions" },
   secondaryCTA: definition.secondaryCTA ?? { label: "Analyze My Bet", href: "#analyze-bet" },
-  intro: [
-    `${definition.h1} should help a bettor understand why a recommendation exists, not just which side the model likes. ThinkBetAI pairs model confidence with market context so the page can satisfy search intent while still pushing users toward the product.`,
-    `This page is built around ${definition.pageNoun}: live-style previews, report examples, performance context, workflow education, FAQs and internal links to related tools. It is designed to rank for a focused keyword while still feeling like a useful SaaS landing page.`,
-  ],
-  sections: buildSeoSections(definition),
+  intro: buildDeepIntro(definition),
+  sections: buildDeepSeoSections(definition),
   dynamicData: {
     markets: definition.markets ?? ["moneyline", "spread", "total", "props"],
     showTopPredictions: true,
     showRecentPerformance: true,
     showProps: true,
   },
-  faq: buildFaq(definition),
+  faq: buildDeepFaq(definition),
   schema: ["WebPage", "SoftwareApplication", "FAQPage", "BreadcrumbList"],
   tags: definition.tags,
   cluster: definition.cluster,
   priority: 1,
   conversionGoal: definition.conversionGoal ?? "analyze_bet",
-  estimatedWordCount: 2300,
+  estimatedWordCount: buildDeepEstimatedWordCount(definition),
   lastReviewed: "2026-06-29",
 });
 
@@ -1234,7 +2795,7 @@ const requestedStandaloneUrlDefinitions: BlueprintDefinition[] = [
   ],
   intent: "sports",
   title: `${sport} AI Picks`,
-  description: `Review ${sport} AI picks with confidence scores, fair odds, market edge and risk notes built for ${audience}.`,
+  description: `Review ${sport} AI picks with confidence scores, fair odds, market edge, matchup risk and clear next-step analysis for today's board.`,
   h1: `${sport} AI Picks`,
   heroSubheadline: `Review ${sport} AI picks built for ${audience}. ThinkBetAI focuses on ${specificSignal} before a pick becomes worth deeper analysis.`,
   previewHeading: `Today's ${sport} AI Picks`,
@@ -2538,8 +4099,41 @@ const blueprintDefinitions: BlueprintDefinition[] = [
 ];
 
 const additionalSeoBlueprints = blueprintDefinitions.map(createSeoBlueprint);
+const promotedFeatureBlueprintSlugs = new Set(["ai-bet-analyzer", "ai-parlay-builder"]);
 
-export const seoBlueprints = [aiBettingPredictionsBlueprint, ...additionalSeoBlueprints];
+const aiBettingPredictionsDeepBlueprint = createSeoBlueprint({
+  slug: aiBettingPredictionsBlueprint.slug,
+  primaryKeyword: aiBettingPredictionsBlueprint.primaryKeyword,
+  secondaryKeywords: aiBettingPredictionsBlueprint.secondaryKeywords,
+  intent: aiBettingPredictionsBlueprint.intent,
+  title: aiBettingPredictionsBlueprint.title,
+  description: aiBettingPredictionsBlueprint.description,
+  h1: aiBettingPredictionsBlueprint.h1,
+  heroSubheadline: aiBettingPredictionsBlueprint.heroSubheadline,
+  previewHeading: "Today's AI Betting Predictions",
+  previewSubheading:
+    "A public preview of how the prediction board can rank current games by confidence, edge, sportsbook price and risk.",
+  definitionHeading: "What Are AI Betting Predictions?",
+  reportHeading: "Inside a ThinkBetAI Prediction Report",
+  methodHeading: "How ThinkBetAI Generates Predictions",
+  workflowHeading: "How the AI Prediction Workflow Works",
+  comparisonHeading: "Traditional Research vs ThinkBetAI",
+  howToUseHeading: "How to Use AI Betting Predictions",
+  finalHeading: "Ready to Make Smarter Betting Decisions?",
+  finalSubheading:
+    "Explore today's free AI predictions or create a free account to unlock full bet analysis, personalized reports and AI-generated insights.",
+  pageNoun: "AI betting predictions",
+  primaryCTA: aiBettingPredictionsBlueprint.primaryCTA,
+  secondaryCTA: aiBettingPredictionsBlueprint.secondaryCTA,
+  tags: aiBettingPredictionsBlueprint.tags,
+  cluster: aiBettingPredictionsBlueprint.cluster,
+  conversionGoal: aiBettingPredictionsBlueprint.conversionGoal,
+  markets: ["moneyline", "spread", "total", "props"],
+});
+
+export const seoBlueprints = [aiBettingPredictionsDeepBlueprint, ...additionalSeoBlueprints].filter(
+  (blueprint) => !promotedFeatureBlueprintSlugs.has(blueprint.slug),
+);
 
 export const getSeoBlueprint = (slug: string) =>
   seoBlueprints.find((blueprint) => blueprint.slug === slug);
