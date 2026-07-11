@@ -918,7 +918,7 @@ const copy = {
     description: (term: string) =>
       `${term} für Sportwetten: KI-Analyse mit Quotenvergleich, Modellwahrscheinlichkeit, FAQ und klaren Risikohinweisen ohne Gewinnversprechen.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} für ${lang.marketName}: ThinkBetAI verbindet lokale Sportnachfrage, Quoten, Modellwahrscheinlichkeiten und Risikoerklärungen in einer indexierbaren deutschen SEO-Seite.`,
+      `${term} für ${lang.marketName}: ThinkBetAI verbindet lokale Sportnachfrage, Quoten, Modellwahrscheinlichkeiten und Risikoerklärungen in einem deutschen Leitfaden.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} für ${lang.marketName}`,
@@ -929,8 +929,8 @@ const copy = {
         body: "Die Analyse vergleicht Marktpreise mit Modellwahrscheinlichkeit und erklärt Unsicherheit, statt sichere Gewinne zu versprechen.",
       },
       {
-        heading: "Interne SEO-Verknüpfung",
-        body: "Die Seite verlinkt auf den englischen Canonical-Cluster, lokale Sprachseiten, Picks, Parlay Tools und verantwortungsvolle Nutzung.",
+        heading: "Verwandte Leitfäden",
+        body: "Die Seite verlinkt auf den englischen Hauptleitfaden, lokale Sprachseiten, Picks, Parlay Tools und verantwortungsvolle Nutzung.",
       },
     ],
     faqs: (term: string) => [
@@ -945,7 +945,7 @@ const copy = {
     description: (term: string) =>
       `${term} pour paris sportifs: analyse IA avec cotes, probabilité du modèle, FAQ, contexte local et notes de risque sans promesse de gain.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} pour ${lang.marketName}: ThinkBetAI combine demande sportive locale, cotes, probabilités de modèle et explications du risque dans une page SEO en français.`,
+      `${term} pour ${lang.marketName}: ThinkBetAI combine demande sportive locale, cotes, probabilités de modèle et explications du risque dans un guide en français.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} pour ${lang.marketName}`,
@@ -956,8 +956,8 @@ const copy = {
         body: "La page compare les prix du marché avec l'estimation du modèle et explique l'incertitude sans promettre de résultat.",
       },
       {
-        heading: "Maillage SEO interne",
-        body: "La page renvoie vers le cluster anglais, les pages linguistiques, les picks IA, les outils de combinés et les pages de confiance.",
+        heading: "Guides associés",
+        body: "La page renvoie vers le guide anglais principal, les pages linguistiques, les picks IA, les outils de combinés et les pages de confiance.",
       },
     ],
     faqs: (term: string) => [
@@ -972,7 +972,7 @@ const copy = {
     description: (term: string) =>
       `${term} per scommesse sportive: analisi AI con quote, probabilità del modello, FAQ, contesto locale e note di rischio senza garanzie.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} per ${lang.marketName}: ThinkBetAI unisce sport locali, quote, probabilità del modello e spiegazioni del rischio in una pagina SEO italiana.`,
+      `${term} per ${lang.marketName}: ThinkBetAI unisce sport locali, quote, probabilità del modello e spiegazioni del rischio in una guida italiana.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} per ${lang.marketName}`,
@@ -983,7 +983,7 @@ const copy = {
         body: "La pagina confronta quota di mercato e probabilità AI, chiarendo sempre che non esistono risultati garantiti.",
       },
       {
-        heading: "Cluster SEO interno",
+        heading: "Guide correlate",
         body: "I link portano verso guide, pick, parlay builder, confronto strumenti e pagine di responsabilità.",
       },
     ],
@@ -999,7 +999,7 @@ const copy = {
     description: (term: string) =>
       `${term} para apuestas deportivas: análisis IA con cuotas, probabilidad del modelo, FAQ, contexto local y notas de riesgo sin garantías.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} para ${lang.marketName}: ThinkBetAI combina deportes locales, cuotas, probabilidad del modelo y riesgo en una página SEO en español.`,
+      `${term} para ${lang.marketName}: ThinkBetAI combina deportes locales, cuotas, probabilidad del modelo y riesgo en una guía en español.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} para ${lang.marketName}`,
@@ -1010,7 +1010,7 @@ const copy = {
         body: "La página compara la cuota del mercado con la probabilidad estimada por el modelo y evita promesas de ganancia.",
       },
       {
-        heading: "Enlaces SEO internos",
+        heading: "Guías relacionadas",
         body: "El contenido enlaza a guías, picks, herramientas de parlay, comparaciones y páginas de juego responsable.",
       },
     ],
@@ -1026,7 +1026,7 @@ const copy = {
     description: (term: string) =>
       `${term} para apostas esportivas: análise com IA, odds, probabilidade do modelo, FAQ, contexto local e notas de risco sem garantia.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} para ${lang.marketName}: ThinkBetAI junta esportes locais, odds, probabilidade do modelo e risco em uma página SEO em português.`,
+      `${term} para ${lang.marketName}: ThinkBetAI junta esportes locais, odds, probabilidade do modelo e risco em um guia em português.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} para ${lang.marketName}`,
@@ -1037,7 +1037,7 @@ const copy = {
         body: "A página compara odds de mercado com a estimativa do modelo e deixa claro que não há resultado garantido.",
       },
       {
-        heading: "Cluster interno de SEO",
+        heading: "Guias relacionados",
         body: "Os links levam para guias, picks, parlay builder, comparações e páginas de uso responsável.",
       },
     ],
@@ -1053,18 +1053,18 @@ const copy = {
     description: (term: string) =>
       `${term} हिंदी में: odds context, model probability, local sports, FAQ और साफ risk notes के साथ AI sports analysis, बिना result guarantee.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} ${lang.marketName} के लिए: ThinkBetAI cricket-first demand, odds, model probability और risk notes को हिंदी SEO पेज में जोड़ता है.`,
+      `${term} ${lang.marketName} के लिए: ThinkBetAI cricket-first demand, odds, model probability और risk notes को हिंदी guide में जोड़ता है.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} - ${lang.marketName}`,
-        body: `${term} को ${lang.primarySports.slice(0, 4).join(", ")} जैसे sports से जोड़ा गया है ताकि पेज real local search intent target करे.`,
+        body: `${term} को ${lang.primarySports.slice(0, 4).join(", ")} जैसे sports से जोड़ा गया है ताकि पेज real local questions का जवाब दे.`,
       },
       {
         heading: "Odds, probability और risk",
         body: "यह पेज market odds को model probability से compare करता है और जीत का वादा किए बिना risk समझाता है.",
       },
       {
-        heading: "Internal SEO cluster",
+        heading: "Related guides",
         body: "Content guides, picks, parlay tools, comparison pages और responsible-use resources से link करता है.",
       },
     ],
@@ -1080,7 +1080,7 @@ const copy = {
     description: (term: string) =>
       `${term} voor sportweddenschappen: AI analyse met odds, modelkansen, FAQ, lokale sportcontext en risiconotities zonder garantie.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} voor ${lang.marketName}: ThinkBetAI combineert lokale sporten, odds, modelkansen en risico in een Nederlandse SEO-pagina.`,
+      `${term} voor ${lang.marketName}: ThinkBetAI combineert lokale sporten, odds, modelkansen en risico in een Nederlandse gids.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} voor ${lang.marketName}`,
@@ -1091,7 +1091,7 @@ const copy = {
         body: "De pagina vergelijkt marktkansen met modelkansen en belooft geen gegarandeerde winst.",
       },
       {
-        heading: "Interne SEO-cluster",
+        heading: "Gerelateerde gidsen",
         body: "Links verbinden deze pagina met guides, picks, parlay tools, vergelijkingen en verantwoord gebruik.",
       },
     ],
@@ -1107,7 +1107,7 @@ const copy = {
     description: (term: string) =>
       `${term} dla zakładów sportowych: analiza AI, kursy, prawdopodobieństwo modelu, FAQ, lokalny kontekst i ryzyko bez gwarancji.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} dla ${lang.marketName}: ThinkBetAI łączy lokalne sporty, kursy, prawdopodobieństwo modelu i ryzyko w polskiej stronie SEO.`,
+      `${term} dla ${lang.marketName}: ThinkBetAI łączy lokalne sporty, kursy, prawdopodobieństwo modelu i ryzyko w polskim przewodniku.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} dla ${lang.marketName}`,
@@ -1118,7 +1118,7 @@ const copy = {
         body: "Strona porównuje kursy rynkowe z prawdopodobieństwem modelu i nie obiecuje wygranych.",
       },
       {
-        heading: "Wewnętrzny klaster SEO",
+        heading: "Powiązane przewodniki",
         body: "Linki prowadzą do przewodników, typów, narzędzi parlay, porównań i odpowiedzialnej gry.",
       },
     ],
@@ -1134,7 +1134,7 @@ const copy = {
     description: (term: string) =>
       `${term} för sportspel: AI analys med odds, modellens sannolikhet, FAQ, lokal sportkontext och risknotiser utan vinstgaranti.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} för ${lang.marketName}: ThinkBetAI kombinerar lokala sporter, odds, modellens sannolikhet och risk i en svensk SEO-sida.`,
+      `${term} för ${lang.marketName}: ThinkBetAI kombinerar lokala sporter, odds, modellens sannolikhet och risk i en svensk guide.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} för ${lang.marketName}`,
@@ -1145,7 +1145,7 @@ const copy = {
         body: "Sidan jämför marknadsodds med modellens sannolikhet och lovar aldrig säkra vinster.",
       },
       {
-        heading: "Intern SEO-kluster",
+        heading: "Relaterade guider",
         body: "Länkar leder till guider, picks, parlay-verktyg, jämförelser och ansvarstagande användning.",
       },
     ],
@@ -1161,7 +1161,7 @@ const copy = {
     description: (term: string) =>
       `${term} için yapay zeka spor analizi: oranlar, model olasılığı, SSS, yerel spor bağlamı ve risk notları, garanti yok.`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term} için ${lang.marketName}: ThinkBetAI yerel sporları, oranları, model olasılığını ve riski Türkçe SEO sayfasında birleştirir.`,
+      `${term} için ${lang.marketName}: ThinkBetAI yerel sporları, oranları, model olasılığını ve riski Türkçe rehberde birleştirir.`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType} - ${lang.marketName}`,
@@ -1172,7 +1172,7 @@ const copy = {
         body: "Sayfa piyasa oranlarını model olasılığıyla karşılaştırır ve kesin kazanç vadetmez.",
       },
       {
-        heading: "İç SEO kümesi",
+        heading: "İlgili rehberler",
         body: "Linkler rehberlere, pick sayfalarına, parlay araçlarına, karşılaştırmalara ve sorumlu kullanım kaynaklarına gider.",
       },
     ],
@@ -1188,7 +1188,7 @@ const copy = {
     description: (term: string) =>
       `${term}の日本語AIスポーツ分析。オッズ、モデル確率、FAQ、地域スポーツ文脈、リスク説明を整理し、結果保証ではない調査材料を提供します。`,
     intro: (term: string, lang: LanguagePageConfig) =>
-      `${term}を${lang.marketName}向けに整理し、ThinkBetAIがスポーツ関心、オッズ、モデル確率、リスク説明を日本語SEOページとして提供します。`,
+      `${term}を${lang.marketName}向けに整理し、ThinkBetAIがスポーツ関心、オッズ、モデル確率、リスク説明を日本語ガイドとして提供します。`,
     modules: (term: string, topic: TopicTerms, lang: LanguagePageConfig) => [
       {
         heading: `${topic.marketType}と${lang.marketName}`,
@@ -1199,7 +1199,7 @@ const copy = {
         body: "市場オッズとモデル確率を比較し、的中や利益を保証せずに不確実性を説明します。",
       },
       {
-        heading: "内部SEOクラスター",
+        heading: "関連ガイド",
         body: "ガイド、AIピック、パーレーツール、比較ページ、責任ある利用ページへ自然にリンクします。",
       },
     ],

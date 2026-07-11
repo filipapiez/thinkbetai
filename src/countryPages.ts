@@ -107,7 +107,7 @@ export const countryPageConfigs: Record<CountrySlug, CountryPageConfig> = {
       {
         question: "Does the UK page cover football betting analysis?",
         answer:
-          "Yes. The UK page is written for football-first search intent while also linking into racing, rugby, cricket, tennis and US sports analysis.",
+          "Yes. The UK page is written for football-first users while also linking into racing, rugby, cricket, tennis and US sports analysis.",
       },
       {
         question: "Does ThinkBetAI place bets with UK bookmakers?",
@@ -134,7 +134,7 @@ export const countryPageConfigs: Record<CountrySlug, CountryPageConfig> = {
     heroEyebrow: "Canada AI Betting Analysis",
     primarySports: ["NHL", "CFL", "NBA", "MLB", "Soccer", "Tennis", "NFL", "UFC"],
     marketNotes: [
-      "Built for Canadian search intent around NHL picks, Ontario sports betting, CFL markets and US league coverage.",
+      "Built for Canadian users around NHL picks, Ontario sports betting, CFL markets and US league coverage.",
       "Supports probability-first analysis for moneylines, spreads, totals, props and parlays when data is available.",
       "Betting rules vary by province, so users should verify local eligibility before acting on any analysis.",
     ],
@@ -164,7 +164,7 @@ export const countryPageConfigs: Record<CountrySlug, CountryPageConfig> = {
       {
         question: "Does ThinkBetAI cover NHL picks for Canada?",
         answer:
-          "Yes. NHL and hockey-related search intent are a major part of the Canada page, alongside CFL, NBA, MLB, soccer and other sports.",
+          "Yes. NHL and hockey-related questions are a major part of the Canada page, alongside CFL, NBA, MLB, soccer and other sports.",
       },
       {
         question: "Is ThinkBetAI an Ontario sportsbook?",
@@ -216,7 +216,7 @@ export const countryPageConfigs: Record<CountrySlug, CountryPageConfig> = {
       {
         question: "Does ThinkBetAI cover Australian sports?",
         answer:
-          "The Australia page is built around AFL, NRL, cricket, rugby and tennis search intent, with additional coverage for major US sports when data is available.",
+          "The Australia page is built around AFL, NRL, cricket, rugby and tennis questions, with additional coverage for major US sports when data is available.",
       },
       {
         question: "Can ThinkBetAI guarantee AFL or NRL picks?",
@@ -584,7 +584,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     heroEyebrow: "हिंदी AI Betting Analysis",
     primarySports: ["Cricket", "Football", "Tennis", "Kabaddi", "NBA", "NFL", "UFC", "Badminton"],
     marketNotes: [
-      "भारत में क्रिकेट और मोबाइल-first sports content की मांग बहुत बड़ी है, इसलिए यह पेज हिंदी search intent पर केंद्रित है.",
+      "भारत में क्रिकेट और मोबाइल-first sports content की मांग बहुत बड़ी है, इसलिए यह पेज हिंदी users पर केंद्रित है.",
       "कानूनी स्थिति राज्य और product type के हिसाब से बदल सकती है; उपयोगकर्ता स्थानीय नियम खुद verify करें.",
       "ThinkBetAI केवल analysis देता है. यह bookmaker नहीं है और किसी भी result की guarantee नहीं देता.",
     ],
@@ -592,7 +592,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
       {
         heading: "Cricket-first intent",
         body:
-          "हिंदी पेज cricket betting analysis search intent को प्राथमिकता देता है, लेकिन football, tennis, kabaddi और US sports को भी जोड़ता है.",
+          "हिंदी पेज cricket betting analysis questions को प्राथमिकता देता है, लेकिन football, tennis, kabaddi और US sports को भी जोड़ता है.",
       },
       {
         heading: "Odds और probability",
@@ -760,7 +760,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
       secondaryCta: "Czytaj przewodnik",
       intentHeading: "Stworzone dla polskiej analizy zakładów",
       sportsHeading: "Sporty na tej stronie",
-      templateHeading: "Golden template dla lokalnego SEO",
+      templateHeading: "Lokalny przewodnik ThinkBetAI",
       faqHeading: "Najczęstsze pytania",
       marketSwitcherTitle: "Wybierz język lub rynek",
     },

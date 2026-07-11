@@ -246,7 +246,7 @@ export const SEO_LANDING_CONFIGS: SeoLandingConfig[] = [
         heading: "What You Get for Free, Every Day",
         body: [
           "The free tier includes the daily best bet (highest-confidence single play of the day), the daily best underdog (highest +EV dog), a free preview for every game on tonight's main slate, and access to the games board with predicted winners and spread recommendations.",
-          "You also get free read-only access to our auto-generated SEO content: team pages, league hubs, head-to-head matchup history, and game previews — all built from real data with AI-written analysis.",
+          "You also get free read-only access to our content library: team pages, league hubs, head-to-head matchup history, and game previews — all built from real data with AI-written analysis.",
         ],
         bullets: [
           "Daily AI best bet (free, no signup)",

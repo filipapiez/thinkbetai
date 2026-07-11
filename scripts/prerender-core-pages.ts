@@ -153,7 +153,7 @@ const countryPageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries(
         {
           label: "Market",
           value: page.countryName,
-          detail: `This page targets ${page.adjective} search intent instead of reusing the generic US homepage.`,
+          detail: `This page gives ${page.adjective} readers localized sports context instead of reusing the generic US homepage.`,
         },
         {
           label: "Sports Focus",
@@ -176,13 +176,13 @@ const countryPageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries(
       modules: [
         ...page.toolModules,
         {
-          heading: "Why this regional page is indexable",
+          heading: "Why this regional page is useful",
           body:
-            "This page has its own title, description, canonical URL, hreflang alternate links, local sports focus, market-specific FAQs and internal links. That makes it a regional English variant rather than a copied homepage.",
+            "This page has its own regional explanation, local sports focus, market-specific FAQs and links into the right ThinkBetAI tools. That makes it a useful regional English guide rather than a copied homepage.",
           bullets: [
             "The United States remains the main site at thinkbetai.com.",
-            `${page.countryName} gets a dedicated country route at ${page.path}.`,
-            "The page links back into the core product and responsible gambling cluster.",
+            `${page.countryName} gets a dedicated country page at ${page.path}.`,
+            "The page links back into the core product and responsible gambling guides.",
           ],
         },
         {
@@ -228,7 +228,7 @@ const languagePageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries
         {
           label: "Language",
           value: page.languageName,
-          detail: `This page targets ${page.languageName} search intent with localized copy, FAQs and sports context.`,
+          detail: `This page gives ${page.languageName} readers localized copy, FAQs and sports context.`,
         },
         {
           label: "Market",
@@ -253,10 +253,10 @@ const languagePageUpgrades: Record<string, CorePageUpgrade> = Object.fromEntries
         {
           heading: page.labels.templateHeading,
           body:
-            "This page uses the same SEO golden template as the English market pages: localized title, description, H1, search-intent sections, FAQ schema, internal links, self-canonical URL and hreflang alternates.",
+            "This page follows the same editorial structure as the English market pages: localized headline, description, plain-language sections, FAQ answers, internal links and language alternates.",
           bullets: [
-            "The page is indexable and included in sitemap.xml.",
-            "The copy is localized for search intent instead of being a direct English duplicate.",
+            "The page gives local readers a clear answer before asking them to sign in.",
+            "The copy is localized for the market instead of being a direct English duplicate.",
             "The page links back into ThinkBetAI's core product and trust pages.",
           ],
         },
@@ -422,7 +422,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         heading: "Why this page links into the full topic cluster",
         body:
-          "AI sports betting is a broad head term. A single page cannot satisfy every search intent, so this guide links into dedicated pages for free predictions, AI sports picks, parlay builders, bet analyzers, sport pages and market-specific picks.",
+          "AI sports betting is a broad topic. A single page cannot answer every follow-up question, so this guide links into dedicated pages for free predictions, AI sports picks, parlay builders, bet analyzers, sport pages and market-specific picks.",
       },
     ],
     faqs: [
@@ -807,9 +807,9 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
         ],
       },
       {
-        heading: "Why trust pages still matter for SEO",
+        heading: "Why trust pages still matter",
         body:
-          "About, methodology, FAQ and responsible gambling pages support topical credibility. They help users and search engines understand the product, its limitations and the standards behind performance and comparison claims.",
+          "About, methodology, FAQ and responsible gambling pages support credibility. They help users understand the product, its limitations and the standards behind performance and comparison claims.",
       },
       {
         heading: "How ThinkBetAI should earn trust",
@@ -850,7 +850,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         question: "Why are there many AI betting pages?",
         answer:
-          "Each page targets a distinct search intent: broad AI betting education, free predictions, sport pages, market pages, tools, comparisons and responsible-use guidance.",
+          "Each page answers a distinct user need: broad AI betting education, free predictions, sport pages, market pages, tools, comparisons and responsible-use guidance.",
       },
       ...commonFaqs,
     ],
@@ -890,7 +890,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         heading: "How ThinkBetAI pages should frame risk",
         body:
-          "Every SEO and product page should avoid guaranteed outcomes, explain uncertainty and link users toward responsible gambling resources. This keeps conversion goals aligned with user safety.",
+          "Every product and education page should avoid guaranteed outcomes, explain uncertainty and link users toward responsible gambling resources. This keeps conversion goals aligned with user safety.",
       },
       {
         heading: "Warning signs to take seriously",
@@ -944,9 +944,9 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
     marketFocus: ["Methodology", "Corrections", "AI content", "Comparisons", "Responsible language"],
     modules: [
       {
-        heading: "Standards for SEO content",
+        heading: "Standards for public content",
         body:
-          "Scaled SEO pages need editorial guardrails. ThinkBetAI pages should avoid thin claims, cite limitations, define performance language and keep commercial comparison pages useful rather than purely promotional.",
+          "Scaled education pages need editorial guardrails. ThinkBetAI pages should avoid thin claims, cite limitations, define performance language and keep commercial comparison pages useful rather than purely promotional.",
       },
       {
         heading: "How corrections should work",
@@ -956,7 +956,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         heading: "AI-assisted content standards",
         body:
-          "Scaled content can use templates and AI assistance, but every page still needs a distinct search intent, useful structure and claim-safe language. Pages should not imply guaranteed betting outcomes, fabricate data, overstate model performance or hide important limitations behind vague marketing copy.",
+          "Scaled content can use templates and AI assistance, but every page still needs a distinct user need, useful structure and claim-safe language. Pages should not imply guaranteed betting outcomes, fabricate data, overstate model performance or hide important limitations behind vague marketing copy.",
       },
       {
         heading: "Comparison-page standards",
@@ -1161,7 +1161,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         heading: "Corrections and trust signals",
         body:
-          "A contact page is not just a support utility. It gives users and search engines a visible way to challenge factual claims, request updates and report issues with pricing, legal, responsible gambling or product information.",
+          "A contact page is not just a support utility. It gives users a visible way to challenge factual claims, request updates and report issues with pricing, legal, responsible gambling or product information.",
       },
       {
         heading: "Privacy and safety requests",
@@ -1171,7 +1171,7 @@ const corePageUpgrades: Record<string, CorePageUpgrade> = {
       {
         heading: "Commercial and editorial messages",
         body:
-          "Media, SEO, partnership and editorial requests should explain the context clearly. That keeps support from guessing whether a message is about product support, correction handling, partnership outreach or commercial comparison content.",
+          "Media, partnership and editorial requests should explain the context clearly. That keeps support from guessing whether a message is about product support, correction handling, partnership outreach or commercial comparison content.",
       },
     ],
     faqs: [
@@ -1380,18 +1380,18 @@ function renderBody(page: CoreSeoPage) {
     ...page.sections.map((section) => ({ heading: section.heading, body: section.body })),
     ...upgrade.modules,
     {
-      heading: "Search intent this page supports",
-      body: `This page is built around the search intent behind ${upgrade.primaryKeyword}. It should answer the core question directly, show what ThinkBetAI can do next, and link users into more specific pages when their intent becomes clearer. That keeps older core URLs useful while the newer sport, tool and market pages handle narrower searches.`,
+      heading: "Question this page answers",
+      body: `This page is built around the question behind ${upgrade.primaryKeyword}. It should answer the core question directly, show what ThinkBetAI can do next, and link users into more specific pages when they need more context. That keeps broad pages useful while the newer sport, tool and market pages handle narrower follow-up decisions.`,
       bullets: [
         "Broad visitors get a complete answer without being forced into login first.",
         "Commercial visitors can compare tools, pricing and product workflows.",
-        "Search engines see a connected cluster instead of isolated thin pages.",
+        "Readers can move into related tools, proof pages and responsible-use guidance.",
       ],
     },
     {
       heading: "How to use this page",
       body:
-        "Start with the explanation, review the related tools, then move into the sport or market page that matches your search intent. ThinkBetAI pages are designed as a connected topic cluster so users can go from broad education to specific betting workflows without hitting a login wall immediately.",
+        "Start with the explanation, review the related tools, then move into the sport or market page that matches your actual betting question. ThinkBetAI pages are designed as a connected guide system so users can go from broad education to specific betting workflows without hitting a login wall immediately.",
       bullets: [
         "Use free public pages for research and context.",
         "Open prediction, analyzer or parlay tools when you need a specific workflow.",

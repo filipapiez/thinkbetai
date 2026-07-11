@@ -155,8 +155,8 @@ const LanguageLanding = ({ language }: LanguageLandingProps) => {
                 {config.labels.templateHeading}
               </h2>
               <p className="text-muted-foreground">
-                Each language page has localized metadata, search intent, sports, FAQ copy,
-                self-canonical URL, hreflang alternates and crawler-readable prerendered HTML.
+                Each language page has localized copy, sports coverage, FAQ answers,
+                related guides and clear regional context.
               </p>
             </div>
 
@@ -208,7 +208,7 @@ const LanguageLanding = ({ language }: LanguageLandingProps) => {
               <h2 className="text-2xl font-bold mb-3">{config.labels.marketSwitcherTitle}</h2>
               <p className="text-muted-foreground mb-5">
                 The main ThinkBetAI site targets the United States. Country and language pages
-                give search engines clearer regional and linguistic context.
+                give visitors clearer regional and linguistic context.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" asChild>

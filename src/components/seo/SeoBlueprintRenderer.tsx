@@ -134,7 +134,27 @@ const sports = [
 
 type PredictionPreviewRow = (typeof predictionPreview)[number];
 
-const pageSportContexts = [
+type PageSportContext = {
+  keys: string[];
+  label: string;
+  matchups: string[];
+  favorite: string;
+  underdog: string;
+  athlete: string;
+  factors: string;
+};
+
+const defaultPageSportContext: PageSportContext = {
+  keys: [],
+  label: "multi-sport",
+  matchups: ["sample matchup", "example market", "cross-sport board"],
+  favorite: "market favorite",
+  underdog: "plus-money underdog",
+  athlete: "key player",
+  factors: "odds movement, injury news, matchup data, market depth and price discipline",
+};
+
+const pageSportContexts: PageSportContext[] = [
   {
     keys: ["nfl", "football", "touchdown", "ncaaf"],
     label: "football",
@@ -231,8 +251,8 @@ const pageMarketContexts = [
   {
     keys: ["spread", "ats", "against the spread", "alt spread", "run line", "puck line"],
     label: "Spread",
-    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} -3`,
-    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} +3.5`,
+    primaryPick: (sport: PageSportContext) => `${sport.favorite} -3`,
+    secondaryPick: (sport: PageSportContext) => `${sport.underdog} +3.5`,
     focus: "cover probability, key numbers, margin distribution and backdoor risk",
   },
   {
@@ -245,22 +265,22 @@ const pageMarketContexts = [
   {
     keys: ["prop", "touchdown", "anytime"],
     label: "Player prop",
-    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.athlete} over prop line`,
-    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.athlete} alternate prop`,
+    primaryPick: (sport: PageSportContext) => `${sport.athlete} over prop line`,
+    secondaryPick: (sport: PageSportContext) => `${sport.athlete} alternate prop`,
     focus: "usage, matchup, price, injury replacements and correlation with game script",
   },
   {
     keys: ["parlay", "same-game", "same game"],
     label: "Parlay",
-    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} leg + ${sport.athlete} prop`,
-    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} cover + game total`,
+    primaryPick: (sport: PageSportContext) => `${sport.favorite} leg + ${sport.athlete} prop`,
+    secondaryPick: (sport: PageSportContext) => `${sport.underdog} cover + game total`,
     focus: "leg correlation, combined probability, payout concentration and safer single-bet alternatives",
   },
   {
     keys: ["moneyline", "underdog", "pick of the day", "winner"],
     label: "Moneyline",
-    primaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.favorite} moneyline`,
-    secondaryPick: (sport: (typeof pageSportContexts)[number]) => `${sport.underdog} plus-money moneyline`,
+    primaryPick: (sport: PageSportContext) => `${sport.favorite} moneyline`,
+    secondaryPick: (sport: PageSportContext) => `${sport.underdog} plus-money moneyline`,
     focus: "win probability, implied odds, injury news and whether the price is still playable",
   },
   {
@@ -288,7 +308,7 @@ const includesAny = (haystack: string, keys: string[]) => keys.some((key) => hay
 
 const getPageSport = (blueprint: SeoBlueprint) => {
   const haystack = blueprintHaystack(blueprint);
-  return pageSportContexts.find((sport) => includesAny(haystack, sport.keys)) ?? pageSportContexts[routeSeed(blueprint) % pageSportContexts.length];
+  return pageSportContexts.find((sport) => includesAny(haystack, sport.keys)) ?? defaultPageSportContext;
 };
 
 const getPageMarket = (blueprint: SeoBlueprint) => {
@@ -307,7 +327,7 @@ const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[]
   const sportsbookOdds = seed % 3 === 0 ? `+${126 + (seed % 45)}` : `-${104 + (seed % 26)}`;
   const risk = seed % 5 === 0 ? "High" : seed % 2 === 0 ? "Medium" : "Low";
   const pagePhrase = blueprint.primaryKeyword.toLowerCase();
-  const routeContext = `This ${blueprint.slug.replace(/[/-]+/g, " ")} route is checking ${pagePhrase}, not a generic board scan.`;
+  const routeContext = `This illustrative example shows how ${pagePhrase} can separate a useful signal from a generic board scan.`;
 
   return [
     {
@@ -319,7 +339,7 @@ const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[]
       risk,
       sportsbookOdds,
       fairOdds,
-      reason: `${routeContext} ThinkBetAI weighs ${sport.factors} against ${market.focus} before showing confidence or risk.`,
+      reason: `${routeContext} ThinkBetAI weighs ${sport.factors} against ${market.focus} before showing confidence or risk. Sample numbers are for product illustration, not live picks.`,
     },
     {
       matchup: sport.matchups[(seed + 1) % sport.matchups.length],
@@ -352,7 +372,7 @@ const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[]
       risk: "High",
       sportsbookOdds: "Moved",
       fairOdds: "Too close",
-      reason: `A good ${pagePhrase} page should show when ThinkBetAI would slow the user down because the edge disappeared, the injury news is stale or the market is too thin.`,
+      reason: `A useful analysis should show when ThinkBetAI would slow the user down because the edge disappeared, the injury news is stale or the market is too thin.`,
     },
     {
       matchup: sport.matchups[(seed + 1) % sport.matchups.length],
@@ -363,7 +383,7 @@ const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[]
       risk: "Medium",
       sportsbookOdds: "Compare books",
       fairOdds: "Fair line",
-      reason: `${blueprint.primaryKeyword} needs ${sport.label} context. The page should connect ${sport.factors} to the model output so the recommendation does not feel copied from another sport.`,
+      reason: `The model should connect ${sport.factors} to the output so the recommendation feels grounded in the market being reviewed.`,
     },
     {
       matchup: sport.matchups[(seed + 2) % sport.matchups.length],
@@ -374,7 +394,7 @@ const buildPredictionPreview = (blueprint: SeoBlueprint): PredictionPreviewRow[]
       risk: seed % 2 === 0 ? "Low" : "Medium",
       sportsbookOdds: "Input line",
       fairOdds: "Report output",
-      reason: `The conversion path should move from ${pagePhrase} education into a report only after the user understands price, confidence, variance and responsible-use limits.`,
+      reason: `The next step should come only after the user understands price, confidence, variance and responsible-use limits.`,
     },
   ];
 };
@@ -383,10 +403,10 @@ const buildPageMarketStats = (blueprint: SeoBlueprint) => {
   const sport = getPageSport(blueprint);
   const market = getPageMarket(blueprint);
   return [
-    { label: "Route focus", value: market.label },
-    { label: "Sport context", value: sport.label },
-    { label: "Indexable depth", value: `${blueprint.estimatedWordCount.toLocaleString()} words` },
-    { label: "Search intent", value: blueprint.intent },
+    { label: "Market coverage", value: market.label },
+    { label: "Analysis scope", value: sport.label },
+    { label: "Model inputs", value: "odds + context" },
+    { label: "Decision output", value: "play / pass" },
   ];
 };
 
@@ -394,13 +414,13 @@ const buildWorkflowSteps = (blueprint: SeoBlueprint) => {
   const sport = getPageSport(blueprint);
   const market = getPageMarket(blueprint);
   return [
-    { label: "Read the query", description: `Identify whether ${blueprint.primaryKeyword} needs a pick, tool, comparison, strategy or sportsbook-specific answer.` },
-    { label: "Collect price data", description: `Capture current odds, implied probability and movement for the ${market.label.toLowerCase()} market.` },
-    { label: "Layer sport context", description: `Review ${sport.factors} so the report reflects ${sport.label} conditions instead of generic betting copy.` },
-    { label: "Compare fair odds", description: `Measure sportsbook price against ThinkBetAI's fair number before calling anything value.` },
-    { label: "Score volatility", description: `Flag stale news, thin markets, payout temptation and other risks tied to ${blueprint.h1}.` },
-    { label: "Explain the action", description: `Show whether to analyze, pass, wait for news or compare an alternate market.` },
-    { label: "Link the cluster", description: `Send readers from this page into related tools, sport pages, methodology and track record proof.` },
+    { label: "Choose the market", description: `Start with the ${market.label.toLowerCase()} angle, game, prop, parlay leg or price you want to evaluate.` },
+    { label: "Pull the price", description: "Compare the posted line with implied probability and recent movement before trusting the number." },
+    { label: "Layer context", description: `Review ${sport.factors} so the report reflects the conditions behind the wager.` },
+    { label: "Estimate fair value", description: "Measure the sportsbook price against a model-implied fair number before calling anything value." },
+    { label: "Score volatility", description: "Flag stale news, thin markets, payout temptation and other risks that can make a pass smarter than a bet." },
+    { label: "Compare alternatives", description: "Check whether another market, smaller stake, or straight bet is cleaner than the first idea." },
+    { label: "Decide or pass", description: "Use the report to make a decision, wait for new information, or skip the wager entirely." },
   ];
 };
 
@@ -409,9 +429,9 @@ const buildComparisonRows = (blueprint: SeoBlueprint) => {
   const market = getPageMarket(blueprint);
   return [
     {
-      label: "Search intent",
-      traditional: `Manual research often treats ${blueprint.primaryKeyword} like another pick request.`,
-      thinkbetai: `Frames ${blueprint.h1} around intent, market type, proof, risk and the next logical report.`,
+      label: "Board scan",
+      traditional: "Manual research often starts with a few games or the most popular lines.",
+      thinkbetai: "Screens markets by price, confidence, risk and whether the edge still exists.",
     },
     {
       label: "Market context",
@@ -425,16 +445,16 @@ const buildComparisonRows = (blueprint: SeoBlueprint) => {
     },
     {
       label: "Risk language",
-      traditional: "Most thin SEO pages push the bet and hide uncertainty.",
+      traditional: "Many betting pages push the bet and hide uncertainty.",
       thinkbetai: `Keeps no-bet, pass, wait and alternate-market options visible for ${blueprint.primaryKeyword}.`,
     },
   ];
 };
 
 const buildHowToUseSteps = (blueprint: SeoBlueprint) => [
-  `Open the ${blueprint.primaryKeyword} route`,
+  "Choose a market",
   "Check current odds",
-  "Read the page example",
+  "Review the example",
   "Compare fair price",
   "Review risk flags",
   blueprint.conversionGoal === "pricing" ? "Check pricing" : blueprint.conversionGoal === "signup" ? "Create account" : "Analyze the bet",
@@ -483,7 +503,7 @@ const MiniReport = ({ blueprint }: { blueprint: SeoBlueprint }) => {
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-semibold">{preview.pick}</p>
-            <p className="text-sm text-muted-foreground">{blueprint.primaryKeyword} report preview</p>
+            <p className="text-sm text-muted-foreground">Illustrative report preview</p>
           </div>
           <Badge className="bg-success/15 text-success hover:bg-success/15">{preview.confidence}% confidence</Badge>
         </div>
@@ -617,7 +637,7 @@ const PredictionsWidget = ({ blueprint, section }: SectionRendererProps) => {
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <SectionHeader
             icon={TrendingUp}
-            eyebrow="Today's board"
+            eyebrow="Example board"
             heading={section.heading}
             subheading={section.subheading}
           />
@@ -643,7 +663,7 @@ const PredictionsWidget = ({ blueprint, section }: SectionRendererProps) => {
               </div>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <div className="rounded-lg border border-border/60 bg-card/40 p-3">
-                  <p className="text-xs text-muted-foreground">Sportsbook</p>
+                  <p className="text-xs text-muted-foreground">Sample price</p>
                   <p className="mt-1 font-semibold">{row.sportsbookOdds}</p>
                 </div>
                 <div className="rounded-lg border border-border/60 bg-card/40 p-3">
@@ -662,7 +682,7 @@ const PredictionsWidget = ({ blueprint, section }: SectionRendererProps) => {
                 </Badge>
                 <Button variant="ghost" size="sm" asChild>
                   <a href="#analyze-bet">
-                    View analysis
+                    Analyze a real bet
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </a>
                 </Button>
@@ -719,14 +739,14 @@ const ProductReportPreview = ({ blueprint, section }: SectionRendererProps) => {
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <SectionHeader
             icon={FileText}
-            eyebrow="Report preview"
+            eyebrow="Example report"
             heading={section.heading}
             subheading={section.subheading}
           />
           <div className="rounded-lg border border-border/70 bg-background p-4 shadow-xl shadow-primary/5">
             <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
               <div className="rounded-lg border border-border/60 bg-card/40 p-4">
-                <p className="text-sm font-semibold">{blueprint.primaryKeyword} report</p>
+                <p className="text-sm font-semibold">Illustrative report</p>
                 <p className="mt-1 text-xs text-muted-foreground">{preview.pick} {preview.sportsbookOdds}</p>
                 <div className="mt-5 flex items-center justify-center">
                   <div className="flex h-36 w-36 items-center justify-center rounded-full border-8 border-primary/25 bg-primary/10">

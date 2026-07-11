@@ -276,11 +276,11 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
     },
     {
       type: "intro_explainer",
-      eyebrow: "Search intent",
-      heading: "Why this AI betting predictions page should be its own URL",
+      eyebrow: "Decision context",
+      heading: "Why AI betting predictions need careful explanation",
       body: [
         "Someone searching for AI betting predictions is not only looking for a signup page. They are trying to understand whether a model can help them evaluate today's board, what data it uses, what the prediction actually means and whether the output is trustworthy enough to compare against sportsbook odds.",
-        "That deserves a dedicated URL because the query sits at the center of the ThinkBetAI topic cluster. Sport-specific pick pages, player prop pages, parlay tools, methodology content and track-record pages can all support this page, but they should not replace it. This page explains the core concept and then sends users deeper when they know what type of betting analysis they need.",
+        "That deserves a focused explanation because sport-specific pick pages, player prop pages, parlay tools, methodology content and track-record pages each answer a different follow-up question. This page explains the core concept and then sends users deeper when they know what type of betting analysis they need.",
         "The page also needs to be careful. Sports betting sits in a high-risk category, so ranking content cannot sound like a guaranteed-profit machine. The best version of this page explains probability, confidence, price, limitations and responsible use in plain language while still showing why ThinkBetAI is useful.",
       ],
       bullets: [
@@ -354,17 +354,17 @@ export const aiBettingPredictionsBlueprint: SeoBlueprint = {
     {
       type: "intro_explainer",
       eyebrow: "Quality control",
-      heading: "What keeps this page from being thin SEO content",
+      heading: "What keeps this page useful",
       body: [
-        "A real AI betting predictions page needs more than a keyword, a hero section and a signup button. It should have crawlable explanations, self-canonical metadata, structured data, FAQ coverage, internal links and enough page-specific copy for search engines to understand what the URL adds to the site.",
-        "For ThinkBetAI, the indexable value comes from combining product context with education. The page explains how predictions are created, what market data matters, how confidence should be interpreted and why a bettor should still compare the model against odds movement, injury updates and their own risk limit.",
-        "This is also the hub that makes the surrounding pages stronger. When this URL links naturally to NFL picks, NBA picks, player prop predictions, the AI parlay picker and methodology pages, Google sees a connected topic cluster instead of a pile of disconnected keyword pages.",
+        "A real AI betting predictions page needs more than a headline and a signup button. It should explain the workflow, show practical examples, answer common questions, and give users clear paths into related betting tools, proof pages, methodology pages and responsible gambling resources.",
+        "For ThinkBetAI, the value comes from combining product context with education. The page explains how predictions are created, what market data matters, how confidence should be interpreted and why a bettor should still compare the model against odds movement, injury updates and their own risk limit.",
+        "This is also the hub that makes the surrounding pages easier to understand. A user can move naturally from AI betting predictions to NFL picks, NBA picks, player prop predictions, the AI parlay picker and methodology pages without losing the thread.",
       ],
       bullets: [
-        "Self-canonical URL: https://thinkbetai.com/ai-betting-predictions.",
-        "Indexable HTML snapshot generated at build time.",
-        "FAQ, webpage, app and breadcrumb schema included.",
-        "Clear next paths into related betting tools and supporting proof pages.",
+        "Clear definition of AI betting predictions.",
+        "Examples tied to current-market thinking.",
+        "FAQ answers that explain limits.",
+        "Next paths into related betting tools and supporting proof pages.",
       ],
     },
     {
@@ -500,15 +500,14 @@ const buildSeoSections = (definition: BlueprintDefinition): SeoSection[] => [
   },
   {
     type: "intro_explainer",
-    eyebrow: "Search intent",
-    heading: `Why ${definition.h1} deserves a dedicated page`,
+    eyebrow: "Decision context",
+    heading: `Why ${definition.h1} needs a focused explanation`,
     body: [
-      `Searchers looking for ${definition.primaryKeyword} are usually not asking for a generic sports betting page. They want a focused answer that explains the market, the workflow, the risk, and the reason ThinkBetAI is relevant to this exact query. A dedicated URL lets the page use a precise title, H1, canonical, internal links, FAQ set and structured data instead of forcing every keyword into one broad AI betting page.`,
-      `That matters because ${definition.pageNoun} can have a different decision path from a generic prediction page. Some visitors want sport-specific pick logic, some want player prop context, some want parlay correlation, and some want methodology or bankroll discipline. If those needs are collapsed into one page, the content becomes vague. If each URL answers its own intent, Google and users can both see why the page exists.`,
-      `The page should still avoid fake certainty. A good ThinkBetAI SEO page makes the model useful without turning it into a guaranteed-win claim. It explains inputs, confidence, fair odds, sportsbook price, matchup context, and responsible-use limits. That gives the page a better chance of ranking because it has a clear search job, not just a keyword variation.`,
+      `People looking for ${definition.primaryKeyword} are usually not asking for a generic sports betting page. They want a focused answer that explains the market, the workflow, the risk, and the reason ThinkBetAI is relevant to this exact decision.`,
+      `That matters because ${definition.pageNoun} can have a different decision path from a generic prediction page. Some visitors want sport-specific pick logic, some want player prop context, some want parlay correlation, and some want methodology or bankroll discipline. If those needs are collapsed into one broad explanation, the content becomes vague.`,
+      `The page should still avoid fake certainty. A good ThinkBetAI page makes the model useful without turning it into a guaranteed-win claim. It explains inputs, confidence, fair odds, sportsbook price, matchup context, and responsible-use limits.`,
     ],
     bullets: [
-      `Primary keyword: ${definition.primaryKeyword}.`,
       `Page purpose: explain ${definition.pageNoun} without promising results.`,
       `Conversion path: move from public preview to deeper analysis only when the user wants more context.`,
       `Trust requirement: show uncertainty, risk notes, and responsible betting language.`,
@@ -578,16 +577,16 @@ const buildSeoSections = (definition: BlueprintDefinition): SeoSection[] => [
   {
     type: "intro_explainer",
     eyebrow: "Quality control",
-    heading: "What makes this page indexable instead of thin",
+    heading: "What makes this page useful instead of thin",
     body: [
-      `A page like this should earn its place in the sitemap. That means it needs a self-canonical URL, indexable metadata, a clear heading, enough crawlable copy, structured data, and internal links to related betting tools, proof pages, methodology pages and responsible gambling resources. It should not be a doorway page that only swaps a sport name or market name while repeating the same shallow copy.`,
-      `The quality bar is higher in sports betting because the topic carries financial risk. ThinkBetAI pages need to be careful with claims, avoid guaranteed-profit language, and connect recommendations to limitations. Good SEO here is not just ranking for a keyword. It is building enough trust that the visitor understands what the model can and cannot do.`,
+      `A page like this should earn the user's attention. That means it needs a clear heading, enough explanation, practical examples, FAQs, and internal links to related betting tools, proof pages, methodology pages and responsible gambling resources. It should not only swap a sport name or market name while repeating the same shallow copy.`,
+      `The quality bar is higher in sports betting because the topic carries financial risk. ThinkBetAI pages need to be careful with claims, avoid guaranteed-profit language, and connect recommendations to limitations. The goal is building enough trust that the visitor understands what the model can and cannot do.`,
       `For ${definition.h1}, the strongest version of the page is specific enough to satisfy the query, but connected enough to the rest of the site that it supports the broader topic cluster. The user should be able to move from this page to related picks, tools, track record, methodology, pricing, and responsible-use content without hitting dead ends.`,
     ],
     bullets: [
-      "Self-canonical URL that matches the search intent.",
-      "No noindex tag and no redirect away from the page.",
-      "FAQ schema, webpage schema, and breadcrumb schema.",
+      "Clear answer that matches the betting decision.",
+      "Examples that match the market or sport.",
+      "FAQ answers with limits and risk language.",
       "Internal links to related tools, proof, and responsible-use pages.",
     ],
   },
@@ -613,7 +612,7 @@ const buildFaq = (definition: BlueprintDefinition): FAQItem[] => [
   {
     question: `Is ${definition.primaryKeyword} free?`,
     answer:
-      "ThinkBetAI can show public previews on SEO pages. Full analysis, unlimited reports and personalized tools can require a free account or paid plan.",
+      "ThinkBetAI can show public previews on education pages. Full analysis, unlimited reports and personalized tools can require a free account or paid plan.",
   },
   {
     question: `Can ${definition.primaryKeyword} guarantee a win?`,
@@ -686,7 +685,7 @@ const deepTopicProfiles: Record<string, DeepTopicProfile> = {
     searcher:
       "is usually comparing today's slate and wants to know whether the model can explain a likely outcome without pretending the outcome is certain",
     uniqueAngle:
-      "The page should show how sport-specific inputs change the prediction instead of repeating the same AI-picks pitch on every league URL.",
+      "The page should show how sport-specific inputs change the prediction instead of repeating the same AI-picks pitch on every league page.",
     goodSignals: [
       "sport-specific injury or lineup context",
       "market price shown beside model probability",
@@ -1752,9 +1751,9 @@ const findEntityProfile = (definition: BlueprintDefinition) => {
 
   return {
     label: definition.h1,
-    angle: `This route should prove why ${definition.primaryKeyword} needs its own page instead of borrowing generic copy from the rest of the betting library.`,
+    angle: `This topic should explain how ${definition.primaryKeyword} changes the betting decision instead of borrowing generic copy from the rest of the betting library.`,
     checks: [
-      `${definition.primaryKeyword} search intent`,
+      `${definition.primaryKeyword} decision context`,
       `${definition.pageNoun} examples`,
       "current odds context",
       "risk explanation",
@@ -1769,7 +1768,7 @@ const findEntityProfile = (definition: BlueprintDefinition) => {
     examples: [
       `${definition.primaryKeyword} preview with fair odds`,
       `${definition.pageNoun} report example`,
-      `${definition.cluster} internal link path`,
+      `${definition.cluster} follow-up analysis path`,
     ],
   } satisfies DeepEntityProfile;
 };
@@ -1823,13 +1822,13 @@ const buildDeepIntro = (definition: BlueprintDefinition): string[] => {
   const bad = takeBlueprintItems(definition, topic.badSignals, 2, 7);
 
   return [
-    `${definition.h1} should not feel like another cloned AI betting page. The visitor ${topic.searcher}, so this URL needs to explain the exact search intent behind ${definition.primaryKeyword}, show where ThinkBetAI fits, and make risk visible before asking for a signup.`,
+    `${definition.h1} helps bettors review odds, model signals, matchup context, and risk before deciding whether a wager deserves more attention. The goal is not to promise a pick. The goal is to make the decision clearer before money is involved.`,
     sport
-      ? `${sport.context} That sport-specific context is what separates this page from a generic sports betting AI landing page. The copy, examples, FAQs, and internal links should make ${sport.label} feel intentional.`
-      : `${topic.uniqueAngle} The page should make its own reason for existing obvious through examples, proof, and a conversion path that matches the keyword.`,
+      ? `${sport.context} That sport-specific context matters because a football spread, basketball prop, baseball total, and UFC method market all react to different inputs.`
+      : `${topic.uniqueAngle} ThinkBetAI connects the concept to practical examples, model inputs, and responsible next steps.`,
     primaryMarket
-      ? `${primaryMarket.context} The strongest version of this page protects ${joinItems(good)} while fixing weak spots like ${joinItems(bad)}.`
-      : `The strongest version of this page protects ${joinItems(good)} while fixing weak spots like ${joinItems(bad)}.`,
+      ? `${primaryMarket.context} Strong analysis should include ${joinItems(good)} while avoiding weak habits like ${joinItems(bad)}.`
+      : `Strong analysis should include ${joinItems(good)} while avoiding weak habits like ${joinItems(bad)}.`,
   ];
 };
 
@@ -1843,16 +1842,12 @@ const deepExplainer = (
 
 const buildRouteSpecificSection = (
   definition: BlueprintDefinition,
-  topic: DeepTopicProfile,
   entity: DeepEntityProfile,
 ): SeoSection => {
-  const slugPhrase = definition.slug.replace(/[/-]+/g, " ");
   const keywordSet = [definition.primaryKeyword, ...definition.secondaryKeywords].slice(0, 5);
   const marketList = (definition.markets ?? []).length
     ? (definition.markets ?? []).join(", ")
     : "the markets shown in the report preview";
-  const tagPhrase = definition.tags.slice(0, 5).join(", ");
-  const routeLabel = `/${definition.slug}`;
   const action = definition.conversionGoal === "pricing"
     ? "compare the pricing path"
     : definition.conversionGoal === "signup"
@@ -1860,75 +1855,34 @@ const buildRouteSpecificSection = (
       : definition.conversionGoal === "view_predictions"
         ? "review the prediction board"
         : "open the bet analyzer";
-  const routeSignals = takeBlueprintItems(
+  const userChecks = takeBlueprintItems(
     definition,
     [
-      "snippet promise",
-      "above-the-fold proof",
-      "market-specific example",
-      "no-bet explanation",
-      "internal-link anchor",
-      "FAQ answer wording",
-      "report preview detail",
-      "risk language placement",
-      "conversion timing",
-      "schema entity clarity",
-      "self-canonical consistency",
-      "responsible-use reminder",
-    ],
-    4,
-    131,
-  );
-  const routeContrasts = takeBlueprintItems(
-    definition,
-    [
-      "a generic AI betting explainer",
-      "a sportsbook promo page",
-      "a calculator without interpretation",
-      "a pick list with no proof",
-      "a comparison page with no criteria",
-      "a strategy article with no product path",
-      "a parlay page that sells payout first",
-      "a sport page with no sport inputs",
-      "a cloned keyword page",
-      "a signup page pretending to be education",
-    ],
-    3,
-    137,
-  );
-  const routeReview = takeBlueprintItems(
-    definition,
-    [
-      `Does the first screen make ${definition.primaryKeyword} obvious without relying only on the H1?`,
-      `Would a reader understand why ${routeLabel} exists separately from a sibling URL?`,
-      `Do the examples mention ${marketList} instead of hiding behind broad sports betting language?`,
-      `Are the internal links chosen because of ${tagPhrase}, not because every page uses the same footer list?`,
-      `Can the FAQ answers be quoted without sounding like every other ThinkBetAI page?`,
-      `Does the CTA match ${action} rather than pushing the same next step to every visitor?`,
-      `Is the no-bet case visible enough for a high-risk betting category?`,
-      `Would this page still make sense if the brand name were removed from the paragraph?`,
+      "current sportsbook price",
+      "model-implied fair odds",
+      "injury or lineup news",
+      "market movement",
+      "bet type and payout",
+      "confidence range",
+      "risk grade",
+      "alternative market",
+      "no-bet reason",
+      "stake-size discipline",
     ],
     4,
     139,
   );
-  return deepExplainer("intro_explainer", "Route brief", `Page-specific brief for ${routeLabel}`, [
-    `The ${routeLabel} URL should be judged against its own keyword set: ${joinItems(keywordSet)}. Those phrases are close enough that a lazy page could blur them together, so the copy has to keep returning to ${definition.pageNoun}, not a generic sports betting AI explanation.`,
-    `The search snippet promise should match the on-page proof. If the title says ${definition.title}, the first screen should quickly explain who the page helps, what market or workflow it covers, and why ${entity.label} context matters. The reader should not have to scroll halfway down to learn whether this is a prediction page, tool page, comparison page, sportsbook page, or strategy page.`,
-    `The route also needs a different internal-link job from its siblings. This page should use ${tagPhrase} context to point users toward the closest next step: related sport pages, market pages, calculators, methodology, track record, pricing, or responsible-use resources. Linking every page to the same few URLs with the same anchors would make the cluster look mechanical.`,
-    `For the product path, the page should invite users to ${action}. That call to action should appear after the user sees why ${definition.primaryKeyword} needs the data signals, proof signals, and safety notes already explained on the page. The CTA should feel like a logical next step, not a generic signup push.`,
-    `The route should avoid borrowed language from neighboring pages. A sibling may discuss ${topic.goodSignals[0]}, but this URL should tie the idea to ${definition.primaryKeyword}, ${marketList}, and the exact examples from the report preview. That is how the page becomes a real search asset instead of one more keyword swap.`,
-    `${definition.h1} should have its own editorial fingerprint. The strongest fingerprints for this page are ${joinItems(routeSignals)}. If those pieces are missing, the route may still be crawlable, but it will feel closer to ${joinItems(routeContrasts)} than to a useful search result.`,
-    `The practical review is simple: ${joinItems(routeReview.slice(0, 2))}. Those checks force the page to answer a real user need before it asks for a click, signup, or report unlock.`,
-    `The examples should also carry the route. For ${definition.primaryKeyword}, the page can use ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 143))} as concrete scenes, then connect those scenes to ${joinItems(takeBlueprintItems(definition, entity.checks, 3, 149))}. That makes the page hard to confuse with another URL in the same cluster.`,
-    `Finally, the route should have an update path. If Search Console shows impressions with low CTR, rewrite the title and meta around ${definition.primaryKeyword}. If users land but do not continue, move the ${entity.label} example higher. If ranking stalls, add a fresh comparison, a clearer no-bet case, or a deeper answer to one of the route review questions.`,
+  return deepExplainer("intro_explainer", "Betting workflow", `How to use ${definition.h1}`, [
+    `Start by treating ${definition.primaryKeyword} as a research workflow, not a command to bet. The useful question is whether the available price, matchup context, and risk profile support a deeper report.`,
+    `A practical review should include ${joinItems(userChecks)}. Those inputs help separate a real betting signal from a line that only looks attractive because the payout is bigger or the market just moved.`,
+    `${entity.angle} For this page, examples like ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 143))} show what the analysis is supposed to clarify.`,
+    `The next step is to ${action} only after the user understands the tradeoff. If the edge is small, the news is stale, or the market is thin, passing can be the correct output.`,
+    `Related markets such as ${marketList} can change the decision. A moneyline may be too short, a spread may cross a key number, a prop may depend on late lineup news, and a parlay may carry more variance than the headline payout suggests.`,
   ], [
-    `Route: ${routeLabel}.`,
-    `Primary keyword: ${definition.primaryKeyword}.`,
-    `Secondary keyword set: ${keywordSet.slice(1).join(", ")}.`,
-    `Markets: ${marketList}.`,
-    `Tags: ${tagPhrase}.`,
-    `Main page noun: ${definition.pageNoun}.`,
-    `Editorial fingerprint: ${routeSignals.join(" / ")}.`,
+    `Review: ${joinItems(userChecks.slice(0, 3))}.`,
+    `Related phrases: ${keywordSet.slice(1).join(", ")}.`,
+    `Markets covered: ${marketList}.`,
+    `Best next step: ${action}.`,
   ]);
 };
 
@@ -1948,10 +1902,10 @@ const buildEntityPlaybookSection = (
         : "bet analysis";
 
   return deepExplainer("intro_explainer", "Scenario playbook", `${entity.label} playbook for ${definition.h1}`, [
-    `${entity.angle} The page should turn that angle into a visible scenario, not hide it inside a generic product paragraph. A visitor should see how ${definition.primaryKeyword} changes the report, the example, and the next step.`,
-    `For this route, the report should check ${joinItems(checks)}. Those checks are the practical difference between ${definition.h1} and a nearby page with a similar title. They also give writers and developers a concrete list to keep visible when the page is refreshed later.`,
+    `${entity.angle} The page should turn that angle into a visible scenario, not hide it inside a generic product paragraph. A visitor should see how the report changes the example and the next step.`,
+    `For this analysis, the report should check ${joinItems(checks)}. Those checks are the practical difference between a useful betting workflow and a generic prediction blurb.`,
     `The warning layer should be just as specific: ${joinItems(warnings)}. If those warnings are removed, the page may still sound positive, but it becomes less trustworthy because it stops teaching the user when to pass, wait, compare another line, or reduce risk.`,
-    `The clearest examples are ${joinItems(examples)}. These examples should appear in the preview cards, FAQ answers, and report framing so the page has enough unique surface area for users, Google, and AI answer systems to understand the difference.`,
+    `The clearest examples are ${joinItems(examples)}. These examples should appear in the preview cards, FAQ answers, and report framing so the page feels grounded instead of generic.`,
     `The conversion should match a ${pageAction}. That means the CTA, internal links, and analyzer prompt should feel earned by the scenario above. When the user continues, they should know exactly what extra context ThinkBetAI will provide and what uncertainty remains.`,
   ], [
     `Checks to surface: ${checks.join(" / ")}.`,
@@ -1992,26 +1946,26 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       subheading: "Track active games, model volume, supported sports and the markets ThinkBetAI is built to evaluate.",
     },
     deepExplainer("intro_explainer", "Direct answer", `${definition.h1}: what this page is actually for`, [
-      `${definition.primaryKeyword} is not just a keyword variation. The page has to answer a distinct betting research question: what the user should review, what the model can help with, what risk remains, and when the user should move into a full report instead of trusting a headline pick.`,
-      `${topic.uniqueAngle} ThinkBetAI should use this page to explain the workflow behind ${definition.pageNoun}, show the inputs that matter, and keep the language careful enough for a high-risk betting category.`,
-      `The practical job is to protect ${joinItems(good)} and avoid ${joinItems(bad)}. If the page does that, it has a real reason to be indexed instead of looking like a doorway page.`,
+      `${definition.primaryKeyword} should help a bettor answer a practical question: what should be reviewed, what the model can help explain, what risk remains, and when a full report is more useful than a headline pick.`,
+      `${topic.uniqueAngle} ThinkBetAI explains the workflow behind ${definition.pageNoun}, shows the inputs that matter, and keeps the language careful because betting decisions carry real risk.`,
+      `The practical job is to surface ${joinItems(good)} while avoiding weak habits like ${joinItems(bad)}.`,
     ], [
-      `Primary keyword: ${definition.primaryKeyword}.`,
-      `Intent: ${definition.intent ?? "commercial"}.`,
-      `Cluster: ${definition.cluster}.`,
-      `Conversion goal: ${definition.conversionGoal ?? "analyze_bet"}.`,
+      `Use case: ${definition.pageNoun}.`,
+      `Main action: ${definition.primaryCTA?.label ?? "Review the analysis"}.`,
+      `Markets: ${(definition.markets ?? ["moneyline", "spread", "total"]).join(", ")}.`,
+      `Risk reminder: no model guarantees a result.`,
     ]),
-    deepExplainer("intro_explainer", "Search intent", `Why searchers want ${definition.primaryKeyword}`, [
-      `The searcher ${topic.searcher}. They are not served by a page that only says AI can make picks. They need a page that explains the market, the data inputs, the risk, and how to interpret a recommendation without treating it as a guarantee.`,
+    deepExplainer("intro_explainer", "Decision context", `Why bettors look for ${definition.primaryKeyword}`, [
+      `Most bettors looking for this topic want more than a team name. They need market context, data inputs, risk flags, and a plain-English explanation of how to interpret a recommendation without treating it as a guarantee.`,
       sport
-        ? `${sport.context} For ${definition.primaryKeyword}, that means the copy should mention ${joinItems(sportInputs)} and explain why those details can change a model score.`
-        : `For ${definition.primaryKeyword}, that means the copy should mention ${joinItems(dataSignals)} and explain why those details can change a model score.`,
+        ? `${sport.context} For this analysis, that means reviewing ${joinItems(sportInputs)} and explaining why those details can change a model score.`
+        : `For this analysis, that means reviewing ${joinItems(dataSignals)} and explaining why those details can change a model score.`,
       primaryMarket
-        ? `${primaryMarket.context} That market context helps the page feel specific instead of being another broad sports betting AI page.`
+        ? `${primaryMarket.context} Market context matters because a good number can become a bad bet after price movement.`
         : `The page should also explain how price, probability, confidence, and risk fit together before a user decides whether to keep researching.`,
     ], [
-      `Searcher needs: ${joinItems(dataSignals.slice(0, 3))}.`,
-      `Trust needs: ${joinItems(proofSignals.slice(0, 3))}.`,
+      `Decision inputs: ${joinItems(dataSignals.slice(0, 3))}.`,
+      `Trust signals: ${joinItems(proofSignals.slice(0, 3))}.`,
       `Risk reminders: ${joinItems(safetyNotes.slice(0, 2))}.`,
     ]),
     {
@@ -2020,21 +1974,21 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       subheading:
         "Preview the deeper analysis behind each recommendation, including confidence, edge, EV, risk, reasoning and alternative betting options.",
     },
-    deepExplainer("intro_explainer", "Good signals", `What makes this ${titleWord(definition.primaryKeyword)} page worth keeping`, [
-      `The good version of this page contains enough concrete signals to stand apart from the rest of the SEO library. It should show ${joinItems(good)}, then connect those ideas to visible modules on the page: the preview board, report example, comparison table, supported sports, FAQs, and related links.`,
-      `Good betting SEO is not only about word count. It is about making the page useful when the odds change. If a user reads this page after a line move, the explanation should still teach them how to think about probability, price, and risk.`,
+    deepExplainer("intro_explainer", "Strong analysis", `What makes ${titleWord(definition.primaryKeyword)} useful`, [
+      `A useful betting page contains concrete signals instead of hype. It should show ${joinItems(good)}, then connect those ideas to the preview board, report example, comparison table, supported sports, FAQs, and related analysis.`,
+      `Good analysis remains useful when the odds change. If a user reads this after a line move, the explanation should still teach them how to think about probability, price, and risk.`,
       `The page should also link naturally into the product. A user who understands ${definition.pageNoun} should know whether to view predictions, analyze a bet, build a parlay, check methodology, or compare pricing.`,
-    ], good.map((item) => `Good signal: ${item}.`)),
-    deepExplainer("intro_explainer", "Bad signs", `What would make ${definition.primaryKeyword} thin or risky`, [
-      `The weak version of this page has obvious problems: ${joinItems(bad)}. Those issues make search engines see repetition and make bettors see hype instead of useful analysis.`,
+    ], good.map((item) => `Useful signal: ${item}.`)),
+    deepExplainer("intro_explainer", "Common mistakes", `What makes ${definition.primaryKeyword} risky`, [
+      `The weak version of this page has obvious problems: ${joinItems(bad)}. Those issues make the content feel repetitive and make bettors see hype instead of useful analysis.`,
       sport
         ? `For ${sport.label}, extra risk comes from ${joinItems(sportRisks)}. If those details never appear on the page, the article does not feel like it was written for the sport.`
         : `For this topic, extra risk comes from publishing calculator, tool, or prediction language without examples that match the query.`,
       primaryMarket
-        ? `The market-specific traps are ${joinItems(marketTraps)}. These are the details that should appear in the copy, FAQ, and report explanation so the page is not interchangeable with another market page.`
-        : `The page should be rewritten if the examples can be moved to a different URL without changing meaning.`,
-    ], bad.map((item) => `Bad sign: ${item}.`)),
-    deepExplainer("intro_explainer", "Data", `Inputs ThinkBetAI should explain on this URL`, [
+        ? `The market-specific traps are ${joinItems(marketTraps)}. These are the details that should appear in the copy, FAQ, and report explanation so the analysis feels specific.`
+        : `The examples should be specific enough that the user can picture the workflow, not just read another broad AI betting pitch.`,
+    ], bad.map((item) => `Avoid: ${item}.`)),
+    deepExplainer("intro_explainer", "Data", `Inputs ThinkBetAI should explain here`, [
       `The page needs to name the inputs a bettor actually cares about: ${joinItems(dataSignals)}. These should not be stuffed into a bullet list and forgotten. They should appear in the definition, methodology, report preview, and FAQs so the page has topical depth.`,
       sport
         ? `For ${sport.label}, useful examples include ${joinItems(sportExamples)}. These examples help users understand that the model is responding to sport-specific conditions, not simply producing a generic confidence number.`
@@ -2049,16 +2003,16 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       subheading:
         `See how ThinkBetAI turns ${definition.primaryKeyword} inputs into confidence, fair odds, risk notes and a plain-English report.`,
     },
-    deepExplainer("intro_explainer", "Page example", `A specific ${entity.label} example this page should cover`, [
-      `${entity.angle} This section forces the URL to say something that belongs to this page specifically. A thin page would only swap the name in the headline; a useful page explains the actual checks a user should make.`,
+    deepExplainer("intro_explainer", "Practical example", `A practical ${entity.label} example to review`, [
+      `${entity.angle} A useful example should explain the actual checks a bettor would make before trusting the output.`,
       `For ${definition.primaryKeyword}, the report should walk through ${joinItems(takeBlueprintItems(definition, entity.checks, 4, 107))}. That gives the user a practical reading path instead of another vague claim that AI can find better bets.`,
-      `Concrete examples help: ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 109))}. These examples should appear in body copy, FAQ answers, and report framing so the page cannot be confused with a neighboring URL.`,
+      `Concrete examples help: ${joinItems(takeBlueprintItems(definition, entity.examples, 3, 109))}. These examples should appear in body copy, FAQ answers, and report framing so the page feels useful instead of generic.`,
       `The page should also make the no-bet scenario visible. If the model likes an angle but the price moved, the right output may be to pass, wait, or analyze an alternate market rather than force a pick.`,
-    ], takeBlueprintItems(definition, entity.checks, 5, 111).map((item) => `Page-specific check: ${item}.`)),
+    ], takeBlueprintItems(definition, entity.checks, 5, 111).map((item) => `Specific check: ${item}.`)),
     buildEntityPlaybookSection(definition, entity),
     deepExplainer("intro_explainer", "Methodology", definition.methodHeading, [
       `ThinkBetAI should explain the workflow in a repeatable order: collect the market, review the relevant sport or bet-type inputs, estimate probability, compare the model number with the sportsbook price, assign risk, then explain what could make the report wrong.`,
-      `For ${definition.primaryKeyword}, the important part is interpretation. A confidence score without price is incomplete. A price without probability is incomplete. A recommendation without risk language is not serious enough for sports betting SEO.`,
+      `For ${definition.primaryKeyword}, the important part is interpretation. A confidence score without price is incomplete. A price without probability is incomplete. A recommendation without risk language is not serious enough for a betting decision.`,
       `The methodology should also be careful with claims. The model can help prioritize research, surface price differences, and explain matchup context. It cannot remove variance, guarantee profit, or replace responsible bankroll rules.`,
     ], [
       `Inputs to mention: ${joinItems(dataSignals.slice(0, 3))}.`,
@@ -2072,9 +2026,9 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
     },
     deepExplainer("intro_explainer", "Pass criteria", `When ${definition.h1} should tell a user to slow down`, [
       `A strong betting page does not push every visitor straight into action. It should explain when the model output is not enough: when the line moved, when injury news is unresolved, when the market is thin, when the payout is distracting, or when the bettor is trying to chase a previous loss.`,
-      `For this URL, the main warnings are ${joinItems(takeBlueprintItems(definition, entity.warnings, 4, 113))}. Those warnings should live near the report preview and FAQ, not only in a footer. They make the product feel more trustworthy because the page is willing to say when a wager does not deserve attention.`,
+      `For this analysis, the main warnings are ${joinItems(takeBlueprintItems(definition, entity.warnings, 4, 113))}. Those warnings should live near the report preview and FAQ, not only in a footer. They make the product feel more trustworthy because the page is willing to say when a wager does not deserve attention.`,
       primaryMarket
-        ? `For ${primaryMarket.label} markets, this also means watching ${joinItems(marketTraps)}. A recommendation that ignores those traps is not deep enough for this keyword.`
+        ? `For ${primaryMarket.label} markets, this also means watching ${joinItems(marketTraps)}. A recommendation that ignores those traps is not complete enough for this market.`
         : `For broader AI betting pages, this means separating educational value from conversion pressure. The page can sell the product while still teaching users to compare prices and respect variance.`,
     ], takeBlueprintItems(definition, entity.warnings, 4, 115).map((item) => `Slow down when: ${item}.`)),
     {
@@ -2085,7 +2039,7 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       placeholder: `Example: ${definition.primaryKeyword} at +145, $25 stake`,
     },
     deepExplainer("intro_explainer", "Trust", `Proof and safety standards for ${definition.h1}`, [
-      `Because this is sports betting content, trust is part of SEO. The page should include ${joinItems(proofSignals)} so users can see how the product thinks before they create an account.`,
+      `Because this is sports betting content, trust is part of the product experience. The page should include ${joinItems(proofSignals)} so users can see how the product thinks before they create an account.`,
       `It should also say the quiet part clearly: ${joinItems(safetyNotes)}. That language does not weaken the page. It makes the page more credible because users know the product is not pretending uncertainty disappears.`,
       `The strongest conversion path is ${joinItems(conversionPath)}. That path teaches first, previews second, and asks for deeper analysis only after the user understands what the report can add.`,
     ], [
@@ -2099,15 +2053,15 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       subheading:
         `Compare manual ${definition.primaryKeyword} research with an AI workflow that reviews odds, market movement and risk consistently.`,
     },
-    deepExplainer("intro_explainer", "AI visibility", `How this page should answer AI search systems`, [
-      `AI answer engines need clear, quotable facts. This page should make it easy to summarize what ${definition.h1} is, who it helps, what inputs it uses, what it does not guarantee, and how it connects to the ThinkBetAI product.`,
-      `The answer-ready version should state that ThinkBetAI uses ${joinItems(dataSignals.slice(0, 4))} to produce report-style analysis. It should also state that ${joinItems(safetyNotes.slice(0, 3))}. Those statements help both users and AI systems avoid overclaiming the product.`,
-      `For entity clarity, the page should mention ThinkBetAI, the route /${definition.slug}, the primary keyword ${definition.primaryKeyword}, and the relevant cluster ${definition.cluster}. This is the difference between a page that can be cited and a page that only exists as keyword filler.`,
+    deepExplainer("intro_explainer", "Plain-English summary", `How to explain ${definition.h1}`, [
+      `A good summary should make the page understandable in one pass: ThinkBetAI helps bettors review ${definition.pageNoun} by combining market price, model probability, matchup context, risk notes and a clear next step.`,
+      `The explanation should say what the tool can help with and what it cannot promise. It can organize research around ${joinItems(dataSignals.slice(0, 4))}. It cannot guarantee outcomes, remove variance, or make stale odds safe to use.`,
+      `The best version feels like a useful product guide, not a pile of repeated phrases. It should define the workflow, show an example, explain the limits, and point users toward the next report only when deeper analysis would actually help.`,
     ], [
-      `Answer-ready definition: ${definition.h1} is a ThinkBetAI page for ${definition.pageNoun}.`,
-      `Inputs to cite: ${joinItems(dataSignals.slice(0, 3))}.`,
-      `Limits to cite: ${joinItems(safetyNotes.slice(0, 2))}.`,
-      `Next step to cite: ${joinItems(conversionPath.slice(0, 2))}.`,
+      `Plain-English definition: ${definition.h1} helps with ${definition.pageNoun}.`,
+      `Inputs to understand: ${joinItems(dataSignals.slice(0, 3))}.`,
+      `Limits to remember: ${joinItems(safetyNotes.slice(0, 2))}.`,
+      `Next step: ${joinItems(conversionPath.slice(0, 2))}.`,
     ]),
     {
       type: "how_to_use",
@@ -2115,29 +2069,29 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
       subheading:
         `Use this ${definition.primaryKeyword} page as a starting point, then move into deeper analysis when the bet deserves a closer look.`,
     },
-    buildRouteSpecificSection(definition, topic, entity),
-    deepExplainer("intro_explainer", "SEO quality", `Why this URL should stay indexable`, [
-      `This URL should remain indexable only if it keeps a unique title, unique H1, self-canonical URL, crawlable body copy, FAQ coverage, internal links, and page-specific examples. If it becomes a thin rewrite of another AI betting page, it should be merged or rewritten.`,
-      `The page's internal links should point to the closest next steps: product tools, sport pages, market pages, methodology, track record, pricing, and responsible gambling resources. That creates a useful topic cluster instead of a disconnected keyword pile.`,
-      `For ${definition.primaryKeyword}, the uniqueness standard is simple: a reader should be able to tell why this page exists even if the title is removed. The examples, warnings, proof, and call to action should reveal the target.`,
+    buildRouteSpecificSection(definition, entity),
+    deepExplainer("intro_explainer", "Quality bar", `How to judge ${definition.h1} before using it`, [
+      `This page is only useful if the examples, warnings, proof and next step all match the betting decision a user is trying to make. A bettor should be able to tell what problem the page solves without relying on the headline alone.`,
+      `The safest reading path is simple: understand the market, check the current price, compare the model's fair number, review the risk notes, and decide whether the smarter move is action, patience, a smaller stake, or no bet.`,
+      `For ${definition.primaryKeyword}, the examples should be specific enough to show the workflow but honest enough to stay educational. Sample numbers are illustrative; users still need to check live odds before acting.`,
     ], [
-      `Canonical route: /${definition.slug}.`,
-      `Primary keyword: ${definition.primaryKeyword}.`,
-      `Related cluster: ${definition.cluster}.`,
-      `Uniqueness check: examples must match this page, not the whole site.`,
+      "Check current price before acting.",
+      "Compare posted odds with fair odds.",
+      "Review risk flags and late news.",
+      "Use responsible bankroll limits.",
     ]),
-    deepExplainer("intro_explainer", "Content depth", `The content checklist for ${definition.primaryKeyword}`, [
-      `The final page should pass a manual quality check. The title and H1 should match the query, but the body needs more than that. It should include a definition, examples, methodology, report preview, market or sport-specific risk, proof, internal links, FAQs, and responsible-use language.`,
-      `For ${definition.h1}, the checklist is especially strict because betting keywords attract low-quality pages. The content should not sound like guaranteed picks, a copied sportsbook landing page, or a thin AI-wrapper pitch. It should teach the user how to interpret the output.`,
-      `The strongest version also creates a clear internal-link path: from this page to related predictions, tools, methodology, track record, pricing, and responsible gambling resources. That helps search engines understand the cluster and helps users continue without bouncing back to Google.`,
-      `If this route starts ranking but has weak CTR, update the title and meta description before writing new pages. If it gets impressions but no conversions, strengthen the first-screen proof and the report preview. If it gets indexed but does not rank, add more examples tied to ${definition.primaryKeyword}.`,
+    deepExplainer("intro_explainer", "Decision checklist", `What to check before using ${definition.primaryKeyword}`, [
+      `The final decision should not come from one number. A bettor should review the definition, the example, the methodology, the report preview, the sport or market risk, the proof layer, and the responsible-use reminders before treating the output as useful.`,
+      `For ${definition.h1}, the bar is especially high because betting pages often overpromise. The content should not sound like guaranteed picks, a copied sportsbook landing page, or a thin AI-wrapper pitch. It should teach the user how to interpret the output.`,
+      `The strongest version creates a clear path from this page into related predictions, tools, methodology, track record, pricing, and responsible gambling resources. That helps users continue their research without jumping between disconnected pages.`,
+      `If a user is unsure, the page should push them toward slower research: check current odds, open the full report, compare an alternate market, or skip the wager until the price and context are clearer.`,
     ], [
-      "Definition that answers the query directly.",
-      "Examples that cannot be pasted onto another page.",
+      "Plain-English definition of the betting workflow.",
+      "Example tied to market behavior.",
       "Risk language near the product CTA.",
-      "Internal links to proof, tools, and responsible-use pages.",
-      "FAQ answers that mention the actual keyword and market.",
-      "Self-canonical URL and sitemap inclusion only while the page stays useful.",
+      "Links to proof, tools, and responsible-use pages.",
+      "FAQ answers that explain limits and next steps.",
+      "Reminder to re-check live odds before acting.",
     ]),
     {
       type: "supported_sports",
@@ -2147,7 +2101,7 @@ const buildDeepSeoSections = (definition: BlueprintDefinition): SeoSection[] => 
     {
       type: "related_pages",
       heading: "Related AI Betting Tools and Pages",
-      subheading: `Continue from ${definition.primaryKeyword} into the closest prediction tools, sport pages and proof pages in this cluster.`,
+      subheading: `Continue from ${definition.primaryKeyword} into the closest prediction tools, sport pages and proof pages for deeper context.`,
     },
     { type: "faq", heading: "Frequently Asked Questions" },
     {

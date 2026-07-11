@@ -444,10 +444,10 @@ const buildSections = (context: ExpansionContext): SeoSection[] => [
   },
   {
     type: "intro_explainer",
-    eyebrow: "Search intent",
+    eyebrow: "User need",
     heading: `Why this ${context.pageNoun} page exists`,
     body: [
-      `${context.h1} is a specific research need, not a reason to show the same generic betting page. This URL explains the audience, market, proof standard and risk notes that matter for ${context.primaryKeyword}.`,
+      `${context.h1} is a specific research need, not a reason to show the same generic betting page. This page explains the audience, market, proof standard and risk notes that matter for ${context.primaryKeyword}.`,
       `ThinkBetAI connects ${context.pageNoun} to product surfaces users can inspect: public pick rows, odds comparison, fair-odds math, CLV tracking, bet analysis and responsible-use reminders.`,
       `The page is useful when it answers the query directly, gives enough context to evaluate risk and points users toward deeper proof instead of forcing them through vague marketing copy.`,
     ],
@@ -455,7 +455,7 @@ const buildSections = (context: ExpansionContext): SeoSection[] => [
       `Audience: ${context.audience}.`,
       `Proof angle: ${context.proofAngle}.`,
       `Risk angle: ${context.riskAngle}.`,
-      `Search angle: ${context.uniqueAngle}.`,
+      `Context angle: ${context.uniqueAngle}.`,
     ],
   },
   {
@@ -486,7 +486,7 @@ const buildSections = (context: ExpansionContext): SeoSection[] => [
   {
     type: "recent_performance",
     heading: "Public Performance Context",
-    subheading: "A useful SEO page should connect claims to settled rows, sample rules, timestamps and closing-line value rather than a headline win rate alone.",
+    subheading: "A useful public page should connect claims to settled rows, sample rules, timestamps and closing-line value rather than a headline win rate alone.",
   },
   {
     type: "bet_analyzer_preview",
@@ -611,7 +611,7 @@ const createLocalizedContext = (language: LanguageMarket, topic: LocalizedTopic)
   title: `${topic.title} in ${language.name}`,
   description: `${language.name} guide to ${topic.title.toLowerCase()} for ${language.market}. Compare model probability, odds context, public ledger proof and risk notes.`,
   h1: `${topic.h1} for ${language.name} Bettors`,
-  heroSubheadline: `A localized ${language.name} search-intent page for ${language.phrase}, built around ${topic.noun}, ${language.primarySport} context, odds education and responsible analysis.`,
+  heroSubheadline: `A localized ${language.name} guide for ${language.phrase}, built around ${topic.noun}, ${language.primarySport} context, odds education and responsible analysis.`,
   pageNoun: topic.noun,
   audience: `${language.name} readers in ${language.market}`,
   marketContext: `${language.market}, especially ${language.primarySport} and major global sports`,

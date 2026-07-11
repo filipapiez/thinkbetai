@@ -147,13 +147,13 @@ const CountryLanding = ({ country }: CountryLandingProps) => {
             <div className="max-w-2xl mb-10">
               <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
                 <CheckCircle2 className="mr-2 h-3.5 w-3.5" />
-                Regional SEO Pages
+                Regional Pages
               </Badge>
               <h2 className="text-3xl font-bold tracking-tight mb-3">
                 Why this is not a duplicate homepage
               </h2>
               <p className="text-muted-foreground">
-                Each country page has its own search intent, sports mix, metadata, FAQs,
+                Each country page has its own sports mix, metadata, FAQs,
                 internal links and hreflang signal. The US market remains the main site at
                 thinkbetai.com.
               </p>
@@ -206,7 +206,7 @@ const CountryLanding = ({ country }: CountryLandingProps) => {
               <h2 className="text-2xl font-bold mb-3">Choose your market</h2>
               <p className="text-muted-foreground mb-5">
                 The main ThinkBetAI site targets the United States. These country pages give
-                search engines and visitors clearer regional context.
+                visitors clearer regional context.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" asChild>

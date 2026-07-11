@@ -46,7 +46,7 @@ export const CORE_SEO_PAGES: CoreSeoPage[] = [
     intro: page.intro,
     sections: [
       {
-        heading: `${page.adjective} sports betting search intent`,
+        heading: `${page.adjective} sports betting context`,
         body: page.marketNotes.join(" "),
       },
       {
