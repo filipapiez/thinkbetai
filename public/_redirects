@@ -7,21 +7,6 @@
 /props/* /ai-player-props 301
 
 # Consolidated aliases first so they resolve as permanent redirects.
-/nfl-ai-picks /ai-nfl-picks 301
-/nba-ai-picks /nba-ai-predictions 301
-/mlb-ai-picks /mlb-ai-predictions 301
-/nhl-ai-picks /nhl-ai-predictions 301
-/ufc-ai-picks /ufc-ai-predictions 301
-/soccer-ai-picks /soccer-ai-predictions 301
-/ai-parlay-picker /ai-parlay-builder 301
-/player-prop-predictions /ai-player-prop-predictions 301
-/nfl-player-prop-predictions /ai-player-prop-predictions 301
-/nba-player-prop-predictions /ai-player-prop-predictions 301
-/betting-model /how-it-works 301
-/methodology /track-record 301
-/odds-analysis /ai-odds-comparison 301
-/bankroll-management /tools/bankroll-calculator 301
-/betting-strategy /positive-ev-betting 301
 /de/ai-sports-betting /de/ki-sportwetten 301
 /de/free-ai-predictions /de/kostenlose-ki-prognosen 301
 /de/ai-sports-picks /de/ki-sport-tipps 301
@@ -501,6 +486,12 @@
 /nhl-ai-predictions /nhl-ai-predictions.html 200
 /ufc-ai-predictions /ufc-ai-predictions.html 200
 /soccer-ai-predictions /soccer-ai-predictions.html 200
+/nfl-ai-picks /nfl-ai-picks.html 200
+/nba-ai-picks /nba-ai-picks.html 200
+/mlb-ai-picks /mlb-ai-picks.html 200
+/nhl-ai-picks /nhl-ai-picks.html 200
+/ufc-ai-picks /ufc-ai-picks.html 200
+/soccer-ai-picks /soccer-ai-picks.html 200
 /wnba-ai-predictions /wnba-ai-predictions.html 200
 /ncaaf-ai-predictions /ncaaf-ai-predictions.html 200
 /ncaab-ai-predictions /ncaab-ai-predictions.html 200
@@ -521,6 +512,15 @@
 /ai-same-game-parlays /ai-same-game-parlays.html 200
 /ai-alt-spread-picks /ai-alt-spread-picks.html 200
 /ai-alt-total-picks /ai-alt-total-picks.html 200
+/ai-parlay-picker /ai-parlay-picker.html 200
+/player-prop-predictions /player-prop-predictions.html 200
+/nfl-player-prop-predictions /nfl-player-prop-predictions.html 200
+/nba-player-prop-predictions /nba-player-prop-predictions.html 200
+/betting-model /betting-model.html 200
+/methodology /methodology.html 200
+/odds-analysis /odds-analysis.html 200
+/bankroll-management /bankroll-management.html 200
+/betting-strategy /betting-strategy.html 200
 /ai-betting /ai-betting.html 200
 /ai-bet /ai-bet.html 200
 /ai-bets /ai-bets.html 200
