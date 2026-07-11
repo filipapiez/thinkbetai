@@ -17,15 +17,44 @@ const mobileLinkClass = (isActive: boolean) =>
     isActive ? "text-primary bg-primary/10" : "hover:bg-secondary"
   );
 
-const resourceLinks = [
-  { to: '/ai-bet-analyzer', label: 'Bet Analyzer', icon: Calculator },
-  { to: '/ai-parlay-builder', label: 'Parlay Builder', icon: Sparkles },
-  { to: '/track-record', label: 'Track Record', icon: ShieldCheck },
-  { to: '/best-ai-sports-betting-tools', label: 'Best Tools', icon: Trophy },
-  { to: '/about', label: 'About', icon: Info },
-  { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },
-  { to: '/blog', label: 'Blog', icon: BookOpen },
+const resourceGroups = [
+  {
+    label: 'Tools',
+    links: [
+      { to: '/ai-bet-analyzer', label: 'Bet Analyzer', icon: Calculator },
+      { to: '/ai-parlay-builder', label: 'Parlay Builder', icon: Sparkles },
+      { to: '/free-ai-predictions', label: 'Free AI Predictions', icon: TrendingUp },
+      { to: '/ai-sports-betting', label: 'AI Sports Betting', icon: Trophy },
+      { to: '/ai-player-prop-predictions', label: 'AI Player Props', icon: Layers },
+    ],
+  },
+  {
+    label: 'Sports',
+    links: [
+      { to: '/nfl-ai-predictions', label: 'NFL AI Predictions', icon: Trophy },
+      { to: '/nba-ai-predictions', label: 'NBA AI Predictions', icon: Trophy },
+      { to: '/mlb-ai-predictions', label: 'MLB AI Predictions', icon: Trophy },
+      { to: '/nhl-ai-predictions', label: 'NHL AI Predictions', icon: Trophy },
+      { to: '/ufc-ai-predictions', label: 'UFC AI Predictions', icon: Trophy },
+      { to: '/soccer-ai-predictions', label: 'Soccer AI Predictions', icon: Trophy },
+    ],
+  },
+  {
+    label: 'Trust',
+    links: [
+      { to: '/track-record', label: 'Track Record', icon: ShieldCheck },
+      { to: '/best-ai-sports-betting-tools', label: 'Best Tools', icon: Trophy },
+      { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },
+      { to: '/faq', label: 'FAQ', icon: HelpCircle },
+      { to: '/responsible-gambling', label: 'Responsible Gambling', icon: ShieldCheck },
+      { to: '/editorial-policy', label: 'Editorial Policy', icon: BookOpen },
+      { to: '/blog', label: 'Blog', icon: BookOpen },
+      { to: '/about', label: 'About', icon: Info },
+    ],
+  },
 ];
+
+const resourceLinks = resourceGroups.flatMap((group) => group.links);
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -95,28 +124,39 @@ export const Header = () => {
 
             <div
               className={cn(
-                "absolute top-full right-0 mt-2 w-64 rounded-lg border border-border/60 bg-popover/95 backdrop-blur-xl shadow-lg shadow-black/20 py-1.5 transition-all duration-200 origin-top-right",
+                "absolute top-full right-0 mt-2 w-[min(42rem,calc(100vw-2rem))] rounded-lg border border-border/60 bg-popover/95 backdrop-blur-xl shadow-lg shadow-black/20 p-3 transition-all duration-200 origin-top-right",
                 resourcesOpen
                   ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                   : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
               )}
             >
-              {resourceLinks.map(({ to, label, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  onClick={() => setResourcesOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-2 px-3.5 py-2 text-sm transition-colors",
-                      isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                    )
-                  }
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </NavLink>
-              ))}
+              <div className="grid gap-3 md:grid-cols-3">
+                {resourceGroups.map((group) => (
+                  <div key={group.label} className="min-w-0">
+                    <p className="px-2 pb-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {group.label}
+                    </p>
+                    <div className="space-y-1">
+                      {group.links.map(({ to, label, icon: Icon }) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          onClick={() => setResourcesOpen(false)}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex items-center gap-2 rounded-md px-2.5 py-2 text-sm transition-colors",
+                              isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                            )
+                          }
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </nav>
@@ -182,21 +222,28 @@ export const Header = () => {
               <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", mobileResourcesOpen && "rotate-180")} />
             </button>
             {mobileResourcesOpen && (
-              <div className="flex flex-col gap-1 pl-6">
-                {resourceLinks.map(({ to, label, icon: Icon }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    className={({ isActive }) =>
-                      cn(
-                        "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
-                        isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
-                      )
-                    }
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Icon className="h-4 w-4" /> {label}
-                  </NavLink>
+              <div className="flex flex-col gap-4 pl-3">
+                {resourceGroups.map((group) => (
+                  <div key={group.label} className="flex flex-col gap-1">
+                    <p className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {group.label}
+                    </p>
+                    {group.links.map(({ to, label, icon: Icon }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors",
+                            isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
+                          )
+                        }
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Icon className="h-4 w-4" /> {label}
+                      </NavLink>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
