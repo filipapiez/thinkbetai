@@ -86,7 +86,7 @@ const AIParlayBuilder = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
         title="Free AI Parlay Builder & Parlay Generator"
-        description="Use an AI parlay builder to compare leg probabilities, identify correlation and review risk before combining NFL, NBA, MLB or NHL picks."
+        description="Use an AI parlay builder guide and public parlay calculator demo to compare leg probabilities, identify correlation and review risk before combining picks."
         keywords="ai parlay builder, free ai parlay generator, ai parlay picks, same game parlay AI, smart parlay builder, parlay ai predictions, correlated parlay"
         url="/ai-parlay-builder"
         type="article"
@@ -109,19 +109,18 @@ const AIParlayBuilder = () => {
           <header className="text-center mb-14">
             <Badge className="mb-4 bg-accent/20 text-accent border-accent/30">
               <Layers className="h-3 w-3 mr-1" />
-              Advanced Tool
+              Public Guide + Demo
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-              Free AI Parlay Builder and Parlay Generator
+              AI Parlay Builder Guide and Public Demo
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Stop guessing on parlays. Our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> analyzes leg correlations, calculates true win probabilities,
-              and helps you review <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI-assisted parlays</Link> with explicit risk context.
+              Stop guessing on parlays. This <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> page explains correlation, true probability and risk, then gives you a public calculator demo before you open the live parlay board.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
                 <Link to="/parlays">
-                  Build AI Parlay <ArrowRight className="ml-1 h-4 w-4" />
+                  Open AI Parlays <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
@@ -269,14 +268,14 @@ const AIParlayBuilder = () => {
 
             {/* Bottom CTA */}
             <section className="not-prose rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center mb-14">
-              <h2 className="text-2xl font-bold mb-3">Build Your First AI Parlay</h2>
+              <h2 className="text-2xl font-bold mb-3">Open the Live AI Parlay Board</h2>
               <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                Let AI find the correlations and value in your multi-leg bets.
+                Use the public demo for quick math, then open the app surface for current game-based parlay suggestions.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Button size="lg" asChild>
                   <Link to="/parlays">
-                    Open Parlay Builder <ArrowRight className="ml-1 h-4 w-4" />
+                    Open AI Parlays <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild>

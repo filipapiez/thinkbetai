@@ -58,14 +58,14 @@ const AIBetAnalyzer = () => {
         <section className="mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">AI Bet Analyzer for Probability, Value and Risk</h1>
           <p className="text-lg text-muted-foreground max-w-3xl mb-4">
-            The <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> evaluates probability, value, and risk using the same betting-analysis framework available across ThinkBetAI.
+            This <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> page gives you a public calculator demo and explains the probability, value, and risk framework used across ThinkBetAI.
           </p>
           <p className="text-muted-foreground leading-relaxed max-w-3xl mb-8">
-            ThinkBetAI's analyzer is built around the math users should inspect before risking money: implied probability, model probability, expected value, fair odds and risk context. Whether you're evaluating a single straight bet or a complex parlay, the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI odds analysis</Link> gives you a clearer research framework.
+            ThinkBetAI is built around the math users should inspect before risking money: implied probability, model probability, expected value, fair odds and risk context. Use the demo below for simple price checks, then use the live betting board for real matchup data.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button size="lg" asChild><Link to="/login">Analyze a Bet Now <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
-            <Button size="lg" variant="outline" asChild><Link to="/ai-sports-betting">Learn About AI Betting</Link></Button>
+            <Button size="lg" asChild><Link to="/games">Open Live Betting Board <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+            <Button size="lg" variant="outline" asChild><Link to="/player-props">View Player Props</Link></Button>
           </div>
         </section>
 
@@ -78,13 +78,13 @@ const AIBetAnalyzer = () => {
           <h2 className="text-3xl font-bold mb-6">How the AI Bet Analyzer Works</h2>
           <div className="prose prose-lg dark:prose-invert max-w-none space-y-4 mb-8">
             <p className="text-muted-foreground leading-relaxed">
-              When you submit a bet for analysis, our AI engine kicks off a multi-step evaluation. First, it ingests real-time data for the matchup — current odds from multiple sportsbooks, team and player statistics, injury reports, weather conditions, and historical performance in similar situations. Next, an ensemble of machine learning models (gradient boosting, neural networks, and logistic regression) independently estimate the true probability of each outcome.
+              A real betting analysis workflow should ingest current odds, team and player statistics, injury reports, weather conditions, and historical performance in similar situations. Then the model estimate can be compared against the sportsbook's implied probability to estimate expected value.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              The system then compares its calculated probability against the sportsbook's implied probability to estimate expected value (EV). Positive EV means the modeled price is better than the listed price, but that edge can disappear if the line moves, limits apply or late information changes the matchup. Finally, a risk assessment layer evaluates variance factors like injury uncertainty, weather volatility, and historical line movement.
+              Positive EV means the modeled price is better than the listed price, but that edge can disappear if the line moves, limits apply or late information changes the matchup. Risk factors like injury uncertainty, weather volatility, and historical line movement still matter.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              The process returns a structured breakdown of the model estimate, implied probability and risk factors. Treat it as one input in your research rather than a guaranteed outcome.
+              The demo on this page handles the math layer only. Treat it as one input in your research rather than a guaranteed outcome.
             </p>
           </div>
         </section>
@@ -138,7 +138,7 @@ const AIBetAnalyzer = () => {
           <h2 className="text-3xl font-bold mb-6">Who Is the AI Bet Analyzer For?</h2>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p className="text-muted-foreground leading-relaxed">
-              The AI bet analyzer serves every type of bettor. <strong>Beginners</strong> use it to learn whether a bet makes mathematical sense before placing their first wager. <strong>Intermediate bettors</strong> rely on it to validate their own research and catch value they might have missed. <strong>Advanced handicappers</strong> integrate it into their workflow as a second opinion — a tireless analytical engine that processes data at a scale no human can match.
+              The public bet analyzer demo serves every type of bettor. <strong>Beginners</strong> use it to learn whether a price makes mathematical sense. <strong>Intermediate bettors</strong> use it to sanity-check their own research. <strong>Advanced handicappers</strong> can use it as a quick EV calculator before moving into deeper matchup work.
             </p>
             <p className="text-muted-foreground leading-relaxed mt-3">
               If you've ever placed a bet on gut feeling and wondered whether the numbers actually supported it, the AI bet analyzer gives you that answer in seconds. Pair it with our <Link to="/chat" className="text-primary hover:underline font-medium">AI betting chat</Link> for conversational research or our <Link to="/ai-parlay-builder" className="text-primary hover:underline font-medium">AI parlay builder</Link> for optimized multi-leg bets.
@@ -208,10 +208,10 @@ const AIBetAnalyzer = () => {
         {/* CTA */}
         <section className="text-center py-12 rounded-2xl bg-muted/30 border border-border">
           <h2 className="text-2xl font-bold mb-4">Ready to Analyze Your Next Bet?</h2>
-          <p className="text-muted-foreground mb-6">Use the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer</Link> to compare model probability, implied odds and risk factors before a wager.</p>
+          <p className="text-muted-foreground mb-6">Use the <Link to="/ai-bet-analyzer" className="text-primary hover:underline font-medium">AI bet analyzer demo</Link> to compare model probability, implied odds and expected value before moving into live matchup research.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" asChild><Link to="/login">Start AI Analysis <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
-            <Button size="lg" variant="outline" asChild><Link to="/pricing">View Plans</Link></Button>
+            <Button size="lg" asChild><Link to="/games">Open Live Betting Board <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
+            <Button size="lg" variant="outline" asChild><Link to="/ai-sports-betting">Learn About AI Betting</Link></Button>
           </div>
         </section>
       </main>

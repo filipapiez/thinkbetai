@@ -19,17 +19,17 @@ const mobileLinkClass = (isActive: boolean) =>
 
 const resourceGroups = [
   {
-    label: 'Tools',
+    label: 'Guides & Demos',
     links: [
-      { to: '/ai-bet-analyzer', label: 'Bet Analyzer', icon: Calculator },
-      { to: '/ai-parlay-builder', label: 'Parlay Builder', icon: Sparkles },
-      { to: '/free-ai-predictions', label: 'Free AI Predictions', icon: TrendingUp },
-      { to: '/ai-sports-betting', label: 'AI Sports Betting', icon: Trophy },
-      { to: '/ai-player-prop-predictions', label: 'AI Player Props', icon: Layers },
+      { to: '/ai-bet-analyzer', label: 'Bet Analyzer Demo', icon: Calculator },
+      { to: '/ai-parlay-builder', label: 'Parlay Builder Guide', icon: Sparkles },
+      { to: '/free-ai-predictions', label: 'Free Predictions Guide', icon: TrendingUp },
+      { to: '/ai-sports-betting', label: 'AI Betting Guide', icon: Trophy },
+      { to: '/ai-player-prop-predictions', label: 'Player Props Guide', icon: Layers },
     ],
   },
   {
-    label: 'Sports',
+    label: 'Sports Guides',
     links: [
       { to: '/nfl-ai-predictions', label: 'NFL AI Predictions', icon: Trophy },
       { to: '/nba-ai-predictions', label: 'NBA AI Predictions', icon: Trophy },
@@ -40,7 +40,7 @@ const resourceGroups = [
     ],
   },
   {
-    label: 'Trust',
+    label: 'Trust & Company',
     links: [
       { to: '/track-record', label: 'Track Record', icon: ShieldCheck },
       { to: '/best-ai-sports-betting-tools', label: 'Best Tools', icon: Trophy },
