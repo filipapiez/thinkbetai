@@ -62,6 +62,7 @@ const expectedBlueprintSections = [
 const requiredBlueprintSchema = ["WebPage", "SoftwareApplication", "FAQPage", "BreadcrumbList"] as const;
 const blueprintCanonicalPaths = new Set(seoBlueprints.map((blueprint) => blueprint.canonical));
 const coreCanonicalPaths = new Set(CORE_SEO_PAGES.map((page) => page.path));
+const coreOwnedBlueprintPaths = new Set(["/ai-bet-analyzer", "/ai-parlay-builder"]);
 
 for (const config of SEO_LANDING_CONFIGS) {
   const path = `/${config.slug}`;
@@ -266,6 +267,8 @@ if (existsSync(dist)) {
 
   for (const blueprint of seoBlueprints) {
     const path = blueprint.canonical;
+    if (coreOwnedBlueprintPaths.has(path)) continue;
+
     const flatFile = flatHtmlPath(dist, path);
     const folderFile = folderHtmlPath(dist, path);
 

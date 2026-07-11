@@ -1,4 +1,5 @@
 import { platformStats } from "../lib/platformStats";
+import { programmaticExpansionBlueprints } from "./programmaticExpansion";
 
 export type SearchIntent = "informational" | "commercial" | "tool" | "sports" | "comparison";
 export type SchemaType = "WebPage" | "SoftwareApplication" | "FAQPage" | "BreadcrumbList";
@@ -4131,9 +4132,11 @@ const aiBettingPredictionsDeepBlueprint = createSeoBlueprint({
   markets: ["moneyline", "spread", "total", "props"],
 });
 
-export const seoBlueprints = [aiBettingPredictionsDeepBlueprint, ...additionalSeoBlueprints].filter(
-  (blueprint) => !promotedFeatureBlueprintSlugs.has(blueprint.slug),
-);
+export const seoBlueprints = [
+  aiBettingPredictionsDeepBlueprint,
+  ...additionalSeoBlueprints,
+  ...programmaticExpansionBlueprints,
+].filter((blueprint) => !promotedFeatureBlueprintSlugs.has(blueprint.slug));
 
 export const getSeoBlueprint = (slug: string) =>
   seoBlueprints.find((blueprint) => blueprint.slug === slug);
