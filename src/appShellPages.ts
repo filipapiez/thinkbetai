@@ -259,7 +259,7 @@ const RAW_APP_SHELL_PAGES: AppShellPage[] = [
 const localizedMoneyPageLegacyPaths = new Set(localizedMoneyPageRedirects.map((redirect) => redirect.source));
 
 export const APP_SHELL_PAGES = RAW_APP_SHELL_PAGES.filter(
-  (page) => !localizedMoneyPagePaths.has(page.path) && !localizedMoneyPageLegacyPaths.has(page.path),
+  (page) => !(localizedMoneyPagePaths as Set<string>).has(page.path) && !localizedMoneyPageLegacyPaths.has(page.path),
 );
 
 export const APP_SHELL_REWRITES = [
