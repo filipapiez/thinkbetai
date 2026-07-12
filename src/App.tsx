@@ -107,7 +107,7 @@ const App = () => (
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Index />} />
-                <Route path="/pricing" element={<AuthBoundary><Pricing /></AuthBoundary>} />
+                <Route path="/pricing" element={<QueryBoundary><AuthBoundary><Pricing /></AuthBoundary></QueryBoundary>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/track-record" element={<QueryBoundary><TrackRecord /></QueryBoundary>} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
