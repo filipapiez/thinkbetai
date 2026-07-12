@@ -38,7 +38,7 @@ export const ReviewCaptureCard = ({ userId, defaultName }: ReviewCaptureCardProp
     }
 
     setIsSubmitting(true);
-    const { error } = await supabase.from("public_reviews").insert({
+    const { error } = await (supabase as any).from("public_reviews").insert({
       user_id: userId,
       name: trimmedName,
       role: role.trim() || "ThinkBetAI member",

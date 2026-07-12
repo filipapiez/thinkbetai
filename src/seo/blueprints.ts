@@ -2241,7 +2241,7 @@ const sportPredictionDefinitions: BlueprintDefinition[] = [
   markets: ["moneyline", "spread", "total", "props"],
 }));
 
-const marketPickDefinitions: BlueprintDefinition[] = [
+const marketPickDefinitions = [
   {
     slug: "ai-moneyline-picks",
     primaryKeyword: "AI moneyline picks",
@@ -2653,7 +2653,7 @@ const sportsbookDefinitions: BlueprintDefinition[] = [
   markets: type.includes("Parlay") ? ["moneyline", "spread", "total", "props", "parlay"] : ["moneyline", "spread", "total", "props"],
 }));
 
-const coreSportPredictionDefinitions: BlueprintDefinition[] = [
+const coreSportPredictionDefinitions = [
   { slug: "nfl-ai-predictions", sport: "NFL", tags: ["nfl", "football"], markets: ["moneyline", "spread", "total", "props"] },
   { slug: "nba-ai-predictions", sport: "NBA", tags: ["nba", "basketball"], markets: ["moneyline", "spread", "total", "props"] },
   { slug: "mlb-ai-predictions", sport: "MLB", tags: ["mlb", "baseball"], markets: ["moneyline", "spread", "total", "props"] },
@@ -2690,7 +2690,7 @@ const coreSportPredictionDefinitions: BlueprintDefinition[] = [
   markets,
 }));
 
-const requestedStandaloneUrlDefinitions: BlueprintDefinition[] = [
+const requestedStandaloneUrlDefinitions = [
   {
     slug: "nfl-ai-picks",
     sport: "NFL",
