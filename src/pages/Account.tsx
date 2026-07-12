@@ -269,7 +269,7 @@ const Account = () => {
   };
 
   const defaultReviewName =
-    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') ||
+    [(profile as any)?.first_name, (profile as any)?.last_name].filter(Boolean).join(' ') ||
     user?.email?.split('@')[0] ||
     '';
 

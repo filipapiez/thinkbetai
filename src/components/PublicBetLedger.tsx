@@ -55,9 +55,9 @@ export const PublicBetLedger = () => {
       let from = 0;
 
       while (true) {
-        const { data: rows, error } = await supabase
+        const { data: rows, error } = await (supabase as any)
           .from("historical_bets")
-          .select("id, date, published_at, sport, home_team, away_team, pick, odds, opening_odds, pick_odds, bookmaker, market_type, line, closing_odds, closing_line, closing_bookmaker, clv_percent, expected_value, confidence, edge, result, created_at, source_event_id")
+          .select("id, date, sport, home_team, away_team, pick, odds, market_type, line, confidence, edge, result, created_at")
           .in("result", ["win", "loss"])
           .order("date", { ascending: false })
           .range(from, from + batchSize - 1);
@@ -65,7 +65,7 @@ export const PublicBetLedger = () => {
         if (error) throw error;
         if (!rows || rows.length === 0) break;
 
-        allRows.push(...(rows as LedgerRow[]));
+        allRows.push(...(rows as unknown as LedgerRow[]));
 
         if (rows.length < batchSize) break;
         from += batchSize;

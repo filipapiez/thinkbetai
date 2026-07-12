@@ -17,7 +17,7 @@ export const PublicReviewsSection = () => {
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["public-reviews"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("public_reviews")
         .select("id, name, role, rating, quote, is_verified")
         .eq("is_published", true)
