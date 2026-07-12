@@ -2360,7 +2360,7 @@ const marketPickDefinitions = [
   tags: ["ai", "picks", "markets", label.toLowerCase().replace(/[^a-z0-9]+/g, "-")],
   cluster: "market-picks",
   markets,
-}));
+})) as unknown as BlueprintDefinition[];
 
 const calculatorToolDefinitions: BlueprintDefinition[] = [
   {
@@ -2688,7 +2688,7 @@ const coreSportPredictionDefinitions = [
   tags: ["ai", "predictions", "sports", ...tags],
   cluster: "sports-predictions",
   markets,
-}));
+})) as unknown as BlueprintDefinition[];
 
 const requestedStandaloneUrlDefinitions = [
   {
@@ -2767,7 +2767,7 @@ const requestedStandaloneUrlDefinitions = [
   tags: ["ai", "picks", "sports", ...tags],
   cluster: "sports-picks",
   markets,
-}));
+})) as unknown as BlueprintDefinition[];
 
 const requestedStandaloneTopicDefinitions: BlueprintDefinition[] = [
   {
