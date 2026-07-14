@@ -281,6 +281,72 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          book: string
+          book_count: number
+          commence_time: string
+          detected_at: string
+          edge_type: string
+          ev_pct: number
+          event: string
+          expires_at: string
+          extra: Json | null
+          fair_odds_decimal: number
+          fair_prob: number
+          id: string
+          line: number | null
+          market: string
+          odds_american: number
+          odds_decimal: number
+          selection: string
+          sport: string
+          sport_key: string
+        }
+        Insert: {
+          book: string
+          book_count?: number
+          commence_time: string
+          detected_at?: string
+          edge_type?: string
+          ev_pct: number
+          event: string
+          expires_at?: string
+          extra?: Json | null
+          fair_odds_decimal: number
+          fair_prob: number
+          id?: string
+          line?: number | null
+          market: string
+          odds_american: number
+          odds_decimal: number
+          selection: string
+          sport: string
+          sport_key: string
+        }
+        Update: {
+          book?: string
+          book_count?: number
+          commence_time?: string
+          detected_at?: string
+          edge_type?: string
+          ev_pct?: number
+          event?: string
+          expires_at?: string
+          extra?: Json | null
+          fair_odds_decimal?: number
+          fair_prob?: number
+          id?: string
+          line?: number | null
+          market?: string
+          odds_american?: number
+          odds_decimal?: number
+          selection?: string
+          sport?: string
+          sport_key?: string
+        }
+        Relationships: []
+      }
       picks: {
         Row: {
           book: string | null

@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Search, User, Menu, X, MessageCircle, Layers, History, HelpCircle, Sparkles, ArrowUpDown, ChevronDown, Info, BookOpen, Calculator, ShieldCheck, Trophy } from 'lucide-react';
+import { TrendingUp, Search, User, Menu, X, MessageCircle, Layers, History, HelpCircle, Sparkles, ArrowUpDown, ChevronDown, Info, BookOpen, Calculator, ShieldCheck, Trophy, Zap } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
@@ -97,6 +97,9 @@ export const Header = () => {
           </NavLink>
           <NavLink to="/parlays" className={navLinkClass}>
             <Sparkles className="h-4 w-4" /> AI Parlays
+          </NavLink>
+          <NavLink to="/edges" className={navLinkClass}>
+            <Zap className="h-4 w-4" /> Edges
           </NavLink>
           <NavLink to="/bet-history" className={navLinkClass}>
             <History className="h-4 w-4" /> Bet History
