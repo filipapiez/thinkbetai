@@ -101,6 +101,7 @@ export const Header = () => {
           <NavLink to="/edges" className={navLinkClass}>
             <Zap className="h-4 w-4" /> Edges
           </NavLink>
+          <NavLink to="/odds" className={navLinkClass}>Odds</NavLink>
           <NavLink to="/bet-history" className={navLinkClass}>
             <History className="h-4 w-4" /> Bet History
           </NavLink>
