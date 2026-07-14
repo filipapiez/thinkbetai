@@ -235,6 +235,7 @@ const App = () => (
                 <Route path="/picks" element={<NoIndexBoundary><QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary></NoIndexBoundary>} />
                 <Route path="/player-props" element={<NoIndexBoundary><AuthBoundary><PlayerProps /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/edges" element={<NoIndexBoundary><AuthBoundary><Edges /></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/odds" element={<NoIndexBoundary><OddsScreen /></NoIndexBoundary>} />
                 <Route path="/parlays" element={<NoIndexBoundary><AuthBoundary><Parlays /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/chat" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
