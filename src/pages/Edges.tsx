@@ -30,6 +30,7 @@ type Opportunity = {
   edge_type: string;
   book_count: number;
   detected_at: string;
+  bet_link: string | null;
 };
 
 const FREE_PREVIEW_COUNT = 2;
