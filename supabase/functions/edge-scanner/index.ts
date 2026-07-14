@@ -203,7 +203,8 @@ serve(async (req) => {
               ev_pct: Number(ev_pct.toFixed(2)),
               edge_type: "value",
               book_count: g.prices.length,
-            });
+              bet_link: p.link,
+            } as Opp & { bet_link: string | null });
           }
         }
       }
