@@ -111,6 +111,7 @@ const App = () => (
                 <Route path="/pricing" element={<QueryBoundary><AuthBoundary><Pricing /></AuthBoundary></QueryBoundary>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/track-record" element={<QueryBoundary><TrackRecord /></QueryBoundary>} />
+                <Route path="/proof" element={<ProofPage />} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
                 <Route path="/editorial-policy" element={<EditorialPolicy />} />
                 <Route path="/privacy" element={<LegalPage page="privacy" />} />
