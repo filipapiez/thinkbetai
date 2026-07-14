@@ -77,6 +77,20 @@ serve(async (req) => {
     );
 
     const all: Opp[] = [];
+    const boardRows: Array<{
+      dedup_key: string;
+      odds_api_event_id: string;
+      sport: string;
+      event: string;
+      commence_time: string;
+      market: string;
+      book: string;
+      outcome: string;
+      point: number | null;
+      price: number;
+      opening_point: number | null;
+      opening_price: number;
+    }> = [];
     const errors: string[] = [];
 
     for (const sport of sports) {
@@ -101,6 +115,7 @@ serve(async (req) => {
         >();
 
         for (const bm of ev.bookmakers || []) {
+          const bookKey = String(bm.key || bm.title || "").toLowerCase();
           for (const mkt of bm.markets || []) {
             for (const oc of mkt.outcomes || []) {
               const line = oc.point ?? null;
@@ -114,6 +129,24 @@ serve(async (req) => {
               if (!Number.isFinite(american) || decimal <= 1) continue;
               if (!groups.has(key)) groups.set(key, { market: mkt.key, selection: sel, line, prices: [] });
               groups.get(key)!.prices.push({ book: bm.title, american, decimal });
+
+              // Persist raw grid for /odds screen (zero extra API cost).
+              if (ev.id && ["h2h", "spreads", "totals"].includes(mkt.key)) {
+                boardRows.push({
+                  dedup_key: `${ev.id}|${mkt.key}|${bookKey}|${oc.name}`,
+                  odds_api_event_id: String(ev.id),
+                  sport: sportTitle,
+                  event: eventLabel,
+                  commence_time: commence,
+                  market: mkt.key,
+                  book: bookKey,
+                  outcome: String(oc.name),
+                  point: line,
+                  price: Number(decimal.toFixed(4)),
+                  opening_point: line,
+                  opening_price: Number(decimal.toFixed(4)),
+                });
+              }
             }
           }
         }
@@ -168,6 +201,17 @@ serve(async (req) => {
           }
         }
       }
+    }
+
+    // Persist odds board grid (chunked upserts) + housekeeping.
+    for (let i = 0; i < boardRows.length; i += 500) {
+      const { error: boardErr } = await supabase
+        .from("odds_board_latest")
+        .upsert(boardRows.slice(i, i + 500), { onConflict: "dedup_key" });
+      if (boardErr) console.error("[edge-scanner] odds_board upsert error", boardErr.message);
+    }
+    if (boardRows.length) {
+      await supabase.rpc("prune_odds_board");
     }
 
     // Purge expired

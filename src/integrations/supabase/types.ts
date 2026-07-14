@@ -311,6 +311,57 @@ export type Database = {
         }
         Relationships: []
       }
+      odds_board_latest: {
+        Row: {
+          book: string
+          commence_time: string
+          dedup_key: string
+          event: string
+          id: string
+          market: string
+          odds_api_event_id: string
+          opening_point: number | null
+          opening_price: number
+          outcome: string
+          point: number | null
+          price: number
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          book: string
+          commence_time: string
+          dedup_key: string
+          event: string
+          id?: string
+          market: string
+          odds_api_event_id: string
+          opening_point?: number | null
+          opening_price: number
+          outcome: string
+          point?: number | null
+          price: number
+          sport: string
+          updated_at?: string
+        }
+        Update: {
+          book?: string
+          commence_time?: string
+          dedup_key?: string
+          event?: string
+          id?: string
+          market?: string
+          odds_api_event_id?: string
+          opening_point?: number | null
+          opening_price?: number
+          outcome?: string
+          point?: number | null
+          price?: number
+          sport?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       odds_cache: {
         Row: {
           created_at: string
@@ -332,6 +383,48 @@ export type Database = {
           expires_at?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      odds_history: {
+        Row: {
+          book: string
+          changed_at: string
+          dedup_key: string
+          id: number
+          market: string
+          new_point: number | null
+          new_price: number | null
+          odds_api_event_id: string
+          old_point: number | null
+          old_price: number | null
+          outcome: string
+        }
+        Insert: {
+          book: string
+          changed_at?: string
+          dedup_key: string
+          id?: never
+          market: string
+          new_point?: number | null
+          new_price?: number | null
+          odds_api_event_id: string
+          old_point?: number | null
+          old_price?: number | null
+          outcome: string
+        }
+        Update: {
+          book?: string
+          changed_at?: string
+          dedup_key?: string
+          id?: never
+          market?: string
+          new_point?: number | null
+          new_price?: number | null
+          odds_api_event_id?: string
+          old_point?: number | null
+          old_price?: number | null
+          outcome?: string
         }
         Relationships: []
       }
@@ -803,6 +896,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      prune_odds_board: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
