@@ -112,12 +112,14 @@ serve(async (req) => {
         // Group prices by (market, selection, line) across books
         const groups = new Map<
           string,
-          { market: string; selection: string; line: number | null; prices: Array<{ book: string; american: number; decimal: number }> }
+          { market: string; selection: string; line: number | null; prices: Array<{ book: string; american: number; decimal: number; link: string | null }> }
         >();
 
         for (const bm of ev.bookmakers || []) {
           const bookKey = String(bm.key || bm.title || "").toLowerCase();
+          const bookLink: string | null = bm.link ?? null;
           for (const mkt of bm.markets || []) {
+            const marketLink: string | null = mkt.link ?? bookLink;
             for (const oc of mkt.outcomes || []) {
               const line = oc.point ?? null;
               const sel =
@@ -128,8 +130,10 @@ serve(async (req) => {
               const american = Number(oc.price);
               const decimal = americanToDecimal(american);
               if (!Number.isFinite(american) || decimal <= 1) continue;
+              // Most-specific link: outcome > market > bookmaker
+              const link: string | null = oc.link ?? marketLink;
               if (!groups.has(key)) groups.set(key, { market: mkt.key, selection: sel, line, prices: [] });
-              groups.get(key)!.prices.push({ book: bm.title, american, decimal });
+              groups.get(key)!.prices.push({ book: bm.title, american, decimal, link });
 
               // Persist raw grid for /odds screen (zero extra API cost).
               if (ev.id && ["h2h", "spreads", "totals"].includes(mkt.key)) {
@@ -146,6 +150,7 @@ serve(async (req) => {
                   price: Number(decimal.toFixed(4)),
                   opening_point: line,
                   opening_price: Number(decimal.toFixed(4)),
+                  bet_link: link,
                 });
               }
             }
