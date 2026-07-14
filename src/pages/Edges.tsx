@@ -9,6 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, RefreshCw, TrendingUp, Zap, Clock } from 'lucide-react';
+import BetButton from '@/components/BetButton';
+
+
 
 type Opportunity = {
   id: string;
