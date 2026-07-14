@@ -57,6 +57,7 @@ type Opp = {
   ev_pct: number;
   edge_type: string;
   book_count: number;
+  bet_link: string | null;
 };
 
 serve(async (req) => {
