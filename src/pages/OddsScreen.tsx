@@ -261,6 +261,9 @@ function EventBlock({
                           <span style={{ fontWeight: 600 }}>{toAmerican(Number(r.price))}</span>
                         </div>
                         <Movement row={r} market={market} />
+                        <div style={{ marginTop: 3 }}>
+                          <BetButton book={r.book} apiLink={r.bet_link} compact />
+                        </div>
                       </div>
                     </td>
                   );
