@@ -94,8 +94,8 @@ export default function ProofPage() {
   useEffect(() => {
     (async () => {
       const [picksRes, statsRes] = await Promise.all([
-        supabase.from("picks").select("*").order("posted_at", { ascending: false }).limit(500),
-        supabase.from("proof_stats").select("*").single(),
+        (supabase as any).from("picks").select("*").order("posted_at", { ascending: false }).limit(500),
+        (supabase as any).from("proof_stats").select("*").single(),
       ]);
       if (picksRes.data) setPicks(picksRes.data as PickRow[]);
       if (statsRes.data) setStats(statsRes.data as ProofStats);
