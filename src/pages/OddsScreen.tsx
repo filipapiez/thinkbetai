@@ -11,6 +11,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import BetButton from "@/components/BetButton";
 
 // ---------- Types ----------
 type BoardRow = {
@@ -28,6 +29,7 @@ type BoardRow = {
   opening_point: number | null;
   opening_price: number;
   updated_at: string;
+  bet_link: string | null;
 };
 
 // ---------- Palette (board tokens) ----------
@@ -259,6 +261,9 @@ function EventBlock({
                           <span style={{ fontWeight: 600 }}>{toAmerican(Number(r.price))}</span>
                         </div>
                         <Movement row={r} market={market} />
+                        <div style={{ marginTop: 3 }}>
+                          <BetButton book={r.book} apiLink={r.bet_link} compact />
+                        </div>
                       </div>
                     </td>
                   );

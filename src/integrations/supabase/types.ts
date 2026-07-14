@@ -313,6 +313,7 @@ export type Database = {
       }
       odds_board_latest: {
         Row: {
+          bet_link: string | null
           book: string
           commence_time: string
           dedup_key: string
@@ -329,6 +330,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bet_link?: string | null
           book: string
           commence_time: string
           dedup_key: string
@@ -345,6 +347,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bet_link?: string | null
           book?: string
           commence_time?: string
           dedup_key?: string
@@ -430,6 +433,7 @@ export type Database = {
       }
       opportunities: {
         Row: {
+          bet_link: string | null
           book: string
           book_count: number
           commence_time: string
@@ -451,6 +455,7 @@ export type Database = {
           sport_key: string
         }
         Insert: {
+          bet_link?: string | null
           book: string
           book_count?: number
           commence_time: string
@@ -472,6 +477,7 @@ export type Database = {
           sport_key: string
         }
         Update: {
+          bet_link?: string | null
           book?: string
           book_count?: number
           commence_time?: string

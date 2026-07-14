@@ -9,6 +9,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, RefreshCw, TrendingUp, Zap, Clock } from 'lucide-react';
+import BetButton from '@/components/BetButton';
+
+
 
 type Opportunity = {
   id: string;
@@ -27,6 +30,7 @@ type Opportunity = {
   edge_type: string;
   book_count: number;
   detected_at: string;
+  bet_link: string | null;
 };
 
 const FREE_PREVIEW_COUNT = 2;
@@ -75,6 +79,11 @@ const EdgeRow = ({ o, locked }: { o: Opportunity; locked: boolean }) => (
           <div className="text-sm font-semibold">{(o.fair_prob * 100).toFixed(1)}%</div>
         </div>
       </div>
+      {!locked && (
+        <div className="mt-3 flex justify-end">
+          <BetButton book={o.book.toLowerCase().replace(/\s+/g, '')} apiLink={o.bet_link} />
+        </div>
+      )}
     </CardContent>
   </Card>
 );
