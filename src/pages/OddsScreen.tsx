@@ -29,6 +29,7 @@ type BoardRow = {
   opening_point: number | null;
   opening_price: number;
   updated_at: string;
+  bet_link: string | null;
 };
 
 // ---------- Palette (board tokens) ----------
