@@ -203,6 +203,17 @@ serve(async (req) => {
       }
     }
 
+    // Persist odds board grid (chunked upserts) + housekeeping.
+    for (let i = 0; i < boardRows.length; i += 500) {
+      const { error: boardErr } = await supabase
+        .from("odds_board_latest")
+        .upsert(boardRows.slice(i, i + 500), { onConflict: "dedup_key" });
+      if (boardErr) console.error("[edge-scanner] odds_board upsert error", boardErr.message);
+    }
+    if (boardRows.length) {
+      await supabase.rpc("prune_odds_board");
+    }
+
     // Purge expired
     await supabase.from("opportunities").delete().lt("expires_at", new Date().toISOString());
 
