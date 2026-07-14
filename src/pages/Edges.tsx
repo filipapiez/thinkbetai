@@ -77,8 +77,13 @@ const EdgeRow = ({ o, locked }: { o: Opportunity; locked: boolean }) => (
         <div>
           <div className="text-[10px] uppercase text-muted-foreground">Fair prob</div>
           <div className="text-sm font-semibold">{(o.fair_prob * 100).toFixed(1)}%</div>
-        </div>
       </div>
+      {!locked && (
+        <div className="mt-3 flex justify-end">
+          <BetButton book={o.book.toLowerCase().replace(/\s+/g, '')} apiLink={o.bet_link} />
+        </div>
+      )}
+    </div>
     </CardContent>
   </Card>
 );
