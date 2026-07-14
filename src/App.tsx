@@ -44,6 +44,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TrackRecord = lazy(() => import("./pages/TrackRecord"));
+const ProofPage = lazy(() => import("./pages/ProofPage"));
 const ResponsibleGambling = lazy(() => import("./pages/ResponsibleGambling"));
 const EditorialPolicy = lazy(() => import("./pages/EditorialPolicy"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
