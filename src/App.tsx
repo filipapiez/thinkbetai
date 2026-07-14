@@ -45,6 +45,7 @@ const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TrackRecord = lazy(() => import("./pages/TrackRecord"));
 const ProofPage = lazy(() => import("./pages/ProofPage"));
+const Edges = lazy(() => import("./pages/Edges"));
 const ResponsibleGambling = lazy(() => import("./pages/ResponsibleGambling"));
 const EditorialPolicy = lazy(() => import("./pages/EditorialPolicy"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
@@ -232,6 +233,7 @@ const App = () => (
                 <Route path="/games/:gameId" element={<NoIndexBoundary><GameDetail /></NoIndexBoundary>} />
                 <Route path="/picks" element={<NoIndexBoundary><QueryBoundary><AuthBoundary><Picks /></AuthBoundary></QueryBoundary></NoIndexBoundary>} />
                 <Route path="/player-props" element={<NoIndexBoundary><AuthBoundary><PlayerProps /></AuthBoundary></NoIndexBoundary>} />
+                <Route path="/edges" element={<NoIndexBoundary><AuthBoundary><Edges /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/parlays" element={<NoIndexBoundary><AuthBoundary><Parlays /></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/chat" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute requireSubscription><Chat /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
