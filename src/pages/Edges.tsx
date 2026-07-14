@@ -84,7 +84,6 @@ const EdgeRow = ({ o, locked }: { o: Opportunity; locked: boolean }) => (
           <BetButton book={o.book.toLowerCase().replace(/\s+/g, '')} apiLink={o.bet_link} />
         </div>
       )}
-    </div>
     </CardContent>
   </Card>
 );
