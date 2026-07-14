@@ -1,20 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { SEO } from '@/components/SEO';
 import { ParlayDetailDialog } from '@/components/ParlayDetailDialog';
-import { 
-  Sparkles, Loader2, Flame, CheckCircle2, AlertTriangle, 
-  RefreshCw, Layers, Star, TrendingUp, Shield, ChevronRight
-} from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { motion } from 'framer-motion';
 
 interface ParlayLeg {
   gameIndex: number;
@@ -37,6 +28,31 @@ interface SuggestedParlay {
   estimatedOdds: string;
 }
 
+// ---------- Board palette ----------
+const C = {
+  bg: '#0B0F17',
+  panel: '#121826',
+  panelUp: '#161E30',
+  line: '#1F2A3F',
+  text: '#E8EDF5',
+  muted: '#8B98AC',
+  amber: '#F5B942',
+  pos: '#3DDC84',
+  neg: '#FF5C5C',
+};
+
+// ---------- Helpers ----------
+const americanToDecimal = (s: string): number => {
+  const n = parseInt(String(s).replace(/[^-+0-9]/g, ''), 10);
+  if (!Number.isFinite(n) || n === 0) return 2;
+  return n > 0 ? 1 + n / 100 : 1 + 100 / Math.abs(n);
+};
+const toAmerican = (dec: number) =>
+  dec >= 2 ? `+${Math.round((dec - 1) * 100)}` : `${Math.round(-100 / (dec - 1))}`;
+const impliedPct = (dec: number) => (1 / dec) * 100;
+const evPct = (modelProb: number, dec: number) => (modelProb * dec - 1) * 100;
+const signed = (n: number, d = 1) => `${n > 0 ? '+' : ''}${n.toFixed(d)}`;
+
 function getGrade(confidence: number): string {
   if (confidence >= 80) return 'A+';
   if (confidence >= 73) return 'A';
@@ -48,40 +64,11 @@ function getGrade(confidence: number): string {
   return 'F';
 }
 
-const GRADE_STYLES: Record<string, { text: string; bg: string; border: string; glow: string }> = {
-  'A+': { text: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', glow: 'shadow-emerald-500/20' },
-  'A':  { text: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30', glow: 'shadow-emerald-500/20' },
-  'B+': { text: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/30', glow: 'shadow-blue-500/20' },
-  'B':  { text: 'text-blue-400', bg: 'bg-blue-500/15', border: 'border-blue-500/30', glow: 'shadow-blue-500/20' },
-  'C+': { text: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30', glow: 'shadow-amber-500/20' },
-  'C':  { text: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30', glow: 'shadow-amber-500/20' },
-  'D':  { text: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30', glow: 'shadow-red-500/20' },
-  'F':  { text: 'text-red-400', bg: 'bg-red-500/15', border: 'border-red-500/30', glow: 'shadow-red-500/20' },
-};
-
-function getSignalStyle(signal: string) {
-  switch (signal) {
-    case 'STRONG': return { icon: Flame, label: '🔥 STRONG', color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30' };
-    case 'DECENT': return { icon: CheckCircle2, label: '✅ DECENT', color: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/30' };
-    default: return { icon: AlertTriangle, label: '⚠️ RISKY', color: 'text-amber-400', bg: 'bg-amber-500/15', border: 'border-amber-500/30' };
-  }
-}
-
-const ACCENT_BORDERS = [
-  'border-l-violet-500',
-  'border-l-blue-500',
-  'border-l-orange-500',
-  'border-l-emerald-500',
-  'border-l-rose-500',
-  'border-l-cyan-500',
-  'border-l-fuchsia-500',
-  'border-l-yellow-500',
-];
-
 const Parlays = () => {
   const { user } = useAuth();
   const [parlays, setParlays] = useState<SuggestedParlay[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [selectedParlay, setSelectedParlay] = useState<SuggestedParlay | null>(null);
 
@@ -90,7 +77,8 @@ const Parlays = () => {
       toast.error('Please log in to see AI parlay suggestions');
       return;
     }
-    setIsLoading(true);
+    if (forceRefresh) setRefreshing(true);
+    else setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-parlays', {
         body: { forceRefresh },
@@ -110,177 +98,119 @@ const Parlays = () => {
       toast.error('Failed to load suggestions');
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
       setHasLoaded(true);
     }
   };
 
   useEffect(() => {
-    if (user && !hasLoaded) {
-      fetchSuggestions();
-    }
+    if (user && !hasLoaded) fetchSuggestions();
   }, [user]);
 
+  // Sort by EV descending (positive EV first)
+  const sorted = useMemo(() => {
+    return [...parlays]
+      .map((p) => ({
+        p,
+        ev: evPct(p.confidence / 100, americanToDecimal(p.estimatedOdds)),
+      }))
+      .sort((a, b) => b.ev - a.ev)
+      .map((x) => x.p);
+  }, [parlays]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <SEO 
-        title="AI Game Parlays - Smart Multi-Leg Bets"
-        description="AI-generated game parlays graded by confidence. Browse 2-leg and 3-leg parlay suggestions built from today's best matchups."
-        keywords="parlay builder, AI parlays, sports betting parlays, game parlays"
+    <div className="min-h-screen flex flex-col" style={{ background: C.bg, color: C.text }}>
+      <SEO
+        title="AI Game Parlays - Model vs Book EV Board"
+        description="AI-built parlay combos graded by model probability vs the book's implied price. Positive-EV combos first, honest numbers on every card."
+        keywords="parlay builder, AI parlays, sports betting parlays, EV parlays"
         url="/parlays"
       />
       <Header />
-      
-      <main className="flex-1 container py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center">
-                  <Layers className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold">AI Game Parlays</h1>
-                  <p className="text-muted-foreground text-sm">AI-curated parlay combos • tap any card for full breakdown</p>
-                </div>
+
+      <main className="flex-1 parlay-root">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+          .parlay-root { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+          .parlay-display { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.02em; }
+          .parlay-eyebrow { font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; }
+          .parlay-card { transition: background 120ms ease, border-color 120ms ease; cursor: pointer; }
+          .parlay-card:hover { background: ${C.panelUp}; border-color: ${C.amber}44; }
+          .parlay-btn:focus-visible { outline: 2px solid ${C.amber}; outline-offset: 2px; }
+          @media (prefers-reduced-motion: reduce) { .parlay-card { transition: none; } }
+        `}</style>
+
+        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '48px 20px 64px' }}>
+          {/* Header */}
+          <header
+            style={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 16,
+              marginBottom: 28,
+            }}
+          >
+            <div>
+              <div className="parlay-eyebrow" style={{ color: C.amber, fontSize: 13, marginBottom: 8 }}>
+                Model-Built Combos · Graded vs Book Implied · Tap Any Card
               </div>
-              <Button variant="outline" size="sm" onClick={() => fetchSuggestions(true)} disabled={isLoading}>
-                <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
-                Refresh
-              </Button>
+              <h1 className="parlay-display" style={{ fontSize: 52, fontWeight: 700, lineHeight: 1, margin: 0 }}>
+                AI PARLAYS
+              </h1>
             </div>
-          </div>
+            <button
+              className="parlay-btn parlay-eyebrow"
+              onClick={() => fetchSuggestions(true)}
+              disabled={isLoading || refreshing}
+              style={{
+                background: 'transparent',
+                border: `1px solid ${C.amber}`,
+                color: C.amber,
+                borderRadius: 4,
+                padding: '10px 18px',
+                fontSize: 11,
+                cursor: 'pointer',
+                opacity: isLoading || refreshing ? 0.6 : 1,
+              }}
+            >
+              {refreshing ? 'Refreshing…' : '↻ Refresh'}
+            </button>
+          </header>
 
-          {/* Content */}
           {!user ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Sign in to see AI Parlays</h3>
-                <p className="text-muted-foreground">Log in to access AI-generated parlay suggestions</p>
-              </CardContent>
-            </Card>
+            <div style={{ color: C.muted, padding: '48px 0' }}>
+              Sign in to see AI-generated parlay combos.
+            </div>
           ) : isLoading ? (
-            <Card>
-              <CardContent className="py-16">
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <div className="text-center">
-                    <p className="font-semibold">Building parlays from today's games...</p>
-                    <p className="text-sm text-muted-foreground mt-1">Analyzing matchups, odds & correlations</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : parlays.length === 0 ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">No parlays available yet</h3>
-                <p className="text-muted-foreground mb-4">Check back when more games are scheduled</p>
-                <Button variant="outline" onClick={() => fetchSuggestions(true)}>Generate Suggestions</Button>
-              </CardContent>
-            </Card>
+            <div style={{ color: C.muted, padding: '48px 0' }}>Building parlays…</div>
+          ) : sorted.length === 0 ? (
+            <div style={{ color: C.muted, padding: '48px 0' }}>
+              No parlays available yet. Check back when more games are scheduled.
+            </div>
           ) : (
-            <div className="space-y-8">
-              {/* Grid of parlay cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {parlays.map((parlay, index) => {
-                  const grade = getGrade(parlay.confidence);
-                  const gs = GRADE_STYLES[grade] || GRADE_STYLES['C'];
-                  const signal = getSignalStyle(parlay.signal);
-                  const accentBorder = ACCENT_BORDERS[index % ACCENT_BORDERS.length];
-
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.06 }}
-                    >
-                      <button
-                        onClick={() => setSelectedParlay(parlay)}
-                        className={cn(
-                          "w-full text-left rounded-xl border border-border/60 bg-card p-0 overflow-hidden",
-                          "hover:border-primary/40 hover:shadow-lg transition-all duration-200 group",
-                          "border-l-4", accentBorder
-                        )}
-                      >
-                        <div className="p-4">
-                          {/* Top row: badges + grade */}
-                          <div className="flex items-start justify-between gap-2 mb-3">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-bold">
-                                {parlay.legs.length} LEG
-                              </Badge>
-                              <Badge className={cn("text-[10px] px-2 py-0.5 border", signal.bg, signal.color, signal.border)}>
-                                {signal.label}
-                              </Badge>
-                            </div>
-                            <div className={cn(
-                              "h-11 w-11 rounded-xl flex items-center justify-center border font-black text-lg shrink-0 shadow-md",
-                              gs.bg, gs.border, gs.text, gs.glow
-                            )}>
-                              {grade}
-                            </div>
-                          </div>
-
-                          {/* Name */}
-                          <h3 className="font-bold text-sm mb-3 line-clamp-1 group-hover:text-primary transition-colors">
-                            {parlay.name}
-                          </h3>
-
-                          {/* Compact legs preview */}
-                          <div className="space-y-2 mb-3">
-                            {parlay.legs.map((leg, li) => (
-                              <div key={li} className="flex items-center gap-2 text-xs">
-                                <span className="h-5 w-5 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
-                                  {li + 1}
-                                </span>
-                                <div className="flex flex-col flex-1 min-w-0">
-                                  <span className="text-foreground font-medium truncate">{leg.awayTeam} vs {leg.homeTeam}</span>
-                                  <span className="text-muted-foreground truncate">{leg.pickDetail}</span>
-                                </div>
-                                <div className="flex flex-col items-end gap-0.5 shrink-0">
-                                  <Badge variant="outline" className="text-[9px] px-1 py-0">{leg.sport}</Badge>
-                                  {leg.gameDate && <span className="text-[9px] text-muted-foreground">{leg.gameDate}</span>}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Bottom stats */}
-                          <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                            <div className="flex items-center gap-3">
-                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <TrendingUp className="h-3 w-3" />
-                                {parlay.confidence}%
-                              </span>
-                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <Star className="h-3 w-3 text-amber-400" />
-                                <span className="font-mono font-bold">{parlay.estimatedOdds}</span>
-                              </span>
-                            </div>
-                            <span className="text-xs text-muted-foreground flex items-center gap-0.5 group-hover:text-primary transition-colors">
-                              Details <ChevronRight className="h-3 w-3" />
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Disclaimer */}
-              <div className="flex items-start gap-2 p-4 rounded-xl bg-muted/30 border border-border">
-                <Shield className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  AI-generated suggestions for entertainment purposes. Always bet responsibly and never wager more than you can afford to lose.
-                </p>
-              </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(480px, 100%), 1fr))',
+                gap: 14,
+              }}
+            >
+              {sorted.map((p, i) => (
+                <ParlayCard key={i} p={p} onOpen={() => setSelectedParlay(p)} />
+              ))}
             </div>
           )}
+
+          <footer style={{ marginTop: 28, fontSize: 11, color: C.muted, lineHeight: 1.8 }}>
+            Model probability is our estimate that every leg hits. Implied is what the book's combined
+            price says. EV is the gap between them — positive means the payout is bigger than the risk
+            justifies by our numbers.{' '}
+            <a href="/track-record" style={{ color: C.amber, textDecoration: 'none' }}>
+              How grades work & full track record →
+            </a>
+          </footer>
         </div>
       </main>
 
@@ -289,10 +219,198 @@ const Parlays = () => {
         open={!!selectedParlay}
         onOpenChange={(open) => !open && setSelectedParlay(null)}
       />
-      
+
       <Footer />
     </div>
   );
 };
+
+// ---------- Card ----------
+function ParlayCard({ p, onOpen }: { p: SuggestedParlay; onOpen: () => void }) {
+  const combinedDec = americanToDecimal(p.estimatedOdds);
+  const modelProb = Math.max(0, Math.min(1, p.confidence / 100));
+  const implied = impliedPct(combinedDec);
+  const model = modelProb * 100;
+  const ev = evPct(modelProb, combinedDec);
+  const evColor = ev >= 0 ? C.pos : C.neg;
+  const grade = getGrade(p.confidence);
+  const confidenceLabel = p.signal.toLowerCase();
+
+  // Derive per-leg fair split (evenly distributed) when per-leg odds aren't provided
+  const n = p.legs.length || 1;
+  const perLegDec = Math.pow(combinedDec, 1 / n);
+  const perLegModel = Math.pow(modelProb, 1 / n) * 100;
+  const perLegImplied = impliedPct(perLegDec);
+
+  return (
+    <section
+      className="parlay-card"
+      onClick={onOpen}
+      style={{
+        border: `1px solid ${C.line}`,
+        borderLeft: `3px solid ${evColor}`,
+        borderRadius: 6,
+        background: C.panel,
+        padding: '16px 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+      }}
+    >
+      {/* Top row: chips + grade */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Chip>{p.legs.length} LEG</Chip>
+          <Chip tone={confidenceLabel === 'strong' ? 'amber' : confidenceLabel === 'risky' ? 'neg' : undefined}>
+            {confidenceLabel}
+          </Chip>
+        </div>
+        <div
+          className="parlay-display"
+          style={{
+            border: `1.5px solid ${C.amber}`,
+            color: C.amber,
+            borderRadius: 5,
+            minWidth: 44,
+            textAlign: 'center',
+            padding: '6px 8px',
+            fontSize: 20,
+            fontWeight: 700,
+            lineHeight: 1,
+          }}
+        >
+          {grade}
+        </div>
+      </div>
+
+      {/* Title */}
+      <h2 className="parlay-display" style={{ fontSize: 22, fontWeight: 600, margin: 0, lineHeight: 1.1 }}>
+        {p.name}
+      </h2>
+
+      {/* Legs */}
+      <div style={{ display: 'grid', gap: 8 }}>
+        {p.legs.map((leg, i) => {
+          const legEdge = perLegModel - perLegImplied;
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'baseline',
+                borderTop: i > 0 ? `1px solid ${C.line}` : undefined,
+                paddingTop: i > 0 ? 8 : 0,
+              }}
+            >
+              <span className="parlay-eyebrow" style={{ fontSize: 9, color: C.muted, minWidth: 12 }}>
+                {i + 1}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {leg.pickDetail}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: C.muted,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {leg.awayTeam} vs {leg.homeTeam} · {leg.sport}
+                  {leg.gameDate ? ` · ${leg.gameDate}` : ''}
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: C.muted,
+                  textAlign: 'right',
+                  whiteSpace: 'nowrap',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                model {perLegModel.toFixed(0)}%{' '}
+                <span style={{ color: legEdge >= 0 ? C.pos : C.neg }}>
+                  vs {perLegImplied.toFixed(0)}%
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Stats row */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 8,
+          borderTop: `1px solid ${C.line}`,
+          paddingTop: 12,
+          marginTop: 'auto',
+        }}
+      >
+        <Stat label="Payout" value={toAmerican(combinedDec)} color={C.amber} />
+        <Stat label="Model" value={`${model.toFixed(0)}%`} />
+        <Stat label="Implied" value={`${implied.toFixed(0)}%`} />
+        <Stat label="EV" value={`${signed(ev)}%`} color={evColor} />
+      </div>
+
+      <div className="parlay-eyebrow" style={{ fontSize: 10, color: C.muted, textAlign: 'right' }}>
+        Details →
+      </div>
+    </section>
+  );
+}
+
+function Chip({ children, tone }: { children: React.ReactNode; tone?: 'amber' | 'neg' }) {
+  const color = tone === 'amber' ? C.amber : tone === 'neg' ? C.neg : C.muted;
+  return (
+    <span
+      className="parlay-eyebrow"
+      style={{
+        border: `1px solid ${color}55`,
+        color,
+        borderRadius: 3,
+        fontSize: 9,
+        padding: '3px 8px',
+        display: 'inline-block',
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div>
+      <div className="parlay-eyebrow" style={{ fontSize: 8.5, color: C.muted, marginBottom: 2 }}>
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: 600,
+          color: color ?? C.text,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
 
 export default Parlays;
