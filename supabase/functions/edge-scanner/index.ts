@@ -77,6 +77,20 @@ serve(async (req) => {
     );
 
     const all: Opp[] = [];
+    const boardRows: Array<{
+      dedup_key: string;
+      odds_api_event_id: string;
+      sport: string;
+      event: string;
+      commence_time: string;
+      market: string;
+      book: string;
+      outcome: string;
+      point: number | null;
+      price: number;
+      opening_point: number | null;
+      opening_price: number;
+    }> = [];
     const errors: string[] = [];
 
     for (const sport of sports) {
