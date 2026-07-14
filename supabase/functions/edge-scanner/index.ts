@@ -90,11 +90,12 @@ serve(async (req) => {
       price: number;
       opening_point: number | null;
       opening_price: number;
+      bet_link: string | null;
     }> = [];
     const errors: string[] = [];
 
     for (const sport of sports) {
-      const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=${REGIONS}&markets=${MARKETS}&oddsFormat=american`;
+      const oddsUrl = `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=${REGIONS}&markets=${MARKETS}&oddsFormat=american&includeLinks=true`;
       const res = await fetch(oddsUrl);
       if (!res.ok) {
         errors.push(`${sport}: ${res.status}`);
