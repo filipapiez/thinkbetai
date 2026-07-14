@@ -31,6 +31,9 @@ type ExpansionContext = {
   markets: MarketKey[];
   faqs: FAQItem[];
   platformName?: string;
+  regionalSports?: string[];
+  regionalMarketTerms?: string[];
+  regionalTrustNote?: string;
 };
 
 type LanguageMarket = {
@@ -71,6 +74,13 @@ type SocialAngle = {
   noun: string;
   tags: string[];
   markets: MarketKey[];
+};
+
+type RegionalProfile = {
+  sports: string[];
+  markets: string[];
+  trust: string;
+  searchAngle: string;
 };
 
 const lastReviewed = "2026-07-11";
@@ -136,6 +146,137 @@ const languageMarkets: LanguageMarket[] = [
   { code: "bn", name: "Bengali", market: "Bangladesh and Bengal", phrase: "AI sports analysis", primarySport: "cricket" },
   { code: "ur", name: "Urdu", market: "Pakistan and Urdu-speaking markets", phrase: "AI sports analysis", primarySport: "cricket" },
 ];
+
+const regionalProfiles: Record<string, RegionalProfile> = {
+  es: {
+    sports: ["La Liga", "Champions League", "Liga MX", "CONMEBOL", "NBA"],
+    markets: ["1X2", "handicap asiatico", "goles totales", "props", "cuotas en vivo"],
+    trust: "Spanish-language bettors may compare regulated operators across Spain, Mexico, Colombia, Argentina and US Spanish-speaking markets, so pages need clear legal and age reminders.",
+    searchAngle: "Spanish searchers often expect soccer-first examples, local odds vocabulary and plain warnings about jurisdiction differences.",
+  },
+  fr: {
+    sports: ["Ligue 1", "Champions League", "tennis", "rugby", "NBA"],
+    markets: ["pari simple", "handicap", "total de buts", "cotes en direct", "buteur"],
+    trust: "France, Quebec, Belgium and Switzerland use different betting rules and operator expectations, so the page should not sound like a one-size-fits-all English betting article.",
+    searchAngle: "French search intent needs cotes, pronostics and responsible-play language tied to local sports context.",
+  },
+  de: {
+    sports: ["Bundesliga", "Champions League", "Tennis", "Darts", "NFL"],
+    markets: ["Dreiweg", "Handicap", "Tore", "Quotenvergleich", "Live-Wetten"],
+    trust: "Germany, Austria and Switzerland differ on licenses, allowed operators and player-protection rules, so local legal reminders belong on the page.",
+    searchAngle: "German users expect precise Quoten, Edge and Risiko language rather than broad AI betting hype.",
+  },
+  it: {
+    sports: ["Serie A", "Champions League", "tennis", "MotoGP", "Formula 1"],
+    markets: ["1X2", "handicap", "goal/no goal", "over under", "quote live"],
+    trust: "Italian-language pages should mention licensed operators and local restrictions because Italy and Switzerland do not share the same betting environment.",
+    searchAngle: "Italian searchers usually want calcio examples, quote context and a clear distinction between analysis and a guaranteed pronostico.",
+  },
+  "pt-br": {
+    sports: ["Brasileirao", "Libertadores", "Liga Portugal", "Champions League", "NBA"],
+    markets: ["resultado final", "handicap", "total de gols", "ambas marcam", "odds ao vivo"],
+    trust: "Brazil and Portugal have different betting regulation and terminology, so Portuguese pages need local wording, legal reminders and sport examples.",
+    searchAngle: "Portuguese search intent is strongest when futebol, odds, palpites and responsible-use language are visible.",
+  },
+  nl: {
+    sports: ["Eredivisie", "Belgian Pro League", "darts", "cycling", "Formula 1"],
+    markets: ["1X2", "handicap", "totals", "odds vergelijken", "live wedden"],
+    trust: "Netherlands and Belgium use different licensing and advertising rules, so Dutch pages should mention legal operators and local age limits.",
+    searchAngle: "Dutch users expect odds comparison, local league context and practical wedden terminology.",
+  },
+  pl: {
+    sports: ["Ekstraklasa", "Champions League", "volleyball", "speedway", "UFC"],
+    markets: ["kurs", "handicap", "over under", "typy live", "value bet"],
+    trust: "Polish-language bettors need legal-operator reminders and market context because rules and available books vary by location.",
+    searchAngle: "Polish searches often mix typy, kurs, bukmacher and AI analysis, so the page needs those concepts visible.",
+  },
+  sv: {
+    sports: ["Allsvenskan", "SHL", "Champions League", "floorball", "NHL"],
+    markets: ["odds", "handikapp", "over under", "liveodds", "spelbolag"],
+    trust: "Swedish pages should avoid aggressive profit claims and mention licensed operators because consumer-protection rules are strict.",
+    searchAngle: "Swedish users expect restrained odds analysis, licensed-market language and local sport examples.",
+  },
+  tr: {
+    sports: ["Super Lig", "EuroLeague", "Champions League", "basketball", "volleyball"],
+    markets: ["mac sonucu", "handikap", "toplam gol", "canli oran", "kupon"],
+    trust: "Turkish searchers need careful legal and responsible-use language because betting availability and operator rules can be sensitive.",
+    searchAngle: "Turkish pages should use football and basketball examples with coupon, odds and risk language.",
+  },
+  ja: {
+    sports: ["NPB", "J-League", "B.League", "MLB", "tennis"],
+    markets: ["moneyline", "handicap", "totals", "live odds", "probability comparison"],
+    trust: "Japanese pages should be conservative about legality, because available sports betting services and legal access are limited and context-dependent.",
+    searchAngle: "Japanese searchers need analytics-first wording, baseball examples and clear legal caution.",
+  },
+  ko: {
+    sports: ["KBO", "K League", "basketball", "MLB", "esports"],
+    markets: ["moneyline", "handicap", "totals", "live odds", "player props"],
+    trust: "Korean pages should keep legal cautions visible and avoid implying that all betting workflows are locally available.",
+    searchAngle: "Korean search intent tends to value baseball, esports and odds-analysis examples.",
+  },
+  "zh-hans": {
+    sports: ["CBA", "NBA", "soccer", "table tennis", "esports"],
+    markets: ["moneyline", "handicap", "totals", "live odds", "probability"],
+    trust: "Simplified Chinese pages need broad legal disclaimers because access, regulation and product availability vary widely across Chinese-speaking audiences.",
+    searchAngle: "Simplified Chinese searchers need analytics language, basketball examples and careful legal framing.",
+  },
+  "zh-hant": {
+    sports: ["CPBL", "NBA", "soccer", "badminton", "esports"],
+    markets: ["moneyline", "handicap", "totals", "live odds", "probability"],
+    trust: "Traditional Chinese pages should keep jurisdiction notes visible because Taiwan, Hong Kong and overseas Chinese audiences do not share one betting market.",
+    searchAngle: "Traditional Chinese searchers need baseball, basketball and odds-analysis context.",
+  },
+  ar: {
+    sports: ["Saudi Pro League", "Egyptian Premier League", "Champions League", "basketball", "tennis"],
+    markets: ["match winner", "handicap", "totals", "live odds", "props"],
+    trust: "Arabic-language pages need strong legal and cultural caution because betting laws differ sharply across Arabic-speaking markets.",
+    searchAngle: "Arabic search intent should be handled as sports analytics first, with clear responsible-use language.",
+  },
+  hi: {
+    sports: ["IPL", "T20 cricket", "ODI cricket", "football", "kabaddi"],
+    markets: ["match winner", "innings total", "player runs", "wickets", "live odds"],
+    trust: "India has state-by-state legal differences for betting and real-money products, so Hindi pages need explicit legality and age reminders.",
+    searchAngle: "Hindi users often expect cricket-first examples and plain risk language.",
+  },
+  id: {
+    sports: ["Liga 1 Indonesia", "Premier League", "badminton", "MotoGP", "basketball"],
+    markets: ["pemenang pertandingan", "handicap", "total gol", "odds live", "props"],
+    trust: "Indonesian pages need very careful legal disclaimers because local betting legality is restricted and varies by context.",
+    searchAngle: "Indonesian pages should frame the content as analytics education with soccer and badminton examples.",
+  },
+  vi: {
+    sports: ["V.League", "Premier League", "Champions League", "basketball", "tennis"],
+    markets: ["match winner", "handicap", "total goals", "live odds", "props"],
+    trust: "Vietnamese pages should be conservative about betting availability and include clear local-law reminders.",
+    searchAngle: "Vietnamese searchers often expect football-first examples and odds comparison.",
+  },
+  th: {
+    sports: ["Thai League", "Premier League", "Muay Thai", "volleyball", "basketball"],
+    markets: ["match winner", "handicap", "totals", "live odds", "props"],
+    trust: "Thai pages need visible legal caution because sports betting availability is limited and regulated differently by context.",
+    searchAngle: "Thai search intent should focus on sports analytics, football examples and responsible-use context.",
+  },
+  ru: {
+    sports: ["KHL", "hockey", "football", "tennis", "basketball"],
+    markets: ["match winner", "handicap", "totals", "live odds", "props"],
+    trust: "Russian-language audiences span multiple countries and legal systems, so pages need broad jurisdiction and operator cautions.",
+    searchAngle: "Russian pages should include hockey and football examples with probability and risk framing.",
+  },
+  uk: {
+    sports: ["Ukrainian Premier League", "football", "basketball", "boxing", "tennis"],
+    markets: ["match winner", "handicap", "totals", "live odds", "props"],
+    trust: "Ukrainian pages should explain local-law checks and licensed operator availability before any betting workflow.",
+    searchAngle: "Ukrainian search intent is strongest with football, boxing and clear risk language.",
+  },
+  default: {
+    sports: ["local football", "basketball", "tennis", "hockey", "global leagues"],
+    markets: ["match winner", "handicap", "totals", "live odds", "props"],
+    trust: "Local betting laws, operator availability and age requirements vary by jurisdiction, so every localized page should remind readers to verify legality first.",
+    searchAngle: "Localized searchers need sport examples, market vocabulary and legal context that match their region.",
+  },
+};
+
+const getRegionalProfile = (code: string): RegionalProfile => regionalProfiles[code] ?? regionalProfiles.default;
 
 const localizedTopics: LocalizedTopic[] = [
   {
@@ -430,6 +571,32 @@ const socialAngles: SocialAngle[] = [
   { slug: "responsible-betting", title: "Responsible Betting Guide", h1: "Responsible Betting Guide", keyword: "responsible betting guide", context: "risk and bankroll conversations", noun: "responsible betting guide", tags: ["responsible", "risk"], markets: ["moneyline", "spread", "total"] },
 ];
 
+const buildRegionalSections = (context: ExpansionContext): SeoSection[] => {
+  if (!context.regionalSports || !context.regionalMarketTerms || !context.regionalTrustNote) return [];
+
+  const sports = context.regionalSports.join(", ");
+  const marketTerms = context.regionalMarketTerms.join(", ");
+
+  return [
+    {
+      type: "intro_explainer",
+      eyebrow: "Localized search fit",
+      heading: `Regional context for ${context.h1}`,
+      body: [
+        `${context.h1} should not read like an English betting page with a language label attached. For ${context.audience}, the page needs examples from ${sports} so the reader sees the sports and leagues they actually search around.`,
+        `The betting vocabulary also needs to match local screens and queries. Terms like ${marketTerms} help this URL cover the way ${context.primaryKeyword} is researched in that market instead of repeating one global template.`,
+        context.regionalTrustNote,
+      ],
+      bullets: [
+        `Local sports examples: ${sports}.`,
+        `Market vocabulary: ${marketTerms}.`,
+        `Audience fit: ${context.audience}.`,
+        `Risk note: verify local law, age rules and operator availability before acting.`,
+      ],
+    },
+  ];
+};
+
 const buildSections = (context: ExpansionContext): SeoSection[] => [
   {
     type: "predictions_widget",
@@ -458,6 +625,7 @@ const buildSections = (context: ExpansionContext): SeoSection[] => [
       `Context angle: ${context.uniqueAngle}.`,
     ],
   },
+  ...buildRegionalSections(context),
   {
     type: "product_report_preview",
     heading: "Inside the ThinkBetAI Report",
@@ -598,58 +766,77 @@ const createBlueprint = (context: ExpansionContext): SeoBlueprint => ({
   lastReviewed,
 });
 
-const createLocalizedContext = (language: LanguageMarket, topic: LocalizedTopic): ExpansionContext => ({
-  slug: `${language.code}/ai-betting/${topic.slug}`,
-  primaryKeyword: `${topic.keyword} ${language.name}`,
-  secondaryKeywords: [
-    `${language.name} ${topic.keyword}`,
-    `${topic.keyword} ${language.market}`,
-    `${language.phrase} ${topic.slug.replace(/-/g, " ")}`,
-    `${language.primarySport} AI betting ${language.name}`,
-  ],
-  intent: topic.slug.includes("calculator") || topic.slug.includes("tracker") || topic.slug.includes("tool") ? "tool" : "commercial",
-  title: `${topic.title} in ${language.name}`,
-  description: `${language.name} guide to ${topic.title.toLowerCase()} for ${language.market}. Compare model probability, odds context, public ledger proof and risk notes.`,
-  h1: `${topic.h1} for ${language.name} Bettors`,
-  heroSubheadline: `A localized ${language.name} guide for ${language.phrase}, built around ${topic.noun}, ${language.primarySport} context, odds education and responsible analysis.`,
-  pageNoun: topic.noun,
-  audience: `${language.name} readers in ${language.market}`,
-  marketContext: `${language.market}, especially ${language.primarySport} and major global sports`,
-  proofAngle: topic.proofAngle,
-  riskAngle: topic.riskAngle,
-  uniqueAngle: `${language.name} language intent, ${language.primarySport} market context and ${topic.title.toLowerCase()}`,
-  tags: ["ai", "betting", "localized", language.code, language.primarySport, ...topic.tags],
-  cluster: topic.cluster,
-  conversionGoal: topic.conversionGoal,
-  markets: topic.markets,
-  faqs: [
-    ...commonFaqs({
-      slug: "",
-      primaryKeyword: `${topic.keyword} ${language.name}`,
-      secondaryKeywords: [],
-      intent: "commercial",
-      title: "",
-      description: "",
-      h1: `${topic.h1} for ${language.name} Bettors`,
-      heroSubheadline: "",
-      pageNoun: topic.noun,
-      audience: `${language.name} readers in ${language.market}`,
-      marketContext: language.market,
-      proofAngle: topic.proofAngle,
-      riskAngle: topic.riskAngle,
-      uniqueAngle: language.phrase,
-      tags: [],
-      cluster: topic.cluster,
-      conversionGoal: topic.conversionGoal,
-      markets: topic.markets,
-      faqs: [],
-    }),
-    {
-      question: `Why is there a ${language.name} page for ${topic.keyword}?`,
-      answer: `Searchers in ${language.market} may use different language, sports examples and market expectations. This page localizes the intent around ${language.phrase} while linking back to the main ThinkBetAI tools.`,
-    },
-  ].slice(0, 7),
-});
+const createLocalizedContext = (language: LanguageMarket, topic: LocalizedTopic): ExpansionContext => {
+  const profile = getRegionalProfile(language.code);
+  const sports = profile.sports.join(", ");
+  const marketTerms = profile.markets.join(", ");
+
+  return {
+    slug: `${language.code}/ai-betting/${topic.slug}`,
+    primaryKeyword: `${topic.keyword} ${language.name}`,
+    secondaryKeywords: [
+      `${language.name} ${topic.keyword}`,
+      `${topic.keyword} ${language.market}`,
+      `${language.phrase} ${topic.slug.replace(/-/g, " ")}`,
+      `${language.primarySport} AI betting ${language.name}`,
+      `${topic.keyword} ${profile.sports[0]}`,
+      `${profile.markets[0]} ${topic.keyword}`,
+    ],
+    intent: topic.slug.includes("calculator") || topic.slug.includes("tracker") || topic.slug.includes("tool") ? "tool" : "commercial",
+    title: `${topic.title} in ${language.name}`,
+    description: `${language.name} guide to ${topic.title.toLowerCase()} for ${language.market}. Compare model probability, ${profile.markets[0]} context, public ledger proof and local risk notes.`,
+    h1: `${topic.h1} for ${language.name} Bettors`,
+    heroSubheadline: `A localized ${language.name} guide for ${language.phrase}, built around ${topic.noun}, ${sports} examples, ${marketTerms} vocabulary and responsible analysis.`,
+    pageNoun: topic.noun,
+    audience: `${language.name} readers in ${language.market}`,
+    marketContext: `${language.market}, especially ${sports}`,
+    proofAngle: topic.proofAngle,
+    riskAngle: `${topic.riskAngle} ${profile.trust}`,
+    uniqueAngle: `${profile.searchAngle} Topic focus: ${topic.title.toLowerCase()}.`,
+    tags: ["ai", "betting", "localized", language.code, language.primarySport, ...topic.tags],
+    cluster: topic.cluster,
+    conversionGoal: topic.conversionGoal,
+    markets: topic.markets,
+    regionalSports: profile.sports,
+    regionalMarketTerms: profile.markets,
+    regionalTrustNote: profile.trust,
+    faqs: [
+      {
+        question: `Why is there a ${language.name} page for ${topic.keyword}?`,
+        answer: `Searchers in ${language.market} may use different language, sports examples and market expectations. This page localizes the intent around ${language.phrase}, ${sports} and ${marketTerms} while linking back to the main ThinkBetAI tools.`,
+      },
+      {
+        question: `Which sports examples matter most for ${language.name} readers?`,
+        answer: `This page uses ${sports} because those examples make ${topic.keyword} more concrete for ${language.market}. The goal is to avoid a generic translated page and show how the betting workflow changes by sport.`,
+      },
+      {
+        question: "Should I check local rules before using the analysis?",
+        answer: profile.trust,
+      },
+      ...commonFaqs({
+        slug: "",
+        primaryKeyword: `${topic.keyword} ${language.name}`,
+        secondaryKeywords: [],
+        intent: "commercial",
+        title: "",
+        description: "",
+        h1: `${topic.h1} for ${language.name} Bettors`,
+        heroSubheadline: "",
+        pageNoun: topic.noun,
+        audience: `${language.name} readers in ${language.market}`,
+        marketContext: language.market,
+        proofAngle: topic.proofAngle,
+        riskAngle: topic.riskAngle,
+        uniqueAngle: language.phrase,
+        tags: [],
+        cluster: topic.cluster,
+        conversionGoal: topic.conversionGoal,
+        markets: topic.markets,
+        faqs: [],
+      }),
+    ].slice(0, 7),
+  };
+};
 
 const socialContexts: ExpansionContext[] = socialPlatforms
   .flatMap((platform) =>
