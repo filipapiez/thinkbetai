@@ -191,6 +191,60 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_rules: {
+        Row: {
+          cooldown_seconds: number
+          created_at: string
+          discord_webhook_url: string | null
+          edge_types: string[] | null
+          email_to: string | null
+          id: string
+          is_enabled: boolean
+          last_fired_at: string | null
+          min_ev_pct: number | null
+          min_middle_size: number | null
+          min_profit_pct: number | null
+          name: string
+          sport_keys: string[] | null
+          sports: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          cooldown_seconds?: number
+          created_at?: string
+          discord_webhook_url?: string | null
+          edge_types?: string[] | null
+          email_to?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_fired_at?: string | null
+          min_ev_pct?: number | null
+          min_middle_size?: number | null
+          min_profit_pct?: number | null
+          name: string
+          sport_keys?: string[] | null
+          sports?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          cooldown_seconds?: number
+          created_at?: string
+          discord_webhook_url?: string | null
+          edge_types?: string[] | null
+          email_to?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_fired_at?: string | null
+          min_ev_pct?: number | null
+          min_middle_size?: number | null
+          min_profit_pct?: number | null
+          name?: string
+          sport_keys?: string[] | null
+          sports?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string
