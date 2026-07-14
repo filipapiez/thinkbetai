@@ -42,6 +42,7 @@ const resourceGroups = [
   {
     label: 'Trust & Company',
     links: [
+      { to: '/proof', label: 'Live Proof', icon: ShieldCheck },
       { to: '/track-record', label: 'Track Record', icon: ShieldCheck },
       { to: '/best-ai-sports-betting-tools', label: 'Best Tools', icon: Trophy },
       { to: '/how-it-works', label: 'How It Works', icon: HelpCircle },

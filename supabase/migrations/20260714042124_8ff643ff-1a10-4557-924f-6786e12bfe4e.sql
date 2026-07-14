@@ -1,0 +1,1 @@
+ALTER VIEW public.proof_stats SET (security_invoker = true);

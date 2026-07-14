@@ -281,6 +281,69 @@ export type Database = {
         }
         Relationships: []
       }
+      picks: {
+        Row: {
+          book: string | null
+          closing_odds_decimal: number | null
+          clv_pct: number | null
+          created_at: string
+          ev_pct: number | null
+          event: string
+          fair_prob: number
+          id: string
+          is_published: boolean
+          market: string
+          odds_decimal: number
+          pl_units: number | null
+          posted_at: string
+          result: Database["public"]["Enums"]["pick_result"]
+          selection: string
+          settled_at: string | null
+          sport: string
+          stake_units: number
+        }
+        Insert: {
+          book?: string | null
+          closing_odds_decimal?: number | null
+          clv_pct?: number | null
+          created_at?: string
+          ev_pct?: number | null
+          event: string
+          fair_prob: number
+          id?: string
+          is_published?: boolean
+          market: string
+          odds_decimal: number
+          pl_units?: number | null
+          posted_at?: string
+          result?: Database["public"]["Enums"]["pick_result"]
+          selection: string
+          settled_at?: string | null
+          sport: string
+          stake_units?: number
+        }
+        Update: {
+          book?: string | null
+          closing_odds_decimal?: number | null
+          clv_pct?: number | null
+          created_at?: string
+          ev_pct?: number | null
+          event?: string
+          fair_prob?: number
+          id?: string
+          is_published?: boolean
+          market?: string
+          odds_decimal?: number
+          pl_units?: number | null
+          posted_at?: string
+          result?: Database["public"]["Enums"]["pick_result"]
+          selection?: string
+          settled_at?: string | null
+          sport?: string
+          stake_units?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           access_type: string | null
@@ -597,7 +660,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      proof_stats: {
+        Row: {
+          avg_clv_pct: number | null
+          closing_brier: number | null
+          graded_picks: number | null
+          losses: number | null
+          model_brier: number | null
+          net_units: number | null
+          roi_pct: number | null
+          win_rate_pct: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
@@ -610,6 +686,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      pick_result: "pending" | "win" | "loss" | "push" | "void"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -738,6 +815,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      pick_result: ["pending", "win", "loss", "push", "void"],
     },
   },
 } as const

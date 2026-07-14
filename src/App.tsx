@@ -44,6 +44,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const BetHistory = lazy(() => import("./pages/BetHistory"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TrackRecord = lazy(() => import("./pages/TrackRecord"));
+const ProofPage = lazy(() => import("./pages/ProofPage"));
 const ResponsibleGambling = lazy(() => import("./pages/ResponsibleGambling"));
 const EditorialPolicy = lazy(() => import("./pages/EditorialPolicy"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
@@ -110,6 +111,7 @@ const App = () => (
                 <Route path="/pricing" element={<QueryBoundary><AuthBoundary><Pricing /></AuthBoundary></QueryBoundary>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/track-record" element={<QueryBoundary><TrackRecord /></QueryBoundary>} />
+                <Route path="/proof" element={<ProofPage />} />
                 <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
                 <Route path="/editorial-policy" element={<EditorialPolicy />} />
                 <Route path="/privacy" element={<LegalPage page="privacy" />} />
