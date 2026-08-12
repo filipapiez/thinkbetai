@@ -294,7 +294,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "KI Sportwetten, Sportwetten AI, Fußball Prognosen KI, Wettanalyse Deutsch, AI Sportwetten Deutschland",
     labels: {
-      primaryCta: "KI-Picks ansehen",
+      primaryCta: "Kostenloses Konto erstellen",
       secondaryCta: "Leitfaden lesen",
       intentHeading: "Für deutschsprachige Wettanalyse gebaut",
       sportsHeading: "Sportarten für diese Sprache",
@@ -360,7 +360,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "IA paris sportifs, pronostics sportifs IA, paris football IA, analyse cotes IA, ThinkBetAI France",
     labels: {
-      primaryCta: "Voir les picks IA",
+      primaryCta: "Créer un compte gratuit",
       secondaryCta: "Lire le guide",
       intentHeading: "Conçu pour la recherche sportive francophone",
       sportsHeading: "Sports ciblés par cette page",
@@ -426,7 +426,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "scommesse sportive AI, pronostici calcio AI, analisi quote AI, betting AI Italia, ThinkBetAI italiano",
     labels: {
-      primaryCta: "Vedi pick AI",
+      primaryCta: "Crea un account gratuito",
       secondaryCta: "Leggi la guida",
       intentHeading: "Creato per la ricerca italiana sulle scommesse",
       sportsHeading: "Sport target della pagina",
@@ -492,7 +492,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "apuestas deportivas IA, pronósticos fútbol IA, análisis de cuotas IA, betting AI español, apuestas con IA",
     labels: {
-      primaryCta: "Ver picks IA",
+      primaryCta: "Crear cuenta gratis",
       secondaryCta: "Leer la guía",
       intentHeading: "Creado para búsquedas de apuestas en español",
       sportsHeading: "Deportes objetivo",
@@ -558,7 +558,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "apostas esportivas IA, palpites futebol IA, análise de odds IA, betting AI Brasil, inteligência artificial apostas",
     labels: {
-      primaryCta: "Ver picks de IA",
+      primaryCta: "Criar conta grátis",
       secondaryCta: "Ler guia",
       intentHeading: "Criado para buscas brasileiras de apostas",
       sportsHeading: "Esportes desta página",
@@ -624,7 +624,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "AI sports betting Hindi, cricket betting AI, sports prediction Hindi, AI betting India, cricket AI picks",
     labels: {
-      primaryCta: "AI picks देखें",
+      primaryCta: "मुफ़्त खाता बनाएँ",
       secondaryCta: "Guide पढ़ें",
       intentHeading: "Hindi sports betting research के लिए बनाया गया",
       sportsHeading: "इस पेज के sports",
@@ -690,7 +690,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "AI sportweddenschappen, voetbal voorspellingen AI, betting AI Nederland, odds analyse AI, sport analyse Nederlands",
     labels: {
-      primaryCta: "Bekijk AI picks",
+      primaryCta: "Gratis account aanmaken",
       secondaryCta: "Lees de gids",
       intentHeading: "Gebouwd voor Nederlandse betting research",
       sportsHeading: "Sporten voor deze pagina",
@@ -756,7 +756,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "zakłady sportowe AI, typy piłka nożna AI, analiza kursów AI, betting AI Polska, typy sportowe AI",
     labels: {
-      primaryCta: "Zobacz typy AI",
+      primaryCta: "Utwórz darmowe konto",
       secondaryCta: "Czytaj przewodnik",
       intentHeading: "Stworzone dla polskiej analizy zakładów",
       sportsHeading: "Sporty na tej stronie",
@@ -822,7 +822,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "AI sportspel, betting AI Sverige, fotboll tips AI, odds analys AI, sportspel analys svenska",
     labels: {
-      primaryCta: "Se AI picks",
+      primaryCta: "Skapa gratiskonto",
       secondaryCta: "Läs guiden",
       intentHeading: "Byggd för svensk sportspel-research",
       sportsHeading: "Sportfokus",
@@ -888,7 +888,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "yapay zeka spor bahis, futbol tahmin AI, oran analizi AI, betting AI Türkiye, AI bahis analizi",
     labels: {
-      primaryCta: "AI picks gör",
+      primaryCta: "Ücretsiz hesap oluştur",
       secondaryCta: "Rehberi oku",
       intentHeading: "Türkçe spor analizi için tasarlandı",
       sportsHeading: "Bu sayfanın sporları",
@@ -954,7 +954,7 @@ export const languagePageConfigs: Record<LanguageSlug, LanguagePageConfig> = {
     ],
     keywords: "AI スポーツベッティング, スポーツ予測 AI, オッズ分析 AI, 日本語 スポーツ分析, ThinkBetAI 日本",
     labels: {
-      primaryCta: "AI picksを見る",
+      primaryCta: "無料アカウントを作成",
       secondaryCta: "ガイドを読む",
       intentHeading: "日本語のスポーツ分析検索向け",
       sportsHeading: "対象スポーツ",

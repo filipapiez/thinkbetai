@@ -203,6 +203,25 @@ const LocalizedSeoLanding = ({ language, topic }: LocalizedSeoLandingProps) => {
             </div>
           </div>
         </section>
+
+        <section className="border-t border-border/40 py-12">
+          <div className="container">
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-7 text-center md:p-10">
+              <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+                {page.languageName} · {page.marketType}
+              </Badge>
+              <h2 className="text-2xl font-bold md:text-3xl">{page.labels.primaryCta}</h2>
+              <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+                {page.labels.offerDescription}
+              </p>
+              <Button size="lg" className="mt-6" asChild>
+                <Link to="/login?tab=signup">
+                  {page.labels.primaryCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />

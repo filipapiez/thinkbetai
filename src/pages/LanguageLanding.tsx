@@ -94,7 +94,7 @@ const LanguageLanding = ({ language }: LanguageLandingProps) => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-8">
                 <Button size="lg" asChild>
-                  <Link to="/ai-sports-picks">
+                  <Link to="/login?tab=signup">
                     {config.labels.primaryCta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -198,6 +198,25 @@ const LanguageLanding = ({ language }: LanguageLandingProps) => {
                   </details>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-border/40 py-12">
+          <div className="container">
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-7 text-center md:p-10">
+              <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
+                {config.languageName}
+              </Badge>
+              <h2 className="text-2xl font-bold md:text-3xl">{config.labels.primaryCta}</h2>
+              <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+                {config.intro}
+              </p>
+              <Button size="lg" className="mt-6" asChild>
+                <Link to="/login?tab=signup">
+                  {config.labels.primaryCta} <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
