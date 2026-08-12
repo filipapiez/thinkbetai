@@ -11,6 +11,7 @@ import {
 import { PERFORMING_LOCALIZED_BLUEPRINT_PATHS } from "../src/seo/localizedBlueprintPolicy";
 import { APP_SHELL_PAGES, APP_SHELL_REWRITES } from "../src/appShellPages";
 import { SEO_LANDING_CONFIGS } from "../src/lib/seoLandingConfigs";
+import { DE_BET_ANALYZER_PATH, deBetAnalyzerPilot } from "../src/seo/deBetAnalyzerPilot";
 
 const BASE = "https://thinkbetai.com";
 const issues: string[] = [];
@@ -288,6 +289,32 @@ if (existsSync(dist)) {
         issues.push(`product core page missing SoftwareApplication schema: ${page.path}`);
       }
     }
+  }
+
+  const germanAnalyzerFile = flatHtmlPath(dist, DE_BET_ANALYZER_PATH);
+  if (!existsSync(germanAnalyzerFile)) {
+    issues.push(`missing German bet analyzer pilot prerender: ${DE_BET_ANALYZER_PATH}`);
+  } else {
+    const html = readFileSync(germanAnalyzerFile, "utf8");
+    const longFormWords = [
+      deBetAnalyzerPilot.heroHeadline,
+      deBetAnalyzerPilot.heroSubheadline,
+      ...deBetAnalyzerPilot.sections.flatMap((section) => [
+        section.heading,
+        ...section.body,
+        ...(section.bullets ?? []),
+      ]),
+      ...deBetAnalyzerPilot.faqs.flatMap((faq) => [faq.question, faq.answer]),
+    ].join(" ").split(/\s+/).filter(Boolean).length;
+    if (longFormWords < 2500 || longFormWords > 3500) {
+      issues.push(`German bet analyzer pilot editorial word count ${longFormWords} outside 2500-3500: ${DE_BET_ANALYZER_PATH}`);
+    }
+    if (!html.includes('<html lang="de-DE"')) issues.push(`German bet analyzer pilot missing de-DE lang`);
+    if (!html.includes(`rel="canonical" href="${BASE}${DE_BET_ANALYZER_PATH}"`)) {
+      issues.push(`German bet analyzer pilot canonical mismatch`);
+    }
+    if (/name="robots"\s+content="noindex/.test(html)) issues.push(`German bet analyzer pilot is noindex`);
+    if (!html.includes('"@type":"FAQPage"')) issues.push(`German bet analyzer pilot missing FAQ schema`);
   }
 
   for (const blueprint of seoBlueprints) {

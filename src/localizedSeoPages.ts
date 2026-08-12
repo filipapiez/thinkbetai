@@ -4,6 +4,7 @@ import {
   LanguagePageConfig,
   LanguageSlug,
 } from "./countryPages";
+import { DE_BET_ANALYZER_PATH, deBetAnalyzerPilot, type LocalizedLongFormSection } from "./seo/deBetAnalyzerPilot";
 
 export type LocalizedSeoTopicSlug =
   | "ai-sports-betting"
@@ -80,6 +81,7 @@ export interface LocalizedSeoPage {
   links: Array<{ label: string; href: string }>;
   alternates: Array<{ hrefLang: string; href: string }>;
   labels: LocalizedSeoLabels;
+  longFormSections?: LocalizedLongFormSection[];
 }
 
 const BASE = "https://thinkbetai.com";
@@ -1243,6 +1245,8 @@ const buildPage = (language: LanguagePageConfig, topic: TopicTerms): LocalizedSe
       href: `/${language.slug}/${localizedTopicSlugs[candidate.slug][language.slug]}`,
     }));
 
+  const pilot = path === DE_BET_ANALYZER_PATH ? deBetAnalyzerPilot : undefined;
+
   return {
     languageSlug: language.slug,
     topicSlug: topic.slug,
@@ -1258,14 +1262,16 @@ const buildPage = (language: LanguagePageConfig, topic: TopicTerms): LocalizedSe
     term,
     englishLabel: topic.englishLabel,
     marketType: localizedTopic.marketType,
-    title: `${term} ${language.marketName} | ThinkBetAI`,
-    description: cleanDescription(languageCopy.description(term)),
-    h1: languageCopy.h1(term),
-    intro: languageCopy.intro(term, language),
+    title: pilot ? "KI Wettanalyse: Quoten & Risiken prüfen | ThinkBetAI" : `${term} ${language.marketName} | ThinkBetAI`,
+    description: pilot
+      ? "KI-Wettanalyse auf Deutsch: Quoten, faire Wahrscheinlichkeit, EV, Datenqualität und Risiken eines Wettscheins Schritt für Schritt verständlich prüfen."
+      : cleanDescription(languageCopy.description(term)),
+    h1: pilot ? "KI-Wettanalyse: Wettscheine mit Quoten- und Risiko-Check prüfen" : languageCopy.h1(term),
+    intro: pilot?.heroSubheadline ?? languageCopy.intro(term, language),
     keywords: `${language.keywords}, ${term}, ${topic.englishLabel}`,
     primarySports: language.primarySports,
     modules: languageCopy.modules(term, localizedTopic, language),
-    faqs: languageCopy.faqs(term),
+    faqs: pilot?.faqs ?? languageCopy.faqs(term),
     links: [
       { label: labels.englishCanonical, href: `/${topic.slug}` },
       { label: labels.languageHub, href: language.path },
@@ -1283,6 +1289,7 @@ const buildPage = (language: LanguagePageConfig, topic: TopicTerms): LocalizedSe
       })),
     ],
     labels,
+    longFormSections: pilot?.sections,
   };
 };
 

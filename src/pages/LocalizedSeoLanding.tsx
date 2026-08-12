@@ -147,6 +147,25 @@ const LocalizedSeoLanding = ({ language, topic }: LocalizedSeoLandingProps) => {
           </div>
         </section>
 
+        {page.longFormSections?.map((section, index) => (
+          <section
+            key={section.heading}
+            className={`py-12 md:py-16 ${index % 2 === 0 ? 'border-y border-border/40 bg-card/20' : ''}`}
+          >
+            <div className="container max-w-4xl">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-5">{section.heading}</h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                {section.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+                {section.bullets?.length ? (
+                  <ul className="space-y-2 pl-5 list-disc">
+                    {section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        ))}
+
         <section className="py-14 md:py-20 border-y border-border/40 bg-card/20">
           <div className="container">
             <div className="grid gap-8 lg:grid-cols-[0.75fr_1fr]">

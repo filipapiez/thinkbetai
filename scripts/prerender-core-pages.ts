@@ -14,6 +14,7 @@ import {
   localizedMoneyPageRedirects,
 } from "../src/localizedSeoPages";
 import { seoBlueprints } from "../src/seo/blueprints";
+import { DE_BET_ANALYZER_PATH, deBetAnalyzerPilot } from "../src/seo/deBetAnalyzerPilot";
 
 const BASE = "https://thinkbetai.com";
 const DIST = resolve("dist");
@@ -325,6 +326,11 @@ const localizedMoneyPageUpgrades: Record<string, CorePageUpgrade> = Object.fromE
       softwareSchema: true,
       modules: [
         ...page.modules,
+        ...(page.longFormSections ?? []).map((section) => ({
+          heading: section.heading,
+          body: section.body.join("\n\n"),
+          bullets: section.bullets,
+        })),
         {
           heading: page.labels.relatedHeading,
           body: page.labels.relatedText,
@@ -357,6 +363,17 @@ const localizedMoneyPageUpgrades: Record<string, CorePageUpgrade> = Object.fromE
     },
   ]),
 );
+
+if (localizedMoneyPageUpgrades[DE_BET_ANALYZER_PATH]) {
+  localizedMoneyPageUpgrades[DE_BET_ANALYZER_PATH] = {
+    ...localizedMoneyPageUpgrades[DE_BET_ANALYZER_PATH],
+    eyebrow: deBetAnalyzerPilot.eyebrow,
+    heroHeadline: deBetAnalyzerPilot.heroHeadline,
+    heroSubheadline: deBetAnalyzerPilot.heroSubheadline,
+    primaryCTA: { label: "Kostenloses Konto erstellen", href: "/login?tab=signup" },
+    secondaryCTA: { label: "Methodik ansehen", href: "/how-it-works" },
+  };
+}
 
 const corePageUpgrades: Record<string, CorePageUpgrade> = {
   "/": {
