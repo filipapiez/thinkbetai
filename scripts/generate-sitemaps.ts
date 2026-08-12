@@ -18,7 +18,7 @@ import { isSeoAlias } from "../src/seoAliases";
 import { seoBlueprints } from "../src/seo/blueprints";
 
 const BASE = "https://thinkbetai.com";
-const today = new Date().toISOString().slice(0, 10);
+const SITE_REVIEWED = "2026-08-12";
 
 interface Entry {
   path: string;
@@ -28,7 +28,7 @@ interface Entry {
 }
 
 // 1) Homepage
-const homepage: Entry = { path: "/", changefreq: "daily", priority: "1.0" };
+const homepage: Entry = { path: "/", changefreq: "daily", priority: "1.0", lastmod: SITE_REVIEWED };
 
 // 2) Core marketing / feature pages
 const marketing: Entry[] = [
@@ -109,6 +109,10 @@ const rawEntries: Entry[] = [
   ...blogEntries,
 ];
 
+for (const entry of rawEntries) {
+  entry.lastmod ??= SITE_REVIEWED;
+}
+
 const all: Entry[] = rawEntries.filter(
   (entry, index, entries) => entries.findIndex((candidate) => candidate.path === entry.path) === index,
 );
@@ -117,7 +121,7 @@ function renderUrl(e: Entry): string {
   const parts = [
     `  <url>`,
     `    <loc>${BASE}${e.path}</loc>`,
-    `    <lastmod>${e.lastmod ?? today}</lastmod>`,
+    e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
     e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
     e.priority ? `    <priority>${e.priority}</priority>` : null,
     `  </url>`,

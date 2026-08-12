@@ -1,5 +1,6 @@
 import { platformStats } from "../lib/platformStats";
 import { programmaticExpansionBlueprints } from "./programmaticExpansion";
+import { shouldRetireLocalizedBlueprint } from "./localizedBlueprintPolicy";
 
 export type SearchIntent = "informational" | "commercial" | "tool" | "sports" | "comparison";
 export type SchemaType = "WebPage" | "SoftwareApplication" | "FAQPage" | "BreadcrumbList";
@@ -4086,11 +4087,19 @@ const aiBettingPredictionsDeepBlueprint = createSeoBlueprint({
   markets: ["moneyline", "spread", "total", "props"],
 });
 
-export const seoBlueprints = [
+const allSeoBlueprints = [
   aiBettingPredictionsDeepBlueprint,
   ...additionalSeoBlueprints,
   ...programmaticExpansionBlueprints,
 ].filter((blueprint) => !promotedFeatureBlueprintSlugs.has(blueprint.slug));
+
+export const retiredLocalizedBlueprints = allSeoBlueprints.filter((blueprint) =>
+  shouldRetireLocalizedBlueprint(blueprint.canonical),
+);
+
+export const seoBlueprints = allSeoBlueprints.filter(
+  (blueprint) => !shouldRetireLocalizedBlueprint(blueprint.canonical),
+);
 
 export const getSeoBlueprint = (slug: string) =>
   seoBlueprints.find((blueprint) => blueprint.slug === slug);

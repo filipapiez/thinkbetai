@@ -184,6 +184,7 @@ const App = () => (
                 <Route path="/matchups/*" element={<Navigate to="/ai-sports-picks" replace />} />
                 <Route path="/players/*" element={<Navigate to="/ai-player-props" replace />} />
                 <Route path="/props/*" element={<Navigate to="/ai-player-props" replace />} />
+                <Route path="/:language/ai-betting/:topic" element={<Navigate to="/ai-sports-betting" replace />} />
                 
                 {/* Indexable language landing pages */}
                 <Route path="/de" element={<LanguageLanding language="de" />} />

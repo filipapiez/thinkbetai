@@ -85,6 +85,11 @@ type RegionalProfile = {
 
 const lastReviewed = "2026-07-11";
 
+const cleanMetaDescription = (value: string) => {
+  if (value.length <= 170) return value;
+  return `${value.slice(0, 167).replace(/\s+\S*$/, "")}.`;
+};
+
 const trustMetrics: TrustMetric[] = [
   { label: "Public ledger", value: "CSV" },
   { label: "CLV capture", value: "Tracked" },
@@ -738,7 +743,7 @@ const createBlueprint = (context: ExpansionContext): SeoBlueprint => ({
   secondaryKeywords: context.secondaryKeywords,
   intent: context.intent,
   title: context.title,
-  description: context.description,
+  description: cleanMetaDescription(context.description),
   h1: context.h1,
   heroHeadline: context.h1,
   heroSubheadline: context.heroSubheadline,

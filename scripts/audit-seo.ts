@@ -2,7 +2,13 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { CORE_SEO_PAGES } from "../src/seoCorePages";
 import { SEO_ALIAS_REDIRECTS } from "../src/seoAliases";
-import { getRelatedLinks, seoBlueprints, type SeoBlueprint } from "../src/seo/blueprints";
+import {
+  getRelatedLinks,
+  retiredLocalizedBlueprints,
+  seoBlueprints,
+  type SeoBlueprint,
+} from "../src/seo/blueprints";
+import { PERFORMING_LOCALIZED_BLUEPRINT_PATHS } from "../src/seo/localizedBlueprintPolicy";
 import { APP_SHELL_PAGES, APP_SHELL_REWRITES } from "../src/appShellPages";
 import { SEO_LANDING_CONFIGS } from "../src/lib/seoLandingConfigs";
 
@@ -113,6 +119,25 @@ const productCorePaths = new Set([
 const redirectRules = existsSync(resolve("public/_redirects"))
   ? readFileSync(resolve("public/_redirects"), "utf8")
   : "";
+
+if (sitemapUrls.size > 600) {
+  issues.push(`sitemap exceeds the reviewed crawl-budget ceiling: ${sitemapUrls.size} URLs`);
+}
+
+for (const path of PERFORMING_LOCALIZED_BLUEPRINT_PATHS) {
+  if (!blueprintCanonicalPaths.has(path)) {
+    issues.push(`performing multilingual blueprint was retired: ${path}`);
+  }
+}
+
+for (const blueprint of retiredLocalizedBlueprints) {
+  if (sitemapUrls.has(`${BASE}${blueprint.canonical}`)) {
+    issues.push(`retired multilingual blueprint remains in sitemap: ${blueprint.canonical}`);
+  }
+  if (!new RegExp(`^${blueprint.canonical.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+\\S+\\s+301$`, "m").test(redirectRules)) {
+    issues.push(`retired multilingual blueprint missing 301: ${blueprint.canonical}`);
+  }
+}
 
 for (const { source, target } of APP_SHELL_REWRITES) {
   if (!redirectRules.includes(`${source} ${target} 200`)) {
