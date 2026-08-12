@@ -86,7 +86,7 @@ const BASE = "https://thinkbetai.com";
 
 const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
   de: {
-    primaryCta: "KI Sport Tipps ansehen",
+    primaryCta: "Kostenloses Konto erstellen",
     englishCanonical: "Englische Hauptseite",
     languageHub: "Deutscher Hub",
     responsibleGambling: "Verantwortungsvolle Nutzung",
@@ -104,7 +104,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Kostenlose öffentliche Vorschauen und optionale kostenpflichtige Pläne sind verfügbar.",
   },
   fr: {
-    primaryCta: "Voir les picks IA",
+    primaryCta: "Créer un compte gratuit",
     englishCanonical: "Page anglaise principale",
     languageHub: "Hub français",
     responsibleGambling: "Jeu responsable",
@@ -122,7 +122,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Des aperçus publics gratuits et des plans payants optionnels sont disponibles.",
   },
   it: {
-    primaryCta: "Vedi pick AI",
+    primaryCta: "Crea un account gratuito",
     englishCanonical: "Pagina inglese principale",
     languageHub: "Hub italiano",
     responsibleGambling: "Gioco responsabile",
@@ -140,7 +140,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Sono disponibili anteprime pubbliche gratuite e piani opzionali a pagamento.",
   },
   es: {
-    primaryCta: "Ver picks IA",
+    primaryCta: "Crear cuenta gratis",
     englishCanonical: "Página principal en inglés",
     languageHub: "Hub en español",
     responsibleGambling: "Juego responsable",
@@ -158,7 +158,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Hay vistas públicas gratuitas y planes pagos opcionales disponibles.",
   },
   "pt-br": {
-    primaryCta: "Ver picks com IA",
+    primaryCta: "Criar conta grátis",
     englishCanonical: "Página principal em inglês",
     languageHub: "Hub em português",
     responsibleGambling: "Jogo responsável",
@@ -176,7 +176,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Prévias públicas gratuitas e planos pagos opcionais estão disponíveis.",
   },
   hi: {
-    primaryCta: "AI picks देखें",
+    primaryCta: "मुफ़्त खाता बनाएँ",
     englishCanonical: "अंग्रेज़ी मुख्य पेज",
     languageHub: "हिंदी हब",
     responsibleGambling: "जिम्मेदार उपयोग",
@@ -194,7 +194,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Free public previews और optional paid plans उपलब्ध हैं.",
   },
   nl: {
-    primaryCta: "AI picks bekijken",
+    primaryCta: "Gratis account aanmaken",
     englishCanonical: "Engelse hoofdpagina",
     languageHub: "Nederlandse hub",
     responsibleGambling: "Verantwoord spelen",
@@ -212,7 +212,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Gratis openbare previews en optionele betaalde plannen zijn beschikbaar.",
   },
   pl: {
-    primaryCta: "Zobacz typy AI",
+    primaryCta: "Utwórz darmowe konto",
     englishCanonical: "Główna strona angielska",
     languageHub: "Polski hub",
     responsibleGambling: "Odpowiedzialna gra",
@@ -230,7 +230,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Dostępne są darmowe publiczne podglądy i opcjonalne płatne plany.",
   },
   sv: {
-    primaryCta: "Se AI picks",
+    primaryCta: "Skapa gratiskonto",
     englishCanonical: "Engelsk huvudsida",
     languageHub: "Svensk hubb",
     responsibleGambling: "Ansvarsfullt spelande",
@@ -248,7 +248,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Gratis offentliga förhandsvisningar och valfria betalda planer finns tillgängliga.",
   },
   tr: {
-    primaryCta: "AI tahminlerini gör",
+    primaryCta: "Ücretsiz hesap oluştur",
     englishCanonical: "İngilizce ana sayfa",
     languageHub: "Türkçe merkez",
     responsibleGambling: "Sorumlu kullanım",
@@ -266,7 +266,7 @@ const localizedUiLabels: Record<LanguageSlug, LocalizedSeoLabelSource> = {
     offerDescription: "Ücretsiz herkese açık önizlemeler ve isteğe bağlı ücretli planlar mevcuttur.",
   },
   ja: {
-    primaryCta: "AIピックを見る",
+    primaryCta: "無料アカウントを作成",
     englishCanonical: "英語の主要ページ",
     languageHub: "日本語ハブ",
     responsibleGambling: "責任ある利用",
@@ -1269,7 +1269,7 @@ const buildPage = (language: LanguagePageConfig, topic: TopicTerms): LocalizedSe
     links: [
       { label: labels.englishCanonical, href: `/${topic.slug}` },
       { label: labels.languageHub, href: language.path },
-      { label: labels.primaryCta, href: "/ai-sports-picks" },
+      { label: labels.primaryCta, href: "/login?tab=signup" },
       { label: language.labels.secondaryCta, href: "/ai-sports-betting" },
       { label: labels.responsibleGambling, href: "/responsible-gambling" },
       ...relatedTopics,

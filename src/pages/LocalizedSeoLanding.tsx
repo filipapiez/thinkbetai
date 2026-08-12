@@ -94,7 +94,7 @@ const LocalizedSeoLanding = ({ language, topic }: LocalizedSeoLandingProps) => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 mt-8">
                 <Button size="lg" asChild>
-                  <Link to="/ai-sports-picks">
+                  <Link to="/login?tab=signup">
                     {page.labels.primaryCta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
