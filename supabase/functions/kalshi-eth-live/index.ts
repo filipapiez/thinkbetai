@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 const KALSHI_BASE = "https://external-api.kalshi.com/trade-api/v2";
@@ -11,7 +11,9 @@ const ETH_SERIES = "KXETH15M";
 const COINBASE_TICKER = "https://api.exchange.coinbase.com/products/ETH-USD/ticker";
 
 let cachedTicker = "";
-let cachedUntil = 0;
+let cachedTickerUntil = 0;
+let cachedSeries: Record<string, unknown> | null = null;
+let cachedSeriesUntil = 0;
 
 function num(value: unknown): number | null {
   const parsed = Number(value);
@@ -25,10 +27,19 @@ function targetFromMarket(market: Record<string, unknown>): number | null {
   const functional = num(market.functional_strike);
   if (functional && functional > 0) return functional;
 
+  const custom = market.custom_strike as Record<string, unknown> | undefined;
+  if (custom) {
+    for (const value of Object.values(custom)) {
+      const parsed = num(value);
+      if (parsed && parsed > 100) return parsed;
+    }
+  }
+
   const text = `${market.title ?? ""} ${market.subtitle ?? ""} ${market.rules_primary ?? ""}`;
-  const match = text.match(/\$([0-9][0-9,]*(?:\.[0-9]+)?)\s*(?:target|to beat)?/i);
+  const match = text.match(/\$([0-9][0-9,]*(?:\.[0-9]+)?)/);
   if (!match) return null;
-  return Number(match[1].replaceAll(",", ""));
+  const parsed = Number(match[1].replaceAll(",", ""));
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 async function kalshiJson(path: string) {
@@ -41,7 +52,7 @@ async function kalshiJson(path: string) {
 
 async function discoverCurrentTicker(): Promise<string> {
   const now = Date.now();
-  if (cachedTicker && cachedUntil > now) return cachedTicker;
+  if (cachedTicker && cachedTickerUntil > now) return cachedTicker;
 
   const data = await kalshiJson(`/markets?series_ticker=${ETH_SERIES}&status=open&limit=100`);
   const markets = Array.isArray(data?.markets) ? data.markets : [];
@@ -50,72 +61,100 @@ async function discoverCurrentTicker(): Promise<string> {
   const current = markets
     .map((market: Record<string, unknown>) => ({
       market,
-      closeMs: Date.parse(String(market.close_time ?? market.expected_expiration_time ?? "")),
+      closeMs: Date.parse(String(market.close_time ?? market.latest_expiration_time ?? "")),
       openMs: Date.parse(String(market.open_time ?? "")),
     }))
-    .filter((item: { closeMs: number; openMs: number }) => Number.isFinite(item.closeMs) && item.closeMs > now - 15_000)
+    .filter((item: { closeMs: number }) => Number.isFinite(item.closeMs) && item.closeMs > now - 15_000)
     .sort((a: { closeMs: number; openMs: number }, b: { closeMs: number; openMs: number }) => {
       const aOpen = Number.isFinite(a.openMs) && a.openMs <= now ? 0 : 1;
       const bOpen = Number.isFinite(b.openMs) && b.openMs <= now ? 0 : 1;
       return aOpen - bOpen || a.closeMs - b.closeMs;
     })[0];
 
-  if (!current?.market?.ticker) throw new Error("Unable to select KXETH15M market");
+  if (!current?.market?.ticker) throw new Error("Unable to select current KXETH15M market");
   cachedTicker = String(current.market.ticker);
-  cachedUntil = Math.min(now + 20_000, current.closeMs + 2_000);
+  cachedTickerUntil = Math.min(now + 15_000, current.closeMs + 2_000);
   return cachedTicker;
 }
 
-function normalizeMarket(market: Record<string, unknown>) {
-  const yesBid = num(market.yes_bid_dollars);
-  const yesAsk = num(market.yes_ask_dollars);
-  const noBid = num(market.no_bid_dollars);
-  const noAsk = num(market.no_ask_dollars);
-  const closeTime = String(market.close_time ?? market.expected_expiration_time ?? "");
-  const closeMs = Date.parse(closeTime);
+async function getSeries() {
+  const now = Date.now();
+  if (cachedSeries && cachedSeriesUntil > now) return cachedSeries;
+  const data = await kalshiJson(`/series/${ETH_SERIES}`);
+  const series = data?.series ?? {};
+  cachedSeries = {
+    ticker: String(series.ticker ?? ETH_SERIES),
+    title: String(series.title ?? "ETH Up or Down - 15 minutes"),
+    frequency: String(series.frequency ?? ""),
+    feeType: String(series.fee_type ?? ""),
+    feeMultiplier: num(series.fee_multiplier),
+    settlementSources: Array.isArray(series.settlement_sources) ? series.settlement_sources : [],
+  };
+  cachedSeriesUntil = now + 5 * 60_000;
+  return cachedSeries;
+}
 
+function normalizeMarket(market: Record<string, unknown>) {
+  const closeTime = String(market.close_time ?? market.latest_expiration_time ?? "");
+  const closeMs = Date.parse(closeTime);
   return {
     ticker: String(market.ticker ?? ""),
     eventTicker: String(market.event_ticker ?? ""),
     title: String(market.title ?? "ETH Up or Down - 15 minutes"),
     subtitle: String(market.subtitle ?? ""),
     status: String(market.status ?? ""),
-    result: String(market.result ?? ""),
+    result: String(market.result ?? "").toLowerCase(),
     target: targetFromMarket(market),
     openTime: String(market.open_time ?? ""),
     closeTime,
     secondsToClose: Number.isFinite(closeMs) ? Math.max(0, (closeMs - Date.now()) / 1000) : null,
     yes: {
-      bid: yesBid,
-      ask: yesAsk,
+      bid: num(market.yes_bid_dollars),
+      ask: num(market.yes_ask_dollars),
       bidSize: num(market.yes_bid_size_fp),
       askSize: num(market.yes_ask_size_fp),
     },
     no: {
-      bid: noBid,
-      ask: noAsk,
+      bid: num(market.no_bid_dollars),
+      ask: num(market.no_ask_dollars),
       bidSize: num(market.no_bid_size_fp),
       askSize: num(market.no_ask_size_fp),
     },
     last: num(market.last_price_dollars),
     volume: num(market.volume_fp),
+    priceLevelStructure: String(market.price_level_structure ?? ""),
     rulesPrimary: String(market.rules_primary ?? ""),
   };
 }
 
+async function requestedTicker(req: Request): Promise<string | null> {
+  const url = new URL(req.url);
+  const queryTicker = url.searchParams.get("ticker")?.trim();
+  if (queryTicker) return queryTicker;
+  if (req.method !== "POST") return null;
+  const body = await req.json().catch(() => ({}));
+  return typeof body?.ticker === "string" && body.ticker.trim() ? body.ticker.trim() : null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "GET" && req.method !== "POST") {
+    return new Response(JSON.stringify({ ok: false, error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
-    const url = new URL(req.url);
-    const requestedTicker = url.searchParams.get("ticker")?.trim();
-    const ticker = requestedTicker || await discoverCurrentTicker();
+    const explicitTicker = await requestedTicker(req);
+    const ticker = explicitTicker || await discoverCurrentTicker();
 
-    const [marketData, coinbaseResponse] = await Promise.all([
+    const [marketData, coinbaseResponse, series] = await Promise.all([
       kalshiJson(`/markets/${encodeURIComponent(ticker)}`),
       fetch(COINBASE_TICKER, {
         headers: { Accept: "application/json", "Cache-Control": "no-cache" },
       }).catch(() => null),
+      getSeries().catch(() => null),
     ]);
 
     const market = marketData?.market;
@@ -133,18 +172,19 @@ serve(async (req) => {
     }
 
     const normalized = normalizeMarket(market);
-    if (!requestedTicker && normalized.secondsToClose !== null && normalized.secondsToClose <= 0) {
+    if (!explicitTicker && normalized.secondsToClose !== null && normalized.secondsToClose <= 0) {
       cachedTicker = "";
-      cachedUntil = 0;
+      cachedTickerUntil = 0;
     }
 
     return new Response(JSON.stringify({
       ok: true,
       source: {
         kalshi: "Kalshi public Trade API",
-        signalReference: "Coinbase ETH-USD",
-        settlementReference: "Kalshi result / CF Benchmarks rules",
+        signalReference: "Coinbase ETH-USD (monitoring only)",
+        settlementReference: "Kalshi market result",
       },
+      series,
       market: normalized,
       coinbase,
       serverTime: new Date().toISOString(),
