@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#06100b" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Kalshi ETH — Live PAPER</title>
+  <style>
+    :root{--bg:#06100b;--panel:#0d1912;--panel2:#102119;--line:#24382c;--text:#f4f8f5;--muted:#93a39a;--green:#46dc7a;--blue:#2c8fff;--red:#ff6575;--amber:#ffca62}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif}body{padding:env(safe-area-inset-top) 12px calc(12px + env(safe-area-inset-right)) calc(86px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+    button,input{font:inherit}.app{max-width:760px;margin:0 auto;position:relative}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 2px 16px}.top h1{font-size:25px;line-height:1.1;margin:0 0 5px}.sub{font-size:12px;color:var(--muted)}.mode{font-size:11px;font-weight:800;color:var(--green);padding:8px 10px;border:1px solid #31543d;background:#10251a;border-radius:999px;white-space:nowrap}
+    .notice{border:1px solid #2e4e3b;background:#0b1d13;border-radius:14px;padding:11px 13px;font-size:12px;color:#bfd0c6;margin-bottom:12px}.notice b{color:var(--green)}
+    .card{background:linear-gradient(180deg,#102119,#0b1710);border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:12px}.card.primary{border-color:#2b5a3e}.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.head strong{font-size:15px}.live{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}.lamp{width:8px;height:8px;border-radius:50%;background:#67736d}.lamp.ok{background:var(--green);box-shadow:0 0 12px rgba(70,220,122,.75)}.lamp.bad{background:var(--red)}
+    .market-title{font-size:12px;color:var(--muted);margin-bottom:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}.cell{min-width:0;padding:11px 8px;border-bottom:1px solid var(--line)}.cell:not(:nth-child(3n)){border-right:1px solid var(--line)}.label{font-size:10px;color:var(--muted);margin-bottom:5px}.value{font-size:18px;font-weight:800;overflow-wrap:anywhere}.smallv{font-size:14px}.green{color:var(--green)!important}.blue{color:#70b8ff!important}.red{color:var(--red)!important}.amber{color:var(--amber)!important}
+    .progress{height:7px;background:#17271e;border-radius:999px;overflow:hidden;margin-top:8px}.progress i{display:block;height:100%;width:0;background:var(--green);transition:width .25s ease}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}.check{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#09130d;border:1px solid #1d3025;border-radius:11px;padding:9px 10px;font-size:11px}.check span{color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 7px;text-align:center}.metric small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.metric b{font-size:19px}.section-title{font-size:14px;font-weight:800;margin:15px 2px 8px}
+    .quote{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qbox{background:#09130d;border:1px solid #1d3025;border-radius:13px;padding:12px}.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.side-name{font-weight:900;font-size:13px}.bidask{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bidask small{display:block;color:var(--muted);font-size:9px}.bidask b{font-size:17px}
+    .controls{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}.control{display:grid;grid-template-columns:145px 1fr 64px;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid #1d3025}.control:last-child{border-bottom:0}.control label{font-size:11px}.control input[type=range]{width:100%;accent-color:var(--green)}.control output{text-align:right;font-size:11px;font-weight:800}.switchline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #1d3025;font-size:11px}.switch{position:relative;width:48px;height:28px}.switch input{opacity:0;width:0;height:0}.switch i{position:absolute;inset:0;background:#27342d;border-radius:999px;transition:.2s}.switch i:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.switch input:checked+i{background:#208c48}.switch input:checked+i:before{transform:translateX(20px)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}.btn{min-height:44px;border-radius:12px;border:1px solid #33463b;background:#132018;color:#f5faf7;padding:0 14px;font-weight:750}.btn.primary{background:#197a3e;border-color:#2cb95e}.btn.danger{color:#ff9aa5}.btn:focus-visible,input:focus-visible{outline:2px solid #6bb7ff;outline-offset:2px}
+    .history{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:610px;font-size:11px}th,td{padding:10px 9px;border-bottom:1px solid #1d3025;text-align:left;white-space:nowrap}th{color:var(--muted);font-weight:650}tr:last-child td{border-bottom:0}.empty{padding:20px;color:var(--muted);font-size:12px}.foot{font-size:10px;color:#718078;line-height:1.45;margin:12px 3px}
+    .preview-dot{position:absolute;left:-12px;top:228px;width:45px;height:64px;border:0;border-radius:0 23px 23px 0;background:linear-gradient(180deg,#3298ff,#126bd8);color:#fff;font-size:26px;font-weight:900;z-index:20;box-shadow:0 10px 25px rgba(44,143,255,.38)}.preview-panel{position:absolute;left:0;top:296px;width:min(310px,calc(100% - 12px));z-index:19;background:linear-gradient(180deg,#10345f,#071b32);border:1px solid #2d91ff;border-radius:18px;padding:15px;box-shadow:0 24px 65px rgba(0,0,0,.55);transform:translateX(calc(-100% - 28px));opacity:0;pointer-events:none;transition:transform .22s ease,opacity .2s ease}.preview-panel.open{transform:translateX(0);opacity:1;pointer-events:auto}.ph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.ph h3{font-size:18px;margin:2px 0 0}.ph small{font-size:9px;color:#78bcff;font-weight:800}.close{width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.09);color:#fff;font-size:20px}.prow{display:flex;justify-content:space-between;gap:9px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.09);font-size:11px}.prow span{color:#9fb8d0}.prow strong{text-align:right}.pstatus{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:rgba(70,220,122,.1);padding:7px 10px;color:var(--green);font-size:11px;margin:3px 0 5px}.pstatus i{width:8px;height:8px;border-radius:50%;background:var(--green)}
+    .bottom{position:sticky;bottom:8px;margin-top:16px;background:rgba(7,14,10,.94);backdrop-filter:blur(14px);border:1px solid #21352a;border-radius:15px;padding:8px 9px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted)}.bottom b{color:var(--text)}
+    @media(max-width:560px){body{padding-left:10px;padding-right:8px}.top h1{font-size:22px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cell:not(:nth-child(3n)){border-right:0}.cell:nth-child(odd){border-right:1px solid var(--line)}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.control{grid-template-columns:112px 1fr 56px}.preview-dot{left:-10px}.checks{grid-template-columns:1fr}.mode{padding:7px 8px}.value{font-size:16px}}
+  </style>
+</head>
+<body>
+  <main class="app" id="app">
+    <button class="preview-dot" id="previewDot" type="button" aria-label="Otwórz podgląd bota">›</button>
+    <aside class="preview-panel" id="previewPanel" aria-hidden="true">
+      <div class="ph"><div><small>● LIVE DATA / PAPER ORDERS</small><h3>Podgląd bota</h3></div><button class="close" id="previewClose" type="button">×</button></div>
+      <div class="pstatus"><i></i><span id="pStatus">ŁĄCZENIE…</span></div>
+      <div class="prow"><span>Rynek</span><strong id="pMarket">KXETH15M</strong></div>
+      <div class="prow"><span>ETH</span><strong id="pEth">—</strong></div>
+      <div class="prow"><span>Target</span><strong id="pTarget">—</strong></div>
+      <div class="prow"><span>Ruch vs target</span><strong id="pMove">—</strong></div>
+      <div class="prow"><span>Sygnał</span><strong id="pSignal">CZEKAJ</strong></div>
+      <div class="prow"><span>Stabilność</span><strong class="blue" id="pStability">0%</strong></div>
+      <div class="prow"><span>Próbki 5→3</span><strong id="pSamples">0</strong></div>
+      <div class="prow"><span>Czas do końca</span><strong class="blue" id="pTime">—</strong></div>
+      <div class="prow"><span>Pozycja PAPER</span><strong id="pPosition">BRAK</strong></div>
+      <div class="prow"><span>Ostatni wynik</span><strong id="pLast">—</strong></div>
+    </aside>
+
+    <header class="top">
+      <div><h1>Kalshi ETH — PAPER</h1><div class="sub">Konfirmacja 5:00 → 3:00 • próbka co 10 s • realne dane rynkowe</div></div>
+      <div class="mode">BEZ PRAWDZIWYCH ZLECEŃ</div>
+    </header>
+
+    <div class="notice"><b>To jest prawdziwy feed + symulowane wykonanie.</b> Bot czyta aktualne ceny ETH i Kalshi, ale nie ma klucza transakcyjnego i nie może wysłać realnego orderu.</div>
+
+    <section class="card primary">
+      <div class="head"><strong>Aktywny rynek 15-min ETH</strong><div class="live"><i class="lamp" id="dataLamp"></i><span id="dataState">łączenie…</span></div></div>
+      <div class="market-title" id="marketTitle">Wyszukiwanie aktywnego KXETH15M…</div>
+      <div class="grid">
+        <div class="cell"><div class="label">ETH teraz</div><div class="value" id="ethPrice">—</div></div>
+        <div class="cell"><div class="label">Target Kalshi</div><div class="value" id="targetPrice">—</div></div>
+        <div class="cell"><div class="label">Ruch vs target</div><div class="value" id="targetMove">—</div></div>
+        <div class="cell"><div class="label">Kierunek</div><div class="value" id="direction">—</div></div>
+        <div class="cell"><div class="label">Stabilność 5→3</div><div class="value blue" id="stability">0%</div></div>
+        <div class="cell"><div class="label">Do zamknięcia</div><div class="value" id="timeLeft">—</div></div>
+      </div>
+      <div class="progress"><i id="confirmProgress"></i></div>
+      <div class="checks">
+        <div class="check"><span>Próg efektywny</span><b id="checkThreshold">0,14%</b></div>
+        <div class="check"><span>Min. BID strony</span><b id="checkBid">87¢</b></div>
+        <div class="check"><span>Max spread</span><b id="checkSpread">2¢</b></div>
+        <div class="check"><span>Kierunek bez odwrócenia</span><b id="checkDirection">CZEKAJ</b></div>
+      </div>
+    </section>
+
+    <section class="quote">
+      <div class="qbox"><div class="qtop"><span class="side-name green">YES</span><span id="yesDepth" class="sub">depth —</span></div><div class="bidask"><div><small>BID</small><b id="yesBid">—</b></div><div><small>ASK</small><b id="yesAsk">—</b></div></div></div>
+      <div class="qbox"><div class="qtop"><span class="side-name red">NO</span><span id="noDepth" class="sub">depth —</span></div><div class="bidask"><div><small>BID</small><b id="noBid">—</b></div><div><small>ASK</small><b id="noAsk">—</b></div></div></div>
+    </section>
+
+    <div class="section-title">Wynik PAPER</div>
+    <section class="metrics">
+      <div class="metric"><small>Start</small><b id="startBank">$25,00</b></div>
+      <div class="metric"><small>Rozliczone saldo</small><b id="equity">$25,00</b></div>
+      <div class="metric"><small>P/L netto</small><b id="paperPnl">$0,00</b></div>
+      <div class="metric"><small>W / L</small><b id="wl">0 / 0</b></div>
+      <div class="metric"><small>Win rate</small><b id="winRate">—</b></div>
+      <div class="metric"><small>Otwarte</small><b id="openPos">BRAK</b></div>
+    </section>
+
+    <div class="section-title">Ustawienia strategii</div>
+    <section class="controls">
+      <div class="switchline"><div><b>Bufor bezpieczeństwa +0,02%</b><div class="sub">0,12% ze zdjęcia → efektywnie 0,14%</div></div><label class="switch"><input id="safety" type="checkbox" checked /><i></i></label></div>
+      <div class="control"><label for="threshold">Próg bazowy</label><input id="threshold" type="range" min="8" max="20" value="12" /><output id="thresholdOut">0,12%</output></div>
+      <div class="control"><label for="minBid">Min. BID</label><input id="minBid" type="range" min="80" max="95" value="87" /><output id="minBidOut">87¢</output></div>
+      <div class="control"><label for="maxSpread">Max spread</label><input id="maxSpread" type="range" min="1" max="5" value="2" /><output id="maxSpreadOut">2¢</output></div>
+      <div class="control"><label for="maxRetreat">Max cofnięcie</label><input id="maxRetreat" type="range" min="0" max="8" value="3" /><output id="maxRetreatOut">0,03%</output></div>
+      <div class="control"><label for="stake">Stake / wejście</label><input id="stake" type="range" min="2" max="25" value="10" /><output id="stakeOut">$10</output></div>
+      <div class="actions"><button class="btn primary" id="resume" type="button">Bot aktywny</button><button class="btn danger" id="resetPaper" type="button">Reset PAPER</button></div>
+    </section>
+
+    <div class="section-title">Transakcje</div>
+    <section class="history"><div class="empty" id="emptyHistory">Brak rozliczonych transakcji. Bot zacznie liczyć pełną konfirmację od 5:00 przed końcem aktywnego rynku.</div><table id="historyTable" hidden><thead><tr><th>Czas</th><th>Rynek</th><th>Side</th><th>Fill</th><th>Kontrakty</th><th>Wynik</th><th>P/L</th></tr></thead><tbody id="historyBody"></tbody></table></section>
+
+    <div class="foot">Sygnał bazuje na dystansie bieżącej ceny ETH od targetu Kalshi, a wykonanie PAPER używa aktualnego ASK, dostępnej wielkości przy ASK, spreadu i szacowanej opłaty taker. Rozliczenie następuje dopiero z pola <b>result</b> konkretnego rynku Kalshi. Coinbase jest używany jako bieżący feed referencyjny; oficjalne rozliczenie zawsze bierze wynik Kalshi.</div>
+    <div class="bottom"><span>Źródła: <b>Kalshi public REST + Coinbase ETH-USD</b></span><span id="lastUpdate">—</span></div>
+  </main>
+
+  <script>
+  (() => {
+    const KALSHI = 'https://external-api.kalshi.com/trade-api/v2';
+    const COINBASE = 'https://api.exchange.coinbase.com/products/ETH-USD/ticker';
+    const EDGE = 'https://fmrcmbdgmhoylmxbapdr.supabase.co/functions/v1/kalshi-eth-live';
+    const SERIES = 'KXETH15M';
+    const STORAGE = 'kalshiEthPaperLiveV3';
+    const SETTINGS = 'kalshiEthPaperSettingsV3';
+    const OBSERVE_START = 300;
+    const ENTRY_AT = 180;
+    const SAMPLE_EVERY = 10;
+    const MIN_SAMPLES = 10;
+
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => `${n < 0 ? '-' : ''}$${Math.abs(Number(n) || 0).toFixed(2).replace('.', ',')}`;
+    const usd = (n) => n == null ? '—' : '$' + Number(n).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+    const cents = (n) => n == null ? '—' : Math.round(Number(n) * 100) + '¢';
+    const pct = (n) => n == null || !Number.isFinite(n) ? '—' : (n >= 0 ? '+' : '') + n.toFixed(3).replace('.', ',') + '%';
+    const mmss = (seconds) => { const s = Math.max(0, Math.round(Number(seconds) || 0)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+    const safeNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : null; };
+
+    const defaultPaper = { start:25, bank:25, realized:0, wins:0, losses:0, history:[], position:null, lastResult:'—' };
+    let paper = loadJson(STORAGE, defaultPaper);
+    let settings = loadJson(SETTINGS, { threshold:0.12, safety:true, minBid:0.87, maxSpread:0.02, maxRetreat:0.03, stake:10 });
+    let live = null;
+    let botEnabled = true;
+    let fetching = false;
+    let cycle = { ticker:'', samples:[], candidate:null, broken:false, maxDistance:0, decisionMade:false, lastBucket:null, lastSeconds:null };
+    let lastSettlementPoll = 0;
+
+    function loadJson(key, fallback){ try { const x = JSON.parse(localStorage.getItem(key) || 'null'); return x && typeof x === 'object' ? {...fallback,...x} : {...fallback}; } catch { return {...fallback}; } }
+    function save(){ localStorage.setItem(STORAGE, JSON.stringify(paper)); localStorage.setItem(SETTINGS, JSON.stringify(settings)); }
+    function effectiveThreshold(){ return settings.threshold + (settings.safety ? 0.02 : 0); }
+    function sideQuote(market, side){ return side === 'YES' ? market.yes : market.no; }
+    function opposite(side){ return side === 'YES' ? 'NO' : 'YES'; }
+    function feeRate(series){ const m = safeNum(series?.feeMultiplier); return m != null && m > 0 && m <= 5 ? 0.07 * m : 0.07; }
+    function ceilCent(n){ return Math.ceil((n - 1e-10) * 100) / 100; }
+    function estimatedTakerFee(contracts, price, series){ return ceilCent(feeRate(series) * contracts * price * (1 - price)); }
+
+    async function getJson(url, options){ const r = await fetch(url, options); if(!r.ok) throw new Error(`${r.status} ${r.statusText}`); return await r.json(); }
+    function normalizeMarket(m){
+      const closeTime = String(m.close_time || m.latest_expiration_time || '');
+      const closeMs = Date.parse(closeTime);
+      const target = targetFrom(m);
+      return { ticker:String(m.ticker||''), title:String(m.title||'ETH Up or Down - 15 minutes'), subtitle:String(m.subtitle||''), status:String(m.status||''), result:String(m.result||'').toLowerCase(), target, closeTime, secondsToClose:Number.isFinite(closeMs)?Math.max(0,(closeMs-Date.now())/1000):null,
+        yes:{bid:safeNum(m.yes_bid_dollars),ask:safeNum(m.yes_ask_dollars),bidSize:safeNum(m.yes_bid_size_fp),askSize:safeNum(m.yes_ask_size_fp)},
+        no:{bid:safeNum(m.no_bid_dollars),ask:safeNum(m.no_ask_dollars),bidSize:safeNum(m.no_bid_size_fp),askSize:safeNum(m.no_ask_size_fp)}, last:safeNum(m.last_price_dollars), volume:safeNum(m.volume_fp)};
+    }
+    function targetFrom(m){
+      for(const v of [m.floor_strike,m.functional_strike]){const n=safeNum(v);if(n && n>100)return n;}
+      if(m.custom_strike && typeof m.custom_strike==='object'){for(const v of Object.values(m.custom_strike)){const n=safeNum(v);if(n && n>100)return n;}}
+      const text = `${m.title||''} ${m.subtitle||''} ${m.rules_primary||''}`; const mt = text.match(/\$([0-9][0-9,]*(?:\.[0-9]+)?)/); return mt ? safeNum(mt[1].replaceAll(',','')) : null;
+    }
+    async function directLive(ticker){
+      let market;
+      if(ticker){ const d=await getJson(`${KALSHI}/markets/${encodeURIComponent(ticker)}`); market=normalizeMarket(d.market); }
+      else { const d=await getJson(`${KALSHI}/markets?series_ticker=${SERIES}&status=open&limit=100`); const now=Date.now(); const items=(Array.isArray(d.markets)?d.markets:[]).map(m=>({m,close:Date.parse(String(m.close_time||m.latest_expiration_time||'')),open:Date.parse(String(m.open_time||''))})).filter(x=>Number.isFinite(x.close)&&x.close>now-15000).sort((a,b)=>((Number.isFinite(a.open)&&a.open<=now)?0:1)-((Number.isFinite(b.open)&&b.open<=now)?0:1)||a.close-b.close); if(!items.length) throw new Error('Brak otwartego KXETH15M'); market=normalizeMarket(items[0].m); }
+      const [coin,seriesData]=await Promise.all([getJson(COINBASE).catch(()=>null),getJson(`${KALSHI}/series/${SERIES}`).catch(()=>null)]);
+      return {ok:true,market,coinbase:coin?{price:safeNum(coin.price),bid:safeNum(coin.bid),ask:safeNum(coin.ask),time:coin.time||null}:null,series:seriesData?.series?{feeType:seriesData.series.fee_type||'',feeMultiplier:safeNum(seriesData.series.fee_multiplier),settlementSources:seriesData.series.settlement_sources||[]}:null,sourceMode:'DIRECT'};
+    }
+    async function edgeLive(ticker){ const r=await getJson(EDGE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(ticker?{ticker}:{})}); if(!r.ok)throw new Error(r.error||'Edge error'); return {...r,sourceMode:'EDGE'}; }
+    async function getLive(ticker){ try { return await edgeLive(ticker); } catch(edgeErr){ try { return await directLive(ticker); } catch(directErr){ throw new Error(`Edge: ${edgeErr.message}; direct: ${directErr.message}`); } } }
+
+    function resetCycle(ticker){ cycle={ticker,samples:[],candidate:null,broken:false,maxDistance:0,decisionMade:false,lastBucket:null,lastSeconds:null}; }
+    function movement(){ const price=safeNum(live?.coinbase?.price), target=safeNum(live?.market?.target); return price && target ? ((price-target)/target)*100 : null; }
+    function rawSide(move){ const t=effectiveThreshold(); if(move==null)return null; if(move>=t)return 'YES'; if(move<=-t)return 'NO'; return null; }
+    function stability(){ if(!cycle.samples.length || !cycle.candidate)return 0; const good=cycle.samples.filter(s=>s.side===cycle.candidate && s.side!=null).length; return Math.round(good/cycle.samples.length*100); }
+    function currentSpread(side){ const q=live?.market ? sideQuote(live.market,side) : null; return q?.bid!=null&&q?.ask!=null ? Math.max(0,q.ask-q.bid) : null; }
+
+    function sampleIfNeeded(){
+      if(!botEnabled || !live?.market)return;
+      const sec=safeNum(live.market.secondsToClose); const move=movement(); if(sec==null||move==null)return;
+      if(sec>OBSERVE_START || sec<ENTRY_AT)return;
+      const bucket=Math.floor(sec/SAMPLE_EVERY); if(bucket===cycle.lastBucket)return; cycle.lastBucket=bucket;
+      const side=rawSide(move); const dist=Math.abs(move); cycle.maxDistance=Math.max(cycle.maxDistance,dist);
+      if(!cycle.candidate && side)cycle.candidate=side;
+      if(!side || (cycle.candidate && side!==cycle.candidate))cycle.broken=true;
+      cycle.samples.push({at:Date.now(),sec,move,side}); if(cycle.samples.length>30)cycle.samples.shift();
+    }
+
+    function entryReasons(){
+      const side=cycle.candidate, q=side&&live?.market?sideQuote(live.market,side):null, spread=side?currentSpread(side):null, move=movement(), stab=stability();
+      const retreat=move==null?Infinity:Math.max(0,cycle.maxDistance-Math.abs(move));
+      const checks={ hasSide:!!side, samples:cycle.samples.length>=MIN_SAMPLES, stable:stab===100&&!cycle.broken, retreat:retreat<=settings.maxRetreat+1e-9, bid:q?.bid!=null&&q.bid>=settings.minBid, ask:q?.ask!=null&&q.ask>0&&q.ask<1, spread:spread!=null&&spread<=settings.maxSpread+1e-9 };
+      return {side,q,spread,move,stab,retreat,checks,ready:Object.values(checks).every(Boolean)};
+    }
+
+    function maybeEnter(){
+      if(!botEnabled || !live?.market || paper.position || cycle.decisionMade)return;
+      const sec=safeNum(live.market.secondsToClose); if(sec==null)return;
+      const crossed = cycle.lastSeconds!=null && cycle.lastSeconds>ENTRY_AT && sec<=ENTRY_AT;
+      const loadedLate = cycle.lastSeconds==null && sec<=ENTRY_AT;
+      if(!crossed && !loadedLate)return;
+      cycle.decisionMade=true;
+      const e=entryReasons();
+      if(!e.ready){ setSignal('POMIŃ','amber'); return; }
+      const ask=e.q.ask; const topSize=Math.floor(e.q.askSize??999999); const desired=Math.max(1,Math.floor(settings.stake/ask)); const contracts=Math.min(desired,Math.max(0,topSize));
+      if(contracts<1){setSignal('BRAK PŁYNNOŚCI','amber');return;}
+      const cost=contracts*ask; const fee=estimatedTakerFee(contracts,ask,live.series); const total=cost+fee;
+      if(total>paper.bank){setSignal('BRAK SALDA','amber');return;}
+      paper.bank-=total;
+      paper.position={ticker:live.market.ticker,side:e.side,fill:ask,contracts,cost,fee,openedAt:new Date().toISOString(),target:live.market.target,ethPrice:live.coinbase?.price??null};
+      save(); setSignal('PAPER ENTRY','green'); renderPaper();
+    }
+
+    async function settlePosition(){
+      if(!paper.position || Date.now()-lastSettlementPoll<4000)return; lastSettlementPoll=Date.now();
+      try{
+        const d=await getLive(paper.position.ticker); const result=String(d?.market?.result||'').toLowerCase(); if(result!=='yes'&&result!=='no')return;
+        const won=(paper.position.side==='YES'&&result==='yes')||(paper.position.side==='NO'&&result==='no'); const payout=won?paper.position.contracts:0; paper.bank+=payout;
+        const pnl=payout-paper.position.cost-paper.position.fee; if(won)paper.wins++;else paper.losses++; paper.realized+=pnl; paper.lastResult=(won?'WIN ':'LOSS ')+money(pnl);
+        paper.history.unshift({time:new Date().toISOString(),ticker:paper.position.ticker,side:paper.position.side,fill:paper.position.fill,contracts:paper.position.contracts,result:result.toUpperCase(),pnl,fee:paper.position.fee}); paper.history=paper.history.slice(0,100); paper.position=null; save(); renderPaper();
+      }catch{}
+    }
+
+    function setSignal(text,cls){ $('pSignal').textContent=text; $('pSignal').className=cls||''; }
+    function renderLive(){
+      if(!live?.market)return; const m=live.market, move=movement(), side=rawSide(move), stab=stability(), e=entryReasons();
+      $('marketTitle').textContent=`${m.ticker} • ${m.title}${m.subtitle?' • '+m.subtitle:''}`; $('ethPrice').textContent=usd(live.coinbase?.price); $('targetPrice').textContent=usd(m.target); $('targetMove').textContent=pct(move); $('targetMove').className='value '+(move==null?'':move>=0?'green':'red'); $('direction').textContent=side||'—'; $('direction').className='value '+(side==='YES'?'green':side==='NO'?'red':''); $('stability').textContent=stab+'%'; $('timeLeft').textContent=mmss(m.secondsToClose);
+      $('yesBid').textContent=cents(m.yes?.bid); $('yesAsk').textContent=cents(m.yes?.ask); $('noBid').textContent=cents(m.no?.bid); $('noAsk').textContent=cents(m.no?.ask); $('yesDepth').textContent=m.yes?.askSize!=null?`ask size ${Math.floor(m.yes.askSize)}`:'depth —'; $('noDepth').textContent=m.no?.askSize!=null?`ask size ${Math.floor(m.no.askSize)}`:'depth —';
+      const progress=m.secondsToClose>OBSERVE_START?0:m.secondsToClose<ENTRY_AT?100:Math.max(0,Math.min(100,(OBSERVE_START-m.secondsToClose)/(OBSERVE_START-ENTRY_AT)*100)); $('confirmProgress').style.width=progress+'%';
+      $('checkThreshold').textContent=effectiveThreshold().toFixed(2).replace('.',',')+'%'; $('checkThreshold').className=Math.abs(move??0)>=effectiveThreshold()?'green':''; $('checkBid').textContent=Math.round(settings.minBid*100)+'¢'+(e.q?.bid!=null?' / teraz '+cents(e.q.bid):''); $('checkBid').className=e.checks.bid?'green':''; $('checkSpread').textContent=Math.round(settings.maxSpread*100)+'¢'+(e.spread!=null?' / teraz '+Math.round(e.spread*100)+'¢':''); $('checkSpread').className=e.checks.spread?'green':''; $('checkDirection').textContent=cycle.broken?'NIE':'OK'; $('checkDirection').className=cycle.broken?'red':cycle.samples.length?'green':'';
+      $('pMarket').textContent=m.ticker; $('pEth').textContent=usd(live.coinbase?.price); $('pTarget').textContent=usd(m.target); $('pMove').textContent=pct(move); $('pStability').textContent=stab+'%'; $('pSamples').textContent=String(cycle.samples.length); $('pTime').textContent=mmss(m.secondsToClose); $('pPosition').textContent=paper.position?`${paper.position.side} @ ${cents(paper.position.fill)}`:'BRAK'; $('pLast').textContent=paper.lastResult;
+      if(paper.position)setSignal('POZYCJA OTWARTA','blue'); else if(cycle.decisionMade && !paper.position && m.secondsToClose<=ENTRY_AT)setSignal('POMIŃ','amber'); else if(e.ready)setSignal('GOTOWY','green'); else if(m.secondsToClose<=OBSERVE_START&&m.secondsToClose>=ENTRY_AT)setSignal('KONFIRMACJA','blue'); else setSignal('CZEKAJ','');
+    }
+    function renderPaper(){
+      $('startBank').textContent=money(paper.start); const settled=paper.start+paper.realized; $('equity').textContent=money(settled); $('paperPnl').textContent=money(paper.realized); $('paperPnl').className=paper.realized>0?'green':paper.realized<0?'red':''; $('wl').textContent=`${paper.wins} / ${paper.losses}`; $('winRate').textContent=(paper.wins+paper.losses)?(paper.wins/(paper.wins+paper.losses)*100).toFixed(1).replace('.',',')+'%':'—'; $('openPos').textContent=paper.position?paper.position.side:'BRAK'; $('openPos').className=paper.position?'blue':'';
+      const body=$('historyBody'); body.innerHTML=''; paper.history.slice(0,20).forEach(h=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${new Date(h.time).toLocaleString()}</td><td>${escapeHtml(h.ticker)}</td><td>${h.side}</td><td>${cents(h.fill)}</td><td>${h.contracts}</td><td>${h.result}</td><td class="${h.pnl>=0?'green':'red'}">${money(h.pnl)}</td>`;body.appendChild(tr)}); $('emptyHistory').hidden=paper.history.length>0; $('historyTable').hidden=paper.history.length===0;
+    }
+    function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function renderSettings(){ $('threshold').value=String(Math.round(settings.threshold*100)); $('safety').checked=!!settings.safety; $('minBid').value=String(Math.round(settings.minBid*100)); $('maxSpread').value=String(Math.round(settings.maxSpread*100)); $('maxRetreat').value=String(Math.round(settings.maxRetreat*100)); $('stake').value=String(settings.stake); $('thresholdOut').textContent=settings.threshold.toFixed(2).replace('.',',')+'%'; $('minBidOut').textContent=Math.round(settings.minBid*100)+'¢'; $('maxSpreadOut').textContent=Math.round(settings.maxSpread*100)+'¢'; $('maxRetreatOut').textContent=settings.maxRetreat.toFixed(2).replace('.',',')+'%'; $('stakeOut').textContent='$'+settings.stake.toFixed(0); }
+    function markConnected(ok,message){ $('dataLamp').className='lamp '+(ok?'ok':'bad'); $('dataState').textContent=message; $('pStatus').textContent=ok?(botEnabled?'AKTYWNY':'PAUZA'):'BRAK DANYCH'; $('pStatus').className=ok?'green':'red'; }
+
+    async function poll(){
+      if(fetching)return; fetching=true;
+      try{
+        const d=await getLive(); live=d; const ticker=d.market?.ticker||''; if(ticker && ticker!==cycle.ticker)resetCycle(ticker); markConnected(true,`${d.sourceMode||'LIVE'} • ${new Date().toLocaleTimeString()}`); $('lastUpdate').textContent=new Date().toLocaleTimeString();
+        sampleIfNeeded(); maybeEnter(); if(live?.market)cycle.lastSeconds=live.market.secondsToClose; renderLive(); await settlePosition();
+      }catch(err){markConnected(false,'błąd połączenia');$('marketTitle').textContent='Nie udało się pobrać danych: '+(err?.message||String(err));}
+      finally{fetching=false;}
+    }
+
+    $('previewDot').addEventListener('click',()=>{const p=$('previewPanel'),open=!p.classList.contains('open');p.classList.toggle('open',open);p.setAttribute('aria-hidden',String(!open));$('previewDot').textContent=open?'‹':'›';}); $('previewClose').addEventListener('click',()=>{$('previewPanel').classList.remove('open');$('previewPanel').setAttribute('aria-hidden','true');$('previewDot').textContent='›';});
+    $('resume').addEventListener('click',()=>{botEnabled=!botEnabled;$('resume').textContent=botEnabled?'Bot aktywny':'Bot w pauzie';$('resume').className='btn '+(botEnabled?'primary':'');renderLive();});
+    $('resetPaper').addEventListener('click',()=>{if(!confirm('Wyzerować wszystkie wyniki PAPER i otwartą pozycję?'))return;paper={...defaultPaper,history:[]};save();renderPaper();renderLive();});
+    $('safety').addEventListener('change',e=>{settings.safety=e.target.checked;save();renderSettings();renderLive();});
+    $('threshold').addEventListener('input',e=>{settings.threshold=Number(e.target.value)/100;save();renderSettings();renderLive();});
+    $('minBid').addEventListener('input',e=>{settings.minBid=Number(e.target.value)/100;save();renderSettings();renderLive();});
+    $('maxSpread').addEventListener('input',e=>{settings.maxSpread=Number(e.target.value)/100;save();renderSettings();renderLive();});
+    $('maxRetreat').addEventListener('input',e=>{settings.maxRetreat=Number(e.target.value)/100;save();renderSettings();renderLive();});
+    $('stake').addEventListener('input',e=>{settings.stake=Number(e.target.value);save();renderSettings();});
+
+    renderSettings(); renderPaper(); poll(); setInterval(poll,2000);
+  })();
+  </script>
+</body>
+</html>

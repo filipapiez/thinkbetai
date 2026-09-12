@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.generate-ai-bet]
 verify_jwt = false
+
+[functions.kalshi-eth-live]
+verify_jwt = false
