@@ -1,5 +1,6 @@
 {
   "name": "vite_react_shadcn_ts",
+  "description": "AI-powered sports betting analysis and predictions platform",
   "private": true,
   "version": "0.0.0",
   "type": "module",
