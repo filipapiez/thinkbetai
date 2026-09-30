@@ -1,0 +1,17 @@
+# ThinkBetAI
+
+ThinkBetAI provides AI-powered sports betting analytics, predictive insights, and data-driven tools for smart sports betting.
+
+## Features
+- AI-Generated Sports Picks
+- Predictive Sports Analytics
+- Algorithmic Sports Betting Tools
+- Real-time Odds Comparison
+
+## Key Links
+- [Home](https://thinkbetai.com/)
+- [About Us](https://thinkbetai.com/about)
+- [How It Works](https://thinkbetai.com/how-it-works)
+- [FAQ](https://thinkbetai.com/faq)
+- [Blog](https://thinkbetai.com/blog)
+- [Pricing](https://thinkbetai.com/pricing)
