@@ -4,8 +4,13 @@
 User-agent: *
 Allow: /
 
-# Application and account routes use noindex,follow. They remain crawlable so
-# search engines can observe that directive instead of retaining stale URLs.
+# Private application and account routes
 Disallow: /api/
+Disallow: /login
+Disallow: /signup
+Disallow: /app
+Disallow: /dashboard
+Disallow: /account
+Disallow: /admin
 
 Sitemap: https://thinkbetai.com/sitemap.xml
