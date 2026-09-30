@@ -7,6 +7,50 @@ import { seoBlueprintRoutes } from "@/seo/blueprintRoutes.generated";
 import { localizedMoneyPageList } from "@/localizedSeoPages";
 import { NoIndexBoundary } from "@/components/NoIndexBoundary";
 
+import MmaAiSportsPicksPage from "./pages/ai-sports-picks";
+import MmaAiSportsAnalysisPage from "./pages/ai-sports-analysis";
+import MmaAiSportsBettingModelPage from "./pages/ai-sports-betting-model";
+import MmaDataDrivenSportsBettingPage from "./pages/data-driven-sports-betting";
+import MmaProbabilityBasedSportsBettingPage from "./pages/probability-based-sports-betting";
+import MmaVerifiedSportsPicksPage from "./pages/verified-sports-picks";
+import MmaAiSportsOddsAnalyzerPage from "./pages/ai-sports-odds-analyzer";
+import MmaSportsBettingAnalyticsSoftwarePage from "./pages/sports-betting-analytics-software";
+import MmaAiSportsPredictionsPage from "./pages/ai-sports-predictions";
+import MmaSportsBettingResearchToolPage from "./pages/sports-betting-research-tool";
+import MmaAiNbaPicksPage from "./pages/ai-nba-picks";
+import MmaAiUfcPicksPage from "./pages/ai-ufc-picks";
+import MmaAiSportsHandicappingPage from "./pages/ai-sports-handicapping";
+import MmaPredictiveSportsAnalyticsPage from "./pages/predictive-sports-analytics";
+import MmaAlgorithmicSportsBettingPage from "./pages/algorithmic-sports-betting";
+import MmaAiSportsBettingPlatformPage from "./pages/ai-sports-betting-platform";
+import MmaAiSportsBettingAssistantPage from "./pages/ai-sports-betting-assistant";
+import MmaMachineLearningSportsBettingPage from "./pages/machine-learning-sports-betting";
+import MmaAiSportsBettingSystemPage from "./pages/ai-sports-betting-system";
+import MmaAiSportsBettingStrategyPage from "./pages/ai-sports-betting-strategy";
+import MmaSportsBettingMarketAnalysisPage from "./pages/sports-betting-market-analysis";
+import MmaAiSportsBettingInsightsPage from "./pages/ai-sports-betting-insights";
+import MmaSmartSportsBettingPicksPage from "./pages/smart-sports-betting-picks";
+import MmaAiSportsBettingSoftwarePage from "./pages/ai-sports-betting-software";
+import MmaQuantitativeSportsBettingPage from "./pages/quantitative-sports-betting";
+import MmaGradingSportsBettingResultsPage from "./pages/grading-sports-betting-results";
+import MmaSportsBettingDataAggregatorPage from "./pages/sports-betting-data-aggregator";
+import MmaAiSportsOddsComparisonPage from "./pages/ai-sports-odds-comparison";
+import MmaAiSportsBettingToolsPage from "./pages/ai-sports-betting-tools";
+import MmaAiSportsBettingAppPage from "./pages/ai-sports-betting-app";
+import MmaSportsBettingAiAnalyzerPage from "./pages/sports-betting-ai-analyzer";
+import MmaSportsBettingDataConsolidationPage from "./pages/sports-betting-data-consolidation";
+import MmaAiSportsBettingAnalyticsPage from "./pages/ai-sports-betting-analytics";
+import MmaAiGeneratedSportsPicksPage from "./pages/ai-generated-sports-picks";
+import MmaSportsBettingDecisionSupportPage from "./pages/sports-betting-decision-support";
+import MmaHowToAnalyzeSportsBettingDataPage from "./pages/how-to-analyze-sports-betting-data";
+import MmaSportsBettingDataOrganizationPage from "./pages/sports-betting-data-organization";
+import MmaAiSportsHandicapperPage from "./pages/ai-sports-handicapper";
+import MmaSportsBettingOddsEvaluationPage from "./pages/sports-betting-odds-evaluation";
+import MmaAiSportsBettingTechnologyPage from "./pages/ai-sports-betting-technology";
+import MmaAiSportsBettingAccuracyPage from "./pages/ai-sports-betting-accuracy";
+import MmaSportsBettingModelValidationPage from "./pages/sports-betting-model-validation";
+import MmaSportsBettingStatisticalAnalysisPage from "./pages/sports-betting-statistical-analysis";
+import MmaHowToUseAiForSportsBettingPage from "./pages/how-to-use-ai-for-sports-betting";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -246,7 +290,51 @@ const App = () => (
                 <Route path="/admin" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Admin /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
                 <Route path="/settings" element={<NoIndexBoundary><AuthBoundary><ProtectedRoute><Settings /></ProtectedRoute></AuthBoundary></NoIndexBoundary>} />
 
-                <Route path="*" element={<NotFound />} />
+                <Route path="/ai-sports-picks" element={<MmaAiSportsPicksPage />} />
+          <Route path="/ai-sports-analysis" element={<MmaAiSportsAnalysisPage />} />
+          <Route path="/ai-sports-betting-model" element={<MmaAiSportsBettingModelPage />} />
+          <Route path="/data-driven-sports-betting" element={<MmaDataDrivenSportsBettingPage />} />
+          <Route path="/probability-based-sports-betting" element={<MmaProbabilityBasedSportsBettingPage />} />
+          <Route path="/verified-sports-picks" element={<MmaVerifiedSportsPicksPage />} />
+          <Route path="/ai-sports-odds-analyzer" element={<MmaAiSportsOddsAnalyzerPage />} />
+          <Route path="/sports-betting-analytics-software" element={<MmaSportsBettingAnalyticsSoftwarePage />} />
+          <Route path="/ai-sports-predictions" element={<MmaAiSportsPredictionsPage />} />
+          <Route path="/sports-betting-research-tool" element={<MmaSportsBettingResearchToolPage />} />
+          <Route path="/ai-nba-picks" element={<MmaAiNbaPicksPage />} />
+          <Route path="/ai-ufc-picks" element={<MmaAiUfcPicksPage />} />
+          <Route path="/ai-sports-handicapping" element={<MmaAiSportsHandicappingPage />} />
+          <Route path="/predictive-sports-analytics" element={<MmaPredictiveSportsAnalyticsPage />} />
+          <Route path="/algorithmic-sports-betting" element={<MmaAlgorithmicSportsBettingPage />} />
+          <Route path="/ai-sports-betting-platform" element={<MmaAiSportsBettingPlatformPage />} />
+          <Route path="/ai-sports-betting-assistant" element={<MmaAiSportsBettingAssistantPage />} />
+          <Route path="/machine-learning-sports-betting" element={<MmaMachineLearningSportsBettingPage />} />
+          <Route path="/ai-sports-betting-system" element={<MmaAiSportsBettingSystemPage />} />
+          <Route path="/ai-sports-betting-strategy" element={<MmaAiSportsBettingStrategyPage />} />
+          <Route path="/sports-betting-market-analysis" element={<MmaSportsBettingMarketAnalysisPage />} />
+          <Route path="/ai-sports-betting-insights" element={<MmaAiSportsBettingInsightsPage />} />
+          <Route path="/smart-sports-betting-picks" element={<MmaSmartSportsBettingPicksPage />} />
+          <Route path="/ai-sports-betting-software" element={<MmaAiSportsBettingSoftwarePage />} />
+          <Route path="/quantitative-sports-betting" element={<MmaQuantitativeSportsBettingPage />} />
+          <Route path="/grading-sports-betting-results" element={<MmaGradingSportsBettingResultsPage />} />
+          <Route path="/sports-betting-data-aggregator" element={<MmaSportsBettingDataAggregatorPage />} />
+          <Route path="/ai-sports-odds-comparison" element={<MmaAiSportsOddsComparisonPage />} />
+          <Route path="/ai-sports-betting-tools" element={<MmaAiSportsBettingToolsPage />} />
+          <Route path="/ai-sports-betting-app" element={<MmaAiSportsBettingAppPage />} />
+          <Route path="/sports-betting-ai-analyzer" element={<MmaSportsBettingAiAnalyzerPage />} />
+          <Route path="/sports-betting-data-consolidation" element={<MmaSportsBettingDataConsolidationPage />} />
+          <Route path="/ai-sports-betting-analytics" element={<MmaAiSportsBettingAnalyticsPage />} />
+          <Route path="/ai-generated-sports-picks" element={<MmaAiGeneratedSportsPicksPage />} />
+          <Route path="/sports-betting-decision-support" element={<MmaSportsBettingDecisionSupportPage />} />
+          <Route path="/how-to-analyze-sports-betting-data" element={<MmaHowToAnalyzeSportsBettingDataPage />} />
+          <Route path="/sports-betting-data-organization" element={<MmaSportsBettingDataOrganizationPage />} />
+          <Route path="/ai-sports-handicapper" element={<MmaAiSportsHandicapperPage />} />
+          <Route path="/sports-betting-odds-evaluation" element={<MmaSportsBettingOddsEvaluationPage />} />
+          <Route path="/ai-sports-betting-technology" element={<MmaAiSportsBettingTechnologyPage />} />
+          <Route path="/ai-sports-betting-accuracy" element={<MmaAiSportsBettingAccuracyPage />} />
+          <Route path="/sports-betting-model-validation" element={<MmaSportsBettingModelValidationPage />} />
+          <Route path="/sports-betting-statistical-analysis" element={<MmaSportsBettingStatisticalAnalysisPage />} />
+          <Route path="/how-to-use-ai-for-sports-betting" element={<MmaHowToUseAiForSportsBettingPage />} />
+          <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </AnalyticsWrapper>
