@@ -133,18 +133,6 @@ export const SEO = ({
       link.dataset.thinkbetaiAlternate = 'true';
       document.head.appendChild(link);
     }
-
-    const schemaId = 'thinkbetai-page-schema';
-    const existingSchema = document.head.querySelector<HTMLScriptElement>(`#${schemaId}`);
-    if (structuredDataJson && structuredDataJson !== '""') {
-      const schema = existingSchema ?? document.createElement('script');
-      schema.id = schemaId;
-      schema.type = 'application/ld+json';
-      schema.textContent = structuredDataJson;
-      if (!existingSchema) document.head.appendChild(schema);
-    } else {
-      existingSchema?.remove();
-    }
   }, [
     author,
     alternateEntriesJson,
@@ -157,9 +145,17 @@ export const SEO = ({
     keywords,
     effectiveNoIndex,
     publishedTime,
-    structuredDataJson,
     type,
   ]);
 
-  return null;
+  if (!structuredDataJson || structuredDataJson === '""') {
+    return null;
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: structuredDataJson }}
+    />
+  );
 };
