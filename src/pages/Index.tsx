@@ -10,7 +10,6 @@ import { platformStats } from '@/lib/platformStats';
 import { englishMarketAlternates } from '@/countryPages';
 import { lazy, Suspense } from 'react';
 const WorkflowDemo = lazy(() => import('@/components/WorkflowDemo'));
-// LatestPredictionsHub removed — linked to retired /predictions/* and /matchups/* programmatic pages.
 
 import { 
   Search, 
@@ -82,22 +81,22 @@ const Index = () => {
   ];
 
   const allSports = [
-    { name: 'NFL', emoji: '🏈' },
-    { name: 'NBA', emoji: '🏀' },
-    { name: 'MLB', emoji: '⚾' },
-    { name: 'NHL', emoji: '🏒' },
-    { name: 'NCAAF', emoji: '🏈' },
-    { name: 'NCAAB', emoji: '🏀' },
-    { name: 'WNBA', emoji: '🏀' },
-    { name: 'EPL', emoji: '⚽' },
-    { name: 'La Liga', emoji: '⚽' },
-    { name: 'Champions League', emoji: '⚽' },
-    { name: 'Bundesliga', emoji: '⚽' },
-    { name: 'MLS', emoji: '⚽' },
-    { name: 'UFC', emoji: '🥊' },
-    { name: 'Boxing', emoji: '🥊' },
-    { name: 'Tennis', emoji: '🎾' },
-    { name: 'Golf', emoji: '⛳' },
+    { name: 'NFL', emoji: '🏈', to: '/ai-nfl-picks' },
+    { name: 'NBA', emoji: '🏀', to: '/ai-nba-picks' },
+    { name: 'MLB', emoji: '⚾', to: '/games' },
+    { name: 'NHL', emoji: '🏒', to: '/games' },
+    { name: 'NCAAF', emoji: '🏈', to: '/games' },
+    { name: 'NCAAB', emoji: '🏀', to: '/games' },
+    { name: 'WNBA', emoji: '🏀', to: '/games' },
+    { name: 'EPL', emoji: '⚽', to: '/games' },
+    { name: 'La Liga', emoji: '⚽', to: '/games' },
+    { name: 'Champions League', emoji: '⚽', to: '/games' },
+    { name: 'Bundesliga', emoji: '⚽', to: '/games' },
+    { name: 'MLS', emoji: '⚽', to: '/games' },
+    { name: 'UFC', emoji: '🥊', to: '/ai-ufc-picks' },
+    { name: 'Boxing', emoji: '🥊', to: '/games' },
+    { name: 'Tennis', emoji: '🎾', to: '/games' },
+    { name: 'Golf', emoji: '⛳', to: '/games' },
   ];
 
   return (
@@ -108,7 +107,7 @@ const Index = () => {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative overflow-hidden py-16 md:py-28" style={{ contain: 'layout style paint' }}>
-          {/* Background Effects - simplified for CWV (no blur on mobile) */}
+          {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/15 rounded-full opacity-60 hidden md:block md:blur-3xl" />
           </div>
@@ -176,7 +175,6 @@ const Index = () => {
                 </Badge>
               </div>
 
-
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="hero" size="xl" asChild className="group relative overflow-hidden">
@@ -199,7 +197,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Immediate product proof without fabricated picks or testimonials */}
+        {/* Immediate product proof */}
         <section className="pb-16 md:pb-20">
           <div className="container">
             <div className="mx-auto max-w-5xl rounded-2xl border border-primary/20 bg-card/60 p-6 shadow-xl shadow-primary/5 md:p-8">
@@ -214,41 +212,42 @@ const Index = () => {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 {[
-                  { icon: Target, label: 'Model estimate', text: 'A probability range and recommended interpretation—not a guaranteed outcome.' },
-                  { icon: BarChart3, label: 'Market comparison', text: 'Context for how the estimate compares with the price currently available.' },
-                  { icon: Shield, label: 'Risk notes', text: 'Injuries, limited samples, late lineup news and other reasons to lower confidence.' },
-                ].map(({ icon: Icon, label, text }) => (
-                  <div key={label} className="rounded-xl border border-border/60 bg-background/50 p-5">
+                  { icon: Target, label: 'Model estimate', text: 'A probability range and recommended interpretation—not a guaranteed outcome.', to: '/ai-sports-betting-model' },
+                  { icon: BarChart3, label: 'Market comparison', text: 'Context for how the estimate compares with the price currently available.', to: '/ai-sports-odds-comparison' },
+                  { icon: Shield, label: 'Risk notes', text: 'Injuries, limited samples, late lineup news and other reasons to lower confidence.', to: '/how-it-works' },
+                ].map(({ icon: Icon, label, text, to }) => (
+                  <Link key={label} to={to} className="rounded-xl border border-border/60 bg-background/50 p-5 block hover:border-primary/50 transition-colors">
                     <Icon className="mb-3 h-6 w-6 text-primary" />
                     <h3 className="mb-2 font-semibold">{label}</h3>
                     <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Stats Section - More Dynamic */}
+        {/* Stats Section */}
         <section className="py-16 border-t border-border/40 bg-gradient-to-b from-card/50 to-transparent">
           <div className="container">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
               {[
-                { value: '$4.99', label: 'Starting Price', sublabel: 'per month', icon: Target, color: 'text-emerald-400' },
-                { value: '3', label: 'Plan Options', sublabel: 'clearly listed', icon: BarChart3, color: 'text-amber-400' },
-                { value: 'Public', label: 'Methodology', sublabel: 'and limitations', icon: Shield, color: 'text-primary' },
-                { value: 'Anytime', label: 'Cancellation', sublabel: 'no long contract', icon: Trophy, color: 'text-purple-400' },
-              ].map((stat, index) => (
-                <div 
+                { value: '$4.99', label: 'Starting Price', sublabel: 'per month', icon: Target, color: 'text-emerald-400', to: '/pricing' },
+                { value: '3', label: 'Plan Options', sublabel: 'clearly listed', icon: BarChart3, color: 'text-amber-400', to: '/pricing' },
+                { value: 'Public', label: 'Methodology', sublabel: 'and limitations', icon: Shield, color: 'text-primary', to: '/track-record' },
+                { value: 'Anytime', label: 'Cancellation', sublabel: 'no long contract', icon: Trophy, color: 'text-purple-400', to: '/pricing' },
+              ].map((stat) => (
+                <Link 
                   key={stat.label} 
-                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300"
+                  to={stat.to}
+                  className="relative group bg-card/50 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/40 transition-all duration-300 block"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   <stat.icon className={`h-6 w-6 mx-auto mb-3 ${stat.color}`} />
                   <div className="text-3xl md:text-4xl font-extrabold text-foreground mb-1">{stat.value}</div>
                   <div className="text-sm font-semibold text-foreground">{stat.label}</div>
                   <div className="text-xs text-muted-foreground">{stat.sublabel}</div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -270,12 +269,8 @@ const Index = () => {
           </div>
         </section>
 
-
         {/* How It Works - Interactive Demo */}
         <section ref={workflowRef} className="py-16 md:py-24 border-t border-border/40 relative overflow-hidden">
-          {/* Background effects */}
-          {/* Background effects removed for CWV performance */}
-          
           <div className="container relative">
             <div className="text-center mb-12">
               <Badge variant="outline" className="px-4 py-1.5 mb-4 border-primary/30 text-primary">
@@ -302,7 +297,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Sports Coverage Section - More Visual */}
+        {/* Sports Coverage Section */}
         <section className="py-16 border-t border-border/40">
           <div className="container">
             <div className="text-center mb-10">
@@ -319,19 +314,19 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 gap-2 sm:gap-3 max-w-5xl mx-auto">
               {allSports.map((sport, index) => (
-                <div 
+                <Link 
                   key={sport.name}
-                  className="group flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 bg-card/50 border border-border/40 rounded-lg sm:rounded-xl text-center hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer animate-slide-up"
+                  to={sport.to}
+                  className="group flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 bg-card/50 border border-border/40 rounded-lg sm:rounded-xl text-center hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 cursor-pointer animate-slide-up block"
                   style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <span className="text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform">{sport.emoji}</span>
-                  <span className="text-[10px] sm:text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate w-full">{sport.name}</span>
-                </div>
+                  <span className="text-xl sm:text-2xl md:text-3xl group-hover:scale-110 transition-transform block">{sport.emoji}</span>
+                  <span className="text-[10px] sm:text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate w-full block mt-1">{sport.name}</span>
+                </Link>
               ))}
             </div>
           </div>
         </section>
-
 
         {/* Features Section */}
         <section className="py-16 md:py-24 border-t border-border/40">
@@ -381,19 +376,20 @@ const Index = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto">
               {[
-                { title: 'Probability', detail: 'Model estimate' },
-                { title: 'Market', detail: 'Implied odds' },
-                { title: 'Context', detail: 'Matchup factors' },
-                { title: 'Risk', detail: 'Uncertainty notes' },
+                { title: 'Probability', detail: 'Model estimate', to: '/probability-based-sports-betting' },
+                { title: 'Market', detail: 'Implied odds', to: '/ai-sports-odds-comparison' },
+                { title: 'Context', detail: 'Matchup factors', to: '/sports-betting-market-analysis' },
+                { title: 'Risk', detail: 'Uncertainty notes', to: '/how-it-works' },
               ].map((item, index) => (
-                <div 
+                <Link 
                   key={item.title}
-                  className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up"
+                  to={item.to}
+                  className="bg-background/50 border border-border/40 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center hover:border-primary/40 transition-colors animate-slide-up block"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="text-base sm:text-lg font-bold text-primary mb-1">{item.title}</div>
                   <div className="text-xs sm:text-sm text-muted-foreground">{item.detail}</div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -418,28 +414,31 @@ const Index = () => {
                   icon: Search,
                   title: 'Find a Game',
                   description: 'Browse upcoming matchups or search for your favorite teams.',
+                  to: '/games'
                 },
                 {
                   step: '02',
                   icon: BarChart3,
                   title: 'See the Signal',
                   description: 'Our AI shows you GOOD, BORDERLINE, or PASS signals with full reasoning.',
+                  to: '/ai-sports-picks'
                 },
                 {
                   step: '03',
                   icon: Shield,
                   title: 'Review the Risk',
                   description: 'Compare probability, market price and uncertainty before making your own decision.',
+                  to: '/how-it-works'
                 },
               ].map((item, index) => (
-                <div key={item.step} className="relative text-center animate-slide-up" style={{ animationDelay: `${index * 100}ms` }}>
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
+                <Link key={item.step} to={item.to} className="relative text-center animate-slide-up group block" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4 group-hover:bg-primary/20 transition-colors">
                     <item.icon className="h-8 w-8" />
                   </div>
                   <div className="text-xs font-bold text-primary/60 mb-2">STEP {item.step}</div>
-                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                  <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
                   <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -465,21 +464,21 @@ const Index = () => {
             </div>
             <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
               {[
-                { title: 'A probability estimate', text: 'See the model estimate alongside the sportsbook-implied probability.' },
-                { title: 'The important context', text: 'Review injuries, matchup factors, market movement and data limitations.' },
-                { title: 'A clear risk note', text: 'Understand uncertainty and why no individual outcome is guaranteed.' },
+                { title: 'A probability estimate', text: 'See the model estimate alongside the sportsbook-implied probability.', to: '/probability-based-sports-betting' },
+                { title: 'The important context', text: 'Review injuries, matchup factors, market movement and data limitations.', to: '/sports-betting-market-analysis' },
+                { title: 'A clear risk note', text: 'Understand uncertainty and why no individual outcome is guaranteed.', to: '/responsible-gambling' },
               ].map((item) => (
-                <div key={item.title} className="bg-background/50 border border-border/40 rounded-xl p-5">
+                <Link key={item.title} to={item.to} className="bg-background/50 border border-border/40 rounded-xl p-5 block hover:border-primary/50 transition-colors">
                   <CheckCircle2 className="h-5 w-5 text-primary mb-3" />
                   <h3 className="font-semibold mb-2">{item.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Final CTA - More Compelling */}
+        {/* Final CTA */}
         <section className="py-20 md:py-28 border-t border-border/40 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
           <div className="container relative">
@@ -528,6 +527,15 @@ const Index = () => {
                 <Link to="/free-ai-predictions" className="text-primary hover:text-primary/80 font-medium transition-colors">Free AI Predictions →</Link>
                 <Link to="/best-ai-sports-betting-tools" className="text-primary hover:text-primary/80 font-medium transition-colors">Best AI Tools →</Link>
                 <Link to="/ai-sports-picks" className="text-primary hover:text-primary/80 font-medium transition-colors">AI Sports Picks →</Link>
+                
+                <Link to="/ai-sports-betting-app" className="text-muted-foreground hover:text-primary transition-colors">AI Betting App</Link>
+                <Link to="/ai-sports-betting-software" className="text-muted-foreground hover:text-primary transition-colors">Betting Software</Link>
+                <Link to="/ai-sports-odds-analyzer" className="text-muted-foreground hover:text-primary transition-colors">Odds Analyzer</Link>
+                <Link to="/sports-betting-ai-analyzer" className="text-muted-foreground hover:text-primary transition-colors">AI Analyzer</Link>
+                <Link to="/algorithmic-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">Algorithmic Betting</Link>
+                <Link to="/predictive-sports-analytics" className="text-muted-foreground hover:text-primary transition-colors">Predictive Analytics</Link>
+                <Link to="/verified-sports-picks" className="text-muted-foreground hover:text-primary transition-colors">Verified Picks</Link>
+
                 <Link to="/blog/is-ai-betting-legal" className="text-muted-foreground hover:text-primary transition-colors">Is AI betting legal?</Link>
                 <Link to="/blog/how-ai-is-used-in-sports-betting" className="text-muted-foreground hover:text-primary transition-colors">How AI is used in betting</Link>
                 <Link to="/blog/can-ai-predict-sports-outcomes" className="text-muted-foreground hover:text-primary transition-colors">Can AI predict sports?</Link>
@@ -536,15 +544,13 @@ const Index = () => {
             </div>
           </div>
         </section>
-
-        {/* LatestPredictionsHub removed — pointed to retired programmatic URLs. */}
       </main>
 
       <div className="h-16 md:hidden" aria-hidden="true" />
 
       <Footer />
 
-      {/* Stable mobile CTA; account state is intentionally not loaded on this public route. */}
+      {/* Stable mobile CTA */}
         <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border/50 p-3 safe-area-bottom" style={{ containIntrinsicSize: '0 56px', contentVisibility: 'visible' }}>
           <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
