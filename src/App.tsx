@@ -165,11 +165,13 @@ const App = () => (
                 <Route path="/privacy" element={<LegalPage page="privacy" />} />
                 <Route path="/terms" element={<LegalPage page="terms" />} />
                 <Route path="/contact" element={<LegalPage page="contact" />} />
+                <Route path="/support" element={<LegalPage page="contact" />} />
                 <Route path="/disclaimer" element={<LegalPage page="disclaimer" />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/what-is-ai-sports-betting" element={<WhatIsAISportsBetting />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/docs" element={<HowItWorks />} />
                 <Route path="/ai-bet-analyzer" element={<AIBetAnalyzer />} />
                 <Route path="/ai-parlay-builder" element={<AIParlayBuilder />} />
                 {seoBlueprintRoutes.filter((path) => !promotedSeoFeatureRoutes.has(path)).map((path) => (

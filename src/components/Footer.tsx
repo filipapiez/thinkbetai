@@ -69,6 +69,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 text-sm">Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/docs" className="hover:text-foreground transition-colors">Documentation</Link></li>
               <li><Link to="/track-record" className="hover:text-foreground transition-colors">Track Record & Methodology</Link></li>
               <li><Link to="/tools/expected-value-calculator" className="hover:text-foreground transition-colors">Expected Value Calculator</Link></li>
               <li><Link to="/tools/no-vig-fair-odds-calculator" className="hover:text-foreground transition-colors">No-Vig Fair Odds Calculator</Link></li>
@@ -102,6 +103,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-3 text-sm">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/support" className="hover:text-foreground transition-colors">Support</Link></li>
               <li>
                 <a 
                   href="mailto:support@thinkbetai.com"
