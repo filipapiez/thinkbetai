@@ -51,6 +51,7 @@ import MmaAiSportsBettingAccuracyPage from "./pages/ai-sports-betting-accuracy";
 import MmaSportsBettingModelValidationPage from "./pages/sports-betting-model-validation";
 import MmaSportsBettingStatisticalAnalysisPage from "./pages/sports-betting-statistical-analysis";
 import MmaHowToUseAiForSportsBettingPage from "./pages/how-to-use-ai-for-sports-betting";
+import MmaAiOddsAnalysisSoftwarePage from "./pages/ai-odds-analysis-software";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -334,6 +335,7 @@ const App = () => (
           <Route path="/sports-betting-model-validation" element={<MmaSportsBettingModelValidationPage />} />
           <Route path="/sports-betting-statistical-analysis" element={<MmaSportsBettingStatisticalAnalysisPage />} />
           <Route path="/how-to-use-ai-for-sports-betting" element={<MmaHowToUseAiForSportsBettingPage />} />
+          <Route path="/ai-odds-analysis-software" element={<MmaAiOddsAnalysisSoftwarePage />} />
           <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
