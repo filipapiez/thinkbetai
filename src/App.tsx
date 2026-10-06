@@ -56,6 +56,7 @@ import MmaModernWebApplicationArchitecturePage from "./pages/modern-web-applicat
 import MmaAiSportsMatchupAnalyzerPage from "./pages/ai-sports-matchup-analyzer";
 import MmaAiNhlPicksPage from "./pages/ai-nhl-picks";
 import MmaAiParlayPicksPage from "./pages/ai-parlay-picks";
+import MmaAiSoccerPicksPage from "./pages/ai-soccer-picks";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -346,6 +347,7 @@ const App = () => (
           <Route path="/ai-sports-matchup-analyzer" element={<MmaAiSportsMatchupAnalyzerPage />} />
           <Route path="/ai-nhl-picks" element={<MmaAiNhlPicksPage />} />
           <Route path="/ai-parlay-picks" element={<MmaAiParlayPicksPage />} />
+          <Route path="/ai-soccer-picks" element={<MmaAiSoccerPicksPage />} />
           <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
