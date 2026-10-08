@@ -58,6 +58,7 @@ import MmaAiNhlPicksPage from "./pages/ai-nhl-picks";
 import MmaAiParlayPicksPage from "./pages/ai-parlay-picks";
 import MmaAiSoccerPicksPage from "./pages/ai-soccer-picks";
 import MmaAiSportsBettingOptimizerPage from "./pages/ai-sports-betting-optimizer";
+import MmaSportsBettingProbabilityModelsPage from "./pages/sports-betting-probability-models";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -350,6 +351,7 @@ const App = () => (
           <Route path="/ai-parlay-picks" element={<MmaAiParlayPicksPage />} />
           <Route path="/ai-soccer-picks" element={<MmaAiSoccerPicksPage />} />
           <Route path="/ai-sports-betting-optimizer" element={<MmaAiSportsBettingOptimizerPage />} />
+          <Route path="/sports-betting-probability-models" element={<MmaSportsBettingProbabilityModelsPage />} />
           <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
