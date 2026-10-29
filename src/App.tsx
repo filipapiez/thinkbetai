@@ -69,6 +69,7 @@ import MmaSportsBettingDataFragmentationPage from "./pages/sports-betting-data-f
 import MmaUnderstandingSportsBettingProbabilityPage from "./pages/understanding-sports-betting-probability";
 import MmaAiParlayAnalyzerPage from "./pages/ai-parlay-analyzer";
 import MmaSportsBettingDataSciencePage from "./pages/sports-betting-data-science";
+import MmaSportsBettingProbabilityVsCertaintyPage from "./pages/sports-betting-probability-vs-certainty";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -372,6 +373,7 @@ const App = () => (
           <Route path="/understanding-sports-betting-probability" element={<MmaUnderstandingSportsBettingProbabilityPage />} />
           <Route path="/ai-parlay-analyzer" element={<MmaAiParlayAnalyzerPage />} />
           <Route path="/sports-betting-data-science" element={<MmaSportsBettingDataSciencePage />} />
+          <Route path="/sports-betting-probability-vs-certainty" element={<MmaSportsBettingProbabilityVsCertaintyPage />} />
           <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
