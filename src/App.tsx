@@ -80,6 +80,7 @@ import MmaAiPointSpreadPicksPage from "./pages/ai-point-spread-picks";
 import MmaSportsBettingDataReviewPage from "./pages/sports-betting-data-review";
 import MmaAiOverUnderPicksPage from "./pages/ai-over-under-picks";
 import MmaSportsBettingModelReliabilityPage from "./pages/sports-betting-model-reliability";
+import MmaAiSportsBettingDataManagementPage from "./pages/ai-sports-betting-data-management";
 // Toast renderers are non-critical and load only after the first paint window.
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -394,6 +395,7 @@ const App = () => (
           <Route path="/sports-betting-data-review" element={<MmaSportsBettingDataReviewPage />} />
           <Route path="/ai-over-under-picks" element={<MmaAiOverUnderPicksPage />} />
           <Route path="/sports-betting-model-reliability" element={<MmaSportsBettingModelReliabilityPage />} />
+          <Route path="/ai-sports-betting-data-management" element={<MmaAiSportsBettingDataManagementPage />} />
           <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
